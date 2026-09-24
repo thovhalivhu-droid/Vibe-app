@@ -115,7 +115,7 @@
         <!-- POST 1 -->
         <div class="card">
           <div class="video-container">
-            <video src="https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" controls playsinline loop preload="auto" onplay="handleVideoPlay(this)"></video>
+            <video src="https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" controls playsinline loop preload="metadata" onplay="handleVideoPlay(this)"></video>
           </div>
           <div class="info">
             <div class="creator">@rafter6</div>
@@ -131,7 +131,7 @@
         <!-- POST 2 -->
         <div class="card">
           <div class="video-container">
-            <video src="https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4" controls playsinline loop preload="auto" onplay="handleVideoPlay(this)"></video>
+            <video src="https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4" controls playsinline loop preload="metadata" onplay="handleVideoPlay(this)"></video>
           </div>
           <div class="info">
             <div class="creator">@vibe_creator</div>
@@ -421,7 +421,7 @@
       newCard.className = 'card';
       newCard.innerHTML = `
         <div class="video-container">
-          <video src="${videoUrl}" controls playsinline loop preload="auto" onplay="handleVideoPlay(this)"></video>
+          <video src="${videoUrl}" controls playsinline loop preload="metadata" onplay="handleVideoPlay(this)"></video>
         </div>
         <div class="info">
           <div class="creator">${currentHandle}</div>
