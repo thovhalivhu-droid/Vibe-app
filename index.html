@@ -28,12 +28,25 @@
     .action-btn { cursor: pointer; display: flex; align-items: center; gap: 6px; user-select: none; }
     .action-btn.liked { color: #ff4d79; }
 
-    /* DISCOVER STYLES */
-    .search-box { padding: 16px; display: flex; gap: 8px; }
-    .search-input { flex: 1; background: #161722; border: 1px solid #232535; color: #fff; padding: 12px 16px; border-radius: 25px; font-size: 14px; outline: none; }
-    .search-btn { background: #ff4d79; color: #fff; border: none; padding: 0 18px; border-radius: 25px; font-weight: bold; cursor: pointer; }
+    /* TIKTOK-STYLE SEARCH BAR */
+    .search-container { padding: 12px 16px; background: #0c0d12; }
+    .tiktok-search-box { display: flex; align-items: center; gap: 10px; }
+    .search-input-wrapper { flex: 1; position: relative; display: flex; align-items: center; background: #1f212d; border-radius: 22px; padding: 0 14px; border: 1px solid transparent; transition: border-color 0.2s; }
+    .search-input-wrapper:focus-within { border-color: #ff4d79; }
+    .search-icon { color: #888; font-size: 15px; margin-right: 8px; pointer-events: none; }
+    .tiktok-search-input { flex: 1; background: transparent; border: none; color: #fff; height: 42px; font-size: 14px; outline: none; }
+    .tiktok-search-input::placeholder { color: #777; }
+    .clear-btn { color: #888; font-size: 14px; background: #2f3242; border-radius: 50%; width: 18px; height: 18px; display: none; align-items: center; justify-content: center; cursor: pointer; user-select: none; }
+    .clear-btn.visible { display: flex; }
+    .tiktok-search-btn { background: #fe2c55; color: #fff; border: none; padding: 0 16px; height: 42px; border-radius: 22px; font-weight: 700; font-size: 14px; cursor: pointer; transition: opacity 0.2s; }
+    .tiktok-search-btn:active { opacity: 0.8; }
+
+    /* DISCOVER CONTENT */
     .search-results { padding: 0 16px; }
-    .trending-tag { display: inline-block; background: #1e1f29; color: #ff4d79; padding: 8px 14px; border-radius: 20px; margin: 4px; font-size: 13px; cursor: pointer; }
+    .section-title { font-size: 13px; color: #888; margin: 16px 0 10px 0; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .trending-list { display: flex; flex-wrap: wrap; gap: 8px; }
+    .trending-tag { background: #161722; color: #fff; padding: 8px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; border: 1px solid #232535; display: flex; align-items: center; gap: 6px; }
+    .trending-tag span.fire { color: #fe2c55; }
 
     /* PROFILE STYLES */
     .profile-header { padding: 24px 16px; text-align: center; border-bottom: 1px solid #232535; }
@@ -84,6 +97,9 @@
       <div class="badge">🇿🇦 SA Creators</div>
     </header>
 
+    <!-- HIDDEN DIRECT GALLERY INPUT -->
+    <input type="file" id="direct-gallery-input" accept="video/*" style="display: none;" onchange="handleDirectVideoSelect(event)" />
+
     <!-- HOME TAB -->
     <div id="home-view" class="view-section active">
       <div id="feed-container">
@@ -123,19 +139,26 @@
       </div>
     </div>
 
-    <!-- DISCOVER TAB -->
+    <!-- DISCOVER TAB (TIKTOK STYLE SEARCH) -->
     <div id="discover-view" class="view-section">
-      <div class="search-box">
-        <input type="text" id="search-input" class="search-input" placeholder="Search creators or tags..." onkeyup="handleSearchKey(event)" />
-        <button class="search-btn" onclick="performSearch()">Search</button>
+      <div class="search-container">
+        <div class="tiktok-search-box">
+          <div class="search-input-wrapper">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-input" class="tiktok-search-input" placeholder="Search creators or sounds..." oninput="handleSearchInput(this)" onkeyup="handleSearchKey(event)" />
+            <span id="clear-search-btn" class="clear-btn" onclick="clearSearch()">✕</span>
+          </div>
+          <button class="tiktok-search-btn" onclick="performSearch()">Search</button>
+        </div>
       </div>
+
       <div class="search-results">
-        <p style="color: #888; font-size: 13px;">Popular Tags:</p>
-        <div>
-          <span class="trending-tag" onclick="quickSearch('#SouthAfrica')">#SouthAfrica</span>
-          <span class="trending-tag" onclick="quickSearch('#VibeApp')">#VibeApp</span>
-          <span class="trending-tag" onclick="quickSearch('@rafter6')">@rafter6</span>
-          <span class="trending-tag" onclick="quickSearch('#CreatorEconomy')">#CreatorEconomy</span>
+        <div class="section-title">Trending Searches</div>
+        <div class="trending-list">
+          <div class="trending-tag" onclick="quickSearch('#SouthAfrica')"><span class="fire">🔥</span> #SouthAfrica</div>
+          <div class="trending-tag" onclick="quickSearch('#VibeApp')"><span class="fire">🔥</span> #VibeApp</div>
+          <div class="trending-tag" onclick="quickSearch('@rafter6')">@rafter6</div>
+          <div class="trending-tag" onclick="quickSearch('#CreatorEconomy')">#CreatorEconomy</div>
         </div>
         <div id="search-output" style="margin-top: 20px;"></div>
       </div>
@@ -193,29 +216,14 @@
       <button class="nav-btn" onclick="switchTab('discover-view', this)">
         <span class="nav-icon">🔍</span>Discover
       </button>
-      <button class="nav-btn create-btn" onclick="openCreateModal()">+ Create</button>
+      <!-- Direct open gallery on press -->
+      <button class="nav-btn create-btn" onclick="openGalleryDirectly()">+ Create</button>
       <button class="nav-btn" onclick="switchTab('alerts-view', this)">
         <span class="nav-icon">🔔</span>Alerts
       </button>
       <button class="nav-btn" onclick="switchTab('profile-view', this)">
         <span class="nav-icon">👤</span>Profile
       </button>
-    </div>
-  </div>
-
-  <!-- CREATE POST MODAL -->
-  <div id="create-modal" class="modal-overlay">
-    <div class="modal-content">
-      <h3>Create a VIBE Post</h3>
-      <textarea id="post-caption" placeholder="Write a caption..."></textarea>
-      
-      <label>Select video from device:</label>
-      <input id="post-file-input" type="file" accept="video/*" />
-
-      <div class="modal-actions">
-        <button class="modal-btn btn-cancel" onclick="closeCreateModal()">Cancel</button>
-        <button class="modal-btn btn-submit" onclick="publishPost()">Post</button>
-      </div>
     </div>
   </div>
 
@@ -263,7 +271,7 @@
 
     // Set video playback speed explicitly to 0.5x
     function handleVideoPlay(videoElem) {
-      videoElem.playbackRate = 0.5; // Enforce 0.5x playback rate
+      videoElem.playbackRate = 0.5;
       videoElem.muted = false;
 
       if (!videoElem.dataset.viewed) {
@@ -293,13 +301,35 @@
       btn.classList.add('active');
     }
 
+    /* SEARCH LOGIC */
+    function handleSearchInput(input) {
+      const clearBtn = document.getElementById('clear-search-btn');
+      if (input.value.trim().length > 0) {
+        clearBtn.classList.add('visible');
+      } else {
+        clearBtn.classList.remove('visible');
+      }
+    }
+
+    function clearSearch() {
+      const input = document.getElementById('search-input');
+      input.value = '';
+      document.getElementById('clear-search-btn').classList.remove('visible');
+      document.getElementById('search-output').innerHTML = '';
+      input.focus();
+    }
+
     function handleSearchKey(event) {
       if (event.key === 'Enter') performSearch();
     }
+
     function quickSearch(query) {
-      document.getElementById('search-input').value = query;
+      const input = document.getElementById('search-input');
+      input.value = query;
+      document.getElementById('clear-search-btn').classList.add('visible');
       performSearch();
     }
+
     function performSearch() {
       const query = document.getElementById('search-input').value.trim().toLowerCase();
       const output = document.getElementById('search-output');
@@ -308,38 +338,29 @@
         return;
       }
       output.innerHTML = `<div style="background:#161722; padding:16px; border-radius:12px; border:1px solid #232535;">
-        <h4 style="margin:0 0 8px 0; color:#ff4d79;">Search results for "${query}"</h4>
-        <p style="margin:0; font-size:13px; color:#ccc;">Found 1 result matching your criteria in South Africa.</p>
+        <h4 style="margin:0 0 8px 0; color:#fe2c55;">Search results for "${query}"</h4>
+        <p style="margin:0; font-size:13px; color:#ccc;">Found results matching your criteria in South Africa.</p>
       </div>`;
     }
 
-    function openCreateModal() {
-      document.getElementById('create-modal').classList.add('active');
-    }
-    function closeCreateModal() {
-      document.getElementById('create-modal').classList.remove('active');
-      document.getElementById('post-caption').value = '';
-      document.getElementById('post-file-input').value = '';
+    /* DIRECT GALLERY UPLOAD LOGIC */
+    function openGalleryDirectly() {
+      document.getElementById('direct-gallery-input').click();
     }
 
-    function publishPost() {
-      const captionText = document.getElementById('post-caption').value.trim();
-      const fileInput = document.getElementById('post-file-input');
-      let videoUrl = '';
+    function handleDirectVideoSelect(event) {
+      const file = event.target.files[0];
+      if (!file) return;
 
-      if (!captionText) {
-        alert('Please enter a caption!');
+      const videoUrl = URL.createObjectURL(file);
+      const captionText = prompt("Selected video! Enter a caption for your post:", "New video upload 🔥");
+
+      if (captionText === null) {
+        event.target.value = ''; // User cancelled prompt
         return;
       }
 
-      if (fileInput.files && fileInput.files[0]) {
-        videoUrl = URL.createObjectURL(fileInput.files[0]);
-      } else {
-        videoUrl = 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4';
-      }
-
       const currentHandle = document.getElementById('display-handle').textContent;
-
       const feed = document.getElementById('feed-container');
       const newCard = document.createElement('div');
       newCard.className = 'card';
@@ -349,7 +370,7 @@
         </div>
         <div class="info">
           <div class="creator">${currentHandle}</div>
-          <div class="caption">${captionText}</div>
+          <div class="caption">${captionText || 'No caption'}</div>
           <div class="actions">
             <span class="action-btn" onclick="toggleLike(this, 0)">❤️ <span class="like-count">0</span></span>
             <span class="action-btn" onclick="openCommentModal(this)">💬 <span class="comment-count">0</span></span>
@@ -359,8 +380,8 @@
       `;
 
       feed.prepend(newCard);
-      closeCreateModal();
-      
+      event.target.value = ''; // reset file input
+
       const postStat = document.getElementById('stat-posts');
       postStat.textContent = parseInt(postStat.textContent) + 1;
 
@@ -412,7 +433,6 @@
       let newHandle = document.getElementById('edit-handle-input').value.trim();
       const newBio = document.getElementById('edit-bio-input').value.trim();
 
-      // Handle Gallery Profile Picture Upload
       if (avatarFile.files && avatarFile.files[0]) {
         const imgUrl = URL.createObjectURL(avatarFile.files[0]);
         const avatarImg = document.getElementById('avatar-img');
