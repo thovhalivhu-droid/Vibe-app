@@ -16,8 +16,9 @@
     .view-section { display: none; }
     .view-section.active { display: block; }
 
+    /* CARD STYLES */
     .card { margin: 12px 16px; border-radius: 18px; overflow: hidden; background: #161722; border: 1px solid #232535; }
-    .video-container { width: 100%; height: 380px; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .video-container { width: 100%; height: 380px; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
     video { width: 100%; height: 100%; object-fit: cover; }
     
     .info { padding: 14px 16px; }
@@ -27,8 +28,27 @@
     .action-btn { cursor: pointer; display: flex; align-items: center; gap: 6px; user-select: none; }
     .action-btn.liked { color: #ff4d79; }
 
-    .page-placeholder { padding: 40px 20px; text-align: center; color: #888; }
+    /* DISCOVER STYLES */
+    .search-box { padding: 16px; display: flex; gap: 8px; }
+    .search-input { flex: 1; background: #161722; border: 1px solid #232535; color: #fff; padding: 12px 16px; border-radius: 25px; font-size: 14px; outline: none; }
+    .search-btn { background: #ff4d79; color: #fff; border: none; padding: 0 18px; border-radius: 25px; font-weight: bold; cursor: pointer; }
+    .search-results { padding: 0 16px; }
+    .trending-tag { display: inline-block; background: #1e1f29; color: #ff4d79; padding: 8px 14px; border-radius: 20px; margin: 4px; font-size: 13px; cursor: pointer; }
 
+    /* PROFILE STYLES */
+    .profile-header { padding: 24px 16px; text-align: center; border-bottom: 1px solid #232535; }
+    .avatar { width: 84px; height: 84px; border-radius: 50%; background: linear-gradient(135deg, #ff4d79, #6c5ce7); margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; font-size: 36px; border: 3px solid #161722; }
+    .profile-name { font-size: 20px; font-weight: bold; margin-bottom: 4px; }
+    .profile-handle { color: #888; font-size: 14px; margin-bottom: 12px; }
+    .profile-bio { font-size: 14px; color: #ccc; margin-bottom: 16px; line-height: 1.4; padding: 0 20px; }
+    .stats-row { display: flex; justify-content: space-around; margin-bottom: 16px; padding: 12px 0; background: #161722; border-radius: 14px; }
+    .stat-num { font-size: 16px; font-weight: bold; }
+    .stat-label { font-size: 12px; color: #888; }
+    .btn-edit-profile { background: #232535; color: #fff; border: none; padding: 8px 24px; border-radius: 20px; font-weight: bold; cursor: pointer; }
+    .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 16px 0; }
+    .grid-item { aspect-ratio: 1; background: #161722; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #555; }
+
+    /* BOTTOM NAV */
     .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; height: 65px; background: #12131c; border-top: 1px solid #232535; display: flex; justify-content: space-around; align-items: center; z-index: 100; }
     .nav-btn { display: flex; flex-direction: column; align-items: center; color: #777; font-size: 11px; cursor: pointer; border: none; background: none; }
     .nav-btn.active { color: #fff; }
@@ -62,11 +82,11 @@
     <!-- HOME TAB -->
     <div id="home-view" class="view-section active">
       <div id="feed-container">
-
+        
         <!-- POST 1 -->
         <div class="card">
           <div class="video-container">
-            <video src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" controls preload="metadata"></video>
+            <video src="https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" controls playsinline muted loop preload="metadata"></video>
           </div>
           <div class="info">
             <div class="creator">@rafter6</div>
@@ -81,7 +101,7 @@
         <!-- POST 2 -->
         <div class="card">
           <div class="video-container">
-            <video src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4" controls preload="metadata"></video>
+            <video src="https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4" controls playsinline muted loop preload="metadata"></video>
           </div>
           <div class="info">
             <div class="creator">@vibe_creator</div>
@@ -98,15 +118,25 @@
 
     <!-- DISCOVER TAB -->
     <div id="discover-view" class="view-section">
-      <div class="page-placeholder">
-        <h2>🔍 Discover</h2>
-        <p>Trending creators and videos in South Africa will appear here.</p>
+      <div class="search-box">
+        <input type="text" id="search-input" class="search-input" placeholder="Search creators or tags..." onkeyup="handleSearchKey(event)" />
+        <button class="search-btn" onclick="performSearch()">Search</button>
+      </div>
+      <div class="search-results">
+        <p style="color: #888; font-size: 13px;">Popular Tags:</p>
+        <div>
+          <span class="trending-tag" onclick="quickSearch('#SouthAfrica')">#SouthAfrica</span>
+          <span class="trending-tag" onclick="quickSearch('#VibeApp')">#VibeApp</span>
+          <span class="trending-tag" onclick="quickSearch('@rafter6')">@rafter6</span>
+          <span class="trending-tag" onclick="quickSearch('#CreatorEconomy')">#CreatorEconomy</span>
+        </div>
+        <div id="search-output" style="margin-top: 20px;"></div>
       </div>
     </div>
 
     <!-- ALERTS TAB -->
     <div id="alerts-view" class="view-section">
-      <div class="page-placeholder">
+      <div class="page-placeholder" style="padding: 40px 20px; text-align: center; color: #888;">
         <h2>🔔 Alerts</h2>
         <p>You have no new notifications right now.</p>
       </div>
@@ -114,10 +144,34 @@
 
     <!-- PROFILE TAB -->
     <div id="profile-view" class="view-section">
-      <div class="page-placeholder">
-        <h2>👤 My Profile</h2>
-        <p><strong>@thovhalivhu-droid</strong></p>
-        <p>Welcome to your VIBE profile page!</p>
+      <div class="profile-header">
+        <div class="avatar">👤</div>
+        <div class="profile-name" id="display-name">VIBE Creator</div>
+        <div class="profile-handle">@thovhalivhu-droid</div>
+        <div class="profile-bio" id="display-bio">Creating the next big social platform for SA creators! 🚀🇿🇦</div>
+        
+        <div class="stats-row">
+          <div>
+            <div class="stat-num" id="stat-posts">2</div>
+            <div class="stat-label">Posts</div>
+          </div>
+          <div>
+            <div class="stat-num">1.2k</div>
+            <div class="stat-label">Followers</div>
+          </div>
+          <div>
+            <div class="stat-num">340</div>
+            <div class="stat-label">Following</div>
+          </div>
+        </div>
+
+        <button class="btn-edit-profile" onclick="openEditProfileModal()">Edit Profile</button>
+      </div>
+
+      <div class="grid-container">
+        <div class="grid-item">🎬</div>
+        <div class="grid-item">🎬</div>
+        <div class="grid-item">➕</div>
       </div>
     </div>
 
@@ -144,7 +198,7 @@
     <div class="modal-content">
       <h3>Create a VIBE Post</h3>
       <textarea id="post-caption" placeholder="Write a caption..."></textarea>
-      <input id="post-video-url" type="text" placeholder="Video URL (optional)..." />
+      <input id="post-video-url" type="text" placeholder="Video URL (e.g. .mp4 link)..." />
       <div class="modal-actions">
         <button class="modal-btn btn-cancel" onclick="closeCreateModal()">Cancel</button>
         <button class="modal-btn btn-submit" onclick="publishPost()">Post</button>
@@ -163,6 +217,19 @@
       <div class="modal-actions">
         <button class="modal-btn btn-cancel" onclick="closeCommentModal()">Close</button>
         <button class="modal-btn btn-submit" onclick="addComment()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT PROFILE MODAL -->
+  <div id="profile-modal" class="modal-overlay">
+    <div class="modal-content">
+      <h3>Edit Profile</h3>
+      <input id="edit-name-input" type="text" placeholder="Display Name..." />
+      <textarea id="edit-bio-input" placeholder="Bio..."></textarea>
+      <div class="modal-actions">
+        <button class="modal-btn btn-cancel" onclick="closeEditProfileModal()">Cancel</button>
+        <button class="modal-btn btn-submit" onclick="saveProfile()">Save</button>
       </div>
     </div>
   </div>
@@ -186,6 +253,27 @@
       btn.classList.add('active');
     }
 
+    // Search Controls
+    function handleSearchKey(event) {
+      if (event.key === 'Enter') performSearch();
+    }
+    function quickSearch(query) {
+      document.getElementById('search-input').value = query;
+      performSearch();
+    }
+    function performSearch() {
+      const query = document.getElementById('search-input').value.trim().toLowerCase();
+      const output = document.getElementById('search-output');
+      if (!query) {
+        output.innerHTML = '<p style="color: #666; font-size: 13px;">Type a query to search.</p>';
+        return;
+      }
+      output.innerHTML = `<div style="background:#161722; padding:16px; border-radius:12px; border:1px solid #232535;">
+        <h4 style="margin:0 0 8px 0; color:#ff4d79;">Search results for "${query}"</h4>
+        <p style="margin:0; font-size:13px; color:#ccc;">Found 1 result matching your criteria in South Africa.</p>
+      </div>`;
+    }
+
     // Modal controls for Create
     function openCreateModal() {
       document.getElementById('create-modal').classList.add('active');
@@ -205,7 +293,7 @@
         return;
       }
       if (!videoUrl) {
-        videoUrl = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4';
+        videoUrl = 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4';
       }
 
       const feed = document.getElementById('feed-container');
@@ -213,7 +301,7 @@
       newCard.className = 'card';
       newCard.innerHTML = `
         <div class="video-container">
-          <video src="${videoUrl}" controls></video>
+          <video src="${videoUrl}" controls playsinline muted loop></video>
         </div>
         <div class="info">
           <div class="creator">@thovhalivhu-droid</div>
@@ -227,6 +315,11 @@
 
       feed.prepend(newCard);
       closeCreateModal();
+      
+      // Update Post Count in Profile
+      const postStat = document.getElementById('stat-posts');
+      postStat.textContent = parseInt(postStat.textContent) + 1;
+
       switchTab('home-view', document.querySelector('.bottom-nav .nav-btn'));
     }
 
@@ -256,6 +349,25 @@
       }
 
       input.value = '';
+    }
+
+    // Profile Edit Controls
+    function openEditProfileModal() {
+      document.getElementById('edit-name-input').value = document.getElementById('display-name').textContent;
+      document.getElementById('edit-bio-input').value = document.getElementById('display-bio').textContent;
+      document.getElementById('profile-modal').classList.add('active');
+    }
+    function closeEditProfileModal() {
+      document.getElementById('profile-modal').classList.remove('active');
+    }
+    function saveProfile() {
+      const newName = document.getElementById('edit-name-input').value.trim();
+      const newBio = document.getElementById('edit-bio-input').value.trim();
+      
+      if (newName) document.getElementById('display-name').textContent = newName;
+      if (newBio) document.getElementById('display-bio').textContent = newBio;
+      
+      closeEditProfileModal();
     }
   </script>
 
