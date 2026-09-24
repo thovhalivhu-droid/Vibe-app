@@ -330,9 +330,10 @@
   <script>
     let activeCommentSpan = null;
 
-    /* TAP TO PLAY / PAUSE VIDEO */
+    /* REPLACED: TAP TO TOGGLE VIDEO PLAYBACK */
     function toggleVideoPlayback(container) {
       const video = container.querySelector('video');
+      if (!video) return;
       if (video.paused) {
         video.play();
       } else {
@@ -340,23 +341,29 @@
       }
     }
 
-    /* PAUSE OTHER VIDEOS WHEN ONE STARTS PLAYING */
+    /* REPLACED: HANDLE SINGLE VIDEO PLAY & VIEW COUNTER */
     function handleVideoPlay(videoElem) {
-      document.querySelectorAll('video').forEach(v => {
-        if (v !== videoElem) {
+      // Pause all other videos
+      const allVideos = document.querySelectorAll('video');
+      allVideos.forEach(v => {
+        if (v !== videoElem && !v.paused) {
           v.pause();
         }
       });
 
+      // Increment view counter once per video
       if (!videoElem.dataset.viewed) {
         videoElem.dataset.viewed = "true";
         const card = videoElem.closest('.card');
-        const viewSpan = card.querySelector('.view-count');
-        let currentViews = viewSpan.textContent.trim();
-        
-        if (!currentViews.includes('k')) {
-          let num = parseInt(currentViews) || 0;
-          viewSpan.textContent = num + 1;
+        if (card) {
+          const viewSpan = card.querySelector('.view-count');
+          if (viewSpan) {
+            let currentViews = viewSpan.textContent.trim();
+            if (!currentViews.includes('k')) {
+              let num = parseInt(currentViews) || 0;
+              viewSpan.textContent = num + 1;
+            }
+          }
         }
       }
     }
@@ -375,7 +382,6 @@
       document.getElementById(viewId).classList.add('active');
       btn.classList.add('active');
 
-      // Pause videos when switching away from feed
       if (viewId !== 'home-view') {
         document.querySelectorAll('video').forEach(v => v.pause());
       }
@@ -420,7 +426,6 @@
         return;
       }
 
-      // Collect accounts dynamically from feed and current user profile
       const accounts = [
         { handle: document.getElementById('display-handle').textContent, name: document.getElementById('display-name').textContent },
         { handle: '@rafter6', name: 'Rafter Six' },
