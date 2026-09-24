@@ -326,8 +326,6 @@
     let activeCommentSpan = null;
 
     function handleVideoPlay(videoElem) {
-      videoElem.playbackRate = 1.0;
-
       if (!videoElem.dataset.viewed) {
         videoElem.dataset.viewed = "true";
         const card = videoElem.closest('.card');
