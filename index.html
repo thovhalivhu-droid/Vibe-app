@@ -7,7 +7,7 @@
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; background: #0c0d12; color: #fff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-    .app { max-width: 430px; margin: auto; min-height: 100vh; padding-bottom: 70px; }
+    .app { max-width: 430px; margin: auto; min-height: 100vh; padding-bottom: 80px; }
     
     header { height: 62px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; position: sticky; top: 0; background: rgba(12,13,18,0.9); backdrop-filter: blur(8px); z-index: 10; }
     .logo { font-size: 24px; font-weight: 900; letter-spacing: 1px; }
@@ -59,8 +59,10 @@
     .stats-row { display: flex; justify-content: space-around; margin-bottom: 16px; padding: 12px 0; background: #161722; border-radius: 14px; }
     .stat-num { font-size: 16px; font-weight: bold; }
     .stat-label { font-size: 12px; color: #888; }
-    .btn-edit-profile { background: #ff4d79; color: #fff; border: none; padding: 10px 28px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 14px; transition: 0.2s; }
-    .btn-edit-profile:active { opacity: 0.8; }
+    .profile-actions { display: flex; gap: 10px; justify-content: center; }
+    .btn-edit-profile, .btn-audio-settings { background: #ff4d79; color: #fff; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 13px; transition: 0.2s; }
+    .btn-audio-settings { background: #232535; color: #ccc; }
+    .btn-edit-profile:active, .btn-audio-settings:active { opacity: 0.8; }
     .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 16px 0; }
     .grid-item { aspect-ratio: 1; background: #161722; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #555; }
 
@@ -69,24 +71,30 @@
     .nav-btn { display: flex; flex-direction: column; align-items: center; color: #777; font-size: 11px; cursor: pointer; border: none; background: none; }
     .nav-btn.active { color: #fff; }
     .nav-icon { font-size: 20px; margin-bottom: 2px; }
-    .create-btn { background: #fff; color: #000; border-radius: 16px; padding: 10px 20px; font-weight: bold; border: none; cursor: pointer; }
+    .create-btn { background: #fff; color: #000; border-radius: 16px; padding: 8px 16px; font-weight: bold; border: none; cursor: pointer; }
 
     /* MODALS */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 200; justify-content: center; align-items: center; }
     .modal-overlay.active { display: flex; }
-    .modal-content { background: #161722; width: 90%; max-width: 380px; padding: 20px; border-radius: 20px; border: 1px solid #232535; }
+    .modal-content { background: #161722; width: 90%; max-width: 380px; padding: 20px; border-radius: 20px; border: 1px solid #232535; max-height: 85vh; overflow-y: auto; }
     .modal-content h3 { margin-top: 0; margin-bottom: 15px; text-align: center; }
     .modal-content label { font-size: 12px; color: #aaa; margin-bottom: 4px; display: block; text-align: left; }
     .modal-content textarea, .modal-content input[type="text"] { width: 100%; background: #0c0d12; border: 1px solid #232535; color: #fff; padding: 12px; border-radius: 12px; font-family: inherit; font-size: 14px; margin-bottom: 12px; outline: none; }
     .modal-content textarea { height: 90px; resize: none; }
     .modal-content input[type="file"] { width: 100%; background: #0c0d12; border: 1px dashed #ff4d79; color: #ccc; padding: 12px; border-radius: 12px; font-size: 13px; margin-bottom: 12px; cursor: pointer; }
-    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 12px; }
     .modal-btn { padding: 10px 18px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; }
     .btn-cancel { background: #232535; color: #ccc; }
     .btn-submit { background: #ff4d79; color: #fff; }
 
     .comment-list { max-height: 150px; overflow-y: auto; margin-bottom: 12px; text-align: left; }
     .comment-item { background: #0c0d12; padding: 8px 12px; border-radius: 8px; margin-bottom: 6px; font-size: 13px; }
+
+    /* AUDIO GUIDE STYLES */
+    .audio-section { text-align: left; margin-bottom: 14px; background: #0c0d12; padding: 12px; border-radius: 12px; border: 1px solid #232535; }
+    .audio-section h4 { margin: 0 0 6px 0; color: #ff4d79; font-size: 14px; }
+    .audio-section ul { margin: 0; padding-left: 18px; font-size: 12px; color: #ccc; line-height: 1.5; }
+    .audio-section ul li { margin-bottom: 4px; }
   </style>
 </head>
 <body>
@@ -139,7 +147,7 @@
       </div>
     </div>
 
-    <!-- DISCOVER TAB (TIKTOK STYLE SEARCH) -->
+    <!-- DISCOVER TAB -->
     <div id="discover-view" class="view-section">
       <div class="search-container">
         <div class="tiktok-search-box">
@@ -198,7 +206,10 @@
           </div>
         </div>
 
-        <button class="btn-edit-profile" onclick="openEditProfileModal()">Edit Profile</button>
+        <div class="profile-actions">
+          <button class="btn-edit-profile" onclick="openEditProfileModal()">Edit Profile</button>
+          <button class="btn-audio-settings" onclick="openAudioModal()">🎛️ Audio Optimization</button>
+        </div>
       </div>
 
       <div class="grid-container">
@@ -216,7 +227,6 @@
       <button class="nav-btn" onclick="switchTab('discover-view', this)">
         <span class="nav-icon">🔍</span>Discover
       </button>
-      <!-- Direct open gallery on press -->
       <button class="nav-btn create-btn" onclick="openGalleryDirectly()">+ Create</button>
       <button class="nav-btn" onclick="switchTab('alerts-view', this)">
         <span class="nav-icon">🔔</span>Alerts
@@ -266,13 +276,57 @@
     </div>
   </div>
 
+  <!-- AUDIO OPTIMIZATION MODAL -->
+  <div id="audio-modal" class="modal-overlay">
+    <div class="modal-content">
+      <h3>Audio Quality Guide</h3>
+
+      <div class="audio-section">
+        <h4>1. Optimize Source Quality</h4>
+        <ul>
+          <li><strong>High-Bitrate Audio:</strong> Avoid heavily compressed formats. Aim for lossless formats (FLAC, ALAC, WAV) or high-bitrate lossy audio (320 kbps MP3, 256 kbps AAC).</li>
+          <li><strong>High Sample Rates:</strong> Minimum 44.1 kHz / 16-bit for CD quality, or 48 kHz / 24-bit for video production.</li>
+        </ul>
+      </div>
+
+      <div class="audio-section">
+        <h4>2. Hardware Chain</h4>
+        <ul>
+          <li><strong>DAC:</strong> Use an external DAC to clean up background noise from built-in jacks.</li>
+          <li><strong>Dedicated Amp:</strong> Provides clean power to high-impedance headphones/speakers without distortion.</li>
+          <li><strong>Microphones:</strong> Cardioid Dynamic for noisy rooms; Condenser for detailed vocal recordings.</li>
+        </ul>
+      </div>
+
+      <div class="audio-section">
+        <h4>3. Software & EQ Tuning</h4>
+        <ul>
+          <li><strong>Low End (20–250 Hz):</strong> Cut around 100–200 Hz if muddy.</li>
+          <li><strong>Mids (250–4 kHz):</strong> Vocal clarity resides here; avoid over-boosting.</li>
+          <li><strong>Highs (4–20 kHz):</strong> Adds air; reduce slightly if sibilant.</li>
+          <li><strong>Compression:</strong> Subtle compression for consistent volume levels.</li>
+        </ul>
+      </div>
+
+      <div class="audio-section">
+        <h4>4. Acoustic Environment</h4>
+        <ul>
+          <li><strong>Reflections:</strong> Use rugs, curtains, or foam to absorb flutter echoes.</li>
+          <li><strong>Monitors:</strong> Set speakers in an equilateral triangle at ear level.</li>
+        </ul>
+      </div>
+
+      <div class="modal-actions">
+        <button class="modal-btn btn-cancel" onclick="closeAudioModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     let activeCommentSpan = null;
 
-    // Set video playback speed explicitly to 0.5x
     function handleVideoPlay(videoElem) {
       videoElem.playbackRate = 0.5;
-      videoElem.muted = false;
 
       if (!videoElem.dataset.viewed) {
         videoElem.dataset.viewed = "true";
@@ -294,6 +348,7 @@
     }
 
     function switchTab(viewId, btn) {
+      if (!btn) return;
       document.querySelectorAll('.view-section').forEach(view => view.classList.remove('active'));
       document.querySelectorAll('.nav-btn').forEach(nav => nav.classList.remove('active'));
       
@@ -356,7 +411,7 @@
       const captionText = prompt("Selected video! Enter a caption for your post:", "New video upload 🔥");
 
       if (captionText === null) {
-        event.target.value = ''; // User cancelled prompt
+        event.target.value = '';
         return;
       }
 
@@ -380,12 +435,13 @@
       `;
 
       feed.prepend(newCard);
-      event.target.value = ''; // reset file input
+      event.target.value = '';
 
       const postStat = document.getElementById('stat-posts');
       postStat.textContent = parseInt(postStat.textContent) + 1;
 
-      switchTab('home-view', document.querySelector('.bottom-nav .nav-btn'));
+      const homeNavBtn = document.querySelector('.bottom-nav .nav-btn');
+      switchTab('home-view', homeNavBtn);
     }
 
     function openCommentModal(btn) {
@@ -451,6 +507,14 @@
       if (newBio) document.getElementById('display-bio').textContent = newBio;
 
       closeEditProfileModal();
+    }
+
+    /* AUDIO MODAL FUNCTIONS */
+    function openAudioModal() {
+      document.getElementById('audio-modal').classList.add('active');
+    }
+    function closeAudioModal() {
+      document.getElementById('audio-modal').classList.remove('active');
     }
   </script>
 
