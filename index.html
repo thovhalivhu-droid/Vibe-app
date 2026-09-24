@@ -37,7 +37,9 @@
 
     /* PROFILE STYLES */
     .profile-header { padding: 24px 16px; text-align: center; border-bottom: 1px solid #232535; }
-    .avatar { width: 84px; height: 84px; border-radius: 50%; background: linear-gradient(135deg, #ff4d79, #6c5ce7); margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; font-size: 36px; border: 3px solid #161722; cursor: pointer; }
+    .avatar { width: 84px; height: 84px; border-radius: 50%; background: linear-gradient(135deg, #ff4d79, #6c5ce7); margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; font-size: 36px; border: 3px solid #161722; cursor: pointer; overflow: hidden; position: relative; }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; display: none; }
+    .avatar-icon { display: block; }
     .profile-name { font-size: 20px; font-weight: bold; margin-bottom: 4px; }
     .profile-handle { color: #888; font-size: 14px; margin-bottom: 12px; }
     .profile-bio { font-size: 14px; color: #ccc; margin-bottom: 16px; line-height: 1.4; padding: 0 20px; }
@@ -150,7 +152,10 @@
     <!-- PROFILE TAB -->
     <div id="profile-view" class="view-section">
       <div class="profile-header">
-        <div class="avatar" id="display-avatar" onclick="openEditProfileModal()">👤</div>
+        <div class="avatar" onclick="openEditProfileModal()">
+          <span class="avatar-icon" id="avatar-icon">👤</span>
+          <img id="avatar-img" src="" alt="Profile Picture" />
+        </div>
         <div class="profile-name" id="display-name">VIBE Creator</div>
         <div class="profile-handle" id="display-handle">@thovhalivhu-droid</div>
         <div class="profile-bio" id="display-bio">Creating the next big social platform for SA creators! 🚀🇿🇦</div>
@@ -233,8 +238,9 @@
   <div id="profile-modal" class="modal-overlay">
     <div class="modal-content">
       <h3>Edit Profile</h3>
-      <label>Profile Icon / Emoji:</label>
-      <input id="edit-avatar-input" type="text" placeholder="e.g. 👤 or 🔥" maxlength="2" />
+      
+      <label>Choose Profile Picture from Gallery:</label>
+      <input id="edit-avatar-file" type="file" accept="image/*" />
       
       <label>Display Name:</label>
       <input id="edit-name-input" type="text" placeholder="Display Name..." />
@@ -255,10 +261,10 @@
   <script>
     let activeCommentSpan = null;
 
-    // Fixed video playback speed & view count handling
+    // Set video playback speed explicitly to 0.5x
     function handleVideoPlay(videoElem) {
-      videoElem.playbackRate = 1.0; // Enforce normal 1x playback speed
-      videoElem.muted = false;      // Ensure normal audio playback
+      videoElem.playbackRate = 0.5; // Enforce 0.5x playback rate
+      videoElem.muted = false;
 
       if (!videoElem.dataset.viewed) {
         videoElem.dataset.viewed = "true";
@@ -391,7 +397,6 @@
 
     /* EDIT PROFILE FUNCTIONS */
     function openEditProfileModal() {
-      document.getElementById('edit-avatar-input').value = document.getElementById('display-avatar').textContent;
       document.getElementById('edit-name-input').value = document.getElementById('display-name').textContent;
       document.getElementById('edit-handle-input').value = document.getElementById('display-handle').textContent;
       document.getElementById('edit-bio-input').value = document.getElementById('display-bio').textContent;
@@ -399,21 +404,32 @@
     }
     function closeEditProfileModal() {
       document.getElementById('profile-modal').classList.remove('active');
+      document.getElementById('edit-avatar-file').value = '';
     }
     function saveProfile() {
-      const newAvatar = document.getElementById('edit-avatar-input').value.trim();
+      const avatarFile = document.getElementById('edit-avatar-file');
       const newName = document.getElementById('edit-name-input').value.trim();
       let newHandle = document.getElementById('edit-handle-input').value.trim();
       const newBio = document.getElementById('edit-bio-input').value.trim();
-      
-      if (newAvatar) document.getElementById('display-avatar').textContent = newAvatar;
+
+      // Handle Gallery Profile Picture Upload
+      if (avatarFile.files && avatarFile.files[0]) {
+        const imgUrl = URL.createObjectURL(avatarFile.files[0]);
+        const avatarImg = document.getElementById('avatar-img');
+        const avatarIcon = document.getElementById('avatar-icon');
+
+        avatarImg.src = imgUrl;
+        avatarImg.style.display = 'block';
+        avatarIcon.style.display = 'none';
+      }
+
       if (newName) document.getElementById('display-name').textContent = newName;
       if (newHandle) {
         if (!newHandle.startsWith('@')) newHandle = '@' + newHandle;
         document.getElementById('display-handle').textContent = newHandle;
       }
       if (newBio) document.getElementById('display-bio').textContent = newBio;
-      
+
       closeEditProfileModal();
     }
   </script>
