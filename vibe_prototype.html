@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VIBE — Prototype</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0b0b0f;color:#fff;font-family:Arial,sans-serif}
+.app{max-width:430px;margin:auto;min-height:100vh;background:#111218;position:relative;padding-bottom:72px}
+header{height:62px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid #292a32;position:sticky;top:0;background:#111218;z-index:3}
+.logo{font-size:25px;font-weight:900;letter-spacing:2px}.badge{font-size:12px;background:#242631;padding:7px 10px;border-radius:20px}
+.tabs{display:flex;gap:22px;padding:15px 18px 8px;font-weight:700}.tab{opacity:.45}.active{opacity:1}
+.card{margin:12px;border-radius:18px;overflow:hidden;background:#1a1b23;box-shadow:0 5px 25px #0006}
+.video{height:500px;background:linear-gradient(160deg,#30384d,#11131a 48%,#5d334d);position:relative;display:flex;align-items:center;justify-content:center}
+.play{width:66px;height:66px;border-radius:50%;background:#fff;color:#111;display:grid;place-items:center;font-size:28px}
+.info{padding:13px 15px}.creator{font-weight:800}.caption{margin-top:5px;color:#d9d9df}.actions{display:flex;gap:22px;padding:0 15px 14px;font-size:16px}
+.action{cursor:pointer}.liked{color:#ff4d79}.count{color:#aaa;margin-left:4px}
+.bottom{position:fixed;bottom:0;width:100%;max-width:430px;height:70px;background:#15161d;border-top:1px solid #292a32;display:flex;justify-content:space-around;align-items:center;z-index:5}
+.nav{font-size:11px;color:#aaa;text-align:center}.nav strong{display:block;font-size:22px;color:#fff;margin-bottom:2px}.create{background:#fff;color:#111!important;border-radius:14px;padding:5px 15px}
+.toast{position:fixed;left:50%;bottom:85px;transform:translateX(-50%);background:#fff;color:#111;padding:10px 16px;border-radius:20px;display:none;font-weight:700}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div class="logo">VIBE</div><div class="badge">🇿🇦 SA Creators</div></header>
+<div class="tabs"><span class="tab active">For You</span><span class="tab">Following</span></div>
+
+<div class="card">
+  <div class="video"><div class="play">▶</div></div>
+  <div class="info"><div class="creator">@rafter6</div><div class="caption">Everybody says stay motivated… I need my bank balance motivated first 😂</div></div>
+  <div class="actions">
+    <div class="action" onclick="like(this)">♡ <span class="count">128</span></div>
+    <div class="action" onclick="toast('Comments coming soon 💬')">💬 <span class="count">24</span></div>
+    <div class="action" onclick="toast('Share link copied! ↗️')">↗️</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="video" style="height:300px;background:linear-gradient(145deg,#222,#343a52)"><div class="play">▶</div></div>
+  <div class="info"><div class="creator">@vibe_creator</div><div class="caption">New creator? Post it. Someone might discover you today. 🔥</div></div>
+  <div class="actions"><div class="action" onclick="like(this)">♡ <span class="count">76</span></div><div class="action">💬 <span class="count">9</span></div><div class="action">↗️</div></div>
+</div>
+
+<div class="bottom">
+ <div class="nav"><strong>⌂</strong>Home</div>
+ <div class="nav"><strong>⌕</strong>Discover</div>
+ <div class="nav create" onclick="toast('Create screen coming next ➕')"><strong>＋</strong>Create</div>
+ <div class="nav"><strong>♡</strong>Alerts</div>
+ <div class="nav"><strong>◎</strong>Profile</div>
+</div>
+<div class="toast" id="toast"></div>
+</div>
+<script>
+function like(el){el.classList.toggle('liked');let c=el.querySelector('.count');let n=parseInt(c.textContent);c.textContent=el.classList.contains('liked')?n+1:n-1;el.firstChild.textContent=el.classList.contains('liked')?'♥ ':'♡ ';}
+function toast(msg){let t=document.getElementById('toast');t.textContent=msg;t.style.display='block';clearTimeout(window.tt);window.tt=setTimeout(()=>t.style.display='none',1800)}
+</script>
+</body>
+</html>
