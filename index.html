@@ -24,7 +24,7 @@
     .video-container { width: 100%; height: 380px; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; cursor: pointer; }
     video { width: 100%; height: 100%; object-fit: cover; }
     
-    /* MUTE BUTTON STYLE - REPOSITIONED TO TOP RIGHT */
+    /* MUTE BUTTON STYLE */
     .mute-btn {
       position: absolute;
       top: 12px;
@@ -47,7 +47,7 @@
 
     .info { padding: 14px 16px; }
     .creator { font-weight: 800; margin-bottom: 6px; color: #e1e3ec; }
-    .caption { font-size: 14px; margin-bottom: 12px; color: #ccc; line-height: 1.4; }
+    .caption { font-size: 14px; margin-bottom: 12px; color: #ccc; line-height: 1.4; white-space: pre-line; }
     .actions { display: flex; gap: 18px; align-items: center; font-size: 14px; color: #aaa; }
     .action-btn { cursor: pointer; display: flex; align-items: center; gap: 6px; user-select: none; }
     .action-btn.liked { color: #ff4d79; }
@@ -190,6 +190,19 @@
     .modal-btn { padding: 10px 18px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; }
     .btn-cancel { background: #232535; color: #ccc; }
     .btn-submit { background: #ff4d79; color: #fff; }
+
+    /* INSTAGRAM STYLE CAPTION MODAL SPECIFICS */
+    .caption-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid #232535; padding-bottom: 12px; }
+    .caption-modal-title { font-weight: bold; font-size: 16px; }
+    .caption-post-btn { color: #3897f0; font-weight: 700; background: none; border: none; cursor: pointer; font-size: 15px; }
+    .caption-preview-box { display: flex; gap: 12px; margin-bottom: 16px; }
+    .caption-video-preview { width: 70px; height: 90px; background: #000; border-radius: 8px; overflow: hidden; }
+    .caption-video-preview video { width: 100%; height: 100%; object-fit: cover; }
+    .caption-input-area { flex: 1; display: flex; flex-direction: column; }
+    .caption-textarea { background: transparent !important; border: none !important; resize: none !important; padding: 0 !important; margin: 0 !important; font-size: 14px !important; color: #fff !important; height: 90px !important; }
+    .hashtag-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+    .chip { background: #232535; color: #3897f0; padding: 4px 10px; border-radius: 14px; font-size: 12px; cursor: pointer; user-select: none; }
+    .chip:active { background: #2f3242; }
 
     .comment-list { max-height: 150px; overflow-y: auto; margin-bottom: 12px; text-align: left; }
     .comment-item { background: #0c0d12; padding: 8px 12px; border-radius: 8px; margin-bottom: 6px; font-size: 13px; }
@@ -357,6 +370,33 @@
     </nav>
   </div>
 
+  <!-- INSTAGRAM-STYLE CAPTION CREATION MODAL -->
+  <div id="caption-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="caption-modal-header">
+        <button class="modal-btn btn-cancel" style="padding:4px 8px;" onclick="closeCaptionModal()">Cancel</button>
+        <span class="caption-modal-title">New Post</span>
+        <button class="caption-post-btn" onclick="submitCaptionPost()">Share</button>
+      </div>
+      
+      <div class="caption-preview-box">
+        <div class="caption-video-preview">
+          <video id="caption-modal-preview-video" muted playsinline loop></video>
+        </div>
+        <div class="caption-input-area">
+          <textarea id="caption-modal-input" class="caption-textarea" placeholder="Write a caption..."></textarea>
+        </div>
+      </div>
+
+      <div class="hashtag-chips">
+        <span class="chip" onclick="addTag('#Vibe')">+ #Vibe</span>
+        <span class="chip" onclick="addTag('#SouthAfrica')">+ #SouthAfrica</span>
+        <span class="chip" onclick="addTag('#Viral')">+ #Viral</span>
+        <span class="chip" onclick="addTag('#Creator')">+ #Creator</span>
+      </div>
+    </div>
+  </div>
+
   <!-- COMMENTS MODAL -->
   <div id="comment-modal" class="modal-overlay">
     <div class="modal-content">
@@ -445,6 +485,7 @@
   <script>
     let activeCommentSpan = null;
     let isGlobalMuted = false;
+    let currentPendingVideoUrl = null;
 
     function toggleGlobalMute() {
       isGlobalMuted = !isGlobalMuted;
@@ -603,7 +644,7 @@
       output.innerHTML = html;
     }
 
-    /* DIRECT GALLERY UPLOAD LOGIC */
+    /* DIRECT GALLERY UPLOAD LOGIC & INSTAGRAM-STYLE CAPTION MODAL */
     function openGalleryDirectly() {
       document.getElementById('direct-gallery-input').click();
     }
@@ -612,26 +653,47 @@
       const file = event.target.files[0];
       if (!file) return;
 
-      const videoUrl = URL.createObjectURL(file);
-      const captionText = prompt("Selected video! Enter a caption for your post:", "New video upload 🔥");
+      currentPendingVideoUrl = URL.createObjectURL(file);
+      const previewVideo = document.getElementById('caption-modal-preview-video');
+      previewVideo.src = currentPendingVideoUrl;
+      previewVideo.play();
 
-      if (captionText === null) {
-        event.target.value = '';
-        return;
-      }
+      document.getElementById('caption-modal-input').value = '';
+      document.getElementById('caption-modal').classList.add('active');
 
+      event.target.value = '';
+    }
+
+    function addTag(tag) {
+      const input = document.getElementById('caption-modal-input');
+      input.value += (input.value ? ' ' : '') + tag;
+      input.focus();
+    }
+
+    function closeCaptionModal() {
+      document.getElementById('caption-modal').classList.remove('active');
+      const previewVideo = document.getElementById('caption-modal-preview-video');
+      previewVideo.pause();
+      previewVideo.src = '';
+      currentPendingVideoUrl = null;
+    }
+
+    function submitCaptionPost() {
+      if (!currentPendingVideoUrl) return;
+
+      const captionText = document.getElementById('caption-modal-input').value.trim();
       const currentHandle = document.getElementById('display-handle').textContent;
       const feed = document.getElementById('feed-container');
       const newCard = document.createElement('div');
       newCard.className = 'card';
       newCard.innerHTML = `
         <div class="video-container" onclick="toggleVideoPlayback(this, event)">
-          <video src="${videoUrl}" playsinline loop preload="metadata" onplay="handleVideoPlay(this)"></video>
-          <button class="mute-btn" onclick="toggleMute(this, event)">${isGlobalMuted ? '0' : '🔊'}</button>
+          <video src="${currentPendingVideoUrl}" playsinline loop preload="metadata" onplay="handleVideoPlay(this)"></video>
+          <button class="mute-btn" onclick="toggleMute(this, event)">${isGlobalMuted ? '🔇' : '🔊'}</button>
         </div>
         <div class="info">
           <div class="creator">${currentHandle}</div>
-          <div class="caption">${captionText || 'No caption'}</div>
+          <div class="caption">${captionText || 'New post 🔥'}</div>
           <div class="actions">
             <span class="action-btn" onclick="toggleLike(this, 0)">❤️ <span class="like-count">0</span></span>
             <span class="action-btn" onclick="openCommentModal(this)">💬 <span class="comment-count">0</span></span>
@@ -641,10 +703,11 @@
       `;
 
       feed.prepend(newCard);
-      event.target.value = '';
 
       const postStat = document.getElementById('stat-posts');
       postStat.textContent = parseInt(postStat.textContent) + 1;
+
+      closeCaptionModal();
 
       const homeNavBtn = document.querySelector('.bottom-nav .nav-btn');
       switchTab('home-view', homeNavBtn);
@@ -726,3 +789,4 @@
 
 </body>
 </html>
+ 
