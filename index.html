@@ -197,7 +197,21 @@
     .create-modal.active { display: flex; }
 
     .creator-header { display: flex; justify-content: space-between; align-items: center; z-index: 10; }
-    .close-modal-btn { background: rgba(0,0,0,0.5); border: none; color: #fff; font-size: 24px; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; }
+    .close-modal-btn, .rotate-cam-btn { 
+      background: rgba(0,0,0,0.5); 
+      border: none; 
+      color: #fff; 
+      font-size: 18px; 
+      width: 40px; 
+      height: 40px; 
+      border-radius: 50%; 
+      cursor: pointer; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+    .rotate-cam-btn svg { width: 22px; height: 22px; fill: #fff; }
 
     .camera-preview-container {
       position: absolute;
@@ -282,7 +296,6 @@
         
         <div class="reel-card">
           <div class="reel-video-container" onclick="toggleVideoPlayback(this)">
-            <!-- Added loop attribute explicitly -->
             <video src="https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" playsinline loop autoplay muted preload="metadata"></video>
           </div>
           <div class="reel-overlay">
@@ -357,11 +370,15 @@
     </nav>
   </div>
 
+  <!-- CREATOR MODAL WITH ROTATE CAMERA BUTTON -->
   <div id="create-modal" class="create-modal">
     <div class="creator-header">
       <button class="close-modal-btn" onclick="closeCreateModal()">✕</button>
       <div style="font-weight: 700; font-size: 16px;">Create</div>
-      <div style="width: 40px;"></div>
+      <!-- ROTATE CAMERA BUTTON -->
+      <button class="rotate-cam-btn" onclick="switchCamera()" title="Flip Camera">
+        <svg viewBox="0 0 24 24"><path d="M9.37 5.51A7 7 0 0 0 4 12c0 3.87 3.13 7 7 7 3.53 0 6.43-2.61 6.92-6h-2.06c-.46 2.28-2.48 4-4.86 4-2.76 0-5-2.24-5-5 0-2.05 1.23-3.81 3-4.58V11l4-3.5L9 4v1.51zM14.63 18.49A7 7 0 0 0 20 12c0-3.87-3.13-7-7-7-3.53 0-6.43 2.61-6.92 6h2.06c.46-2.28 2.48-4 4.86-4 2.76 0 5 2.24 5 5 0 2.05-1.23 3.81-3 4.58V13l-4 3.5 4 3.5v-1.51z"/></svg>
+      </button>
     </div>
 
     <div class="camera-preview-container">
@@ -382,6 +399,7 @@
   <script>
     let cameraStream = null;
     let isRecording = false;
+    let currentFacingMode = 'user'; // 'user' for front, 'environment' for back
 
     function toggleVideoPlayback(container) {
       const video = container.querySelector('video');
@@ -399,7 +417,7 @@
         const video = card.querySelector('video');
         if (Math.abs(card.offsetTop - scrollTop) < height / 2) {
           if (video && video.paused) {
-            video.currentTime = 0; // Restart video from start when scrolled into view
+            video.currentTime = 0;
             video.play().catch(() => {});
           }
         } else {
@@ -408,21 +426,36 @@
       });
     }
 
-    async function openCreateModal() {
-      const modal = document.getElementById('create-modal');
-      if (modal) modal.classList.add('active');
-
-      document.querySelectorAll('video').forEach(v => v.pause());
+    async function startCamera(facingMode = 'user') {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+      }
 
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         try {
-          cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+          cameraStream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: facingMode }, 
+            audio: true 
+          });
           const cameraPreview = document.getElementById('camera-stream');
           if (cameraPreview) cameraPreview.srcObject = cameraStream;
         } catch (err) {
           console.warn("Camera permission ungranted or unavailable.", err);
         }
       }
+    }
+
+    async function openCreateModal() {
+      const modal = document.getElementById('create-modal');
+      if (modal) modal.classList.add('active');
+
+      document.querySelectorAll('video').forEach(v => v.pause());
+      await startCamera(currentFacingMode);
+    }
+
+    async function switchCamera() {
+      currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
+      await startCamera(currentFacingMode);
     }
 
     function closeCreateModal() {
@@ -507,3 +540,4 @@
   </script>
 </body>
 </html>
+ 
