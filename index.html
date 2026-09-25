@@ -1,6 +1,3 @@
-Here is the updated code.
-The **"Tap to Unmute" badge has been completely removed**, and the videos now play unmuted automatically. Additionally, **CSS properties have been added (pointer-events: none and -webkit-touch-callout: none) to prevent the native browser popup menu** ("Download video", "Copy video frame", etc.) when someone long-presses a video or image.
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -73,27 +70,31 @@ The **"Tap to Unmute" badge has been completely removed**, and the videos now pl
       justify-content: center;
     }
 
-    .reel-video-container { 
-      width: 100%; 
-      height: 100%; 
-      position: relative; 
-      cursor: pointer; 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      background: #000; 
-    }
+    .reel-video-container { width: 100%; height: 100%; position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center; background: #000; }
     
     video, img.feed-photo { 
       width: 100%; 
       height: 100%; 
       object-fit: contain; 
       background: #000;
-      /* Prevent native browser long-press popups/menus */
-      pointer-events: none;
-      -webkit-touch-callout: none;
-      -webkit-user-select: none;
-      user-select: none;
+    }
+
+    /* UNMUTE BADGE STYLE */
+    .unmute-badge {
+      position: absolute;
+      top: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.6);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.3);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+      z-index: 15;
     }
 
     /* REEL OVERLAY CONTENT */
@@ -152,6 +153,7 @@ The **"Tap to Unmute" badge has been completely removed**, and the videos now pl
     }
     .action-icon-circle svg { width: 26px; height: 26px; fill: #ffffff; }
     
+    /* Active states for buttons */
     .action-btn-vertical.liked .action-icon-circle svg { fill: #fe2c55; }
     .action-btn-vertical.saved .action-icon-circle svg { fill: #f2a900; }
 
@@ -726,7 +728,8 @@ The **"Tap to Unmute" badge has been completely removed**, and the videos now pl
       <div class="reels-feed" id="reels-feed" onscroll="handleReelScroll()">
         <div class="reel-card" data-index="0">
           <div class="reel-video-container" onclick="toggleVideoPlayback(this)">
-            <video src="https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" playsinline loop autoplay muted preload="auto"></video>
+            <video src="https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" playsinline loop autoplay preload="auto"></video>
+            <button class="unmute-badge" onclick="enableAudio(event, this)">Tap to Unmute 🔊</button>
           </div>
           <div class="reel-overlay">
             <div class="reel-info">
@@ -1029,6 +1032,16 @@ The **"Tap to Unmute" badge has been completely removed**, and the videos now pl
     let customAvatarUrl = '';
     let activeCommentButton = null;
     let activeActiveReelCard = null;
+
+    function enableAudio(event, btn) {
+      event.stopPropagation();
+      const container = btn.parentElement;
+      const video = container.querySelector('video');
+      if (video) {
+        video.muted = false;
+        btn.style.display = 'none';
+      }
+    }
 
     /* LIKE, SAVE, AND COMMENT FUNCTIONALITY */
     function toggleLike(btn) {
@@ -1456,7 +1469,8 @@ The **"Tap to Unmute" badge has been completely removed**, and the videos now pl
 
       const mediaHtml = (type === 'image') 
         ? `<img src="${srcUrl}" class="feed-photo ${activeFilterClass}" alt="User Photo" />`
-        : `<video src="${srcUrl}" class="${activeFilterClass}" playsinline loop autoplay muted preload="auto"></video>`;
+        : `<video src="${srcUrl}" class="${activeFilterClass}" playsinline loop autoplay preload="auto"></video>
+           <button class="unmute-badge" onclick="enableAudio(event, this)">Tap to Unmute 🔊</button>`;
 
       newReel.innerHTML = `
         <div class="reel-video-container" onclick="${type === 'video' ? 'toggleVideoPlayback(this)' : ''}">
@@ -1528,5 +1542,3 @@ The **"Tap to Unmute" badge has been completely removed**, and the videos now pl
   </script>
 </body>
 </html>
-
-```
