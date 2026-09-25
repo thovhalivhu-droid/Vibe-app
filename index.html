@@ -574,7 +574,7 @@
       <div class="reels-feed" id="reels-feed" onscroll="handleReelScroll()">
         <div class="reel-card" data-index="0">
           <div class="reel-video-container" onclick="toggleVideoPlayback(this)">
-            <video src="https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" playsinline loop autoplay muted preload="auto"></video>
+            <video src="https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" playsinline loop autoplay preload="auto"></video>
           </div>
           <div class="reel-overlay">
             <div class="reel-info">
@@ -1119,7 +1119,7 @@
 
       const mediaHtml = (type === 'image') 
         ? `<img src="${srcUrl}" class="feed-photo ${activeFilterClass}" alt="User Photo" />`
-        : `<video src="${srcUrl}" class="${activeFilterClass}" playsinline loop autoplay muted preload="auto"></video>`;
+        : `<video src="${srcUrl}" class="${activeFilterClass}" playsinline loop autoplay preload="auto"></video>`;
 
       newReel.innerHTML = `
         <div class="reel-video-container" onclick="${type === 'video' ? 'toggleVideoPlayback(this)' : ''}">
@@ -1165,11 +1165,16 @@
       const profileGrid = document.getElementById('profile-posts-grid');
       const thumb = document.createElement('div');
       thumb.className = 'profile-post-thumb';
-      // Clicking the profile grid thumbnail jumps directly to it in the home feed
-      thumb.setAttribute('onclick', `jumpToReel(0)`);
+      
+      const profileMediaHtml = (type === 'image') 
+        ? `<img src="${srcUrl}" class="feed-photo ${activeFilterClass}" alt="User Photo" />`
+        : `<video src="${srcUrl}" class="${activeFilterClass}" playsinline preload="metadata"></video>`;
+
+      // Clicking the profile thumbnail toggles play/pause directly on the profile grid item without switching tabs
+      thumb.setAttribute('onclick', `toggleProfileThumb(this)`);
       
       thumb.innerHTML = `
-        ${mediaHtml}
+        ${profileMediaHtml}
         <div class="post-views-badge">
           <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
           <span>${randomViews}</span>
@@ -1177,23 +1182,25 @@
       `;
       profileGrid.prepend(thumb);
 
-      // Re-index all existing profile thumbnails so their click targets remain accurate
-      updateProfileThumbIndices();
-
       closeCreateModal();
       switchTab('home');
       feed.scrollTop = 0;
       handleReelScroll();
     }
 
-    function updateProfileThumbIndices() {
-      const feedCards = document.querySelectorAll('.reels-feed .reel-card');
-      const profileThumbs = document.querySelectorAll('#profile-posts-grid .profile-post-thumb');
+    function toggleProfileThumb(thumbElement) {
+      const video = thumbElement.querySelector('video');
+      if (!video) return; // If it's a photo, do nothing
       
-      profileThumbs.forEach((thumb, idx) => {
-        // Adjust indices if newest is prepended (index 0 is newest)
-        thumb.setAttribute('onclick', `jumpToReel(${idx})`);
-      });
+      if (video.paused) {
+        // Pause all other profile videos first if you only want one playing at a time
+        document.querySelectorAll('#profile-posts-grid video').forEach(v => {
+          if (v !== video) v.pause();
+        });
+        video.play().catch(() => {});
+      } else {
+        video.pause();
+      }
     }
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -1202,4 +1209,3 @@
   </script>
 </body>
 </html>
- 
