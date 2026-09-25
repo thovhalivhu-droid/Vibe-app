@@ -218,8 +218,25 @@
       font-weight: 700;
       margin-bottom: 12px;
       border: 2px solid #fe2c55;
+      background-size: cover;
+      background-position: center;
     }
-    .profile-handle { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+    .profile-handle { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .profile-bio { font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 14px; text-align: center; max-width: 280px; }
+    
+    .edit-profile-btn {
+      background: rgba(255, 255, 255, 0.12);
+      border: none;
+      color: #fff;
+      padding: 6px 18px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+    .edit-profile-btn:active { background: rgba(255, 255, 255, 0.25); }
+
     .profile-stats {
       display: flex;
       gap: 24px;
@@ -245,6 +262,45 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+    }
+
+    /* EDIT PROFILE MODAL */
+    .edit-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100dvh;
+      background: #121212;
+      z-index: 400;
+      flex-direction: column;
+      padding: 20px 16px;
+    }
+    .edit-modal.active { display: flex; }
+    .edit-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; font-weight: 700; font-size: 16px; }
+    .edit-form-group { margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px; }
+    .edit-form-group label { font-size: 12px; color: rgba(255,255,255,0.6); font-weight: 600; }
+    .edit-form-group input, .edit-form-group textarea {
+      background: #1a1a1a;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px;
+      padding: 10px;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+    }
+    .edit-form-group textarea { resize: none; height: 80px; }
+    .save-profile-btn {
+      background: #fe2c55;
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      margin-top: 10px;
     }
 
     /* BOTTOM NAV BAR */
@@ -491,6 +547,7 @@
     </header>
 
     <input type="file" id="direct-gallery-input" accept="video/*,image/*" style="display: none;" onchange="handleDirectVideoSelect(event)" />
+    <input type="file" id="avatar-gallery-input" accept="image/*" style="display: none;" onchange="handleAvatarSelect(event)" />
 
     <!-- HOME FEED VIEW -->
     <div id="home-view" class="view-section active">
@@ -501,7 +558,7 @@
           </div>
           <div class="reel-overlay">
             <div class="reel-info">
-              <div class="creator">@rafter6</div>
+              <div class="creator" id="feed-creator-name">@you</div>
               <div class="caption">Everybody says stay motivated... I need my bank balance motivated first 😂</div>
             </div>
             <div class="reel-actions">
@@ -513,7 +570,7 @@
               </button>
               <button class="action-btn-vertical">
                 <div class="action-icon-circle">
-                  <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+                  <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
                 </div>
                 <span>1,240</span>
               </button>
@@ -604,8 +661,11 @@
     <!-- PROFILE VIEW -->
     <div id="profile-view" class="view-section">
       <div class="profile-container">
-        <div class="profile-avatar">Y</div>
-        <div class="profile-handle">@you</div>
+        <div class="profile-avatar" id="profile-avatar-display">Y</div>
+        <div class="profile-handle" id="profile-handle-display">@you</div>
+        <div class="profile-bio" id="profile-bio-display">Welcome to my VIBE profile ✨</div>
+        <button class="edit-profile-btn" onclick="openEditProfileModal()">Edit profile</button>
+
         <div class="profile-stats">
           <div>
             <span class="stat-num" id="stat-following">142</span>
@@ -657,6 +717,27 @@
         <span>Profile</span>
       </button>
     </nav>
+  </div>
+
+  <!-- EDIT PROFILE MODAL -->
+  <div id="edit-modal" class="edit-modal">
+    <div class="edit-header">
+      <span>Edit Profile</span>
+      <button style="background:none; border:none; color:#fff; font-size:18px; cursor:pointer;" onclick="closeEditProfileModal()">✕</button>
+    </div>
+    <div style="text-align: center; margin-bottom: 20px;">
+      <div id="edit-avatar-preview" class="profile-avatar" style="margin: auto; cursor: pointer;" onclick="document.getElementById('avatar-gallery-input').click()">Y</div>
+      <div style="font-size: 12px; color: #fe2c55; margin-top: 8px; font-weight: 600; cursor: pointer;" onclick="document.getElementById('avatar-gallery-input').click()">Change photo</div>
+    </div>
+    <div class="edit-form-group">
+      <label>Username</label>
+      <input type="text" id="edit-handle-input" value="@you" />
+    </div>
+    <div class="edit-form-group">
+      <label>Bio</label>
+      <textarea id="edit-bio-input">Welcome to my VIBE profile ✨</textarea>
+    </div>
+    <button class="save-profile-btn" onclick="saveProfileChanges()">Save</button>
   </div>
 
   <!-- CREATOR MODAL -->
@@ -714,6 +795,7 @@
     let recordingInterval = null;
     let mediaRecorder = null;
     let recordedChunks = [];
+    let customAvatarUrl = '';
 
     function switchTab(tabName) {
       document.querySelectorAll('.view-section').forEach(section => section.classList.remove('active'));
@@ -726,17 +808,50 @@
       if (activeView) activeView.classList.add('active');
       if (activeNav) activeNav.classList.add('active');
 
-      // Hide home header on other tabs
       if (header) {
         header.style.display = (tabName === 'home') ? 'flex' : 'none';
       }
 
-      // Pause home videos if navigating away from home
       if (tabName !== 'home') {
         document.querySelectorAll('.reels-feed video').forEach(v => v.pause());
       } else {
         handleReelScroll();
       }
+    }
+
+    function openEditProfileModal() {
+      document.getElementById('edit-modal').classList.add('active');
+    }
+
+    function closeEditProfileModal() {
+      document.getElementById('edit-modal').classList.remove('active');
+    }
+
+    function handleAvatarSelect(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      customAvatarUrl = URL.createObjectURL(file);
+      const preview = document.getElementById('edit-avatar-preview');
+      preview.style.backgroundImage = `url(${customAvatarUrl})`;
+      preview.textContent = '';
+      event.target.value = '';
+    }
+
+    function saveProfileChanges() {
+      const newHandle = document.getElementById('edit-handle-input').value;
+      const newBio = document.getElementById('edit-bio-input').value;
+
+      document.getElementById('profile-handle-display').textContent = newHandle;
+      document.getElementById('profile-bio-display').textContent = newBio;
+      document.getElementById('feed-creator-name').textContent = newHandle;
+
+      const mainAvatar = document.getElementById('profile-avatar-display');
+      if (customAvatarUrl) {
+        mainAvatar.style.backgroundImage = `url(${customAvatarUrl})`;
+        mainAvatar.textContent = '';
+      }
+
+      closeEditProfileModal();
     }
 
     function toggleFollow(btn) {
@@ -961,6 +1076,7 @@
 
     function postMediaToFeed(srcUrl, type) {
       const feed = document.getElementById('reels-feed');
+      const currentHandle = document.getElementById('profile-handle-display').textContent;
       const newReel = document.createElement('div');
       newReel.className = 'reel-card';
 
@@ -974,7 +1090,7 @@
         </div>
         <div class="reel-overlay">
           <div class="reel-info">
-            <div class="creator">@you</div>
+            <div class="creator">${currentHandle}</div>
             <div class="caption">New post 🔥</div>
           </div>
           <div class="reel-actions">
@@ -1008,7 +1124,6 @@
 
       feed.prepend(newReel);
 
-      // Add thumbnail to Profile Grid
       const profileGrid = document.getElementById('profile-posts-grid');
       const thumb = document.createElement('div');
       thumb.className = 'profile-post-thumb';
