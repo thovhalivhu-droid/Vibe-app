@@ -86,6 +86,24 @@ button{font:inherit}
 .soundItem{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid #ffffff0a;cursor:pointer}
 .soundTitle{font-weight:700;font-size:14px}.soundAuthor{font-size:12px;color:var(--muted)}
 .useSoundBtn{padding:5px 12px;background:var(--pink);border:0;border-radius:14px;color:#fff;font-size:12px;font-weight:700}
+
+/* Double Tap Heart Animation Styles */
+.double-tap-heart {
+  position: absolute;
+  font-size: 80px;
+  color: var(--pink);
+  transform: translate(-50%, -50%) scale(0);
+  animation: popHeart 0.8s ease-out forwards;
+  pointer-events: none;
+  z-index: 10;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
+}
+@keyframes popHeart {
+  0% { transform: translate(-50%, -50%) scale(0) rotate(-20deg); opacity: 0; }
+  25% { transform: translate(-50%, -50%) scale(1.2) rotate(10deg); opacity: 1; }
+  60% { transform: translate(-50%, -60%) scale(1) rotate(0deg); opacity: 1; }
+  100% { transform: translate(-50%, -90%) scale(0.9) rotate(0deg); opacity: 0; }
+}
 </style>
 </head>
 <body>
@@ -235,9 +253,9 @@ const timer=document.getElementById('timer');
 const timerText=document.getElementById('timerText');
 
 let feedData=[
-{id:1,author:"Elena Rostova",caption:"Golden hour tones hitting different today ✨ #goldenhour #VIBE",audio:"Original Audio - Elena",likes:"24.5K",comments:"412",shares:"1.2K",views:"112K",avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",video:"https://assets.mixkit.co/videos/preview/mixkit-woman-filming-herself-with-a-smartphone-41270-large.mp4"},
-{id:2,author:"Liam Chen",caption:"Late night coding session 💻⚡ #coding #tech #VIBE",audio:"Lofi Chill Beats",likes:"58.1K",comments:"930",shares:"4.5K",views:"340K",avatar:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",video:"https://assets.mixkit.co/videos/preview/mixkit-hands-typing-on-a-laptop-keyboard-close-up-42861-large.mp4"},
-{id:3,author:"Sophia Taylor",caption:"Weekend aesthetic inspirations ✨ #aesthetic #lifestyle",audio:"Ambient Space",likes:"12.3K",comments:"154",shares:"890",views:"45K",avatar:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",video:"https://assets.mixkit.co/videos/preview/mixkit-cozy-living-room-with-a-fireplace-41153-large.mp4"}
+{id:1,author:"Elena Rostova",caption:"Golden hour tones hitting different today ✨ #goldenhour #VIBE",audio:"Original Audio - Elena",likes:24500,comments:"412",shares:"1.2K",views:"112K",avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",video:"https://assets.mixkit.co/videos/preview/mixkit-woman-filming-herself-with-a-smartphone-41270-large.mp4"},
+{id:2,author:"Liam Chen",caption:"Late night coding session 💻⚡ #coding #tech #VIBE",audio:"Lofi Chill Beats",likes:58100,comments:"930",shares:"4.5K",views:"340K",avatar:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",video:"https://assets.mixkit.co/videos/preview/mixkit-hands-typing-on-a-laptop-keyboard-close-up-42861-large.mp4"},
+{id:3,author:"Sophia Taylor",caption:"Weekend aesthetic inspirations ✨ #aesthetic #lifestyle",audio:"Ambient Space",likes:12300,comments:"154",shares:"890",views:"45K",avatar:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",video:"https://assets.mixkit.co/videos/preview/mixkit-cozy-living-room-with-a-fireplace-41153-large.mp4"}
 ];
 
 let notificationsData=[
@@ -256,6 +274,13 @@ function parseCaptions(text){
  return text.replace(/(#[\w\d]+)/g, '<span class="hashtag">$1</span>');
 }
 
+function formatCount(num) {
+ if (typeof num === 'string') return num;
+ if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+ if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+ return num;
+}
+
 function renderFeed(filteredList){
  const list = filteredList || feedData;
  feed.innerHTML='';
@@ -268,7 +293,7 @@ function renderFeed(filteredList){
   <button class="mute">${muted?'🔇':'🔊'}</button>
   <div class="overlay"><div class="info"><div class="author"><img class="avatar" src="${item.avatar}"><span class="name">${item.author}</span><button class="follow">Follow</button></div><div class="caption">${parseCaptions(item.caption)}</div><div class="audio">♫ ${item.audio}</div></div>
   <div class="actions">
-    <button class="action like"><div class="circle">♡</div><div class="count">${item.likes}</div></button>
+    <button class="action like ${item.isLiked ? 'liked' : ''}"><div class="circle">${item.isLiked ? '♥' : '♡'}</div><div class="count">${formatCount(item.likes)}</div></button>
     <button class="action"><div class="circle">💬</div><div class="count">${item.comments}</div></button>
     <button class="action"><div class="circle">↗</div><div class="count">${item.shares}</div></button>
     <button class="action"><div class="circle">👁</div><div class="count">${item.views || '1.2K'}</div></button>
@@ -276,8 +301,19 @@ function renderFeed(filteredList){
   feed.appendChild(card);
   
   const v=card.querySelector('video');
+  const likeBtn=card.querySelector('.like');
+  
   card.querySelector('.mute').onclick=e=>{e.stopPropagation();muted=!muted;document.querySelectorAll('.reel-video').forEach(x=>x.muted=muted);document.querySelectorAll('.mute').forEach(b=>b.textContent=muted?'🔇':'🔊')};
-  card.querySelector('.like').onclick=e=>{e.stopPropagation();e.currentTarget.classList.toggle('liked');e.currentTarget.querySelector('.circle').textContent=e.currentTarget.classList.contains('liked')?'♥':'♡'};
+  
+  likeBtn.onclick=e=>{
+   e.stopPropagation();
+   item.isLiked = !item.isLiked;
+   item.likes += item.isLiked ? 1 : -1;
+   likeBtn.classList.toggle('liked', item.isLiked);
+   likeBtn.querySelector('.circle').textContent = item.isLiked ? '♥' : '♡';
+   likeBtn.querySelector('.count').textContent = formatCount(item.likes);
+  };
+
   card.querySelector('.follow').onclick=e=>{e.stopPropagation();e.currentTarget.textContent=e.currentTarget.textContent==='Follow'?'Following':'Follow'};
   
   // Hashtag click filter
@@ -291,7 +327,43 @@ function renderFeed(filteredList){
    };
   });
 
-  if(v){v.addEventListener('click',()=>{if(v.paused)v.play();else v.pause()});}
+  // Double tap to like implementation
+  let lastTap = 0;
+  card.onclick = (e) => {
+   // Don't trigger if clicking interactive buttons/links
+   if(e.target.closest('button') || e.target.closest('.hashtag') || e.target.closest('.author')) return;
+   
+   const currentTime = new Date().getTime();
+   const tapLength = currentTime - lastTap;
+   if (tapLength < 300 && tapLength > 0) {
+    // Double tap detected!
+    if(!item.isLiked) {
+     item.isLiked = true;
+     item.likes += 1;
+     likeBtn.classList.add('liked');
+     likeBtn.querySelector('.circle').textContent = '♥';
+     likeBtn.querySelector('.count').textContent = formatCount(item.likes);
+    }
+    
+    // Create and position floating heart animation
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const heart = document.createElement('div');
+    heart.className = 'double-tap-heart';
+    heart.textContent = '♥';
+    heart.style.left = x + 'px';
+    heart.style.top = y + 'px';
+    card.appendChild(heart);
+    
+    setTimeout(() => heart.remove(), 800);
+   } else {
+    // Single tap toggles play/pause for video
+    if(v){if(v.paused)v.play();else v.pause()}
+   }
+   lastTap = currentTime;
+  };
  });
  setupObserver();
  renderDiscoverGrid();
@@ -451,7 +523,7 @@ function openPost(file,type){
 document.getElementById('publishBtn').onclick=()=>{
  if(!selectedMedia){showToast('Choose a video or picture first');return}
  const caption=document.getElementById('captionInput').value.trim()||'New VIBE ✨ #VIBE';
- const item={id:Date.now(),author:'You',caption,audio:selectedSound,likes:'0',comments:'0',shares:'0',views:'1',avatar:myProfile.avatar};
+ const item={id:Date.now(),author:'You',caption,audio:selectedSound,likes:0,comments:'0',shares:'0',views:'1',avatar:myProfile.avatar};
  if(selectedMedia.type==='video')item.video=selectedMedia.url;else item.image=selectedMedia.url;
  feedData.unshift(item);renderFeed();postScreen.classList.remove('open');selectedMedia=null;document.getElementById('captionInput').value='';showToast('Posted to VIBE 🎉');
 };
@@ -544,4 +616,3 @@ renderFeed();
 </script>
 </body>
 </html>
- 
