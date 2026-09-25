@@ -43,7 +43,7 @@ button{font:inherit}
 .filter.active{background:var(--pink);color:#fff}
 .controlRow{width:100%;display:flex;justify-content:space-around;align-items:center;padding:0 15px}
 .textBtn{border:0;background:none;color:#fff;font-weight:800;cursor:pointer;font-size:13px}
-.shutter{width:72px;height:72px;border:4px solid #fff;border-radius:50%;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.shutter{width:72px;height:72px;border:4px solid #fff;border-radius:50%;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;-webkit-user-select:none}
 .inner{width:56px;height:56px;border-radius:50%;background:var(--pink);transition:.2s}
 .shutter.recording .inner{width:34px;height:34px;border-radius:9px;background:#f33}
 
@@ -111,11 +111,12 @@ button{font:inherit}
 <button class="filter active" data-filter="">Normal</button><button class="filter" data-filter="sepia(.6) contrast(1.1)">Vintage</button><button class="filter" data-filter="grayscale(1)">B&W</button><button class="filter" data-filter="hue-rotate(90deg) saturate(1.5)">Neon</button><button class="filter" data-filter="brightness(1.2) contrast(1.3)">Vivid</button>
 </div>
 <div class="controlRow">
-<button class="textBtn" id="photoBtn">📷 Photo</button>
+<div style="width:50px"></div>
 <button class="textBtn" id="uploadBtn">Upload</button>
 <input id="fileInput" class="hidden" type="file" accept="video/*,image/*">
 <button class="shutter" id="shutter"><span class="inner"></span></button>
 <button class="textBtn" id="flipBtn">Flip ⟳</button>
+<div style="width:50px"></div>
 </div>
 </div>
 </section>
@@ -194,6 +195,7 @@ let feedData=[
 ];
 
 let activeVideo=null, muted=true, mediaStream=null, recorder=null, chunks=[], recording=false, recordSeconds=0, timerInterval=null, facing="user", selectedMedia=null;
+let pressTimer=null, isLongPress=false;
 
 function showToast(msg){toast.textContent=msg;toast.classList.add('show');clearTimeout(showToast.t);showToast.t=setTimeout(()=>toast.classList.remove('show'),2200)}
 
@@ -307,10 +309,7 @@ function stopRecording(){
  showToast('Recording stopped');
 }
 
-document.getElementById('shutter').onclick=()=>recording?stopRecording():startRecording();
-
-// Capture Snapshot Photo from Camera Feed
-document.getElementById('photoBtn').onclick=()=>{
+function takePhoto(){
  if(!mediaStream){showToast('Camera is required to snap a photo');return;}
  const canvas=document.createElement('canvas');
  canvas.width=camera.videoWidth||720;
@@ -321,6 +320,30 @@ document.getElementById('photoBtn').onclick=()=>{
   openPost(blob,'image');
   showToast('Photo captured! 📸');
  },'image/jpeg',0.9);
+}
+
+const shutterBtn = document.getElementById('shutter');
+
+// Handle Press & Hold (2 seconds for video) vs Tap (Photo)
+shutterBtn.onmousedown = shutterBtn.ontouchstart = (e) => {
+ e.preventDefault();
+ if(recording){
+  stopRecording();
+  return;
+ }
+ isLongPress = false;
+ pressTimer = setTimeout(() => {
+  isLongPress = true;
+  startRecording();
+ }, 2000); // 2 seconds hold to record video
+};
+
+shutterBtn.onmouseup = shutterBtn.ontouchend = (e) => {
+ e.preventDefault();
+ clearTimeout(pressTimer);
+ if(!recording && !isLongPress){
+  takePhoto();
+ }
 };
 
 document.getElementById('uploadBtn').onclick=()=>fileInput.click();
@@ -373,3 +396,4 @@ renderFeed();
 </script>
 </body>
 </html>
+ 
