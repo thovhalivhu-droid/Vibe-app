@@ -32,18 +32,17 @@ button{font:inherit}
 .camera{position:relative;flex:1;background:#111;overflow:hidden}
 .camera video{width:100%;height:100%;object-fit:cover}
 
-/* Timer styles tweaked so it's always explicitly visible when active */
 .timer{position:absolute;top:16px;left:50%;transform:translateX(-50%);padding:7px 14px;border-radius:20px;background:rgba(0,0,0,0.75);border:1px solid rgba(255,255,255,0.2);font-weight:800;font-size:14px;z-index:10;color:#fff;display:flex;align-items:center}
 .timer.hidden{display:none!important}
 .recordingDot{display:inline-block;width:10px;height:10px;background:red;border-radius:50%;margin-right:8px;animation:pulse 1s infinite}
 @keyframes pulse{0%{opacity:1}50%{opacity:0.3}100%{opacity:1}}
 
-.controls{height:185px;background:#0f1015;padding:14px 0;display:flex;flex-direction:column;justify-content:space-between;align-items:center}
+.controls{height:195px;background:#0f1015;padding:14px 0;display:flex;flex-direction:column;justify-content:space-between;align-items:center}
 .filters{width:100%;display:flex;gap:10px;overflow:auto;padding:0 15px}
 .filter{white-space:nowrap;padding:7px 13px;border:1px solid #ffffff12;border-radius:18px;background:#1a1b22;color:#aaa;cursor:pointer}
 .filter.active{background:var(--pink);color:#fff}
-.controlRow{width:100%;display:flex;justify-content:space-around;align-items:center;padding:0 25px}
-.textBtn{border:0;background:none;color:#fff;font-weight:800;cursor:pointer}
+.controlRow{width:100%;display:flex;justify-content:space-around;align-items:center;padding:0 15px}
+.textBtn{border:0;background:none;color:#fff;font-weight:800;cursor:pointer;font-size:13px}
 .shutter{width:72px;height:72px;border:4px solid #fff;border-radius:50%;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer}
 .inner{width:56px;height:56px;border-radius:50%;background:var(--pink);transition:.2s}
 .shutter.recording .inner{width:34px;height:34px;border-radius:9px;background:#f33}
@@ -112,10 +111,11 @@ button{font:inherit}
 <button class="filter active" data-filter="">Normal</button><button class="filter" data-filter="sepia(.6) contrast(1.1)">Vintage</button><button class="filter" data-filter="grayscale(1)">B&W</button><button class="filter" data-filter="hue-rotate(90deg) saturate(1.5)">Neon</button><button class="filter" data-filter="brightness(1.2) contrast(1.3)">Vivid</button>
 </div>
 <div class="controlRow">
+<button class="textBtn" id="photoBtn">📷 Photo</button>
 <button class="textBtn" id="uploadBtn">Upload</button>
 <input id="fileInput" class="hidden" type="file" accept="video/*,image/*">
 <button class="shutter" id="shutter"><span class="inner"></span></button>
-<button class="textBtn" id="flipBtn">Flip</button>
+<button class="textBtn" id="flipBtn">Flip ⟳</button>
 </div>
 </div>
 </section>
@@ -308,6 +308,20 @@ function stopRecording(){
 }
 
 document.getElementById('shutter').onclick=()=>recording?stopRecording():startRecording();
+
+// Capture Snapshot Photo from Camera Feed
+document.getElementById('photoBtn').onclick=()=>{
+ if(!mediaStream){showToast('Camera is required to snap a photo');return;}
+ const canvas=document.createElement('canvas');
+ canvas.width=camera.videoWidth||720;
+ canvas.height=camera.videoHeight||1280;
+ const ctx=canvas.getContext('2d');
+ ctx.drawImage(camera,0,0,canvas.width,canvas.height);
+ canvas.toBlob(blob=>{
+  openPost(blob,'image');
+  showToast('Photo captured! 📸');
+ },'image/jpeg',0.9);
+};
 
 document.getElementById('uploadBtn').onclick=()=>fileInput.click();
 fileInput.onchange=e=>{const file=e.target.files[0];if(!file)return;
