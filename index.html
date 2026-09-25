@@ -12,12 +12,12 @@ button{font:inherit}
 #app{position:relative;width:100%;height:100%;max-width:480px;margin:auto;background:var(--bg);overflow:hidden}
 .header{position:absolute;top:0;left:0;right:0;height:58px;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:linear-gradient(#0f1015dd,transparent)}
 .logo{font-size:23px;font-weight:900;background:linear-gradient(45deg,var(--pink),var(--cyan));-webkit-background-clip:text;color:transparent}
-.tabs{display:flex;gap:22px;font-weight:700}.tab{color:#8d8f9b;position:relative}.tab.active{color:#fff}.tab.active:after{content:"";position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);width:18px;height:3px;border-radius:5px;background:var(--pink)}
+.tabs{display:flex;gap:22px;font-weight:700}.tab{color:#8d8f9b;position:relative;cursor:pointer}.tab.active{color:#fff}.tab.active:after{content:"";position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);width:18px;height:3px;border-radius:5px;background:var(--pink)}
 .feed{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none}.feed::-webkit-scrollbar{display:none}
 .reel{height:100%;min-height:100%;position:relative;background:#000;scroll-snap-align:start;scroll-snap-stop:always;display:flex;align-items:center;justify-content:center}
 .reel video,.reel img{width:100%;height:100%;object-fit:cover}
 .reel img{display:none}
-.reel.image .reel-video{display:none}.reel.image img{display:block}
+.reel.image video{display:none}.reel.image img{display:block}
 .overlay{position:absolute;left:0;right:0;bottom:var(--nav);padding:22px 18px 16px;display:flex;justify-content:space-between;align-items:flex-end;background:linear-gradient(transparent,rgba(0,0,0,.82));z-index:5}
 .info{max-width:73%}.author{display:flex;align-items:center;gap:9px;margin-bottom:8px}.avatar{width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid var(--pink)}
 .name{font-weight:800;font-size:15px}.follow{border:0;border-radius:18px;padding:5px 11px;background:var(--pink);color:#fff;font-size:12px;font-weight:700}
@@ -25,23 +25,72 @@ button{font:inherit}
 .actions{display:flex;flex-direction:column;align-items:center;gap:15px}.action{background:none;border:0;color:#fff;text-align:center}.circle{width:45px;height:45px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#ffffff22;backdrop-filter:blur(8px);font-size:23px}.count{font-size:11px;font-weight:700;margin-top:3px}.liked .circle{color:var(--pink)}
 .mute{position:absolute;top:68px;right:16px;z-index:7;width:40px;height:40px;border:0;border-radius:50%;background:#0008;color:#fff;font-size:19px}
 .nav{position:absolute;bottom:0;left:0;right:0;height:var(--nav);z-index:20;display:flex;justify-content:space-around;align-items:center;background:#171820ee;backdrop-filter:blur(16px);border-top:1px solid #ffffff12}
-.nav button{background:none;border:0;color:#9a9dac;font-size:10px;display:flex;flex-direction:column;align-items:center;gap:4px;width:20%}.nav button.active{color:#fff}.nav .plus{width:42px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--pink),var(--cyan));color:#fff;font-size:22px;line-height:1}
+.nav button{background:none;border:0;color:#9a9dac;font-size:10px;display:flex;flex-direction:column;align-items:center;gap:4px;width:20%;cursor:pointer}.nav button.active{color:#fff}.nav .plus{width:42px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--pink),var(--cyan));color:#fff;font-size:22px;line-height:1}
 .screen{position:absolute;inset:0;z-index:40;background:var(--bg);transform:translateY(100%);transition:.3s;display:flex;flex-direction:column}.screen.open{transform:translateY(0)}
-.screenHead{height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid #ffffff10;font-weight:800}.close{border:0;background:none;color:#fff;font-size:24px}
-#studio{background:#000}.camera{position:relative;flex:1;background:#111;overflow:hidden}.camera video{width:100%;height:100%;object-fit:cover}.timer{position:absolute;top:16px;left:50%;transform:translateX(-50%);padding:7px 12px;border-radius:20px;background:#000b;font-weight:800;z-index:3}.recordingDot{display:inline-block;width:8px;height:8px;background:red;border-radius:50%;margin-right:5px}
-.controls{height:185px;background:#0f1015;padding:14px 0;display:flex;flex-direction:column;justify-content:space-between;align-items:center}.filters{width:100%;display:flex;gap:10px;overflow:auto;padding:0 15px}.filter{white-space:nowrap;padding:7px 13px;border:1px solid #ffffff12;border-radius:18px;background:#1a1b22;color:#aaa}.filter.active{background:var(--pink);color:#fff}
-.controlRow{width:100%;display:flex;justify-content:space-around;align-items:center;padding:0 25px}.textBtn{border:0;background:none;color:#fff;font-weight:800}.shutter{width:72px;height:72px;border:4px solid #fff;border-radius:50%;background:none;display:flex;align-items:center;justify-content:center}.inner{width:56px;height:56px;border-radius:50%;background:var(--pink);transition:.2s}.shutter.recording .inner{width:34px;height:34px;border-radius:9px;background:#f33}
-.postPanel{padding:18px;overflow:auto;flex:1}.previewBox{width:100%;height:300px;background:#000;border-radius:15px;overflow:hidden;display:flex;align-items:center;justify-content:center;margin-bottom:15px}.previewBox video,.previewBox img{width:100%;height:100%;object-fit:contain}.postPanel textarea{width:100%;height:90px;background:#1a1b22;color:#fff;border:1px solid #ffffff15;border-radius:12px;padding:12px;resize:none;margin-bottom:12px}.postBtn{width:100%;padding:13px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--pink),var(--cyan));color:#fff;font-weight:800}
+.screenHead{height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid #ffffff10;font-weight:800}.close{border:0;background:none;color:#fff;font-size:24px;cursor:pointer}
+#studio{background:#000}
+.camera{position:relative;flex:1;background:#111;overflow:hidden}
+.camera video{width:100%;height:100%;object-fit:cover}
+
+/* Timer styles tweaked so it's always explicitly visible when active */
+.timer{position:absolute;top:16px;left:50%;transform:translateX(-50%);padding:7px 14px;border-radius:20px;background:rgba(0,0,0,0.75);border:1px solid rgba(255,255,255,0.2);font-weight:800;font-size:14px;z-index:10;color:#fff;display:flex;align-items:center}
+.timer.hidden{display:none!important}
+.recordingDot{display:inline-block;width:10px;height:10px;background:red;border-radius:50%;margin-right:8px;animation:pulse 1s infinite}
+@keyframes pulse{0%{opacity:1}50%{opacity:0.3}100%{opacity:1}}
+
+.controls{height:185px;background:#0f1015;padding:14px 0;display:flex;flex-direction:column;justify-content:space-between;align-items:center}
+.filters{width:100%;display:flex;gap:10px;overflow:auto;padding:0 15px}
+.filter{white-space:nowrap;padding:7px 13px;border:1px solid #ffffff12;border-radius:18px;background:#1a1b22;color:#aaa;cursor:pointer}
+.filter.active{background:var(--pink);color:#fff}
+.controlRow{width:100%;display:flex;justify-content:space-around;align-items:center;padding:0 25px}
+.textBtn{border:0;background:none;color:#fff;font-weight:800;cursor:pointer}
+.shutter{width:72px;height:72px;border:4px solid #fff;border-radius:50%;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.inner{width:56px;height:56px;border-radius:50%;background:var(--pink);transition:.2s}
+.shutter.recording .inner{width:34px;height:34px;border-radius:9px;background:#f33}
+
+.postPanel{padding:18px;overflow:auto;flex:1}
+.previewBox{width:100%;height:300px;background:#000;border-radius:15px;overflow:hidden;display:flex;align-items:center;justify-content:center;margin-bottom:15px}
+.previewBox video,.previewBox img{width:100%;height:100%;object-fit:contain}
+.postPanel textarea{width:100%;height:90px;background:#1a1b22;color:#fff;border:1px solid #ffffff15;border-radius:12px;padding:12px;resize:none;margin-bottom:12px}
+.postBtn{width:100%;padding:13px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--pink),var(--cyan));color:#fff;font-weight:800;cursor:pointer}
 .hidden{display:none!important}
-.toast{position:absolute;z-index:100;top:70px;left:50%;transform:translateX(-50%) translateY(-15px);opacity:0;background:#000e;padding:9px 16px;border-radius:20px;font-size:13px;transition:.2s;pointer-events:none}.toast.show{opacity:1;transform:translateX(-50%)}
-.empty{height:100%;display:flex;align-items:center;justify-content:center;color:#888;padding-top:50px;text-align:center}
+.toast{position:absolute;z-index:100;top:70px;left:50%;transform:translateX(-50%) translateY(-15px);opacity:0;background:#000e;padding:9px 16px;border-radius:20px;font-size:13px;transition:.2s;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%)}
+
+.discoverBody{flex:1;overflow-y:auto;padding:15px}
+.searchBar{width:100%;background:#1a1b22;border:1px solid #ffffff15;border-radius:10px;padding:10px 14px;color:#fff;margin-bottom:15px;font-size:14px}
+.discoverGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.discoverGridItem{aspect-ratio:9/16;background:#222;position:relative;overflow:hidden}
+.discoverGridItem img, .discoverGridItem video{width:100%;height:100%;object-fit:cover}
+
+.inboxBody{flex:1;overflow-y:auto;padding:15px}
+.messageItem{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #ffffff0a}
+.messageAvatar{width:45px;height:45px;border-radius:50%;object-fit:cover}
+.messageContent{flex:1}.messageName{font-weight:700;font-size:14px;margin-bottom:3px}.messageSnippet{font-size:12px;color:var(--muted)}
+
+.profileBody{flex:1;overflow-y:auto;padding:20px 15px}
+.profileHeaderInfo{display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:20px}
+.profileBigAvatar{width:76px;height:76px;border-radius:50%;border:2px solid var(--pink);object-fit:cover;margin-bottom:10px}
+.profileStats{display:flex;gap:25px;margin-top:12px;font-size:13px}
+.profileStats div span{display:block;font-weight:700;font-size:15px}
+.userPostsGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.userPostThumb{aspect-ratio:9/16;background:#222;position:relative}
+.userPostThumb img, .userPostThumb video{width:100%;height:100%;object-fit:cover}
 </style>
 </head>
 <body>
 <div id="app">
 <div id="toast" class="toast"></div>
 
-<header class="header"><div class="logo">VIBE</div><div class="tabs"><span class="tab active">Following</span><span class="tab">For You</span></div><div style="width:35px"></div></header>
+<header class="header">
+  <div class="logo">VIBE</div>
+  <div class="tabs">
+    <span class="tab active" data-feed-tab="following">Following</span>
+    <span class="tab" data-feed-tab="foryou">For You</span>
+  </div>
+  <div style="width:35px"></div>
+</header>
+
 <main id="feed" class="feed"></main>
 
 <nav class="nav">
@@ -54,7 +103,10 @@ button{font:inherit}
 
 <section id="studio" class="screen">
 <div class="screenHead"><button class="close" id="closeStudio">×</button><span>Create VIBE</span><span style="width:24px"></span></div>
-<div class="camera"><video id="cameraPreview" autoplay playsinline muted></video><div id="timer" class="timer hidden"><span class="recordingDot"></span><span id="timerText">00:00</span> / 10:00</div></div>
+<div class="camera">
+  <video id="cameraPreview" autoplay playsinline muted></video>
+  <div id="timer" class="timer hidden"><span class="recordingDot"></span><span id="timerText">00:00</span> / 10:00</div>
+</div>
 <div class="controls">
 <div class="filters">
 <button class="filter active" data-filter="">Normal</button><button class="filter" data-filter="sepia(.6) contrast(1.1)">Vintage</button><button class="filter" data-filter="grayscale(1)">B&W</button><button class="filter" data-filter="hue-rotate(90deg) saturate(1.5)">Neon</button><button class="filter" data-filter="brightness(1.2) contrast(1.3)">Vivid</button>
@@ -77,14 +129,48 @@ button{font:inherit}
 </div>
 </section>
 
+<section id="discover" class="screen">
+<div class="screenHead"><span>Discover</span><button class="close" data-close="discover">×</button></div>
+<div class="discoverBody">
+  <input type="text" class="searchBar" placeholder="Search trends, tags, accounts...">
+  <div class="discoverGrid" id="discoverGrid"></div>
+</div>
+</section>
+
 <section id="inbox" class="screen">
 <div class="screenHead"><span>Messages</span><button class="close" data-close="inbox">×</button></div>
-<div class="empty">No new messages yet.</div>
+<div class="inboxBody">
+  <div class="messageItem">
+    <img class="messageAvatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150">
+    <div class="messageContent">
+      <div class="messageName">Elena Rostova</div>
+      <div class="messageSnippet">Loved your recent vibe post! ✨</div>
+    </div>
+  </div>
+  <div class="messageItem">
+    <img class="messageAvatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150">
+    <div class="messageContent">
+      <div class="messageName">Liam Chen</div>
+      <div class="messageSnippet">Let's collaborate on a clip soon.</div>
+    </div>
+  </div>
+</div>
 </section>
 
 <section id="profile" class="screen">
 <div class="screenHead"><span>My Profile</span><button class="close" data-close="profile">×</button></div>
-<div class="empty">Your VIBE profile<br><br>@creator_vibe</div>
+<div class="profileBody">
+  <div class="profileHeaderInfo">
+    <img class="profileBigAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150">
+    <div class="name" style="font-size:17px">@creator_vibe</div>
+    <div class="profileStats">
+      <div><span id="statFollowing">142</span>Following</div>
+      <div><span id="statFollowers">1.2K</span>Followers</div>
+      <div><span id="statLikes">8.4K</span>Likes</div>
+    </div>
+  </div>
+  <div class="userPostsGrid" id="userPostsGrid"></div>
+</div>
 </section>
 </div>
 
@@ -93,6 +179,7 @@ const feed=document.getElementById('feed');
 const toast=document.getElementById('toast');
 const studio=document.getElementById('studio');
 const postScreen=document.getElementById('postScreen');
+const discover=document.getElementById('discover');
 const inbox=document.getElementById('inbox');
 const profile=document.getElementById('profile');
 const camera=document.getElementById('cameraPreview');
@@ -113,28 +200,68 @@ function showToast(msg){toast.textContent=msg;toast.classList.add('show');clearT
 function renderFeed(){
  feed.innerHTML='';
  feedData.forEach(item=>{
-  const card=document.createElement('article'); card.className='reel';
-  card.innerHTML=`<video class="reel-video" src="${item.video}" loop playsinline preload="metadata" ${muted?'muted':''}></video>
-  <img class="reel-image" alt="">
+  const card=document.createElement('article'); 
+  card.className='reel' + (item.image ? ' image' : '');
+  
+  card.innerHTML=`<video class="reel-video" src="${item.video || ''}" loop playsinline preload="metadata" ${muted?'muted':''}></video>
+  <img class="reel-image" src="${item.image || ''}" alt="">
   <button class="mute">${muted?'🔇':'🔊'}</button>
   <div class="overlay"><div class="info"><div class="author"><img class="avatar" src="${item.avatar}"><span class="name">${item.author}</span><button class="follow">Follow</button></div><div class="caption">${item.caption}</div><div class="audio">♫ ${item.audio}</div></div>
   <div class="actions"><button class="action like"><div class="circle">♡</div><div class="count">${item.likes}</div></button><button class="action"><div class="circle">💬</div><div class="count">${item.comments}</div></button><button class="action"><div class="circle">↗</div><div class="count">${item.shares}</div></button></div></div>`;
   feed.appendChild(card);
+  
   const v=card.querySelector('video');
   card.querySelector('.mute').onclick=e=>{e.stopPropagation();muted=!muted;document.querySelectorAll('.reel-video').forEach(x=>x.muted=muted);document.querySelectorAll('.mute').forEach(b=>b.textContent=muted?'🔇':'🔊')};
   card.querySelector('.like').onclick=e=>{e.stopPropagation();e.currentTarget.classList.toggle('liked');e.currentTarget.querySelector('.circle').textContent=e.currentTarget.classList.contains('liked')?'♥':'♡'};
   card.querySelector('.follow').onclick=e=>{e.stopPropagation();e.currentTarget.textContent=e.currentTarget.textContent==='Follow'?'Following':'Follow'};
-  v.addEventListener('click',()=>{if(v.paused)v.play();else v.pause()});
+  
+  if(v){v.addEventListener('click',()=>{if(v.paused)v.play();else v.pause()});}
  });
  setupObserver();
+ renderDiscoverGrid();
+ renderProfileGrid();
 }
+
 function setupObserver(){
  const ob=new IntersectionObserver(entries=>entries.forEach(en=>{
   const v=en.target.querySelector('video');
+  if(!v) return;
   if(en.isIntersecting){if(activeVideo&&activeVideo!==v){activeVideo.pause()}activeVideo=v;v.muted=muted;v.play().catch(()=>{})}
   else v.pause();
  }),{root:feed,threshold:.7});
-document.querySelectorAll('.reel').forEach(x=>ob.observe(x));
+ document.querySelectorAll('.reel').forEach(x=>ob.observe(x));
+}
+
+function renderDiscoverGrid(){
+ const grid = document.getElementById('discoverGrid');
+ if(!grid) return;
+ grid.innerHTML = '';
+ feedData.forEach(item => {
+  const cell = document.createElement('div');
+  cell.className = 'discoverGridItem';
+  if(item.image) {
+   cell.innerHTML = `<img src="${item.image}" alt="">`;
+  } else {
+   cell.innerHTML = `<video src="${item.video}" muted playsinline></video>`;
+  }
+  grid.appendChild(cell);
+ });
+}
+
+function renderProfileGrid(){
+ const grid = document.getElementById('userPostsGrid');
+ if(!grid) return;
+ grid.innerHTML = '';
+ feedData.filter(i => i.author === 'You').forEach(item => {
+  const cell = document.createElement('div');
+  cell.className = 'userPostThumb';
+  if(item.image) {
+   cell.innerHTML = `<img src="${item.image}" alt="">`;
+  } else {
+   cell.innerHTML = `<video src="${item.video}" muted playsinline></video>`;
+  }
+  grid.appendChild(cell);
+ });
 }
 
 async function startCamera(){
@@ -144,21 +271,42 @@ async function startCamera(){
 function stopCamera(){if(mediaStream){mediaStream.getTracks().forEach(t=>t.stop());mediaStream=null}camera.srcObject=null}
 
 function formatTime(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+
 function startRecording(){
  if(!mediaStream){showToast('Camera permission is needed to record');return}
- chunks=[];recordSeconds=0;recording=true;timer.classList.remove('hidden');timerText.textContent='00:00';
+ chunks=[];recordSeconds=0;recording=true;
+ timer.classList.remove('hidden');
+ timerText.textContent='00:00';
+ 
  try{recorder=new MediaRecorder(mediaStream,{mimeType:'video/webm'})}catch(e){recorder=new MediaRecorder(mediaStream)}
  recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
  recorder.onstop=()=>{const blob=new Blob(chunks,{type:recorder.mimeType||'video/webm'});openPost(blob,'video');};
- recorder.start(250);document.getElementById('shutter').classList.add('recording');
- timerInterval=setInterval(()=>{recordSeconds++;timerText.textContent=formatTime(recordSeconds);if(recordSeconds>=600)stopRecording()},1000);
+ recorder.start(250);
+ document.getElementById('shutter').classList.add('recording');
+ 
+ timerInterval=setInterval(()=>{
+  recordSeconds++;
+  timerText.textContent=formatTime(recordSeconds);
+  if(recordSeconds>=600){
+   stopRecording();
+   showToast('Maximum recording limit of 10 minutes reached');
+  }
+ },1000);
+ 
  showToast('Recording started');
 }
+
 function stopRecording(){
- if(!recording)return;recording=false;clearInterval(timerInterval);timerInterval=null;
+ if(!recording)return;
+ recording=false;
+ clearInterval(timerInterval);
+ timerInterval=null;
  if(recorder&&recorder.state!=='inactive')recorder.stop();
- document.getElementById('shutter').classList.remove('recording');timer.classList.add('hidden');showToast('Recording stopped');
+ document.getElementById('shutter').classList.remove('recording');
+ timer.classList.add('hidden');
+ showToast('Recording stopped');
 }
+
 document.getElementById('shutter').onclick=()=>recording?stopRecording():startRecording();
 
 document.getElementById('uploadBtn').onclick=()=>fileInput.click();
@@ -183,19 +331,31 @@ document.getElementById('publishBtn').onclick=()=>{
 document.getElementById('flipBtn').onclick=async()=>{facing=facing==='user'?'environment':'user';stopCamera();await startCamera()};
 document.querySelectorAll('.filter').forEach(b=>b.onclick=()=>{document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));b.classList.add('active');camera.style.filter=b.dataset.filter});
 
+document.querySelectorAll('.tab').forEach(t=>{
+ t.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');showToast('Switched to '+t.textContent);};
+});
+
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=async()=>{
  const tab=b.dataset.tab;
+ document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+ b.classList.add('active');
+
  if(tab==='create'){studio.classList.add('open');await startCamera()}
- else if(tab==='home'){[studio,inbox,profile,postScreen].forEach(x=>x.classList.remove('open'));document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active')}
+ else if(tab==='home'){[studio,inbox,profile,discover,postScreen].forEach(x=>x.classList.remove('open'))}
+ else if(tab==='discover'){discover.classList.add('open')}
  else if(tab==='inbox'){inbox.classList.add('open')}
  else if(tab==='profile'){profile.classList.add('open')}
- else showToast('Discover coming soon');
 });
-document.getElementById('closeStudio').onclick=()=>{studio.classList.remove('open');if(recording)stopRecording();stopCamera()};
+
+document.getElementById('closeStudio').onclick=()=>{
+ studio.classList.remove('open');
+ if(recording)stopRecording();
+ stopCamera();
+};
 document.getElementById('closePost').onclick=()=>postScreen.classList.remove('open');
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>document.getElementById(b.dataset.close).classList.remove('open'));
 
 renderFeed();
 </script>
 </body>
-</html> 
+</html>
