@@ -22,7 +22,7 @@ button{font:inherit}
 .info{max-width:73%}.author{display:flex;align-items:center;gap:9px;margin-bottom:8px}.avatar{width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid var(--pink)}
 .name{font-weight:800;font-size:15px}.follow{border:0;border-radius:18px;padding:5px 11px;background:var(--pink);color:#fff;font-size:12px;font-weight:700}
 .caption{font-size:14px;line-height:1.4;margin-bottom:8px}.caption span{color:var(--cyan);font-weight:700;cursor:pointer}.audio{font-size:12px;color:#ddd}
-.actions{display:flex;flex-direction:column;align-items:center;gap:15px}.action{background:none;border:0;color:#fff;text-align:center}.circle{width:45px;height:45px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#ffffff22;backdrop-filter:blur(8px);font-size:23px}.count{font-size:11px;font-weight:700;margin-top:3px}.liked .circle{color:var(--pink)}
+.actions{display:flex;flex-direction:column;align-items:center;gap:15px}.action{background:none;border:0;color:#fff;text-align:center}.circle{width:45px;height:45px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#ffffff22;backdrop-filter:blur(8px);font-size:23px}.count{font-size:11px;font-weight:700;margin-top:3px}.liked .circle{color:var(--pink)}.saved .circle{color:var(--cyan)}
 .mute{position:absolute;top:68px;right:16px;z-index:7;width:40px;height:40px;border:0;border-radius:50%;background:#0008;color:#fff;font-size:19px}
 .nav{position:absolute;bottom:0;left:0;right:0;height:var(--nav);z-index:20;display:flex;justify-content:space-around;align-items:center;background:#171820ee;backdrop-filter:blur(16px);border-top:1px solid #ffffff12}
 .nav button{background:none;border:0;color:#9a9dac;font-size:10px;display:flex;flex-direction:column;align-items:center;gap:4px;width:20%;cursor:pointer}.nav button.active{color:#fff}.nav .plus{width:42px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--pink),var(--cyan));color:#fff;font-size:22px;line-height:1}
@@ -71,13 +71,18 @@ button{font:inherit}
 .messageContent{flex:1}.messageName{font-weight:700;font-size:14px;margin-bottom:3px}.messageSnippet{font-size:12px;color:var(--muted)}
 
 .profileBody{flex:1;overflow-y:auto;padding:20px 15px}
-.profileHeaderInfo{display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:20px}
+.profileHeaderInfo{display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:15px}
 .profileBigAvatar{width:76px;height:76px;border-radius:50%;border:2px solid var(--pink);object-fit:cover;margin-bottom:10px;cursor:pointer}
 .profileStats{display:flex;gap:25px;margin-top:12px;font-size:13px}
 .profileStats div span{display:block;font-weight:700;font-size:15px}
 .editProfileBtn{margin-top:12px;padding:6px 20px;border-radius:16px;border:1px solid #ffffff30;background:transparent;color:#fff;font-weight:700;cursor:pointer;font-size:12px}
+
+.profileSubTabs{display:flex;justify-content:space-around;border-bottom:1px solid #ffffff10;margin-bottom:4px}
+.profileSubTab{padding:10px 0;font-weight:700;color:var(--muted);cursor:pointer;flex:1;text-align:center;font-size:13px}
+.profileSubTab.active{color:#fff;border-bottom:2px solid var(--pink)}
+
 .userPostsGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
-.userPostThumb{aspect-ratio:9/16;background:#222;position:relative}
+.userPostThumb{aspect-ratio:9/16;background:#222;position:relative;cursor:pointer}
 .userPostThumb img, .userPostThumb video{width:100%;height:100%;object-fit:cover}
 
 /* Sound Modal */
@@ -105,7 +110,7 @@ button{font:inherit}
   100% { transform: translate(-50%, -90%) scale(0.9) rotate(0deg); opacity: 0; }
 }
 
-/* Comment Screen Styles */
+/* Comment Screen Drawer */
 .commentModal{position:absolute;bottom:0;left:0;right:0;height:65%;background:#14151c;z-index:70;border-top-left-radius:20px;border-top-right-radius:20px;display:none;flex-direction:column;transform:translateY(100%);transition:transform .3s ease}
 .commentModal.open{display:flex;transform:translateY(0)}
 .commentHeader{padding:16px;text-align:center;font-weight:800;border-bottom:1px solid #ffffff10;position:relative}
@@ -237,6 +242,12 @@ button{font:inherit}
     </div>
     <button class="editProfileBtn" id="editProfileBtn">Edit Profile</button>
   </div>
+  
+  <div class="profileSubTabs">
+    <span class="profileSubTab active" data-profile-tab="posts">My Posts</span>
+    <span class="profileSubTab" data-profile-tab="saved">Saved Videos</span>
+  </div>
+
   <div class="userPostsGrid" id="userPostsGrid"></div>
 </div>
 </section>
@@ -309,6 +320,7 @@ let myProfile={username:"@creator_vibe",bio:"Short-form content creator & explor
 let activeVideo=null, muted=true, mediaStream=null, recorder=null, chunks=[], recording=false, recordSeconds=0, timerInterval=null, facing="user", selectedMedia=null;
 let pressTimer=null, isLongPress=false, selectedSound="Original Audio";
 let activeCommentPostId=null;
+let profileActiveTab = 'posts'; // 'posts' or 'saved'
 
 function showToast(msg){toast.textContent=msg;toast.classList.add('show');clearTimeout(showToast.t);showToast.t=setTimeout(()=>toast.classList.remove('show'),2200)}
 
@@ -337,7 +349,7 @@ function renderFeed(filteredList){
   <div class="actions">
     <button class="action like ${item.isLiked ? 'liked' : ''}"><div class="circle">${item.isLiked ? '♥' : '♡'}</div><div class="count">${formatCount(item.likes)}</div></button>
     <button class="action commentBtn"><div class="circle">💬</div><div class="count">${item.commentsList.length}</div></button>
-    <button class="action saveBtn"><div class="circle">⬇</div><div class="count">Save</div></button>
+    <button class="action saveBtn ${item.isSaved ? 'saved' : ''}"><div class="circle">${item.isSaved ? '★' : '☆'}</div><div class="count">Save</div></button>
     <button class="action"><div class="circle">↗</div><div class="count">${item.shares}</div></button>
   </div></div>`;
   feed.appendChild(card);
@@ -364,40 +376,14 @@ function renderFeed(filteredList){
    openCommentsModal(item);
   };
 
-  // Save/Download Video Functionality
-  saveBtn.onclick = async e => {
+  // Save to Account / Watch Later Bookmark Toggle
+  saveBtn.onclick = e => {
    e.stopPropagation();
-   const mediaUrl = item.video || item.image;
-   if(!mediaUrl) {
-    showToast('No media file available to save');
-    return;
-   }
-   
-   showToast('Downloading media...');
-   try {
-    const response = await fetch(mediaUrl);
-    const blob = await response.blob();
-    const blobUrl = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.style.display = 'none';
-    a.href = blobUrl;
-    a.download = `vibe-post-${item.id}.${item.video ? 'mp4' : 'jpg'}`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(blobUrl);
-    a.remove();
-    showToast('Saved successfully to device!');
-   } catch(err) {
-    // Fallback direct link invocation if fetch blob restricted by CORS
-    const a = document.createElement('a');
-    a.href = mediaUrl;
-    a.target = '_blank';
-    a.download = `vibe-post-${item.id}.${item.video ? 'mp4' : 'jpg'}`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    showToast('Download started!');
-   }
+   item.isSaved = !item.isSaved;
+   saveBtn.classList.toggle('saved', item.isSaved);
+   saveBtn.querySelector('.circle').textContent = item.isSaved ? '★' : '☆';
+   showToast(item.isSaved ? 'Saved to your profile! ✨' : 'Removed from saved videos');
+   renderProfileGrid();
   };
 
   card.querySelector('.follow').onclick=e=>{e.stopPropagation();e.currentTarget.textContent=e.currentTarget.textContent==='Follow'?'Following':'Follow'};
@@ -549,6 +535,16 @@ document.getElementById('searchInput').oninput=(e)=>{
  filterDiscover(e.target.value);
 };
 
+// Profile Sub Tabs (My Posts vs Saved Videos)
+document.querySelectorAll('.profileSubTab').forEach(tab=>{
+ tab.onclick=()=>{
+  document.querySelectorAll('.profileSubTab').forEach(x=>x.classList.remove('active'));
+  tab.classList.add('active');
+  profileActiveTab = tab.dataset.profileTab;
+  renderProfileGrid();
+ };
+});
+
 function renderProfileGrid(){
  const grid = document.getElementById('userPostsGrid');
  if(!grid) return;
@@ -557,7 +553,16 @@ function renderProfileGrid(){
  document.getElementById('profileBio').textContent = myProfile.bio;
  document.getElementById('profileAvatarImg').src = myProfile.avatar;
 
- feedData.filter(i => i.author === 'You').forEach(item => {
+ const listToDisplay = profileActiveTab === 'posts' 
+  ? feedData.filter(i => i.author === 'You')
+  : feedData.filter(i => i.isSaved);
+
+ if(listToDisplay.length === 0){
+  grid.innerHTML = `<div style="grid-column:span 3;text-align:center;color:var(--muted);padding-top:40px;font-size:13px;">${profileActiveTab === 'posts' ? 'No posts yet.' : 'No saved videos yet. Tap the star icon on any video to save it here!'}</div>`;
+  return;
+ }
+
+ listToDisplay.forEach(item => {
   const cell = document.createElement('div');
   cell.className = 'userPostThumb';
   if(item.image) {
@@ -565,6 +570,14 @@ function renderProfileGrid(){
   } else {
    cell.innerHTML = `<video src="${item.video}" muted playsinline></video>`;
   }
+  cell.onclick = () => {
+   [studio,inbox,profile,discover,postScreen].forEach(x=>x.classList.remove('open'));
+   document.querySelector('[data-tab="home"]').click();
+   const idx = feedData.findIndex(f => f.id === item.id);
+   if(idx !== -1) {
+    feed.children[idx].scrollIntoView({behavior:'smooth'});
+   }
+  };
   grid.appendChild(cell);
  });
 }
@@ -750,3 +763,4 @@ renderFeed();
 </script>
 </body>
 </html>
+ 
