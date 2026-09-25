@@ -42,6 +42,7 @@
       align-items: center;
       justify-content: center;
       user-select: none;
+      transition: transform 0.2s ease;
     }
 
     .info { padding: 14px 16px; }
@@ -626,7 +627,7 @@
       newCard.innerHTML = `
         <div class="video-container" onclick="toggleVideoPlayback(this, event)">
           <video src="${videoUrl}" playsinline loop preload="metadata" onplay="handleVideoPlay(this)"></video>
-          <button class="mute-btn" onclick="toggleMute(this, event)">${isGlobalMuted ? '🔇' : '🔊'}</button>
+          <button class="mute-btn" onclick="toggleMute(this, event)">${isGlobalMuted ? '0' : '🔊'}</button>
         </div>
         <div class="info">
           <div class="creator">${currentHandle}</div>
