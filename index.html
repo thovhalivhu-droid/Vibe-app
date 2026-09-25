@@ -257,6 +257,7 @@
       background: #111;
       position: relative;
       overflow: hidden;
+      cursor: pointer;
     }
     .profile-post-thumb video, .profile-post-thumb img {
       width: 100%;
@@ -571,9 +572,9 @@
     <!-- HOME FEED VIEW -->
     <div id="home-view" class="view-section active">
       <div class="reels-feed" id="reels-feed" onscroll="handleReelScroll()">
-        <div class="reel-card">
+        <div class="reel-card" data-index="0">
           <div class="reel-video-container" onclick="toggleVideoPlayback(this)">
-            <video src="https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" playsinline loop autoplay muted preload="metadata"></video>
+            <video src="https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" playsinline loop autoplay muted preload="auto"></video>
           </div>
           <div class="reel-overlay">
             <div class="reel-info">
@@ -886,7 +887,11 @@
     function toggleVideoPlayback(container) {
       const video = container.querySelector('video');
       if (!video) return;
-      video.paused ? video.play() : video.pause();
+      if (video.paused) {
+        video.play().catch(() => {});
+      } else {
+        video.pause();
+      }
     }
 
     function handleReelScroll() {
@@ -906,6 +911,16 @@
           if (video && !video.paused) video.pause();
         }
       });
+    }
+
+    function jumpToReel(index) {
+      switchTab('home');
+      const feed = document.getElementById('reels-feed');
+      const targetCard = feed.querySelectorAll('.reel-card')[index];
+      if (targetCard) {
+        feed.scrollTop = targetCard.offsetTop;
+        handleReelScroll();
+      }
     }
 
     async function startCamera(facingMode = 'user') {
@@ -1096,12 +1111,15 @@
     function postMediaToFeed(srcUrl, type) {
       const feed = document.getElementById('reels-feed');
       const currentHandle = document.getElementById('profile-handle-display').textContent;
+      const newIndex = feed.querySelectorAll('.reel-card').length;
+      
       const newReel = document.createElement('div');
       newReel.className = 'reel-card';
+      newReel.setAttribute('data-index', newIndex);
 
       const mediaHtml = (type === 'image') 
         ? `<img src="${srcUrl}" class="feed-photo ${activeFilterClass}" alt="User Photo" />`
-        : `<video src="${srcUrl}" class="${activeFilterClass}" playsinline loop autoplay preload="metadata"></video>`;
+        : `<video src="${srcUrl}" class="${activeFilterClass}" playsinline loop autoplay muted preload="auto"></video>`;
 
       newReel.innerHTML = `
         <div class="reel-video-container" onclick="${type === 'video' ? 'toggleVideoPlayback(this)' : ''}">
@@ -1143,12 +1161,13 @@
 
       feed.prepend(newReel);
 
-      // Random initial views count for the profile thumbnail
       const randomViews = Math.floor(Math.random() * 900) + 120;
-
       const profileGrid = document.getElementById('profile-posts-grid');
       const thumb = document.createElement('div');
       thumb.className = 'profile-post-thumb';
+      // Clicking the profile grid thumbnail jumps directly to it in the home feed
+      thumb.setAttribute('onclick', `jumpToReel(0)`);
+      
       thumb.innerHTML = `
         ${mediaHtml}
         <div class="post-views-badge">
@@ -1158,10 +1177,23 @@
       `;
       profileGrid.prepend(thumb);
 
+      // Re-index all existing profile thumbnails so their click targets remain accurate
+      updateProfileThumbIndices();
+
       closeCreateModal();
       switchTab('home');
       feed.scrollTop = 0;
       handleReelScroll();
+    }
+
+    function updateProfileThumbIndices() {
+      const feedCards = document.querySelectorAll('.reels-feed .reel-card');
+      const profileThumbs = document.querySelectorAll('#profile-posts-grid .profile-post-thumb');
+      
+      profileThumbs.forEach((thumb, idx) => {
+        // Adjust indices if newest is prepended (index 0 is newest)
+        thumb.setAttribute('onclick', `jumpToReel(${idx})`);
+      });
     }
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -1170,3 +1202,4 @@
   </script>
 </body>
 </html>
+ 
