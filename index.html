@@ -104,6 +104,20 @@ button{font:inherit}
   60% { transform: translate(-50%, -60%) scale(1) rotate(0deg); opacity: 1; }
   100% { transform: translate(-50%, -90%) scale(0.9) rotate(0deg); opacity: 0; }
 }
+
+/* Comment Screen Styles */
+.commentModal{position:absolute;bottom:0;left:0;right:0;height:65%;background:#14151c;z-index:70;border-top-left-radius:20px;border-top-right-radius:20px;display:none;flex-direction:column;transform:translateY(100%);transition:transform .3s ease}
+.commentModal.open{display:flex;transform:translateY(0)}
+.commentHeader{padding:16px;text-align:center;font-weight:800;border-bottom:1px solid #ffffff10;position:relative}
+.commentList{flex:1;overflow-y:auto;padding:15px}
+.commentRow{display:flex;gap:12px;margin-bottom:16px;align-items:flex-start}
+.commentAvatar{width:34px;height:34px;border-radius:50%;object-fit:cover}
+.commentBubble{flex:1}
+.commentUser{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:2px}
+.commentText{font-size:13px;line-height:1.4}
+.commentInputArea{padding:12px 15px;background:#0f1015;display:flex;gap:10px;align-items:center;border-top:1px solid #ffffff10}
+.commentInputField{flex:1;background:#1a1b22;border:1px solid #ffffff15;border-radius:20px;padding:10px 14px;color:#fff;font-size:13px;outline:none}
+.commentSendBtn{background:var(--pink);border:0;color:#fff;font-weight:700;padding:8px 16px;border-radius:20px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -237,6 +251,19 @@ button{font:inherit}
 </div>
 </div>
 
+<!-- Real Comment Screen Drawer -->
+<div id="commentModal" class="commentModal">
+  <div class="commentHeader">
+    <span id="commentModalTitle">Comments (412)</span>
+    <button class="close" id="closeCommentModal" style="position:absolute;right:16px;top:10px;font-size:22px;">×</button>
+  </div>
+  <div class="commentList" id="commentListContainer"></div>
+  <div class="commentInputArea">
+    <input type="text" id="commentInputField" class="commentInputField" placeholder="Add a comment...">
+    <button id="commentSendBtn" class="commentSendBtn">Post</button>
+  </div>
+</div>
+
 </div>
 
 <script>
@@ -253,9 +280,23 @@ const timer=document.getElementById('timer');
 const timerText=document.getElementById('timerText');
 
 let feedData=[
-{id:1,author:"Elena Rostova",caption:"Golden hour tones hitting different today ✨ #goldenhour #VIBE",audio:"Original Audio - Elena",likes:24500,comments:"412",shares:"1.2K",views:"112K",avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",video:"https://assets.mixkit.co/videos/preview/mixkit-woman-filming-herself-with-a-smartphone-41270-large.mp4"},
-{id:2,author:"Liam Chen",caption:"Late night coding session 💻⚡ #coding #tech #VIBE",audio:"Lofi Chill Beats",likes:58100,comments:"930",shares:"4.5K",views:"340K",avatar:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",video:"https://assets.mixkit.co/videos/preview/mixkit-hands-typing-on-a-laptop-keyboard-close-up-42861-large.mp4"},
-{id:3,author:"Sophia Taylor",caption:"Weekend aesthetic inspirations ✨ #aesthetic #lifestyle",audio:"Ambient Space",likes:12300,comments:"154",shares:"890",views:"45K",avatar:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",video:"https://assets.mixkit.co/videos/preview/mixkit-cozy-living-room-with-a-fireplace-41153-large.mp4"}
+{
+ id:1, author:"Elena Rostova", caption:"Golden hour tones hitting different today ✨ #goldenhour #VIBE", audio:"Original Audio - Elena", likes:24500, commentsCount:2, shares:"1.2K", views:"112K", avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150", video:"https://assets.mixkit.co/videos/preview/mixkit-woman-filming-herself-with-a-smartphone-41270-large.mp4",
+ commentsList:[
+  {user:"Liam Chen", text:"Absolute cinematic shots!", avatar:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150"},
+  {user:"Sophia Taylor", text:"Where is this spot?? ✨", avatar:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"}
+ ]
+},
+{
+ id:2, author:"Liam Chen", caption:"Late night coding session 💻⚡ #coding #tech #VIBE", audio:"Lofi Chill Beats", likes:58100, commentsCount:1, shares:"4.5K", views:"340K", avatar:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150", video:"https://assets.mixkit.co/videos/preview/mixkit-hands-typing-on-a-laptop-keyboard-close-up-42861-large.mp4",
+ commentsList:[
+  {user:"Elena Rostova", text:"Relatable haha ☕", avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150"}
+ ]
+},
+{
+ id:3, author:"Sophia Taylor", caption:"Weekend aesthetic inspirations ✨ #aesthetic #lifestyle", audio:"Ambient Space", likes:12300, commentsCount:0, shares:"890", views:"45K", avatar:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150", video:"https://assets.mixkit.co/videos/preview/mixkit-cozy-living-room-with-a-fireplace-41153-large.mp4",
+ commentsList:[]
+}
 ];
 
 let notificationsData=[
@@ -267,6 +308,7 @@ let notificationsData=[
 let myProfile={username:"@creator_vibe",bio:"Short-form content creator & explorer ✨",avatar:"https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150"};
 let activeVideo=null, muted=true, mediaStream=null, recorder=null, chunks=[], recording=false, recordSeconds=0, timerInterval=null, facing="user", selectedMedia=null;
 let pressTimer=null, isLongPress=false, selectedSound="Original Audio";
+let activeCommentPostId=null;
 
 function showToast(msg){toast.textContent=msg;toast.classList.add('show');clearTimeout(showToast.t);showToast.t=setTimeout(()=>toast.classList.remove('show'),2200)}
 
@@ -294,7 +336,7 @@ function renderFeed(filteredList){
   <div class="overlay"><div class="info"><div class="author"><img class="avatar" src="${item.avatar}"><span class="name">${item.author}</span><button class="follow">Follow</button></div><div class="caption">${parseCaptions(item.caption)}</div><div class="audio">♫ ${item.audio}</div></div>
   <div class="actions">
     <button class="action like ${item.isLiked ? 'liked' : ''}"><div class="circle">${item.isLiked ? '♥' : '♡'}</div><div class="count">${formatCount(item.likes)}</div></button>
-    <button class="action"><div class="circle">💬</div><div class="count">${item.comments}</div></button>
+    <button class="action commentBtn"><div class="circle">💬</div><div class="count">${item.commentsList.length}</div></button>
     <button class="action"><div class="circle">↗</div><div class="count">${item.shares}</div></button>
     <button class="action"><div class="circle">👁</div><div class="count">${item.views || '1.2K'}</div></button>
   </div></div>`;
@@ -302,6 +344,7 @@ function renderFeed(filteredList){
   
   const v=card.querySelector('video');
   const likeBtn=card.querySelector('.like');
+  const commentActionBtn=card.querySelector('.commentBtn');
   
   card.querySelector('.mute').onclick=e=>{e.stopPropagation();muted=!muted;document.querySelectorAll('.reel-video').forEach(x=>x.muted=muted);document.querySelectorAll('.mute').forEach(b=>b.textContent=muted?'🔇':'🔊')};
   
@@ -312,6 +355,12 @@ function renderFeed(filteredList){
    likeBtn.classList.toggle('liked', item.isLiked);
    likeBtn.querySelector('.circle').textContent = item.isLiked ? '♥' : '♡';
    likeBtn.querySelector('.count').textContent = formatCount(item.likes);
+  };
+
+  // Open comments modal
+  commentActionBtn.onclick=e=>{
+   e.stopPropagation();
+   openCommentsModal(item);
   };
 
   card.querySelector('.follow').onclick=e=>{e.stopPropagation();e.currentTarget.textContent=e.currentTarget.textContent==='Follow'?'Following':'Follow'};
@@ -330,13 +379,11 @@ function renderFeed(filteredList){
   // Double tap to like implementation
   let lastTap = 0;
   card.onclick = (e) => {
-   // Don't trigger if clicking interactive buttons/links
    if(e.target.closest('button') || e.target.closest('.hashtag') || e.target.closest('.author')) return;
    
    const currentTime = new Date().getTime();
    const tapLength = currentTime - lastTap;
    if (tapLength < 300 && tapLength > 0) {
-    // Double tap detected!
     if(!item.isLiked) {
      item.isLiked = true;
      item.likes += 1;
@@ -345,7 +392,6 @@ function renderFeed(filteredList){
      likeBtn.querySelector('.count').textContent = formatCount(item.likes);
     }
     
-    // Create and position floating heart animation
     const rect = card.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -359,7 +405,6 @@ function renderFeed(filteredList){
     
     setTimeout(() => heart.remove(), 800);
    } else {
-    // Single tap toggles play/pause for video
     if(v){if(v.paused)v.play();else v.pause()}
    }
    lastTap = currentTime;
@@ -369,6 +414,58 @@ function renderFeed(filteredList){
  renderDiscoverGrid();
  renderProfileGrid();
 }
+
+// Comments Modal Logic
+function openCommentsModal(item){
+ activeCommentPostId = item.id;
+ document.getElementById('commentModalTitle').textContent = `Comments (${item.commentsList.length})`;
+ renderCommentList(item);
+ document.getElementById('commentModal').classList.add('open');
+}
+
+function renderCommentList(item){
+ const container = document.getElementById('commentListContainer');
+ container.innerHTML = '';
+ if(item.commentsList.length === 0){
+  container.innerHTML = `<div style="text-align:center;color:var(--muted);padding-top:30px;font-size:13px;">No comments yet. Be the first to comment!</div>`;
+  return;
+ }
+ item.commentsList.forEach(c=>{
+  container.innerHTML += `
+   <div class="commentRow">
+     <img class="commentAvatar" src="${c.avatar}">
+     <div class="commentBubble">
+       <div class="commentUser">${c.user}</div>
+       <div class="commentText">${c.text}</div>
+     </div>
+   </div>`;
+ });
+}
+
+document.getElementById('closeCommentModal').onclick=()=>{
+ document.getElementById('commentModal').classList.remove('open');
+ activeCommentPostId = null;
+};
+
+document.getElementById('commentSendBtn').onclick=()=>{
+ const input = document.getElementById('commentInputField');
+ const text = input.value.trim();
+ if(!text || !activeCommentPostId) return;
+ 
+ const targetPost = feedData.find(p => p.id === activeCommentPostId);
+ if(targetPost){
+  targetPost.commentsList.push({
+   user: myProfile.username,
+   text: text,
+   avatar: myProfile.avatar
+  });
+  input.value = '';
+  document.getElementById('commentModalTitle').textContent = `Comments (${targetPost.commentsList.length})`;
+  renderCommentList(targetPost);
+  renderFeed(); // Refresh to update comment counters on reels
+  showToast('Comment posted!');
+ }
+};
 
 function setupObserver(){
  const ob=new IntersectionObserver(entries=>entries.forEach(en=>{
@@ -523,7 +620,7 @@ function openPost(file,type){
 document.getElementById('publishBtn').onclick=()=>{
  if(!selectedMedia){showToast('Choose a video or picture first');return}
  const caption=document.getElementById('captionInput').value.trim()||'New VIBE ✨ #VIBE';
- const item={id:Date.now(),author:'You',caption,audio:selectedSound,likes:0,comments:'0',shares:'0',views:'1',avatar:myProfile.avatar};
+ const item={id:Date.now(),author:'You',caption,audio:selectedSound,likes:0,commentsCount:0,shares:'0',views:'1',avatar:myProfile.avatar,commentsList:[]};
  if(selectedMedia.type==='video')item.video=selectedMedia.url;else item.image=selectedMedia.url;
  feedData.unshift(item);renderFeed();postScreen.classList.remove('open');selectedMedia=null;document.getElementById('captionInput').value='';showToast('Posted to VIBE 🎉');
 };
@@ -598,7 +695,7 @@ document.querySelectorAll('.nav button').forEach(b=>b.onclick=async()=>{
  b.classList.add('active');
 
  if(tab==='create'){studio.classList.add('open');await startCamera()}
- else if(tab==='home'){[studio,inbox,profile,discover,postScreen,document.getElementById('soundModal'),document.getElementById('editProfileModal')].forEach(x=>x.classList.remove('open'))}
+ else if(tab==='home'){[studio,inbox,profile,discover,postScreen,document.getElementById('soundModal'),document.getElementById('editProfileModal'),document.getElementById('commentModal')].forEach(x=>x.classList.remove('open'))}
  else if(tab==='discover'){discover.classList.add('open')}
  else if(tab==='inbox'){inbox.classList.add('open')}
  else if(tab==='profile'){profile.classList.add('open')}
@@ -616,3 +713,4 @@ renderFeed();
 </script>
 </body>
 </html>
+ 
