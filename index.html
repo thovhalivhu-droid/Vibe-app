@@ -20,15 +20,14 @@
     .view-section.active { display: block; }
 
     /* CARD STYLES */
-    .card { margin: 12px 16px; border-radius: 18px; overflow: hidden; background: #161722; border: 1px solid #232535; }
+    .card { margin: 12px 16px; border-radius: 18px; overflow: hidden; background: #161722; border: 1px solid #232535; position: relative; }
     .video-container { width: 100%; height: 380px; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; cursor: pointer; }
     video { width: 100%; height: 100%; object-fit: cover; }
     
-    /* MUTE BUTTON STYLE */
-    .mute-btn {
+    /* MUTE & OPTIONS BUTTON STYLES */
+    .mute-btn, .options-btn {
       position: absolute;
       top: 12px;
-      right: 12px;
       width: 42px;
       height: 42px;
       border: none;
@@ -45,7 +44,9 @@
       transition: transform 0.15s ease;
       transform: scale(1);
     }
-    .mute-btn:active {
+    .mute-btn { right: 12px; }
+    .options-btn { right: 60px; font-weight: bold; }
+    .mute-btn:active, .options-btn:active {
       transform: scale(0.95);
     }
 
@@ -205,6 +206,12 @@
     .btn-cancel { background: #232535; color: #ccc; }
     .btn-submit { background: #ff4d79; color: #fff; }
 
+    /* ACTION MENU MODAL STYLES */
+    .menu-options-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+    .menu-option-btn { background: #0c0d12; border: 1px solid #232535; color: #fff; padding: 14px 16px; border-radius: 12px; font-size: 14px; text-align: left; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: transform 0.15s ease, background 0.2s; transform: scale(1); }
+    .menu-option-btn:active { transform: scale(0.95); background: #1a1c29; }
+    .menu-option-btn.highlight { border-color: #ff4d79; color: #ff4d79; }
+
     /* INSTAGRAM STYLE CAPTION MODAL SPECIFICS */
     .caption-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid #232535; padding-bottom: 12px; }
     .caption-modal-title { font-weight: bold; font-size: 16px; }
@@ -251,6 +258,7 @@
         <div class="card">
           <div class="video-container" onclick="toggleVideoPlayback(this, event)">
             <video src="https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" playsinline loop preload="metadata" onplay="handleVideoPlay(this)"></video>
+            <button class="options-btn" onclick="openVideoOptionsMenu(this, event)">⋮</button>
             <button class="mute-btn" onclick="toggleMute(this, event)">🔊</button>
           </div>
           <div class="info">
@@ -268,6 +276,7 @@
         <div class="card">
           <div class="video-container" onclick="toggleVideoPlayback(this, event)">
             <video src="https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4" playsinline loop preload="metadata" onplay="handleVideoPlay(this)"></video>
+            <button class="options-btn" onclick="openVideoOptionsMenu(this, event)">⋮</button>
             <button class="mute-btn" onclick="toggleMute(this, event)">🔊</button>
           </div>
           <div class="info">
@@ -383,6 +392,33 @@
         <span>Profile</span>
       </button>
     </nav>
+  </div>
+
+  <!-- VIDEO OPTIONS MENU MODAL -->
+  <div id="video-options-modal" class="modal-overlay">
+    <div class="modal-content">
+      <h3>Video Options</h3>
+      <div class="menu-options-list">
+        <button class="menu-option-btn highlight" onclick="downloadVideoAction()">
+          <span>⬇️ Download Free</span> <span>Free</span>
+        </button>
+        <button class="menu-option-btn" onclick="downloadVideoAction()">
+          <span>💾 Download</span>
+        </button>
+        <button class="menu-option-btn" onclick="copyLinkAction()">
+          <span>🔗 Copy Link</span>
+        </button>
+        <button class="menu-option-btn" onclick="shareVideoAction()">
+          <span>📤 Share</span>
+        </button>
+        <button class="menu-option-btn" onclick="copyFrameAction()">
+          <span>🖼️ Copy Frame</span>
+        </button>
+      </div>
+      <div class="modal-actions" style="margin-top: 16px;">
+        <button class="modal-btn btn-cancel" style="width: 100%;" onclick="closeVideoOptionsMenu()">Cancel</button>
+      </div>
+    </div>
   </div>
 
   <!-- INSTAGRAM-STYLE CAPTION CREATION MODAL -->
@@ -501,6 +537,7 @@
     let activeCommentSpan = null;
     let isGlobalMuted = false;
     let currentPendingVideoUrl = null;
+    let currentActiveVideoElement = null;
 
     function toggleGlobalMute() {
       isGlobalMuted = !isGlobalMuted;
@@ -519,7 +556,7 @@
     }
 
     function toggleVideoPlayback(container, event) {
-      if (event && event.target.classList.contains('mute-btn')) return;
+      if (event && (event.target.classList.contains('mute-btn') || event.target.classList.contains('options-btn'))) return;
       const video = container.querySelector('video');
       if (!video) return;
       if (video.paused) {
@@ -535,6 +572,75 @@
       if (!video) return;
       video.muted = !video.muted;
       btn.textContent = video.muted ? '🔇' : '🔊';
+    }
+
+    /* THREE-DOT MENU FUNCTIONS */
+    function openVideoOptionsMenu(btn, event) {
+      event.stopPropagation();
+      const videoContainer = btn.closest('.video-container');
+      currentActiveVideoElement = videoContainer ? videoContainer.querySelector('video') : null;
+      document.getElementById('video-options-modal').classList.add('active');
+    }
+
+    function closeVideoOptionsMenu() {
+      document.getElementById('video-options-modal').classList.remove('active');
+      currentActiveVideoElement = null;
+    }
+
+    function downloadVideoAction() {
+      if (currentActiveVideoElement && currentActiveVideoElement.src) {
+        const a = document.createElement('a');
+        a.href = currentActiveVideoElement.src;
+        a.download = 'vibe-video.mp4';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+      closeVideoOptionsMenu();
+    }
+
+    function copyLinkAction() {
+      if (currentActiveVideoElement && currentActiveVideoElement.src) {
+        navigator.clipboard.writeText(currentActiveVideoElement.src);
+        alert('Video link copied to clipboard!');
+      }
+      closeVideoOptionsMenu();
+    }
+
+    function shareVideoAction() {
+      if (navigator.share && currentActiveVideoElement) {
+        navigator.share({
+          title: 'VIBE Video',
+          url: currentActiveVideoElement.src
+        }).catch(() => {});
+      } else if (currentActiveVideoElement) {
+        navigator.clipboard.writeText(currentActiveVideoElement.src);
+        alert('Link copied to share!');
+      }
+      closeVideoOptionsMenu();
+    }
+
+    function copyFrameAction() {
+      if (!currentActiveVideoElement) return;
+      const canvas = document.createElement('canvas');
+      canvas.width = currentActiveVideoElement.videoWidth || 640;
+      canvas.height = currentActiveVideoElement.videoHeight || 360;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(currentActiveVideoElement, 0, 0, canvas.width, canvas.height);
+      
+      canvas.toBlob(blob => {
+        if (navigator.clipboard && window.ClipboardItem) {
+          const item = new ClipboardItem({ 'image/png': blob });
+          navigator.clipboard.write([item]).then(() => {
+            alert('Current video frame copied to clipboard!');
+          }).catch(() => {
+            alert('Failed to copy frame image.');
+          });
+        } else {
+          alert('Copy frame is not supported on this browser.');
+        }
+      });
+      closeVideoOptionsMenu();
     }
 
     function handleVideoPlay(videoElem) {
@@ -704,6 +810,7 @@
       newCard.innerHTML = `
         <div class="video-container" onclick="toggleVideoPlayback(this, event)">
           <video src="${currentPendingVideoUrl}" playsinline loop preload="metadata" onplay="handleVideoPlay(this)"></video>
+          <button class="options-btn" onclick="openVideoOptionsMenu(this, event)">⋮</button>
           <button class="mute-btn" onclick="toggleMute(this, event)">${isGlobalMuted ? '🔇' : '🔊'}</button>
         </div>
         <div class="info">
@@ -804,4 +911,3 @@
 
 </body>
 </html>
- 
