@@ -72,7 +72,12 @@ button{font:inherit}
 
 .profileBody{flex:1;overflow-y:auto;padding:20px 15px}
 .profileHeaderInfo{display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:15px}
-.profileBigAvatar{width:76px;height:76px;border-radius:50%;border:2px solid var(--pink);object-fit:cover;margin-bottom:10px;cursor:pointer}
+
+.avatarWrapper{position:relative;width:76px;height:76px;margin-bottom:10px;cursor:pointer}
+.profileBigAvatar{width:100%;height:100%;border-radius:50%;border:2px solid var(--pink);object-fit:cover}
+.profileBigAvatar.has-story{border:3px solid var(--cyan)}
+.addStoryBadge{position:absolute;bottom:0;right:0;width:22px;height:22px;background:var(--cyan);color:#000;border-radius:50%;font-size:14px;font-weight:900;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg)}
+
 .profileStats{display:flex;gap:25px;margin-top:12px;font-size:13px}
 .profileStats div span{display:block;font-weight:700;font-size:15px}
 .editProfileBtn{margin-top:12px;padding:6px 20px;border-radius:16px;border:1px solid #ffffff30;background:transparent;color:#fff;font-weight:700;cursor:pointer;font-size:12px}
@@ -123,6 +128,19 @@ button{font:inherit}
 .commentInputArea{padding:12px 15px;background:#0f1015;display:flex;gap:10px;align-items:center;border-top:1px solid #ffffff10}
 .commentInputField{flex:1;background:#1a1b22;border:1px solid #ffffff15;border-radius:20px;padding:10px 14px;color:#fff;font-size:13px;outline:none}
 .commentSendBtn{background:var(--pink);border:0;color:#fff;font-weight:700;padding:8px 16px;border-radius:20px;cursor:pointer}
+
+/* Story Viewer Modal */
+.storyModal{position:absolute;inset:0;background:#000;z-index:80;display:none;flex-direction:column}
+.storyModal.open{display:flex}
+.storyBarContainer{display:flex;gap:4px;padding:10px;position:absolute;top:0;left:0;right:0;z-index:10}
+.storyBarSegment{flex:1;height:3px;background:rgba(255,255,255,0.3);border-radius:2px;overflow:hidden}
+.storyBarFill{width:0%;height:100%;background:#fff;transition:width linear}
+.storyContentArea{flex:1;display:flex;align-items:center;justify-content:center;position:relative}
+.storyContentArea img, .storyContentArea video{width:100%;height:100%;object-fit:contain}
+.storyHeaderInfo{position:absolute;top:25px;left:15px;display:flex;align-items:center;gap:10px;z-index:10}
+.storyHeaderAvatar{width:32px;height:32px;border-radius:50%;object-fit:cover}
+.storyHeaderName{font-weight:700;font-size:14px}
+.storyTimeBadge{font-size:11px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -189,7 +207,10 @@ button{font:inherit}
 <div class="postPanel">
 <div id="previewBox" class="previewBox"><div style="color:#777">Choose a video or picture</div></div>
 <textarea id="captionInput" placeholder="Write a caption with #hashtags..."></textarea>
-<button id="publishBtn" class="postBtn">Post to VIBE</button>
+<div style="display:flex;gap:10px">
+  <button id="publishBtn" class="postBtn">Post to VIBE</button>
+  <button id="publishStoryBtn" class="postBtn" style="background:var(--cyan);color:#000">Add as Story (24h)</button>
+</div>
 </div>
 </section>
 
@@ -231,7 +252,10 @@ button{font:inherit}
 <div class="screenHead"><span>My Profile</span><button class="close" data-close="profile">×</button></div>
 <div class="profileBody">
   <div class="profileHeaderInfo">
-    <img class="profileBigAvatar" id="profileAvatarImg" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" title="Tap to change avatar">
+    <div class="avatarWrapper" id="avatarStoryTrigger" title="Tap to view story or add one">
+      <img class="profileBigAvatar" id="profileAvatarImg" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150">
+      <div class="addStoryBadge" id="addStoryBadge">+</div>
+    </div>
     <input type="file" id="avatarFileInput" class="hidden" accept="image/*">
     <div class="name" id="profileUsername" style="font-size:17px">@creator_vibe</div>
     <div id="profileBio" style="font-size:12px;color:var(--muted);margin-top:4px">Short-form content creator & explorer ✨</div>
@@ -275,6 +299,20 @@ button{font:inherit}
   </div>
 </div>
 
+<!-- Story Viewer Modal -->
+<div id="storyModal" class="storyModal">
+  <div class="storyBarContainer" id="storyBarContainer"></div>
+  <div class="storyHeaderInfo">
+    <img class="storyHeaderAvatar" id="storyHeaderAvatar" src="">
+    <div>
+      <div class="storyHeaderName" id="storyHeaderName"></div>
+      <div class="storyTimeBadge" id="storyTimeBadge"></div>
+    </div>
+  </div>
+  <button class="close" id="closeStoryModal" style="position:absolute;top:20px;right:15px;z-index:20;background:rgba(0,0,0,0.5);border-radius:50%;width:36px;height:36px;">×</button>
+  <div class="storyContentArea" id="storyContentArea"></div>
+</div>
+
 </div>
 
 <script>
@@ -310,6 +348,8 @@ let feedData=[
 }
 ];
 
+let storiesData = []; // Array of active 24h stories {id, url, type, timestamp}
+
 let notificationsData=[
 {type:"like",user:"Elena Rostova",text:"liked your video",time:"2m ago",avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150"},
 {type:"follow",user:"Liam Chen",text:"started following you",time:"1h ago",avatar:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150"},
@@ -321,6 +361,8 @@ let activeVideo=null, muted=true, mediaStream=null, recorder=null, chunks=[], re
 let pressTimer=null, isLongPress=false, selectedSound="Original Audio";
 let activeCommentPostId=null;
 let profileActiveTab = 'posts';
+let currentStoryIndex = 0;
+let storyTimer = null;
 
 function showToast(msg){toast.textContent=msg;toast.classList.add('show');clearTimeout(showToast.t);showToast.t=setTimeout(()=>toast.classList.remove('show'),2200)}
 
@@ -333,6 +375,13 @@ function formatCount(num) {
  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
  if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
  return num;
+}
+
+function getValidStories(){
+ const now = Date.now();
+ const twentyFourHours = 24 * 60 * 60 * 1000;
+ storiesData = storiesData.filter(s => (now - s.timestamp) < twentyFourHours);
+ return storiesData;
 }
 
 function renderFeed(filteredList){
@@ -385,35 +434,18 @@ function renderFeed(filteredList){
    renderProfileGrid();
   };
 
-  // Functional Share Button Event
   shareBtn.onclick = async e => {
    e.stopPropagation();
-   const shareData = {
-    title: 'VIBE Video',
-    text: item.caption,
-    url: window.location.href
-   };
-   
+   const shareData = { title: 'VIBE Video', text: item.caption, url: window.location.href };
    if (navigator.share) {
-    try {
-     await navigator.share(shareData);
-     item.shares += 1;
-     shareBtn.querySelector('.count').textContent = formatCount(item.shares);
-     return;
-    } catch (err) {
-     // User cancelled or share failed, fallback to copying link
-    }
+    try { await navigator.share(shareData); item.shares += 1; shareBtn.querySelector('.count').textContent = formatCount(item.shares); return; } catch (err) {}
    }
-   
-   // Fallback: Copy link to clipboard
    try {
     await navigator.clipboard.writeText(window.location.href);
     item.shares += 1;
     shareBtn.querySelector('.count').textContent = formatCount(item.shares);
     showToast('Link copied to clipboard! 🔗');
-   } catch (err) {
-    showToast('Unable to share link');
-   }
+   } catch (err) { showToast('Unable to share link'); }
   };
 
   card.querySelector('.follow').onclick=e=>{e.stopPropagation();e.currentTarget.textContent=e.currentTarget.textContent==='Follow'?'Following':'Follow'};
@@ -431,7 +463,6 @@ function renderFeed(filteredList){
   let lastTap = 0;
   card.onclick = (e) => {
    if(e.target.closest('button') || e.target.closest('.hashtag') || e.target.closest('.author')) return;
-   
    const currentTime = new Date().getTime();
    const tapLength = currentTime - lastTap;
    if (tapLength < 300 && tapLength > 0) {
@@ -442,18 +473,15 @@ function renderFeed(filteredList){
      likeBtn.querySelector('.circle').textContent = '♥';
      likeBtn.querySelector('.count').textContent = formatCount(item.likes);
     }
-    
     const rect = card.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    
     const heart = document.createElement('div');
     heart.className = 'double-tap-heart';
     heart.textContent = '♥';
     heart.style.left = x + 'px';
     heart.style.top = y + 'px';
     card.appendChild(heart);
-    
     setTimeout(() => heart.remove(), 800);
    } else {
     if(v){if(v.paused)v.play();else v.pause()}
@@ -501,14 +529,9 @@ document.getElementById('commentSendBtn').onclick=()=>{
  const input = document.getElementById('commentInputField');
  const text = input.value.trim();
  if(!text || !activeCommentPostId) return;
- 
  const targetPost = feedData.find(p => p.id === activeCommentPostId);
  if(targetPost){
-  targetPost.commentsList.push({
-   user: myProfile.username,
-   text: text,
-   avatar: myProfile.avatar
-  });
+  targetPost.commentsList.push({ user: myProfile.username, text: text, avatar: myProfile.avatar });
   input.value = '';
   document.getElementById('commentModalTitle').textContent = `Comments (${targetPost.commentsList.length})`;
   renderCommentList(targetPost);
@@ -537,30 +560,20 @@ function renderDiscoverGrid(filterText=""){
  matches.forEach(item => {
   const cell = document.createElement('div');
   cell.className = 'discoverGridItem';
-  if(item.image) {
-   cell.innerHTML = `<img src="${item.image}" alt="">`;
-  } else {
-   cell.innerHTML = `<video src="${item.video}" muted playsinline></video>`;
-  }
+  if(item.image) { cell.innerHTML = `<img src="${item.image}" alt="">`; }
+  else { cell.innerHTML = `<video src="${item.video}" muted playsinline></video>`; }
   cell.onclick = () => {
    [studio,inbox,profile,discover,postScreen].forEach(x=>x.classList.remove('open'));
    document.querySelector('[data-tab="home"]').click();
    const idx = feedData.findIndex(f => f.id === item.id);
-   if(idx !== -1) {
-    feed.children[idx].scrollIntoView({behavior:'smooth'});
-   }
+   if(idx !== -1) { feed.children[idx].scrollIntoView({behavior:'smooth'}); }
   };
   grid.appendChild(cell);
  });
 }
 
-function filterDiscover(query){
- renderDiscoverGrid(query);
-}
-
-document.getElementById('searchInput').oninput=(e)=>{
- filterDiscover(e.target.value);
-};
+function filterDiscover(query){ renderDiscoverGrid(query); }
+document.getElementById('searchInput').oninput=(e)=>{ filterDiscover(e.target.value); };
 
 document.querySelectorAll('.profileSubTab').forEach(tab=>{
  tab.onclick=()=>{
@@ -579,6 +592,17 @@ function renderProfileGrid(){
  document.getElementById('profileBio').textContent = myProfile.bio;
  document.getElementById('profileAvatarImg').src = myProfile.avatar;
 
+ const activeStories = getValidStories();
+ const avatarImg = document.getElementById('profileAvatarImg');
+ const badge = document.getElementById('addStoryBadge');
+ if(activeStories.length > 0){
+  avatarImg.classList.add('has-story');
+  badge.textContent = activeStories.length;
+ } else {
+  avatarImg.classList.remove('has-story');
+  badge.textContent = '+';
+ }
+
  const listToDisplay = profileActiveTab === 'posts' 
   ? feedData.filter(i => i.author === 'You')
   : feedData.filter(i => i.isSaved);
@@ -591,18 +615,13 @@ function renderProfileGrid(){
  listToDisplay.forEach(item => {
   const cell = document.createElement('div');
   cell.className = 'userPostThumb';
-  if(item.image) {
-   cell.innerHTML = `<img src="${item.image}" alt="">`;
-  } else {
-   cell.innerHTML = `<video src="${item.video}" muted playsinline></video>`;
-  }
+  if(item.image) { cell.innerHTML = `<img src="${item.image}" alt="">`; }
+  else { cell.innerHTML = `<video src="${item.video}" muted playsinline></video>`; }
   cell.onclick = () => {
    [studio,inbox,profile,discover,postScreen].forEach(x=>x.classList.remove('open'));
    document.querySelector('[data-tab="home"]').click();
    const idx = feedData.findIndex(f => f.id === item.id);
-   if(idx !== -1) {
-    feed.children[idx].scrollIntoView({behavior:'smooth'});
-   }
+   if(idx !== -1) { feed.children[idx].scrollIntoView({behavior:'smooth'}); }
   };
   grid.appendChild(cell);
  });
@@ -621,22 +640,16 @@ function startRecording(){
  chunks=[];recordSeconds=0;recording=true;
  timer.classList.remove('hidden');
  timerText.textContent='00:00';
- 
  try{recorder=new MediaRecorder(mediaStream,{mimeType:'video/webm'})}catch(e){recorder=new MediaRecorder(mediaStream)}
  recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
  recorder.onstop=()=>{const blob=new Blob(chunks,{type:recorder.mimeType||'video/webm'});openPost(blob,'video');};
  recorder.start(250);
  document.getElementById('shutter').classList.add('recording');
- 
  timerInterval=setInterval(()=>{
   recordSeconds++;
   timerText.textContent=formatTime(recordSeconds);
-  if(recordSeconds>=600){
-   stopRecording();
-   showToast('Maximum recording limit of 10 minutes reached');
-  }
+  if(recordSeconds>=600){ stopRecording(); showToast('Maximum recording limit of 10 minutes reached'); }
  },1000);
- 
  showToast('Recording started');
 }
 
@@ -658,10 +671,7 @@ function takePhoto(){
  canvas.height=camera.videoHeight||1280;
  const ctx=canvas.getContext('2d');
  ctx.drawImage(camera,0,0,canvas.width,canvas.height);
- canvas.toBlob(blob=>{
-  openPost(blob,'image');
-  showToast('Photo captured! 📸');
- },'image/jpeg',0.9);
+ canvas.toBlob(blob=>{ openPost(blob,'image'); showToast('Photo captured! 📸'); },'image/jpeg',0.9);
 }
 
 const shutterBtn = document.getElementById('shutter');
@@ -669,10 +679,7 @@ shutterBtn.onmousedown = shutterBtn.ontouchstart = (e) => {
  e.preventDefault();
  if(recording){stopRecording();return;}
  isLongPress = false;
- pressTimer = setTimeout(() => {
-  isLongPress = true;
-  startRecording();
- }, 2000);
+ pressTimer = setTimeout(() => { isLongPress = true; startRecording(); }, 2000);
 };
 
 shutterBtn.onmouseup = shutterBtn.ontouchend = (e) => {
@@ -699,6 +706,88 @@ document.getElementById('publishBtn').onclick=()=>{
  const item={id:Date.now(),author:'You',caption,audio:selectedSound,likes:0,commentsCount:0,shares:0,views:'1',avatar:myProfile.avatar,commentsList:[]};
  if(selectedMedia.type==='video')item.video=selectedMedia.url;else item.image=selectedMedia.url;
  feedData.unshift(item);renderFeed();postScreen.classList.remove('open');selectedMedia=null;document.getElementById('captionInput').value='';showToast('Posted to VIBE 🎉');
+};
+
+// Add Story Action (Vanish after 24 hrs)
+document.getElementById('publishStoryBtn').onclick=()=>{
+ if(!selectedMedia){showToast('Choose a video or picture first');return}
+ const storyItem={id:Date.now(), url:selectedMedia.url, type:selectedMedia.type, timestamp:Date.now()};
+ storiesData.unshift(storyItem);
+ postScreen.classList.remove('open');
+ selectedMedia=null;
+ document.getElementById('captionInput').value='';
+ renderProfileGrid();
+ showToast('Story added! It will vanish in 24 hours ⏳');
+};
+
+// Avatar Story Trigger click
+document.getElementById('avatarStoryTrigger').onclick=()=>{
+ const activeStories = getValidStories();
+ if(activeStories.length > 0){
+  openStoryViewer();
+ } else {
+  // If no story, jump straight to creation camera
+  document.querySelector('[data-tab="create"]').click();
+  showToast('Record or upload media to publish a story');
+ };
+};
+
+function openStoryViewer(){
+ const activeStories = getValidStories();
+ if(activeStories.length === 0) return;
+ currentStoryIndex = 0;
+ document.getElementById('storyModal').classList.add('open');
+ playStory(currentStoryIndex);
+}
+
+function playStory(index){
+ const activeStories = getValidStories();
+ if(index >= activeStories.length){
+  document.getElementById('storyModal').classList.remove('open');
+  return;
+ }
+ currentStoryIndex = index;
+ const story = activeStories[index];
+ 
+ document.getElementById('storyHeaderAvatar').src = myProfile.avatar;
+ document.getElementById('storyHeaderName').textContent = myProfile.username;
+ 
+ const hoursAgo = Math.floor((Date.now() - story.timestamp) / (1000 * 60 * 60));
+ document.getElementById('storyTimeBadge').textContent = hoursAgo === 0 ? 'Just now' : `${hoursAgo}h ago`;
+
+ const contentArea = document.getElementById('storyContentArea');
+ contentArea.innerHTML = '';
+ const el = document.createElement(story.type === 'video' ? 'video' : 'img');
+ el.src = story.url;
+ if(story.type === 'video'){ el.autoplay = true; el.playsInline = true; el.muted = false; }
+ contentArea.appendChild(el);
+
+ // Build progress bars
+ const barContainer = document.getElementById('storyBarContainer');
+ barContainer.innerHTML = '';
+ activeStories.forEach((_, i)=>{
+  const seg = document.createElement('div');
+  seg.className = 'storyBarSegment';
+  const fill = document.createElement('div');
+  fill.className = 'storyBarFill';
+  if(i < index) fill.style.width = '100%';
+  if(i === index) {
+   fill.style.transition = 'width 5s linear';
+   setTimeout(() => fill.style.width = '100%', 50);
+  }
+  seg.appendChild(fill);
+  barContainer.appendChild(seg);
+ });
+
+ clearTimeout(storyTimer);
+ storyTimer = setTimeout(() => {
+  playStory(currentStoryIndex + 1);
+ }, 5000);
+}
+
+document.getElementById('closeStoryModal').onclick=()=>{
+ clearTimeout(storyTimer);
+ document.getElementById('storyModal').classList.remove('open');
 };
 
 document.getElementById('flipBtn').onclick=async()=>{facing=facing==='user'?'environment':'user';stopCamera();await startCamera()};
@@ -747,7 +836,13 @@ document.getElementById('saveProfileBtn').onclick=()=>{
  showToast('Profile updated successfully!');
 };
 
-document.getElementById('profileAvatarImg').onclick=()=>document.getElementById('avatarFileInput').click();
+document.getElementById('profileAvatarImg').onclick=(e)=>{
+ e.stopPropagation();
+ const activeStories = getValidStories();
+ if(activeStories.length === 0){
+  document.getElementById('avatarFileInput').click();
+ }
+};
 document.getElementById('avatarFileInput').onchange=e=>{
  const file = e.target.files[0];
  if(file && file.type.startsWith('image/')){
@@ -768,7 +863,7 @@ document.querySelectorAll('.nav button').forEach(b=>b.onclick=async()=>{
  b.classList.add('active');
 
  if(tab==='create'){studio.classList.add('open');await startCamera()}
- else if(tab==='home'){[studio,inbox,profile,discover,postScreen,document.getElementById('soundModal'),document.getElementById('editProfileModal'),document.getElementById('commentModal')].forEach(x=>x.classList.remove('open'))}
+ else if(tab==='home'){[studio,inbox,profile,discover,postScreen,document.getElementById('soundModal'),document.getElementById('editProfileModal'),document.getElementById('commentModal'),document.getElementById('storyModal')].forEach(x=>x.classList.remove('open'))}
  else if(tab==='discover'){discover.classList.add('open')}
  else if(tab==='inbox'){inbox.classList.add('open')}
  else if(tab==='profile'){profile.classList.add('open')}
