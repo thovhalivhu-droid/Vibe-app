@@ -6,15 +6,6 @@
 <title>VIBE</title>
 
 <style>
-:root{
-    --bg:#0f1015;
-    --pink:#ff2a5f;
-    --cyan:#00f2fe;
-    --white:#fff;
-    --muted:#aaa;
-    --nav:64px;
-}
-
 *{
     box-sizing:border-box;
     margin:0;
@@ -23,513 +14,336 @@
     -webkit-tap-highlight-color:transparent;
 }
 
-html,body{
-    width:100%;
-    height:100%;
-    overflow:hidden;
-    background:#000;
-}
-
 body{
-    display:flex;
-    justify-content:center;
+    background:#000;
+    color:white;
+    height:100vh;
+    overflow:hidden;
 }
 
 #app{
     width:100%;
     max-width:480px;
-    height:100%;
+    height:100vh;
+    margin:auto;
+    background:#0f1015;
     position:relative;
-    background:#000;
     overflow:hidden;
 }
 
 /* HEADER */
-
-.header{
+header{
     position:absolute;
     top:0;
     left:0;
     width:100%;
-    height:62px;
-    z-index:50;
+    height:60px;
+    z-index:20;
     display:flex;
     align-items:center;
-    justify-content:center;
-    background:linear-gradient(
-        to bottom,
-        rgba(0,0,0,.8),
-        transparent
-    );
+    justify-content:space-between;
+    padding:0 18px;
+    background:linear-gradient(#000c,transparent);
 }
 
 .logo{
-    position:absolute;
-    left:20px;
     font-size:25px;
     font-weight:900;
-    background:linear-gradient(45deg,var(--pink),var(--cyan));
+    background:linear-gradient(45deg,#ff2a5f,#00f2fe);
     -webkit-background-clip:text;
-    -webkit-text-fill-color:transparent;
+    color:transparent;
 }
 
 .tabs{
     display:flex;
-    gap:28px;
+    gap:22px;
+    font-weight:bold;
 }
 
 .tab{
-    color:#aaa;
-    font-size:16px;
-    font-weight:700;
+    color:#888;
     cursor:pointer;
-    position:relative;
 }
 
 .tab.active{
-    color:#fff;
+    color:white;
 }
 
 .tab.active:after{
     content:"";
-    position:absolute;
-    height:3px;
+    display:block;
     width:22px;
-    border-radius:10px;
-    background:var(--pink);
-    bottom:-9px;
-    left:50%;
-    transform:translateX(-50%);
+    height:3px;
+    background:#ff2a5f;
+    border-radius:5px;
+    margin:5px auto 0;
 }
 
 /* FEED */
-
-.feed{
-    width:100%;
-    height:100%;
+#feed{
+    height:100vh;
     overflow-y:auto;
     scroll-snap-type:y mandatory;
     scrollbar-width:none;
 }
 
-.feed::-webkit-scrollbar{
+#feed::-webkit-scrollbar{
     display:none;
 }
 
-.reel{
-    width:100%;
-    height:100%;
+.post{
+    height:100vh;
     position:relative;
     scroll-snap-align:start;
-    scroll-snap-stop:always;
     background:#000;
     overflow:hidden;
 }
 
-.reel video{
+.post-media{
     width:100%;
     height:100%;
     object-fit:cover;
-    display:block;
 }
 
-/* TAP SOUND */
-
-.sound-button{
+.post-info{
     position:absolute;
-    top:78px;
-    right:15px;
-    z-index:20;
-    width:42px;
-    height:42px;
-    border-radius:50%;
-    border:0;
-    background:rgba(0,0,0,.55);
-    color:#fff;
-    font-size:20px;
-    backdrop-filter:blur(8px);
+    left:15px;
+    right:85px;
+    bottom:80px;
+    z-index:5;
+    text-shadow:0 2px 5px #000;
 }
 
-/* BIG HEART */
-
-.heart-animation{
-    position:absolute;
-    left:50%;
-    top:50%;
-    transform:translate(-50%,-50%) scale(.2);
-    font-size:100px;
-    opacity:0;
-    pointer-events:none;
-    z-index:30;
-}
-
-.heart-animation.show{
-    animation:heartPop .7s ease forwards;
-}
-
-@keyframes heartPop{
-    0%{
-        transform:translate(-50%,-50%) scale(.2);
-        opacity:0;
-    }
-    35%{
-        transform:translate(-50%,-50%) scale(1.2);
-        opacity:1;
-    }
-    100%{
-        transform:translate(-50%,-50%) scale(1);
-        opacity:0;
-    }
-}
-
-/* OVERLAY */
-
-.overlay{
-    position:absolute;
-    bottom:var(--nav);
-    left:0;
-    width:100%;
-    padding:20px;
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-end;
-    background:linear-gradient(
-        to top,
-        rgba(0,0,0,.85),
-        rgba(0,0,0,.35),
-        transparent
-    );
-    z-index:10;
-}
-
-.info{
-    width:72%;
-}
-
-.author{
-    display:flex;
-    align-items:center;
-    gap:9px;
-    margin-bottom:10px;
-}
-
-.avatar{
-    width:40px;
-    height:40px;
-    border-radius:50%;
-    object-fit:cover;
-    border:2px solid var(--pink);
-}
-
-.author-name{
-    font-size:15px;
+.username{
     font-weight:bold;
-}
-
-.follow{
-    border:0;
-    border-radius:20px;
-    padding:6px 12px;
-    background:var(--pink);
-    color:#fff;
-    font-weight:bold;
-    font-size:11px;
+    font-size:17px;
+    margin-bottom:8px;
 }
 
 .caption{
     font-size:14px;
     line-height:1.4;
-    margin-bottom:9px;
+    margin-bottom:8px;
 }
 
 .audio{
-    color:#ddd;
     font-size:12px;
+    color:#ddd;
 }
 
-/* ACTIONS */
-
 .actions{
+    position:absolute;
+    right:12px;
+    bottom:95px;
     display:flex;
     flex-direction:column;
-    align-items:center;
-    gap:17px;
+    gap:18px;
+    z-index:8;
 }
 
 .action{
-    border:0;
     background:none;
-    color:#fff;
+    border:0;
+    color:white;
     display:flex;
     flex-direction:column;
     align-items:center;
-    gap:4px;
+    font-size:12px;
 }
 
 .action-icon{
-    width:45px;
-    height:45px;
+    width:46px;
+    height:46px;
     border-radius:50%;
-    background:rgba(255,255,255,.16);
+    background:#ffffff25;
+    backdrop-filter:blur(8px);
     display:flex;
     align-items:center;
     justify-content:center;
     font-size:22px;
-    backdrop-filter:blur(8px);
+    margin-bottom:3px;
 }
 
-.action.liked .action-icon{
-    color:var(--pink);
-}
-
-.count{
-    font-size:11px;
-    font-weight:bold;
-}
-
-/* BOTTOM NAV */
-
-.bottom-nav{
+.muted{
     position:absolute;
-    left:0;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    background:#000b;
+    border-radius:50%;
+    width:60px;
+    height:60px;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    font-size:25px;
+    z-index:10;
+}
+
+.muted.show{
+    display:flex;
+}
+
+/* NAV */
+nav{
+    position:absolute;
     bottom:0;
+    left:0;
     width:100%;
-    height:var(--nav);
-    background:rgba(15,16,21,.9);
+    height:65px;
+    background:#111d;
     backdrop-filter:blur(15px);
-    border-top:1px solid rgba(255,255,255,.08);
+    border-top:1px solid #ffffff15;
+    z-index:30;
     display:flex;
     justify-content:space-around;
     align-items:center;
-    z-index:100;
 }
 
-.nav-button{
-    border:0;
+.nav-btn{
     background:none;
-    color:#888;
+    border:0;
+    color:#aaa;
+    font-size:11px;
     display:flex;
     flex-direction:column;
     align-items:center;
     gap:3px;
-    font-size:10px;
-    font-weight:bold;
-    width:20%;
 }
 
-.nav-button.active{
-    color:#fff;
-}
-
-.nav-icon{
-    font-size:23px;
+.nav-btn.active{
+    color:white;
 }
 
 .create{
-    width:43px;
-    height:30px;
+    width:44px;
+    height:32px;
     border-radius:9px;
+    background:linear-gradient(135deg,#ff2a5f,#00f2fe);
+    color:white;
+    font-size:24px;
     display:flex;
-    justify-content:center;
     align-items:center;
-    background:linear-gradient(135deg,var(--pink),var(--cyan));
-    color:#fff;
-    font-size:23px;
+    justify-content:center;
 }
 
-/* SCREENS */
-
-.screen{
+/* CREATE SCREEN */
+#createScreen{
     position:absolute;
     inset:0;
-    background:var(--bg);
-    z-index:200;
+    background:#111218;
+    z-index:50;
     display:none;
     flex-direction:column;
 }
 
-.screen.open{
+# createScreen.open{
     display:flex;
 }
 
-.screen-head{
-    height:62px;
+.create-header{
+    height:60px;
     display:flex;
     align-items:center;
     justify-content:space-between;
     padding:0 18px;
-    border-bottom:1px solid rgba(255,255,255,.08);
-    font-weight:bold;
+    border-bottom:1px solid #ffffff15;
 }
 
 .close{
-    border:0;
     background:none;
-    color:#fff;
-    font-size:24px;
+    border:0;
+    color:white;
+    font-size:25px;
 }
 
-.screen-content{
-    flex:1;
-    overflow:auto;
-    padding:20px;
+.create-content{
+    padding:25px 20px;
+    overflow-y:auto;
 }
 
-/* DISCOVER */
+.create-title{
+    font-size:25px;
+    font-weight:bold;
+    margin-bottom:25px;
+}
 
-.search-box{
-    width:100%;
-    padding:14px;
-    border-radius:12px;
-    border:1px solid #333;
-    background:#1b1c23;
-    color:#fff;
+.upload-box{
+    border:2px dashed #555;
+    border-radius:18px;
+    padding:35px 20px;
+    text-align:center;
     margin-bottom:20px;
 }
 
-.discover-title{
-    font-size:20px;
+.upload-icon{
+    font-size:45px;
+    margin-bottom:12px;
+}
+
+.upload-btn{
+    display:inline-block;
+    margin-top:15px;
+    background:#ff2a5f;
+    padding:12px 25px;
+    border-radius:25px;
     font-weight:bold;
+}
+
+input[type=file]{
+    display:none;
+}
+
+.preview{
+    width:100%;
+    max-height:400px;
+    object-fit:contain;
+    border-radius:15px;
+    background:#000;
+    display:none;
     margin-bottom:15px;
 }
 
-.discover-card{
-    background:#1a1b22;
-    border-radius:12px;
-    padding:15px;
-    margin-bottom:10px;
-}
-
-/* PROFILE */
-
-.profile{
-    text-align:center;
-}
-
-.profile-img{
-    width:90px;
-    height:90px;
-    border-radius:50%;
-    object-fit:cover;
-    border:3px solid var(--pink);
-}
-
-.profile h2{
-    margin-top:10px;
-}
-
-.bio{
-    color:#aaa;
-    font-size:13px;
-    margin:8px 0 18px;
-}
-
-.stats{
-    display:flex;
-    justify-content:center;
-    gap:35px;
-}
-
-.stat strong{
-    display:block;
-    font-size:18px;
-}
-
-.stat span{
-    color:#888;
-    font-size:11px;
-}
-
-/* CREATE */
-
-#createScreen{
-    background:#080808;
-}
-
-.camera-area{
-    flex:1;
-    position:relative;
-    background:#111;
-}
-
-#camera{
+textarea{
     width:100%;
-    height:100%;
-    object-fit:cover;
+    height:100px;
+    background:#1c1d25;
+    border:1px solid #333;
+    color:white;
+    border-radius:12px;
+    padding:14px;
+    resize:none;
+    font-size:15px;
+    margin-bottom:15px;
 }
 
-.camera-message{
-    position:absolute;
-    left:50%;
-    top:50%;
-    transform:translate(-50%,-50%);
-    text-align:center;
-    color:#aaa;
+.post-btn{
+    width:100%;
+    border:0;
+    background:linear-gradient(135deg,#ff2a5f,#00cfe8);
+    color:white;
+    padding:15px;
+    border-radius:25px;
+    font-size:16px;
+    font-weight:bold;
 }
 
-.camera-controls{
-    height:150px;
-    background:#0f1015;
-    display:flex;
-    align-items:center;
-    justify-content:space-around;
-}
-
-.record{
-    width:75px;
-    height:75px;
-    border:4px solid #fff;
-    border-radius:50%;
-    background:var(--pink);
-}
-
-/* INBOX */
-
-.message{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    padding:14px 0;
-    border-bottom:1px solid #222;
-}
-
-.message img{
-    width:50px;
-    height:50px;
-    border-radius:50%;
-    object-fit:cover;
-}
-
-.message-text strong{
-    display:block;
-    margin-bottom:5px;
-}
-
-.message-text span{
-    color:#888;
-    font-size:13px;
+.post-btn:disabled{
+    opacity:.4;
 }
 
 /* TOAST */
-
 #toast{
     position:absolute;
-    z-index:500;
     top:75px;
     left:50%;
     transform:translateX(-50%);
-    background:rgba(0,0,0,.85);
-    color:#fff;
+    background:#000d;
     padding:10px 18px;
-    border-radius:25px;
+    border-radius:20px;
+    z-index:100;
+    display:none;
     font-size:13px;
-    opacity:0;
-    pointer-events:none;
-    transition:.2s;
-}
-
-#toast.show{
-    opacity:1;
 }
 </style>
 </head>
@@ -538,405 +352,278 @@ body{
 
 <div id="app">
 
-<div id="toast"></div>
-
-<!-- HEADER -->
-<header class="header">
+<header>
     <div class="logo">VIBE</div>
 
     <div class="tabs">
-        <div class="tab active" id="followingTab">Following</div>
-        <div class="tab" id="forYouTab">For You</div>
+        <div class="tab active">Following</div>
+        <div class="tab">For You</div>
     </div>
+
+    <div></div>
 </header>
 
-<!-- VIDEO FEED -->
-<main class="feed" id="feed"></main>
+<main id="feed"></main>
 
-<!-- BOTTOM NAV -->
-<nav class="bottom-nav">
-
-    <button class="nav-button active" data-screen="home">
-        <div class="nav-icon">⌂</div>
-        Home
+<nav>
+    <button class="nav-btn active" onclick="goHome()">
+        🏠
+        <span>Home</span>
     </button>
 
-    <button class="nav-button" data-screen="discover">
-        <div class="nav-icon">⌕</div>
-        Discover
+    <button class="nav-btn">
+        🔎
+        <span>Discover</span>
     </button>
 
-    <button class="nav-button" data-screen="create">
+    <button class="nav-btn" onclick="openCreate()">
         <div class="create">+</div>
     </button>
 
-    <button class="nav-button" data-screen="inbox">
-        <div class="nav-icon">♡</div>
-        Inbox
+    <button class="nav-btn">
+        💬
+        <span>Inbox</span>
     </button>
 
-    <button class="nav-button" data-screen="profile">
-        <div class="nav-icon">◉</div>
-        Me
+    <button class="nav-btn">
+        👤
+        <span>Me</span>
     </button>
-
 </nav>
 
-<!-- DISCOVER -->
-<section class="screen" id="discoverScreen">
 
-    <div class="screen-head">
-        <span>Discover</span>
-        <button class="close" onclick="closeScreens()">×</button>
+<!-- CREATE SCREEN -->
+
+<div id="createScreen">
+
+    <div class="create-header">
+        <button class="close" onclick="closeCreate()">✕</button>
+
+        <strong>Create Post</strong>
+
+        <div style="width:25px"></div>
     </div>
 
-    <div class="screen-content">
+    <div class="create-content">
 
-        <input
-            class="search-box"
-            placeholder="Search VIBE..."
-            id="searchInput"
-        >
+        <div class="create-title">
+            Create your VIBE 🎬
+        </div>
 
-        <div class="discover-title">Trending</div>
+        <div class="upload-box">
 
-        <div class="discover-card">🔥 #VIBE</div>
-        <div class="discover-card">🎵 Music</div>
-        <div class="discover-card">😂 Funny Videos</div>
-        <div class="discover-card">💻 Technology</div>
-        <div class="discover-card">🎮 Gaming</div>
-        <div class="discover-card">🌍 South Africa</div>
+            <div class="upload-icon">📸</div>
 
-    </div>
+            <div>
+                Choose a video or picture
+            </div>
 
-</section>
+            <label class="upload-btn">
+                Select Media
+                <input
+                    type="file"
+                    id="mediaInput"
+                    accept="image/*,video/*"
+                >
+            </label>
 
-<!-- CREATE -->
-<section class="screen" id="createScreen">
-
-    <div class="screen-head">
-        <button class="close" onclick="closeScreens()">×</button>
-        <span>Create VIBE</span>
-        <span></span>
-    </div>
-
-    <div class="camera-area">
+        </div>
 
         <video
-            id="camera"
-            autoplay
-            muted
+            id="videoPreview"
+            class="preview"
+            controls
             playsinline
         ></video>
 
-        <div class="camera-message" id="cameraMessage">
-            Camera preview
-        </div>
-
-    </div>
-
-    <div class="camera-controls">
-
-        <label style="color:white;font-weight:bold;">
-            Upload
-            <input
-                type="file"
-                id="upload"
-                accept="video/*"
-                hidden
-            >
-        </label>
-
-        <button
-            class="record"
-            id="recordButton">
-        </button>
-
-        <button
-            onclick="flipCamera()"
-            style="background:none;border:0;color:white;font-weight:bold;">
-            Flip
-        </button>
-
-    </div>
-
-</section>
-
-<!-- INBOX -->
-<section class="screen" id="inboxScreen">
-
-    <div class="screen-head">
-        <span>Inbox</span>
-        <button class="close" onclick="closeScreens()">×</button>
-    </div>
-
-    <div class="screen-content">
-
-        <div class="message">
-            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100">
-            <div class="message-text">
-                <strong>Elena</strong>
-                <span>Loved your VIBE 🔥</span>
-            </div>
-        </div>
-
-        <div class="message">
-            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100">
-            <div class="message-text">
-                <strong>Liam</strong>
-                <span>Let's make a collab!</span>
-            </div>
-        </div>
-
-        <div class="message">
-            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100">
-            <div class="message-text">
-                <strong>Sophia</strong>
-                <span>That video was amazing 😂</span>
-            </div>
-        </div>
-
-    </div>
-
-</section>
-
-<!-- PROFILE -->
-<section class="screen" id="profileScreen">
-
-    <div class="screen-head">
-        <span>My Profile</span>
-        <button class="close" onclick="closeScreens()">×</button>
-    </div>
-
-    <div class="screen-content profile">
-
         <img
-            class="profile-img"
-            src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200"
+            id="imagePreview"
+            class="preview"
         >
 
-        <h2>@vibe_creator</h2>
+        <textarea
+            id="captionInput"
+            placeholder="Write a caption..."
+        ></textarea>
 
-        <div class="bio">
-            Creating videos. Sharing moments. Living the VIBE. ✨
-        </div>
-
-        <div class="stats">
-
-            <div class="stat">
-                <strong>142</strong>
-                <span>Following</span>
-            </div>
-
-            <div class="stat">
-                <strong>12.8K</strong>
-                <span>Followers</span>
-            </div>
-
-            <div class="stat">
-                <strong>84.5K</strong>
-                <span>Likes</span>
-            </div>
-
-        </div>
+        <button
+            id="postButton"
+            class="post-btn"
+            disabled
+            onclick="publishPost()"
+        >
+            Post to VIBE
+        </button>
 
     </div>
-
-</section>
-
 </div>
+
+<div id="toast"></div>
 
 <script>
 
-/* =========================================
-   VIBE VIDEO DATA
-========================================= */
+/* =========================
+   VIBE DATA
+========================= */
 
-const videos = [
+let posts = [
+    {
+        id:1,
+        type:"video",
+        src:"https://assets.mixkit.co/videos/preview/mixkit-woman-filming-herself-with-a-smartphone-41270-large.mp4",
+        username:"@Elena",
+        caption:"Golden hour vibes ✨",
+        likes:24500
+    },
 
-{
-    author:"Elena Rostova",
-    avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
-    caption:"Golden hour tones hitting different today ✨",
-    audio:"Original Audio - Elena",
-    likes:"24.5K",
-    comments:"412",
-    shares:"1.2K",
-    url:"https://assets.mixkit.co/videos/preview/mixkit-woman-filming-herself-with-a-smartphone-41270-large.mp4"
-},
+    {
+        id:2,
+        type:"video",
+        src:"https://assets.mixkit.co/videos/preview/mixkit-hands-typing-on-a-laptop-keyboard-close-up-42861-large.mp4",
+        username:"@Liam",
+        caption:"Late night coding session 💻⚡",
+        likes:58100
+    },
 
-{
-    author:"Liam Chen",
-    avatar:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
-    caption:"Late night coding session 💻⚡",
-    audio:"Lofi Chill Beats",
-    likes:"58.1K",
-    comments:"930",
-    shares:"4.5K",
-    url:"https://assets.mixkit.co/videos/preview/mixkit-hands-typing-on-a-laptop-keyboard-close-up-42861-large.mp4"
-},
-
-{
-    author:"Sophia Taylor",
-    avatar:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
-    caption:"Weekend aesthetic inspiration ✨",
-    audio:"Ambient Space",
-    likes:"12.3K",
-    comments:"154",
-    shares:"890",
-    url:"https://assets.mixkit.co/videos/preview/mixkit-cozy-living-room-with-a-fireplace-41153-large.mp4"
-}
-
+    {
+        id:3,
+        type:"video",
+        src:"https://assets.mixkit.co/videos/preview/mixkit-cozy-living-room-with-a-fireplace-41153-large.mp4",
+        username:"@Sophia",
+        caption:"Weekend vibes 🏠✨",
+        likes:12300
+    }
 ];
 
-
-/* =========================================
-   GLOBAL SOUND SETTING
-   false = muted
-   true  = sound ON
-========================================= */
-
-let soundOn = false;
-let activeVideo = null;
+let selectedFile = null;
+let soundOn = true;
 
 
-/* =========================================
-   CREATE FEED
-========================================= */
+/* =========================
+   FEED
+========================= */
 
 const feed = document.getElementById("feed");
 
-function createFeed(){
+function renderFeed(){
 
     feed.innerHTML = "";
 
-    videos.forEach((item,index)=>{
+    posts.forEach(post => {
 
-        const reel = document.createElement("article");
+        const card = document.createElement("div");
 
-        reel.className = "reel";
+        card.className = "post";
 
-        reel.innerHTML = `
+        let media;
 
-            <video
-                class="reel-video"
-                src="${item.url}"
-                loop
-                playsinline
-                preload="metadata"
-            ></video>
+        if(post.type === "video"){
 
-            <button
-                class="sound-button"
-                onclick="toggleSound(event,this)">
-                🔇
-            </button>
+            media = document.createElement("video");
 
-            <div class="heart-animation">❤️</div>
+            media.src = post.src;
+            media.className = "post-media";
+            media.loop = true;
+            media.playsInline = true;
+            media.preload = "metadata";
 
-            <div class="overlay">
+            media.muted = !soundOn;
 
-                <div class="info">
+            /* TAP VIDEO = MUTE / UNMUTE */
 
-                    <div class="author">
+            media.addEventListener("click", function(){
 
-                        <img
-                            class="avatar"
-                            src="${item.avatar}"
-                        >
+                soundOn = !soundOn;
 
-                        <span class="author-name">
-                            ${item.author}
-                        </span>
+                document.querySelectorAll(".post-media").forEach(v=>{
+                    if(v.tagName === "VIDEO"){
+                        v.muted = !soundOn;
+                    }
+                });
 
-                        <button
-                            class="follow"
-                            onclick="followUser(event,this)">
-                            Follow
-                        </button>
+                showToast(soundOn ? "🔊 Sound ON" : "🔇 Sound OFF");
 
-                    </div>
+            });
 
-                    <div class="caption">
-                        ${item.caption}
-                    </div>
+        }else{
 
-                    <div class="audio">
-                        🎵 ${item.audio}
-                    </div>
+            media = document.createElement("img");
 
-                </div>
+            media.src = post.src;
+            media.className = "post-media";
+
+        }
 
 
-                <div class="actions">
-
-                    <button
-                        class="action like-button"
-                        onclick="likeVideo(event,this)">
-
-                        <div class="action-icon">
-                            ❤️
-                        </div>
-
-                        <span class="count">
-                            ${item.likes}
-                        </span>
-
-                    </button>
+        card.appendChild(media);
 
 
-                    <button
-                        class="action"
-                        onclick="commentVideo(event)">
+        /* INFO */
 
-                        <div class="action-icon">
-                            💬
-                        </div>
+        const info = document.createElement("div");
 
-                        <span class="count">
-                            ${item.comments}
-                        </span>
+        info.className = "post-info";
 
-                    </button>
+        info.innerHTML = `
+            <div class="username">${post.username}</div>
 
+            <div class="caption">
+                ${post.caption || ""}
+            </div>
 
-                    <button
-                        class="action"
-                        onclick="shareVideo(event)">
-
-                        <div class="action-icon">
-                            ↗
-                        </div>
-
-                        <span class="count">
-                            ${item.shares}
-                        </span>
-
-                    </button>
-
-                </div>
-
+            <div class="audio">
+                🎵 Original VIBE audio
             </div>
         `;
 
-        feed.appendChild(reel);
+        card.appendChild(info);
+
+
+        /* ACTIONS */
+
+        const actions = document.createElement("div");
+
+        actions.className = "actions";
+
+        actions.innerHTML = `
+
+            <button class="action"
+                onclick="likePost(${post.id},this)">
+                <div class="action-icon">❤️</div>
+                <span>${formatNumber(post.likes)}</span>
+            </button>
+
+            <button class="action"
+                onclick="showToast('💬 Comments coming soon')">
+                <div class="action-icon">💬</div>
+                <span>Comments</span>
+            </button>
+
+            <button class="action"
+                onclick="sharePost()">
+                <div class="action-icon">↗️</div>
+                <span>Share</span>
+            </button>
+
+        `;
+
+        card.appendChild(actions);
+
+        feed.appendChild(card);
 
     });
 
-    setupVideos();
+    setupVideoObserver();
 }
 
 
-/* =========================================
-   VIDEO AUTOPLAY
-========================================= */
+/* =========================
+   VIDEO AUTO PLAY
+========================= */
 
-function setupVideos(){
-
-    const reels = document.querySelectorAll(".reel");
+function setupVideoObserver(){
 
     const observer = new IntersectionObserver(
-
         entries => {
 
             entries.forEach(entry => {
@@ -944,17 +631,11 @@ function setupVideos(){
                 const video =
                     entry.target.querySelector("video");
 
-                const soundButton =
-                    entry.target.querySelector(".sound-button");
+                if(!video) return;
 
                 if(entry.isIntersecting){
 
-                    activeVideo = video;
-
                     video.muted = !soundOn;
-
-                    soundButton.innerText =
-                        soundOn ? "🔊" : "🔇";
 
                     video.play().catch(()=>{});
 
@@ -967,331 +648,239 @@ function setupVideos(){
             });
 
         },
-
         {
             root:feed,
-            threshold:.7
+            threshold:.65
         }
-
     );
 
-    reels.forEach(reel => observer.observe(reel));
-}
 
-
-/* =========================================
-   FEATURE 1 + 2
-   TAP VIDEO = MUTE / UNMUTE
-   SOUND STAYS FOR NEXT VIDEOS
-========================================= */
-
-document.addEventListener("click",function(e){
-
-    const video =
-        e.target.closest(".reel-video");
-
-    if(!video) return;
-
-    /*
-       Double tap is handled separately.
-       Single tap toggles sound.
-    */
-
-});
-
-
-function toggleSound(event,button){
-
-    event.stopPropagation();
-
-    soundOn = !soundOn;
-
-    document.querySelectorAll(".reel video")
-        .forEach(video=>{
-            video.muted = !soundOn;
+    document
+        .querySelectorAll(".post")
+        .forEach(post=>{
+            observer.observe(post);
         });
-
-    document.querySelectorAll(".sound-button")
-        .forEach(btn=>{
-            btn.innerText =
-                soundOn ? "🔊" : "🔇";
-        });
-
-    showToast(
-        soundOn
-        ? "Sound ON 🔊"
-        : "Sound OFF 🔇"
-    );
-
-    if(activeVideo){
-        activeVideo.play().catch(()=>{});
-    }
 }
 
 
-/* =========================================
-   TAP DIRECTLY ON VIDEO
-========================================= */
+/* =========================
+   NUMBER FORMAT
+========================= */
 
-let tapTimer = null;
-let lastTap = 0;
+function formatNumber(number){
 
-feed.addEventListener("click",function(e){
+    if(number >= 1000000)
+        return (number/1000000).toFixed(1)+"M";
 
-    const video = e.target.closest(".reel-video");
+    if(number >= 1000)
+        return (number/1000).toFixed(1)+"K";
 
-    if(!video) return;
-
-    const now = Date.now();
-
-    if(now - lastTap < 300){
-
-        clearTimeout(tapTimer);
-
-        doubleLike(video.closest(".reel"));
-
-        lastTap = 0;
-
-        return;
-    }
-
-    lastTap = now;
-
-    tapTimer = setTimeout(()=>{
-
-        toggleVideoSound(video);
-
-    },300);
-
-});
+    return number;
+}
 
 
-function toggleVideoSound(video){
+/* =========================
+   LIKE
+========================= */
 
-    soundOn = !soundOn;
+function likePost(id,button){
 
-    document.querySelectorAll(".reel-video")
-        .forEach(v=>{
-            v.muted = !soundOn;
-        });
+    const post =
+        posts.find(p=>p.id===id);
 
-    document.querySelectorAll(".sound-button")
-        .forEach(btn=>{
-            btn.innerText =
-                soundOn ? "🔊" : "🔇";
-        });
+    if(!post) return;
 
-    showToast(
-        soundOn
-        ? "Sound ON 🔊"
-        : "Sound OFF 🔇"
-    );
+    post.likes++;
+
+    button.querySelector("span").innerText =
+        formatNumber(post.likes);
+
+    showToast("❤️ Liked");
 
 }
 
 
-/* =========================================
-   FEATURE 3
-   SWIPE UP / DOWN
-========================================= */
-
-let touchStartY = 0;
-let touchEndY = 0;
-
-feed.addEventListener("touchstart",function(e){
-
-    touchStartY = e.changedTouches[0].screenY;
-
-},{passive:true});
-
-
-feed.addEventListener("touchend",function(e){
-
-    touchEndY = e.changedTouches[0].screenY;
-
-    const distance =
-        touchStartY - touchEndY;
-
-    if(Math.abs(distance) < 50) return;
-
-    const current =
-        Math.round(
-            feed.scrollTop / feed.clientHeight
-        );
-
-    let next;
-
-    if(distance > 0){
-
-        next = current + 1;
-
-    }else{
-
-        next = current - 1;
-
-    }
-
-    const max =
-        document.querySelectorAll(".reel").length - 1;
-
-    next = Math.max(0,Math.min(next,max));
-
-    document.querySelectorAll(".reel")[next]
-        .scrollIntoView({
-            behavior:"smooth",
-            block:"start"
-        });
-
-});
-
-
-/* =========================================
-   FEATURE 4
-   AUTOPLAY + LOOP
-========================================= */
-
-document.addEventListener("visibilitychange",function(){
-
-    if(document.hidden){
-
-        document.querySelectorAll(".reel-video")
-            .forEach(video=>video.pause());
-
-    }else{
-
-        if(activeVideo){
-
-            activeVideo.play().catch(()=>{});
-
-        }
-
-    }
-
-});
-
-
-/* =========================================
-   FEATURE 6
-   DOUBLE TAP LIKE
-========================================= */
-
-function doubleLike(reel){
-
-    const button =
-        reel.querySelector(".like-button");
-
-    const heart =
-        reel.querySelector(".heart-animation");
-
-    if(!button.classList.contains("liked")){
-
-        button.classList.add("liked");
-
-    }
-
-    heart.classList.remove("show");
-
-    void heart.offsetWidth;
-
-    heart.classList.add("show");
-
-    showToast("Liked ❤️");
-
-}
-
-
-/* =========================================
-   LIKE BUTTON
-========================================= */
-
-function likeVideo(event,button){
-
-    event.stopPropagation();
-
-    button.classList.toggle("liked");
-
-    if(button.classList.contains("liked")){
-
-        showToast("Liked ❤️");
-
-    }else{
-
-        showToast("Unliked");
-
-    }
-
-}
-
-
-/* =========================================
-   FOLLOW
-========================================= */
-
-function followUser(event,button){
-
-    event.stopPropagation();
-
-    if(button.innerText === "Follow"){
-
-        button.innerText = "Following";
-
-        button.style.background = "#333";
-
-        showToast("Following");
-
-    }else{
-
-        button.innerText = "Follow";
-
-        button.style.background = "var(--pink)";
-
-        showToast("Unfollowed");
-
-    }
-
-}
-
-
-/* =========================================
-   COMMENTS
-========================================= */
-
-function commentVideo(event){
-
-    event.stopPropagation();
-
-    showToast("Comments coming soon 💬");
-
-}
-
-
-/* =========================================
+/* =========================
    SHARE
-========================================= */
+========================= */
 
-function shareVideo(event){
-
-    event.stopPropagation();
+function sharePost(){
 
     if(navigator.share){
 
         navigator.share({
             title:"VIBE",
             text:"Check out this VIBE!"
-        }).catch(()=>{});
+        });
 
     }else{
 
-        showToast("Share link copied!");
+        showToast("🔗 Share link copied");
 
     }
 
 }
 
 
-/* =========================================
+/* =========================
+   CREATE SCREEN
+========================= */
+
+function openCreate(){
+
+    document
+        .getElementById("createScreen")
+        .style.display="flex";
+
+}
+
+
+function closeCreate(){
+
+    document
+        .getElementById("createScreen")
+        .style.display="none";
+
+    selectedFile=null;
+
+}
+
+
+/* =========================
+   SELECT IMAGE / VIDEO
+========================= */
+
+const mediaInput =
+    document.getElementById("mediaInput");
+
+mediaInput.addEventListener("change",function(){
+
+    const file = this.files[0];
+
+    if(!file) return;
+
+    selectedFile=file;
+
+    const url =
+        URL.createObjectURL(file);
+
+    const videoPreview =
+        document.getElementById("videoPreview");
+
+    const imagePreview =
+        document.getElementById("imagePreview");
+
+
+    videoPreview.style.display="none";
+    imagePreview.style.display="none";
+
+
+    if(file.type.startsWith("video/")){
+
+        videoPreview.src=url;
+        videoPreview.style.display="block";
+
+    }
+
+    else if(file.type.startsWith("image/")){
+
+        imagePreview.src=url;
+        imagePreview.style.display="block";
+
+    }
+
+
+    document
+        .getElementById("postButton")
+        .disabled=false;
+
+});
+
+
+/* =========================
+   PUBLISH POST
+========================= */
+
+async function publishPost(){
+
+    if(!selectedFile) return;
+
+    const caption =
+        document
+        .getElementById("captionInput")
+        .value.trim();
+
+
+    const url =
+        URL.createObjectURL(selectedFile);
+
+
+    const newPost = {
+
+        id:Date.now(),
+
+        type:selectedFile.type.startsWith("video/")
+            ? "video"
+            : "image",
+
+        src:url,
+
+        username:"@You",
+
+        caption:caption || "My new VIBE 🔥",
+
+        likes:0
+
+    };
+
+
+    posts.unshift(newPost);
+
+    renderFeed();
+
+    closeCreate();
+
+    document
+        .getElementById("captionInput")
+        .value="";
+
+    mediaInput.value="";
+
+    document
+        .getElementById("postButton")
+        .disabled=true;
+
+    showToast("✅ Posted to VIBE!");
+
+    feed.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
+
+}
+
+
+/* =========================
+   HOME
+========================= */
+
+function goHome(){
+
+    document
+        .getElementById("createScreen")
+        .style.display="none";
+
+    feed.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
+
+}
+
+
+/* =========================
    TOAST
-========================================= */
+========================= */
 
 let toastTimer;
 
@@ -1300,283 +889,28 @@ function showToast(message){
     const toast =
         document.getElementById("toast");
 
-    toast.innerText = message;
+    toast.innerText=message;
 
-    toast.classList.add("show");
+    toast.style.display="block";
 
     clearTimeout(toastTimer);
 
-    toastTimer = setTimeout(()=>{
-
-        toast.classList.remove("show");
-
+    toastTimer=setTimeout(()=>{
+        toast.style.display="none";
     },1800);
 
 }
 
 
-/* =========================================
-   NAVIGATION
-========================================= */
-
-const screens = {
-
-    discover:
-        document.getElementById("discoverScreen"),
-
-    create:
-        document.getElementById("createScreen"),
-
-    inbox:
-        document.getElementById("inboxScreen"),
-
-    profile:
-        document.getElementById("profileScreen")
-
-};
-
-
-document.querySelectorAll(".nav-button")
-.forEach(button=>{
-
-    button.addEventListener("click",function(){
-
-        const screen =
-            this.dataset.screen;
-
-        document.querySelectorAll(".nav-button")
-            .forEach(btn=>{
-                btn.classList.remove("active");
-            });
-
-        this.classList.add("active");
-
-        closeScreens();
-
-        if(screen === "home"){
-
-            feed.style.display = "block";
-
-            return;
-
-        }
-
-        if(screens[screen]){
-
-            screens[screen].classList.add("open");
-
-        }
-
-        if(screen === "create"){
-
-            startCamera();
-
-        }
-
-    });
-
-});
-
-
-/* =========================================
-   CLOSE SCREENS
-========================================= */
-
-function closeScreens(){
-
-    Object.values(screens)
-        .forEach(screen=>{
-            screen.classList.remove("open");
-        });
-
-    stopCamera();
-
-}
-
-
-/* =========================================
-   FOLLOWING / FOR YOU
-========================================= */
-
-const followingTab =
-    document.getElementById("followingTab");
-
-const forYouTab =
-    document.getElementById("forYouTab");
-
-
-followingTab.onclick = function(){
-
-    followingTab.classList.add("active");
-
-    forYouTab.classList.remove("active");
-
-    showToast("Following");
-
-};
-
-
-forYouTab.onclick = function(){
-
-    forYouTab.classList.add("active");
-
-    followingTab.classList.remove("active");
-
-    showToast("For You");
-
-};
-
-
-/* =========================================
-   CAMERA
-========================================= */
-
-let cameraStream = null;
-let frontCamera = true;
-
-const camera =
-    document.getElementById("camera");
-
-async function startCamera(){
-
-    try{
-
-        if(!navigator.mediaDevices ||
-           !navigator.mediaDevices.getUserMedia){
-
-            throw new Error("Camera unavailable");
-
-        }
-
-        stopCamera();
-
-        cameraStream =
-            await navigator.mediaDevices.getUserMedia({
-
-                video:{
-                    facingMode:
-                        frontCamera
-                        ? "user"
-                        : "environment"
-                },
-
-                audio:true
-
-            });
-
-        camera.srcObject =
-            cameraStream;
-
-        document.getElementById("cameraMessage")
-            .style.display="none";
-
-    }catch(error){
-
-        document.getElementById("cameraMessage")
-            .style.display="block";
-
-        showToast(
-            "Allow camera permission to record"
-        );
-
-    }
-
-}
-
-
-function stopCamera(){
-
-    if(cameraStream){
-
-        cameraStream
-            .getTracks()
-            .forEach(track=>track.stop());
-
-        cameraStream=null;
-
-    }
-
-}
-
-
-/* =========================================
-   FLIP CAMERA
-========================================= */
-
-async function flipCamera(){
-
-    frontCamera = !frontCamera;
-
-    await startCamera();
-
-}
-
-
-/* =========================================
-   UPLOAD VIDEO
-========================================= */
-
-document.getElementById("upload")
-.addEventListener("change",function(){
-
-    const file = this.files[0];
-
-    if(!file) return;
-
-    const url =
-        URL.createObjectURL(file);
-
-    camera.srcObject = null;
-
-    camera.src = url;
-
-    camera.muted = false;
-
-    camera.play();
-
-    document.getElementById("cameraMessage")
-        .style.display="none";
-
-    showToast("Video loaded ✓");
-
-});
-
-
-/* =========================================
-   RECORD BUTTON
-========================================= */
-
-let recording = false;
-
-document.getElementById("recordButton")
-.addEventListener("click",function(){
-
-    recording = !recording;
-
-    if(recording){
-
-        this.style.background="#ff3b30";
-
-        showToast("Recording...");
-
-    }else{
-
-        this.style.background="var(--pink)";
-
-        showToast("Recording stopped");
-
-    }
-
-});
-
-
-/* =========================================
-   START VIBE
-========================================= */
-
-createFeed();
+/* =========================
+   START
+========================= */
+
+renderFeed();
 
 </script>
+
+</div>
 
 </body>
     </html> 
