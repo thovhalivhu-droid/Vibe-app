@@ -21,7 +21,7 @@ button{font:inherit}
 .overlay{position:absolute;left:0;right:0;bottom:var(--nav);padding:22px 18px 16px;display:flex;justify-content:space-between;align-items:flex-end;background:linear-gradient(transparent,rgba(0,0,0,.82));z-index:5}
 .info{max-width:73%}.author{display:flex;align-items:center;gap:9px;margin-bottom:8px}.avatar{width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid var(--pink)}
 .name{font-weight:800;font-size:15px}.follow{border:0;border-radius:18px;padding:5px 11px;background:var(--pink);color:#fff;font-size:12px;font-weight:700}
-.caption{font-size:14px;line-height:1.4;margin-bottom:8px}.audio{font-size:12px;color:#ddd}
+.caption{font-size:14px;line-height:1.4;margin-bottom:8px}.caption span{color:var(--cyan);font-weight:700;cursor:pointer}.audio{font-size:12px;color:#ddd}
 .actions{display:flex;flex-direction:column;align-items:center;gap:15px}.action{background:none;border:0;color:#fff;text-align:center}.circle{width:45px;height:45px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#ffffff22;backdrop-filter:blur(8px);font-size:23px}.count{font-size:11px;font-weight:700;margin-top:3px}.liked .circle{color:var(--pink)}
 .mute{position:absolute;top:68px;right:16px;z-index:7;width:40px;height:40px;border:0;border-radius:50%;background:#0008;color:#fff;font-size:19px}
 .nav{position:absolute;bottom:0;left:0;right:0;height:var(--nav);z-index:20;display:flex;justify-content:space-around;align-items:center;background:#171820ee;backdrop-filter:blur(16px);border-top:1px solid #ffffff12}
@@ -37,10 +37,11 @@ button{font:inherit}
 .recordingDot{display:inline-block;width:10px;height:10px;background:red;border-radius:50%;margin-right:8px;animation:pulse 1s infinite}
 @keyframes pulse{0%{opacity:1}50%{opacity:0.3}100%{opacity:1}}
 
-.controls{height:195px;background:#0f1015;padding:14px 0;display:flex;flex-direction:column;justify-content:space-between;align-items:center}
+.controls{height:205px;background:#0f1015;padding:14px 0;display:flex;flex-direction:column;justify-content:space-between;align-items:center}
 .filters{width:100%;display:flex;gap:10px;overflow:auto;padding:0 15px}
 .filter{white-space:nowrap;padding:7px 13px;border:1px solid #ffffff12;border-radius:18px;background:#1a1b22;color:#aaa;cursor:pointer}
 .filter.active{background:var(--pink);color:#fff}
+.studioTopRow{width:100%;display:flex;justify-content:space-between;padding:0 20px}
 .controlRow{width:100%;display:flex;justify-content:space-around;align-items:center;padding:0 15px}
 .textBtn{border:0;background:none;color:#fff;font-weight:800;cursor:pointer;font-size:13px}
 .shutter{width:72px;height:72px;border:4px solid #fff;border-radius:50%;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;-webkit-user-select:none}
@@ -63,18 +64,28 @@ button{font:inherit}
 .discoverGridItem img, .discoverGridItem video{width:100%;height:100%;object-fit:cover}
 
 .inboxBody{flex:1;overflow-y:auto;padding:15px}
+.inboxSubTabs{display:flex;gap:15px;margin-bottom:15px;border-bottom:1px solid #ffffff10;padding-bottom:10px}
+.inboxSubTab{font-weight:700;color:var(--muted);cursor:pointer}.inboxSubTab.active{color:#fff}
 .messageItem{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #ffffff0a}
 .messageAvatar{width:45px;height:45px;border-radius:50%;object-fit:cover}
 .messageContent{flex:1}.messageName{font-weight:700;font-size:14px;margin-bottom:3px}.messageSnippet{font-size:12px;color:var(--muted)}
 
 .profileBody{flex:1;overflow-y:auto;padding:20px 15px}
 .profileHeaderInfo{display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:20px}
-.profileBigAvatar{width:76px;height:76px;border-radius:50%;border:2px solid var(--pink);object-fit:cover;margin-bottom:10px}
+.profileBigAvatar{width:76px;height:76px;border-radius:50%;border:2px solid var(--pink);object-fit:cover;margin-bottom:10px;cursor:pointer}
 .profileStats{display:flex;gap:25px;margin-top:12px;font-size:13px}
 .profileStats div span{display:block;font-weight:700;font-size:15px}
+.editProfileBtn{margin-top:12px;padding:6px 20px;border-radius:16px;border:1px solid #ffffff30;background:transparent;color:#fff;font-weight:700;cursor:pointer;font-size:12px}
 .userPostsGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
 .userPostThumb{aspect-ratio:9/16;background:#222;position:relative}
 .userPostThumb img, .userPostThumb video{width:100%;height:100%;object-fit:cover}
+
+/* Sound Modal */
+.modalScreen{position:absolute;inset:0;z-index:60;background:#0f1015;display:none;flex-direction:column}
+.modalScreen.open{display:flex}
+.soundItem{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid #ffffff0a;cursor:pointer}
+.soundTitle{font-weight:700;font-size:14px}.soundAuthor{font-size:12px;color:var(--muted)}
+.useSoundBtn{padding:5px 12px;background:var(--pink);border:0;border-radius:14px;color:#fff;font-size:12px;font-weight:700}
 </style>
 </head>
 <body>
@@ -107,6 +118,10 @@ button{font:inherit}
   <div id="timer" class="timer hidden"><span class="recordingDot"></span><span id="timerText">00:00</span> / 10:00</div>
 </div>
 <div class="controls">
+<div class="studioTopRow">
+<button class="textBtn" id="soundSelectBtn">♫ <span id="currentSoundLabel">Original Audio</span></button>
+<div style="font-size:11px;color:var(--muted)">Tap for Photo / Hold 2s for Video</div>
+</div>
 <div class="filters">
 <button class="filter active" data-filter="">Normal</button><button class="filter" data-filter="sepia(.6) contrast(1.1)">Vintage</button><button class="filter" data-filter="grayscale(1)">B&W</button><button class="filter" data-filter="hue-rotate(90deg) saturate(1.5)">Neon</button><button class="filter" data-filter="brightness(1.2) contrast(1.3)">Vivid</button>
 </div>
@@ -121,11 +136,22 @@ button{font:inherit}
 </div>
 </section>
 
+<!-- Sound Picker Modal -->
+<div id="soundModal" class="modalScreen">
+<div class="screenHead"><span>Choose Sound</span><button class="close" id="closeSoundModal">×</button></div>
+<div style="flex:1;overflow-y:auto" id="soundListContainer">
+  <div class="soundItem" data-sound="Original Audio"><div><div class="soundTitle">Original Audio</div><div class="soundAuthor">Creator VIBE</div></div><button class="useSoundBtn">Select</button></div>
+  <div class="soundItem" data-sound="Lofi Chill Beats"><div><div class="soundTitle">Lofi Chill Beats</div><div class="soundAuthor">ChillHop Records</div></div><button class="useSoundBtn">Select</button></div>
+  <div class="soundItem" data-sound="Ambient Space"><div><div class="soundTitle">Ambient Space</div><div class="soundAuthor">Cosmic Waves</div></div><button class="useSoundBtn">Select</button></div>
+  <div class="soundItem" data-sound="Summer Vibes Remix"><div><div class="soundTitle">Summer Vibes Remix</div><div class="soundAuthor">DJ Sunset</div></div><button class="useSoundBtn">Select</button></div>
+</div>
+</div>
+
 <section id="postScreen" class="screen">
 <div class="screenHead"><button class="close" id="closePost">×</button><span>Post to VIBE</span><span style="width:24px"></span></div>
 <div class="postPanel">
 <div id="previewBox" class="previewBox"><div style="color:#777">Choose a video or picture</div></div>
-<textarea id="captionInput" placeholder="Write a caption..."></textarea>
+<textarea id="captionInput" placeholder="Write a caption with #hashtags..."></textarea>
 <button id="publishBtn" class="postBtn">Post to VIBE</button>
 </div>
 </section>
@@ -133,26 +159,32 @@ button{font:inherit}
 <section id="discover" class="screen">
 <div class="screenHead"><span>Discover</span><button class="close" data-close="discover">×</button></div>
 <div class="discoverBody">
-  <input type="text" class="searchBar" placeholder="Search trends, tags, accounts...">
+  <input type="text" id="searchInput" class="searchBar" placeholder="Search trends, tags (e.g. #VIBE)...">
   <div class="discoverGrid" id="discoverGrid"></div>
 </div>
 </section>
 
 <section id="inbox" class="screen">
-<div class="screenHead"><span>Messages</span><button class="close" data-close="inbox">×</button></div>
+<div class="screenHead"><span>Activity & Messages</span><button class="close" data-close="inbox">×</button></div>
 <div class="inboxBody">
-  <div class="messageItem">
-    <img class="messageAvatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150">
-    <div class="messageContent">
-      <div class="messageName">Elena Rostova</div>
-      <div class="messageSnippet">Loved your recent vibe post! ✨</div>
-    </div>
+  <div class="inboxSubTabs">
+    <span class="inboxSubTab active" data-inbox-tab="messages">Messages</span>
+    <span class="inboxSubTab" data-inbox-tab="notifications">Notifications</span>
   </div>
-  <div class="messageItem">
-    <img class="messageAvatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150">
-    <div class="messageContent">
-      <div class="messageName">Liam Chen</div>
-      <div class="messageSnippet">Let's collaborate on a clip soon.</div>
+  <div id="inboxContentContainer">
+    <div class="messageItem">
+      <img class="messageAvatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150">
+      <div class="messageContent">
+        <div class="messageName">Elena Rostova</div>
+        <div class="messageSnippet">Loved your recent vibe post! ✨</div>
+      </div>
+    </div>
+    <div class="messageItem">
+      <img class="messageAvatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150">
+      <div class="messageContent">
+        <div class="messageName">Liam Chen</div>
+        <div class="messageSnippet">Let's collaborate on a clip soon.</div>
+      </div>
     </div>
   </div>
 </div>
@@ -162,17 +194,31 @@ button{font:inherit}
 <div class="screenHead"><span>My Profile</span><button class="close" data-close="profile">×</button></div>
 <div class="profileBody">
   <div class="profileHeaderInfo">
-    <img class="profileBigAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150">
-    <div class="name" style="font-size:17px">@creator_vibe</div>
+    <img class="profileBigAvatar" id="profileAvatarImg" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" title="Tap to change avatar">
+    <input type="file" id="avatarFileInput" class="hidden" accept="image/*">
+    <div class="name" id="profileUsername" style="font-size:17px">@creator_vibe</div>
+    <div id="profileBio" style="font-size:12px;color:var(--muted);margin-top:4px">Short-form content creator & explorer ✨</div>
     <div class="profileStats">
       <div><span id="statFollowing">142</span>Following</div>
       <div><span id="statFollowers">1.2K</span>Followers</div>
       <div><span id="statLikes">8.4K</span>Likes</div>
     </div>
+    <button class="editProfileBtn" id="editProfileBtn">Edit Profile</button>
   </div>
   <div class="userPostsGrid" id="userPostsGrid"></div>
 </div>
 </section>
+
+<!-- Edit Profile Modal -->
+<div id="editProfileModal" class="modalScreen">
+<div class="screenHead"><span>Edit Profile</span><button class="close" id="closeEditProfile">×</button></div>
+<div style="padding:20px">
+  <div style="margin-bottom:15px"><label style="font-size:12px;color:var(--muted)">Username</label><input type="text" id="editUsernameInput" class="searchBar" style="margin-top:5px"></div>
+  <div style="margin-bottom:15px"><label style="font-size:12px;color:var(--muted)">Bio</label><textarea id="editBioInput" class="searchBar" style="height:80px;resize:none;margin-top:5px"></textarea></div>
+  <button id="saveProfileBtn" class="postBtn">Save Changes</button>
+</div>
+</div>
+
 </div>
 
 <script>
@@ -189,27 +235,44 @@ const timer=document.getElementById('timer');
 const timerText=document.getElementById('timerText');
 
 let feedData=[
-{id:1,author:"Elena Rostova",caption:"Golden hour tones hitting different today ✨",audio:"Original Audio - Elena",likes:"24.5K",comments:"412",shares:"1.2K",avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",video:"https://assets.mixkit.co/videos/preview/mixkit-woman-filming-herself-with-a-smartphone-41270-large.mp4"},
-{id:2,author:"Liam Chen",caption:"Late night coding session 💻⚡ #VIBE",audio:"Lofi Chill Beats",likes:"58.1K",comments:"930",shares:"4.5K",avatar:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",video:"https://assets.mixkit.co/videos/preview/mixkit-hands-typing-on-a-laptop-keyboard-close-up-42861-large.mp4"},
-{id:3,author:"Sophia Taylor",caption:"Weekend aesthetic inspirations ✨",audio:"Ambient Space",likes:"12.3K",comments:"154",shares:"890",avatar:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",video:"https://assets.mixkit.co/videos/preview/mixkit-cozy-living-room-with-a-fireplace-41153-large.mp4"}
+{id:1,author:"Elena Rostova",caption:"Golden hour tones hitting different today ✨ #goldenhour #VIBE",audio:"Original Audio - Elena",likes:"24.5K",comments:"412",shares:"1.2K",views:"112K",avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",video:"https://assets.mixkit.co/videos/preview/mixkit-woman-filming-herself-with-a-smartphone-41270-large.mp4"},
+{id:2,author:"Liam Chen",caption:"Late night coding session 💻⚡ #coding #tech #VIBE",audio:"Lofi Chill Beats",likes:"58.1K",comments:"930",shares:"4.5K",views:"340K",avatar:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",video:"https://assets.mixkit.co/videos/preview/mixkit-hands-typing-on-a-laptop-keyboard-close-up-42861-large.mp4"},
+{id:3,author:"Sophia Taylor",caption:"Weekend aesthetic inspirations ✨ #aesthetic #lifestyle",audio:"Ambient Space",likes:"12.3K",comments:"154",shares:"890",views:"45K",avatar:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",video:"https://assets.mixkit.co/videos/preview/mixkit-cozy-living-room-with-a-fireplace-41153-large.mp4"}
 ];
 
+let notificationsData=[
+{type:"like",user:"Elena Rostova",text:"liked your video",time:"2m ago",avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150"},
+{type:"follow",user:"Liam Chen",text:"started following you",time:"1h ago",avatar:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150"},
+{type:"comment",user:"Sophia Taylor",text:"commented: 'Amazing work!'",time:"3h ago",avatar:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"}
+];
+
+let myProfile={username:"@creator_vibe",bio:"Short-form content creator & explorer ✨",avatar:"https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150"};
 let activeVideo=null, muted=true, mediaStream=null, recorder=null, chunks=[], recording=false, recordSeconds=0, timerInterval=null, facing="user", selectedMedia=null;
-let pressTimer=null, isLongPress=false;
+let pressTimer=null, isLongPress=false, selectedSound="Original Audio";
 
 function showToast(msg){toast.textContent=msg;toast.classList.add('show');clearTimeout(showToast.t);showToast.t=setTimeout(()=>toast.classList.remove('show'),2200)}
 
-function renderFeed(){
+function parseCaptions(text){
+ return text.replace(/(#[\w\d]+)/g, '<span class="hashtag">$1</span>');
+}
+
+function renderFeed(filteredList){
+ const list = filteredList || feedData;
  feed.innerHTML='';
- feedData.forEach(item=>{
+ list.forEach(item=>{
   const card=document.createElement('article'); 
   card.className='reel' + (item.image ? ' image' : '');
   
   card.innerHTML=`<video class="reel-video" src="${item.video || ''}" loop playsinline preload="metadata" ${muted?'muted':''}></video>
   <img class="reel-image" src="${item.image || ''}" alt="">
   <button class="mute">${muted?'🔇':'🔊'}</button>
-  <div class="overlay"><div class="info"><div class="author"><img class="avatar" src="${item.avatar}"><span class="name">${item.author}</span><button class="follow">Follow</button></div><div class="caption">${item.caption}</div><div class="audio">♫ ${item.audio}</div></div>
-  <div class="actions"><button class="action like"><div class="circle">♡</div><div class="count">${item.likes}</div></button><button class="action"><div class="circle">💬</div><div class="count">${item.comments}</div></button><button class="action"><div class="circle">↗</div><div class="count">${item.shares}</div></button></div></div>`;
+  <div class="overlay"><div class="info"><div class="author"><img class="avatar" src="${item.avatar}"><span class="name">${item.author}</span><button class="follow">Follow</button></div><div class="caption">${parseCaptions(item.caption)}</div><div class="audio">♫ ${item.audio}</div></div>
+  <div class="actions">
+    <button class="action like"><div class="circle">♡</div><div class="count">${item.likes}</div></button>
+    <button class="action"><div class="circle">💬</div><div class="count">${item.comments}</div></button>
+    <button class="action"><div class="circle">↗</div><div class="count">${item.shares}</div></button>
+    <button class="action"><div class="circle">👁</div><div class="count">${item.views || '1.2K'}</div></button>
+  </div></div>`;
   feed.appendChild(card);
   
   const v=card.querySelector('video');
@@ -217,6 +280,17 @@ function renderFeed(){
   card.querySelector('.like').onclick=e=>{e.stopPropagation();e.currentTarget.classList.toggle('liked');e.currentTarget.querySelector('.circle').textContent=e.currentTarget.classList.contains('liked')?'♥':'♡'};
   card.querySelector('.follow').onclick=e=>{e.stopPropagation();e.currentTarget.textContent=e.currentTarget.textContent==='Follow'?'Following':'Follow'};
   
+  // Hashtag click filter
+  card.querySelectorAll('.hashtag').forEach(tag=>{
+   tag.onclick=(e)=>{
+    e.stopPropagation();
+    const query = tag.textContent;
+    document.querySelector('[data-tab="discover"]').click();
+    document.getElementById('searchInput').value = query;
+    filterDiscover(query);
+   };
+  });
+
   if(v){v.addEventListener('click',()=>{if(v.paused)v.play();else v.pause()});}
  });
  setupObserver();
@@ -234,11 +308,14 @@ function setupObserver(){
  document.querySelectorAll('.reel').forEach(x=>ob.observe(x));
 }
 
-function renderDiscoverGrid(){
+function renderDiscoverGrid(filterText=""){
  const grid = document.getElementById('discoverGrid');
  if(!grid) return;
  grid.innerHTML = '';
- feedData.forEach(item => {
+ const query = filterText.toLowerCase();
+ const matches = feedData.filter(item => item.caption.toLowerCase().includes(query) || item.author.toLowerCase().includes(query));
+ 
+ matches.forEach(item => {
   const cell = document.createElement('div');
   cell.className = 'discoverGridItem';
   if(item.image) {
@@ -246,14 +323,34 @@ function renderDiscoverGrid(){
   } else {
    cell.innerHTML = `<video src="${item.video}" muted playsinline></video>`;
   }
+  cell.onclick = () => {
+   [studio,inbox,profile,discover,postScreen].forEach(x=>x.classList.remove('open'));
+   document.querySelector('[data-tab="home"]').click();
+   const idx = feedData.findIndex(f => f.id === item.id);
+   if(idx !== -1) {
+    feed.children[idx].scrollIntoView({behavior:'smooth'});
+   }
+  };
   grid.appendChild(cell);
  });
 }
+
+function filterDiscover(query){
+ renderDiscoverGrid(query);
+}
+
+document.getElementById('searchInput').oninput=(e)=>{
+ filterDiscover(e.target.value);
+};
 
 function renderProfileGrid(){
  const grid = document.getElementById('userPostsGrid');
  if(!grid) return;
  grid.innerHTML = '';
+ document.getElementById('profileUsername').textContent = myProfile.username;
+ document.getElementById('profileBio').textContent = myProfile.bio;
+ document.getElementById('profileAvatarImg').src = myProfile.avatar;
+
  feedData.filter(i => i.author === 'You').forEach(item => {
   const cell = document.createElement('div');
   cell.className = 'userPostThumb';
@@ -323,27 +420,20 @@ function takePhoto(){
 }
 
 const shutterBtn = document.getElementById('shutter');
-
-// Handle Press & Hold (2 seconds for video) vs Tap (Photo)
 shutterBtn.onmousedown = shutterBtn.ontouchstart = (e) => {
  e.preventDefault();
- if(recording){
-  stopRecording();
-  return;
- }
+ if(recording){stopRecording();return;}
  isLongPress = false;
  pressTimer = setTimeout(() => {
   isLongPress = true;
   startRecording();
- }, 2000); // 2 seconds hold to record video
+ }, 2000);
 };
 
 shutterBtn.onmouseup = shutterBtn.ontouchend = (e) => {
  e.preventDefault();
  clearTimeout(pressTimer);
- if(!recording && !isLongPress){
-  takePhoto();
- }
+ if(!recording && !isLongPress){takePhoto();}
 };
 
 document.getElementById('uploadBtn').onclick=()=>fileInput.click();
@@ -357,16 +447,74 @@ function openPost(file,type){
  const box=document.getElementById('previewBox');box.innerHTML='';
  const el=document.createElement(type==='video'?'video':'img');el.src=selectedMedia.url;if(type==='video'){el.controls=true;el.playsInline=true}box.appendChild(el);
 }
+
 document.getElementById('publishBtn').onclick=()=>{
  if(!selectedMedia){showToast('Choose a video or picture first');return}
- const caption=document.getElementById('captionInput').value.trim()||'New VIBE ✨';
- const item={id:Date.now(),author:'You',caption,audio:selectedMedia.type==='video'?'Original Audio - You':'Photo',likes:'0',comments:'0',shares:'0',avatar:'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'};
+ const caption=document.getElementById('captionInput').value.trim()||'New VIBE ✨ #VIBE';
+ const item={id:Date.now(),author:'You',caption,audio:selectedSound,likes:'0',comments:'0',shares:'0',views:'1',avatar:myProfile.avatar};
  if(selectedMedia.type==='video')item.video=selectedMedia.url;else item.image=selectedMedia.url;
  feedData.unshift(item);renderFeed();postScreen.classList.remove('open');selectedMedia=null;document.getElementById('captionInput').value='';showToast('Posted to VIBE 🎉');
 };
 
 document.getElementById('flipBtn').onclick=async()=>{facing=facing==='user'?'environment':'user';stopCamera();await startCamera()};
 document.querySelectorAll('.filter').forEach(b=>b.onclick=()=>{document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));b.classList.add('active');camera.style.filter=b.dataset.filter});
+
+// Sound Modal Controls
+document.getElementById('soundSelectBtn').onclick=()=>document.getElementById('soundModal').classList.add('open');
+document.getElementById('closeSoundModal').onclick=()=>document.getElementById('soundModal').classList.remove('open');
+document.querySelectorAll('.soundItem').forEach(item=>{
+ item.onclick=()=>{
+  selectedSound = item.dataset.sound;
+  document.getElementById('currentSoundLabel').textContent = selectedSound;
+  document.getElementById('soundModal').classList.remove('open');
+  showToast('Sound selected: '+selectedSound);
+ };
+});
+
+// Inbox Sub-tabs (Messages vs Notifications)
+document.querySelectorAll('.inboxSubTab').forEach(tab=>{
+ tab.onclick=()=>{
+  document.querySelectorAll('.inboxSubTab').forEach(x=>x.classList.remove('active'));
+  tab.classList.add('active');
+  const container = document.getElementById('inboxContentContainer');
+  container.innerHTML = '';
+  if(tab.dataset.inboxTab === 'messages'){
+   container.innerHTML = `
+    <div class="messageItem"><img class="messageAvatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150"><div class="messageContent"><div class="messageName">Elena Rostova</div><div class="messageSnippet">Loved your recent vibe post! ✨</div></div></div>
+    <div class="messageItem"><img class="messageAvatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150"><div class="messageContent"><div class="messageName">Liam Chen</div><div class="messageSnippet">Let's collaborate on a clip soon.</div></div></div>`;
+  } else {
+   notificationsData.forEach(n=>{
+    container.innerHTML += `<div class="messageItem"><img class="messageAvatar" src="${n.avatar}"><div class="messageContent"><div class="messageName">${n.user}</div><div class="messageSnippet">${n.text}</div></div><div style="font-size:11px;color:var(--muted)">${n.time}</div></div>`;
+   });
+  }
+ };
+});
+
+// Edit Profile & Avatar Upload
+document.getElementById('editProfileBtn').onclick=()=>{
+ document.getElementById('editUsernameInput').value = myProfile.username;
+ document.getElementById('editBioInput').value = myProfile.bio;
+ document.getElementById('editProfileModal').classList.add('open');
+};
+document.getElementById('closeEditProfile').onclick=()=>document.getElementById('editProfileModal').classList.remove('open');
+document.getElementById('saveProfileBtn').onclick=()=>{
+ myProfile.username = document.getElementById('editUsernameInput').value.trim() || myProfile.username;
+ myProfile.bio = document.getElementById('editBioInput').value.trim() || myProfile.bio;
+ document.getElementById('editProfileModal').classList.remove('open');
+ renderProfileGrid();
+ showToast('Profile updated successfully!');
+};
+
+document.getElementById('profileAvatarImg').onclick=()=>document.getElementById('avatarFileInput').click();
+document.getElementById('avatarFileInput').onchange=e=>{
+ const file = e.target.files[0];
+ if(file && file.type.startsWith('image/')){
+  myProfile.avatar = URL.createObjectURL(file);
+  renderProfileGrid();
+  renderFeed();
+  showToast('Profile picture updated!');
+ }
+};
 
 document.querySelectorAll('.tab').forEach(t=>{
  t.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');showToast('Switched to '+t.textContent);};
@@ -378,7 +526,7 @@ document.querySelectorAll('.nav button').forEach(b=>b.onclick=async()=>{
  b.classList.add('active');
 
  if(tab==='create'){studio.classList.add('open');await startCamera()}
- else if(tab==='home'){[studio,inbox,profile,discover,postScreen].forEach(x=>x.classList.remove('open'))}
+ else if(tab==='home'){[studio,inbox,profile,discover,postScreen,document.getElementById('soundModal'),document.getElementById('editProfileModal')].forEach(x=>x.classList.remove('open'))}
  else if(tab==='discover'){discover.classList.add('open')}
  else if(tab==='inbox'){inbox.classList.add('open')}
  else if(tab==='profile'){profile.classList.add('open')}
