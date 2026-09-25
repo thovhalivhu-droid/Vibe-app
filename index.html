@@ -16,10 +16,9 @@
     .global-mute-btn { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; backdrop-filter: blur(8px); font-weight: bold; }
     .badge { background: rgba(255,255,255,0.15); padding: 6px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; backdrop-filter: blur(8px); }
     
-    .view-section { height: calc(100vh - 65px); width: 100%; position: absolute; top: 0; left: 0; display: none; }
-    .view-section.active { display: block; }
+    .view-section { height: calc(100vh - 65px); width: 100%; position: absolute; top: 0; left: 0; display: block; }
 
-    /* REELS FEED (VERTICAL SWIPE) */
+    /* REELS FEED */
     .reels-feed { height: 100%; width: 100%; overflow-y: scroll; snap-type: y mandatory; scrollbar-width: none; }
     .reels-feed::-webkit-scrollbar { display: none; }
 
@@ -27,7 +26,6 @@
     .reel-video-container { width: 100%; height: 100%; position: relative; cursor: pointer; }
     video { width: 100%; height: 100%; object-fit: cover; }
 
-    /* UNMUTE OVERLAY */
     .unmute-overlay {
       position: absolute;
       top: 50%;
@@ -50,7 +48,6 @@
     }
     .unmute-overlay.hidden { opacity: 0; }
 
-    /* REEL OVERLAY */
     .reel-overlay {
       position: absolute;
       bottom: 20px;
@@ -73,7 +70,6 @@
     .action-btn-vertical { background: none; border: none; color: #fff; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; cursor: pointer; }
     .action-icon { width: 42px; height: 42px; border-radius: 50%; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; font-size: 20px; }
 
-    /* BOTTOM NAV */
     .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; height: 65px; background: #0c0d12; border-top: 1px solid rgba(255,255,255,0.1); display: grid; grid-template-columns: repeat(5, 1fr); align-items: center; z-index: 100; }
     .nav-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; color: #8e8e93; font-size: 10px; font-weight: 500; cursor: pointer; border: none; background: none; gap: 3px; }
     .nav-btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; }
@@ -97,13 +93,13 @@
       </div>
     </header>
 
-    <div id="home-view" class="view-section active">
-      <div class="reels-feed" id="reels-feed" onscroll="handleReelScroll()">
+    <div id="home-view" class="view-section">
+      <div class="reels-feed" id="reels-feed">
         
         <!-- REEL 1 -->
         <div class="reel-card">
-          <div class="reel-video-container" onclick="handleUserInteraction(this)">
-            <video class="feed-video" src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" playsinline loop autoplay muted></video>
+          <div class="reel-video-container" onclick="togglePlayPause(this)">
+            <video class="feed-video" src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" playsinline loop muted></video>
             <div class="unmute-overlay">🔊 Tap screen for sound</div>
           </div>
           <div class="reel-overlay">
@@ -114,14 +110,13 @@
             <div class="reel-actions">
               <button class="action-btn-vertical"><div class="action-icon">❤️</div><span>128</span></button>
               <button class="action-btn-vertical"><div class="action-icon">💬</div><span>24</span></button>
-              <button class="action-btn-vertical"><div class="action-icon">⋮</div><span>More</span></button>
             </div>
           </div>
         </div>
 
         <!-- REEL 2 -->
         <div class="reel-card">
-          <div class="reel-video-container" onclick="handleUserInteraction(this)">
+          <div class="reel-video-container" onclick="togglePlayPause(this)">
             <video class="feed-video" src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4" playsinline loop muted></video>
             <div class="unmute-overlay">🔊 Tap screen for sound</div>
           </div>
@@ -133,7 +128,6 @@
             <div class="reel-actions">
               <button class="action-btn-vertical"><div class="action-icon">❤️</div><span>76</span></button>
               <button class="action-btn-vertical"><div class="action-icon">💬</div><span>9</span></button>
-              <button class="action-btn-vertical"><div class="action-icon">⋮</div><span>More</span></button>
             </div>
           </div>
         </div>
@@ -171,33 +165,33 @@
   <script>
     let isGlobalMuted = true;
 
-    // Handles playing ONLY the video visible on screen and pausing all others
-    function handleReelScroll() {
-      const feed = document.getElementById('reels-feed');
-      const cards = feed.querySelectorAll('.reel-card');
-      const scrollTop = feed.scrollTop;
-      const height = feed.clientHeight;
+    // Automatically plays video in viewport and pauses all scrolled-out videos
+    const observerOptions = {
+      root: document.getElementById('reels-feed'),
+      threshold: 0.6 // Video must be 60% visible to play
+    };
 
-      cards.forEach((card) => {
-        const video = card.querySelector('video');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const video = entry.target.querySelector('video');
         if (!video) return;
 
-        // Check if this card is currently in view
-        const isVisible = Math.abs(card.offsetTop - scrollTop) < height / 2;
-
-        if (isVisible) {
-          video.muted = isGlobalMuted;
+        if (entry.isIntersecting) {
+          video.currentTime = 0; // Reset video to beginning when swiped into view
           video.play().catch(() => {});
         } else {
-          // Pause and reset time for non-visible videos
-          video.pause();
+          video.pause(); // Instantly pause non-visible videos
         }
       });
-    }
+    }, observerOptions);
 
-    function handleUserInteraction(container) {
+    // Attach observer to all reel cards
+    document.querySelectorAll('.reel-card').forEach(card => {
+      observer.observe(card);
+    });
+
+    function togglePlayPause(container) {
       const video = container.querySelector('video');
-      const overlay = container.querySelector('.unmute-overlay');
       
       if (isGlobalMuted) {
         isGlobalMuted = false;
@@ -222,10 +216,6 @@
         document.querySelectorAll('.unmute-overlay').forEach(el => el.classList.add('hidden'));
       }
     }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      handleReelScroll();
-    });
   </script>
 </body>
 </html>
