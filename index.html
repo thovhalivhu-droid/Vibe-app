@@ -292,20 +292,20 @@ const timerText=document.getElementById('timerText');
 
 let feedData=[
 {
- id:1, author:"Elena Rostova", caption:"Golden hour tones hitting different today ✨ #goldenhour #VIBE", audio:"Original Audio - Elena", likes:24500, commentsCount:2, shares:"1.2K", views:"112K", avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150", video:"https://assets.mixkit.co/videos/preview/mixkit-woman-filming-herself-with-a-smartphone-41270-large.mp4",
+ id:1, author:"Elena Rostova", caption:"Golden hour tones hitting different today ✨ #goldenhour #VIBE", audio:"Original Audio - Elena", likes:24500, commentsCount:2, shares:1200, views:"112K", avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150", video:"https://assets.mixkit.co/videos/preview/mixkit-woman-filming-herself-with-a-smartphone-41270-large.mp4",
  commentsList:[
   {user:"Liam Chen", text:"Absolute cinematic shots!", avatar:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150"},
   {user:"Sophia Taylor", text:"Where is this spot?? ✨", avatar:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"}
  ]
 },
 {
- id:2, author:"Liam Chen", caption:"Late night coding session 💻⚡ #coding #tech #VIBE", audio:"Lofi Chill Beats", likes:58100, commentsCount:1, shares:"4.5K", views:"340K", avatar:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150", video:"https://assets.mixkit.co/videos/preview/mixkit-hands-typing-on-a-laptop-keyboard-close-up-42861-large.mp4",
+ id:2, author:"Liam Chen", caption:"Late night coding session 💻⚡ #coding #tech #VIBE", audio:"Lofi Chill Beats", likes:58100, commentsCount:1, shares:4500, views:"340K", avatar:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150", video:"https://assets.mixkit.co/videos/preview/mixkit-hands-typing-on-a-laptop-keyboard-close-up-42861-large.mp4",
  commentsList:[
   {user:"Elena Rostova", text:"Relatable haha ☕", avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150"}
  ]
 },
 {
- id:3, author:"Sophia Taylor", caption:"Weekend aesthetic inspirations ✨ #aesthetic #lifestyle", audio:"Ambient Space", likes:12300, commentsCount:0, shares:"890", views:"45K", avatar:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150", video:"https://assets.mixkit.co/videos/preview/mixkit-cozy-living-room-with-a-fireplace-41153-large.mp4",
+ id:3, author:"Sophia Taylor", caption:"Weekend aesthetic inspirations ✨ #aesthetic #lifestyle", audio:"Ambient Space", likes:12300, commentsCount:0, shares:890, views:"45K", avatar:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150", video:"https://assets.mixkit.co/videos/preview/mixkit-cozy-living-room-with-a-fireplace-41153-large.mp4",
  commentsList:[]
 }
 ];
@@ -320,7 +320,7 @@ let myProfile={username:"@creator_vibe",bio:"Short-form content creator & explor
 let activeVideo=null, muted=true, mediaStream=null, recorder=null, chunks=[], recording=false, recordSeconds=0, timerInterval=null, facing="user", selectedMedia=null;
 let pressTimer=null, isLongPress=false, selectedSound="Original Audio";
 let activeCommentPostId=null;
-let profileActiveTab = 'posts'; // 'posts' or 'saved'
+let profileActiveTab = 'posts';
 
 function showToast(msg){toast.textContent=msg;toast.classList.add('show');clearTimeout(showToast.t);showToast.t=setTimeout(()=>toast.classList.remove('show'),2200)}
 
@@ -350,7 +350,7 @@ function renderFeed(filteredList){
     <button class="action like ${item.isLiked ? 'liked' : ''}"><div class="circle">${item.isLiked ? '♥' : '♡'}</div><div class="count">${formatCount(item.likes)}</div></button>
     <button class="action commentBtn"><div class="circle">💬</div><div class="count">${item.commentsList.length}</div></button>
     <button class="action saveBtn ${item.isSaved ? 'saved' : ''}"><div class="circle">${item.isSaved ? '★' : '☆'}</div><div class="count">Save</div></button>
-    <button class="action"><div class="circle">↗</div><div class="count">${item.shares}</div></button>
+    <button class="action shareBtn"><div class="circle">↗</div><div class="count">${formatCount(item.shares)}</div></button>
   </div></div>`;
   feed.appendChild(card);
   
@@ -358,6 +358,7 @@ function renderFeed(filteredList){
   const likeBtn=card.querySelector('.like');
   const commentActionBtn=card.querySelector('.commentBtn');
   const saveBtn=card.querySelector('.saveBtn');
+  const shareBtn=card.querySelector('.shareBtn');
   
   card.querySelector('.mute').onclick=e=>{e.stopPropagation();muted=!muted;document.querySelectorAll('.reel-video').forEach(x=>x.muted=muted);document.querySelectorAll('.mute').forEach(b=>b.textContent=muted?'🔇':'🔊')};
   
@@ -370,13 +371,11 @@ function renderFeed(filteredList){
    likeBtn.querySelector('.count').textContent = formatCount(item.likes);
   };
 
-  // Open comments modal
   commentActionBtn.onclick=e=>{
    e.stopPropagation();
    openCommentsModal(item);
   };
 
-  // Save to Account / Watch Later Bookmark Toggle
   saveBtn.onclick = e => {
    e.stopPropagation();
    item.isSaved = !item.isSaved;
@@ -386,9 +385,39 @@ function renderFeed(filteredList){
    renderProfileGrid();
   };
 
+  // Functional Share Button Event
+  shareBtn.onclick = async e => {
+   e.stopPropagation();
+   const shareData = {
+    title: 'VIBE Video',
+    text: item.caption,
+    url: window.location.href
+   };
+   
+   if (navigator.share) {
+    try {
+     await navigator.share(shareData);
+     item.shares += 1;
+     shareBtn.querySelector('.count').textContent = formatCount(item.shares);
+     return;
+    } catch (err) {
+     // User cancelled or share failed, fallback to copying link
+    }
+   }
+   
+   // Fallback: Copy link to clipboard
+   try {
+    await navigator.clipboard.writeText(window.location.href);
+    item.shares += 1;
+    shareBtn.querySelector('.count').textContent = formatCount(item.shares);
+    showToast('Link copied to clipboard! 🔗');
+   } catch (err) {
+    showToast('Unable to share link');
+   }
+  };
+
   card.querySelector('.follow').onclick=e=>{e.stopPropagation();e.currentTarget.textContent=e.currentTarget.textContent==='Follow'?'Following':'Follow'};
   
-  // Hashtag click filter
   card.querySelectorAll('.hashtag').forEach(tag=>{
    tag.onclick=(e)=>{
     e.stopPropagation();
@@ -399,7 +428,6 @@ function renderFeed(filteredList){
    };
   });
 
-  // Double tap to like implementation
   let lastTap = 0;
   card.onclick = (e) => {
    if(e.target.closest('button') || e.target.closest('.hashtag') || e.target.closest('.author')) return;
@@ -438,7 +466,6 @@ function renderFeed(filteredList){
  renderProfileGrid();
 }
 
-// Comments Modal Logic
 function openCommentsModal(item){
  activeCommentPostId = item.id;
  document.getElementById('commentModalTitle').textContent = `Comments (${item.commentsList.length})`;
@@ -535,7 +562,6 @@ document.getElementById('searchInput').oninput=(e)=>{
  filterDiscover(e.target.value);
 };
 
-// Profile Sub Tabs (My Posts vs Saved Videos)
 document.querySelectorAll('.profileSubTab').forEach(tab=>{
  tab.onclick=()=>{
   document.querySelectorAll('.profileSubTab').forEach(x=>x.classList.remove('active'));
@@ -670,7 +696,7 @@ function openPost(file,type){
 document.getElementById('publishBtn').onclick=()=>{
  if(!selectedMedia){showToast('Choose a video or picture first');return}
  const caption=document.getElementById('captionInput').value.trim()||'New VIBE ✨ #VIBE';
- const item={id:Date.now(),author:'You',caption,audio:selectedSound,likes:0,commentsCount:0,shares:'0',views:'1',avatar:myProfile.avatar,commentsList:[]};
+ const item={id:Date.now(),author:'You',caption,audio:selectedSound,likes:0,commentsCount:0,shares:0,views:'1',avatar:myProfile.avatar,commentsList:[]};
  if(selectedMedia.type==='video')item.video=selectedMedia.url;else item.image=selectedMedia.url;
  feedData.unshift(item);renderFeed();postScreen.classList.remove('open');selectedMedia=null;document.getElementById('captionInput').value='';showToast('Posted to VIBE 🎉');
 };
@@ -678,7 +704,6 @@ document.getElementById('publishBtn').onclick=()=>{
 document.getElementById('flipBtn').onclick=async()=>{facing=facing==='user'?'environment':'user';stopCamera();await startCamera()};
 document.querySelectorAll('.filter').forEach(b=>b.onclick=()=>{document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));b.classList.add('active');camera.style.filter=b.dataset.filter});
 
-// Sound Modal Controls
 document.getElementById('soundSelectBtn').onclick=()=>document.getElementById('soundModal').classList.add('open');
 document.getElementById('closeSoundModal').onclick=()=>document.getElementById('soundModal').classList.remove('open');
 document.querySelectorAll('.soundItem').forEach(item=>{
@@ -690,7 +715,6 @@ document.querySelectorAll('.soundItem').forEach(item=>{
  };
 });
 
-// Inbox Sub-tabs (Messages vs Notifications)
 document.querySelectorAll('.inboxSubTab').forEach(tab=>{
  tab.onclick=()=>{
   document.querySelectorAll('.inboxSubTab').forEach(x=>x.classList.remove('active'));
@@ -709,7 +733,6 @@ document.querySelectorAll('.inboxSubTab').forEach(tab=>{
  };
 });
 
-// Edit Profile & Avatar Upload
 document.getElementById('editProfileBtn').onclick=()=>{
  document.getElementById('editUsernameInput').value = myProfile.username;
  document.getElementById('editBioInput').value = myProfile.bio;
@@ -763,4 +786,3 @@ renderFeed();
 </script>
 </body>
 </html>
- 
