@@ -87,7 +87,7 @@ button{font:inherit}
 .soundTitle{font-weight:700;font-size:14px}.soundAuthor{font-size:12px;color:var(--muted)}
 .useSoundBtn{padding:5px 12px;background:var(--pink);border:0;border-radius:14px;color:#fff;font-size:12px;font-weight:700}
 
-/* Double Tap Heart Animation Styles */
+/* Double Tap Heart Animation */
 .double-tap-heart {
   position: absolute;
   font-size: 80px;
@@ -251,10 +251,10 @@ button{font:inherit}
 </div>
 </div>
 
-<!-- Real Comment Screen Drawer -->
+<!-- Comment Screen Drawer -->
 <div id="commentModal" class="commentModal">
   <div class="commentHeader">
-    <span id="commentModalTitle">Comments (412)</span>
+    <span id="commentModalTitle">Comments</span>
     <button class="close" id="closeCommentModal" style="position:absolute;right:16px;top:10px;font-size:22px;">×</button>
   </div>
   <div class="commentList" id="commentListContainer"></div>
@@ -330,21 +330,22 @@ function renderFeed(filteredList){
   const card=document.createElement('article'); 
   card.className='reel' + (item.image ? ' image' : '');
   
-  card.innerHTML=`<video class="reel-video" src="${item.video || ''}" loop playsinline preload="metadata" ${muted?'muted':''}></video>
+  card.innerHTML=`<video class="reel-video" src="${item.video || item.image || ''}" loop playsinline preload="metadata" ${muted?'muted':''}></video>
   <img class="reel-image" src="${item.image || ''}" alt="">
   <button class="mute">${muted?'🔇':'🔊'}</button>
   <div class="overlay"><div class="info"><div class="author"><img class="avatar" src="${item.avatar}"><span class="name">${item.author}</span><button class="follow">Follow</button></div><div class="caption">${parseCaptions(item.caption)}</div><div class="audio">♫ ${item.audio}</div></div>
   <div class="actions">
     <button class="action like ${item.isLiked ? 'liked' : ''}"><div class="circle">${item.isLiked ? '♥' : '♡'}</div><div class="count">${formatCount(item.likes)}</div></button>
     <button class="action commentBtn"><div class="circle">💬</div><div class="count">${item.commentsList.length}</div></button>
+    <button class="action saveBtn"><div class="circle">⬇</div><div class="count">Save</div></button>
     <button class="action"><div class="circle">↗</div><div class="count">${item.shares}</div></button>
-    <button class="action"><div class="circle">👁</div><div class="count">${item.views || '1.2K'}</div></button>
   </div></div>`;
   feed.appendChild(card);
   
   const v=card.querySelector('video');
   const likeBtn=card.querySelector('.like');
   const commentActionBtn=card.querySelector('.commentBtn');
+  const saveBtn=card.querySelector('.saveBtn');
   
   card.querySelector('.mute').onclick=e=>{e.stopPropagation();muted=!muted;document.querySelectorAll('.reel-video').forEach(x=>x.muted=muted);document.querySelectorAll('.mute').forEach(b=>b.textContent=muted?'🔇':'🔊')};
   
@@ -361,6 +362,42 @@ function renderFeed(filteredList){
   commentActionBtn.onclick=e=>{
    e.stopPropagation();
    openCommentsModal(item);
+  };
+
+  // Save/Download Video Functionality
+  saveBtn.onclick = async e => {
+   e.stopPropagation();
+   const mediaUrl = item.video || item.image;
+   if(!mediaUrl) {
+    showToast('No media file available to save');
+    return;
+   }
+   
+   showToast('Downloading media...');
+   try {
+    const response = await fetch(mediaUrl);
+    const blob = await response.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = blobUrl;
+    a.download = `vibe-post-${item.id}.${item.video ? 'mp4' : 'jpg'}`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(blobUrl);
+    a.remove();
+    showToast('Saved successfully to device!');
+   } catch(err) {
+    // Fallback direct link invocation if fetch blob restricted by CORS
+    const a = document.createElement('a');
+    a.href = mediaUrl;
+    a.target = '_blank';
+    a.download = `vibe-post-${item.id}.${item.video ? 'mp4' : 'jpg'}`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    showToast('Download started!');
+   }
   };
 
   card.querySelector('.follow').onclick=e=>{e.stopPropagation();e.currentTarget.textContent=e.currentTarget.textContent==='Follow'?'Following':'Follow'};
@@ -462,7 +499,7 @@ document.getElementById('commentSendBtn').onclick=()=>{
   input.value = '';
   document.getElementById('commentModalTitle').textContent = `Comments (${targetPost.commentsList.length})`;
   renderCommentList(targetPost);
-  renderFeed(); // Refresh to update comment counters on reels
+  renderFeed();
   showToast('Comment posted!');
  }
 };
@@ -713,4 +750,3 @@ renderFeed();
 </script>
 </body>
 </html>
- 
