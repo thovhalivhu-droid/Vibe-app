@@ -11,6 +11,9 @@
     
     header { height: 62px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; position: sticky; top: 0; background: rgba(12,13,18,0.9); backdrop-filter: blur(8px); z-index: 10; }
     .logo { font-size: 24px; font-weight: 900; letter-spacing: 1px; }
+    .header-controls { display: flex; align-items: center; gap: 8px; }
+    .global-mute-btn { background: #1e1f29; border: 1px solid #232535; color: #fff; padding: 6px 10px; border-radius: 20px; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; user-select: none; transition: background 0.2s; }
+    .global-mute-btn:active { background: #2f3242; }
     .badge { background: #1e1f29; padding: 6px 12px; border-radius: 20px; font-size: 12px; }
     
     .view-section { display: none; }
@@ -202,7 +205,10 @@
   <div class="app">
     <header>
       <div class="logo">VIBE</div>
-      <div class="badge">🇿🇦 SA Creators</div>
+      <div class="header-controls">
+        <button id="global-mute-btn" class="global-mute-btn" onclick="toggleGlobalMute()">🔊 Sound On</button>
+        <div class="badge">🇿🇦 SA Creators</div>
+      </div>
     </header>
 
     <!-- HIDDEN DIRECT GALLERY INPUT -->
@@ -437,6 +443,23 @@
 
   <script>
     let activeCommentSpan = null;
+    let isGlobalMuted = false;
+
+    function toggleGlobalMute() {
+      isGlobalMuted = !isGlobalMuted;
+      const globalBtn = document.getElementById('global-mute-btn');
+      globalBtn.textContent = isGlobalMuted ? '🔇 Muted' : '🔊 Sound On';
+
+      const videos = document.querySelectorAll('video');
+      videos.forEach(v => {
+        v.muted = isGlobalMuted;
+        const container = v.closest('.video-container');
+        if (container) {
+          const muteBtn = container.querySelector('.mute-btn');
+          if (muteBtn) muteBtn.textContent = isGlobalMuted ? '🔇' : '🔊';
+        }
+      });
+    }
 
     function toggleVideoPlayback(container, event) {
       if (event && event.target.classList.contains('mute-btn')) return;
@@ -458,6 +481,13 @@
     }
 
     function handleVideoPlay(videoElem) {
+      videoElem.muted = isGlobalMuted;
+      const container = videoElem.closest('.video-container');
+      if (container) {
+        const muteBtn = container.querySelector('.mute-btn');
+        if (muteBtn) muteBtn.textContent = isGlobalMuted ? '🔇' : '🔊';
+      }
+
       const allVideos = document.querySelectorAll('video');
       allVideos.forEach(v => {
         if (v !== videoElem && !v.paused) {
@@ -596,7 +626,7 @@
       newCard.innerHTML = `
         <div class="video-container" onclick="toggleVideoPlayback(this, event)">
           <video src="${videoUrl}" playsinline loop preload="metadata" onplay="handleVideoPlay(this)"></video>
-          <button class="mute-btn" onclick="toggleMute(this, event)">🔊</button>
+          <button class="mute-btn" onclick="toggleMute(this, event)">${isGlobalMuted ? '🔇' : '🔊'}</button>
         </div>
         <div class="info">
           <div class="creator">${currentHandle}</div>
