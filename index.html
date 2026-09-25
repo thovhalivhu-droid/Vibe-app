@@ -79,6 +79,24 @@
       background: #000;
     }
 
+    /* UNMUTE BADGE STYLE */
+    .unmute-badge {
+      position: absolute;
+      top: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.6);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.3);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+      z-index: 15;
+    }
+
     /* REEL OVERLAY CONTENT */
     .reel-overlay {
       position: absolute;
@@ -575,6 +593,7 @@
         <div class="reel-card" data-index="0">
           <div class="reel-video-container" onclick="toggleVideoPlayback(this)">
             <video src="https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" playsinline loop autoplay preload="auto"></video>
+            <button class="unmute-badge" onclick="enableAudio(event, this)">Tap to Unmute 🔊</button>
           </div>
           <div class="reel-overlay">
             <div class="reel-info">
@@ -816,6 +835,16 @@
     let mediaRecorder = null;
     let recordedChunks = [];
     let customAvatarUrl = '';
+
+    function enableAudio(event, btn) {
+      event.stopPropagation();
+      const container = btn.parentElement;
+      const video = container.querySelector('video');
+      if (video) {
+        video.muted = false;
+        btn.style.display = 'none';
+      }
+    }
 
     function switchTab(tabName) {
       document.querySelectorAll('.view-section').forEach(section => section.classList.remove('active'));
@@ -1119,7 +1148,8 @@
 
       const mediaHtml = (type === 'image') 
         ? `<img src="${srcUrl}" class="feed-photo ${activeFilterClass}" alt="User Photo" />`
-        : `<video src="${srcUrl}" class="${activeFilterClass}" playsinline loop autoplay preload="auto"></video>`;
+        : `<video src="${srcUrl}" class="${activeFilterClass}" playsinline loop autoplay preload="auto"></video>
+           <button class="unmute-badge" onclick="enableAudio(event, this)">Tap to Unmute 🔊</button>`;
 
       newReel.innerHTML = `
         <div class="reel-video-container" onclick="${type === 'video' ? 'toggleVideoPlayback(this)' : ''}">
@@ -1170,7 +1200,6 @@
         ? `<img src="${srcUrl}" class="feed-photo ${activeFilterClass}" alt="User Photo" />`
         : `<video src="${srcUrl}" class="${activeFilterClass}" playsinline preload="metadata"></video>`;
 
-      // Clicking the profile thumbnail toggles play/pause directly on the profile grid item without switching tabs
       thumb.setAttribute('onclick', `toggleProfileThumb(this)`);
       
       thumb.innerHTML = `
@@ -1190,10 +1219,9 @@
 
     function toggleProfileThumb(thumbElement) {
       const video = thumbElement.querySelector('video');
-      if (!video) return; // If it's a photo, do nothing
+      if (!video) return; 
       
       if (video.paused) {
-        // Pause all other profile videos first if you only want one playing at a time
         document.querySelectorAll('#profile-posts-grid video').forEach(v => {
           if (v !== video) v.pause();
         });
