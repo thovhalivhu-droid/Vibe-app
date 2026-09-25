@@ -23,6 +23,28 @@
     .card { margin: 12px 16px; border-radius: 18px; overflow: hidden; background: #161722; border: 1px solid #232535; position: relative; }
     .video-container { width: 100%; height: 380px; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; cursor: pointer; }
     video { width: 100%; height: 100%; object-fit: cover; }
+
+    /* DURATION BADGE STYLES */
+    .duration-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      z-index: 5;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 1s ease-out;
+    }
+    .duration-badge.visible {
+      opacity: 1;
+      transition: opacity 0.2s ease-in;
+    }
     
     /* MUTE & OPTIONS BUTTON STYLES */
     .mute-btn, .options-btn {
@@ -258,6 +280,7 @@
         <div class="card">
           <div class="video-container" onclick="toggleVideoPlayback(this, event)">
             <video src="https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" playsinline loop preload="metadata" onplay="handleVideoPlay(this)"></video>
+            <div class="duration-badge">0:00</div>
             <button class="options-btn" onclick="openVideoOptionsMenu(this, event)">⋮</button>
             <button class="mute-btn" onclick="toggleMute(this, event)">🔊</button>
           </div>
@@ -276,6 +299,7 @@
         <div class="card">
           <div class="video-container" onclick="toggleVideoPlayback(this, event)">
             <video src="https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4" playsinline loop preload="metadata" onplay="handleVideoPlay(this)"></video>
+            <div class="duration-badge">0:00</div>
             <button class="options-btn" onclick="openVideoOptionsMenu(this, event)">⋮</button>
             <button class="mute-btn" onclick="toggleMute(this, event)">🔊</button>
           </div>
@@ -539,6 +563,36 @@
     let currentPendingVideoUrl = null;
     let currentActiveVideoElement = null;
 
+    function formatTime(seconds) {
+      if (isNaN(seconds) || seconds === 0) return '0:00';
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    function showVideoDuration(container) {
+      const video = container.querySelector('video');
+      const badge = container.querySelector('.duration-badge');
+      if (!video || !badge) return;
+
+      if (!isNaN(video.duration) && video.duration > 0) {
+        badge.textContent = formatTime(video.duration);
+      } else {
+        video.addEventListener('loadedmetadata', function onMeta() {
+          badge.textContent = formatTime(video.duration);
+          video.removeEventListener('loadedmetadata', onMeta);
+        });
+      }
+
+      if (badge.fadeTimeout) clearTimeout(badge.fadeTimeout);
+
+      badge.classList.add('visible');
+
+      badge.fadeTimeout = setTimeout(() => {
+        badge.classList.remove('visible');
+      }, 3000);
+    }
+
     function toggleGlobalMute() {
       isGlobalMuted = !isGlobalMuted;
       const globalBtn = document.getElementById('global-mute-btn');
@@ -559,6 +613,9 @@
       if (event && (event.target.classList.contains('mute-btn') || event.target.classList.contains('options-btn'))) return;
       const video = container.querySelector('video');
       if (!video) return;
+
+      showVideoDuration(container);
+
       if (video.paused) {
         video.play();
       } else {
@@ -810,6 +867,7 @@
       newCard.innerHTML = `
         <div class="video-container" onclick="toggleVideoPlayback(this, event)">
           <video src="${currentPendingVideoUrl}" playsinline loop preload="metadata" onplay="handleVideoPlay(this)"></video>
+          <div class="duration-badge">0:00</div>
           <button class="options-btn" onclick="openVideoOptionsMenu(this, event)">⋮</button>
           <button class="mute-btn" onclick="toggleMute(this, event)">${isGlobalMuted ? '🔇' : '🔊'}</button>
         </div>
