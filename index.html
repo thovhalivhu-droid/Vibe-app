@@ -1,11 +1,3 @@
-Here is the updated **VIBE** web application code. This version includes a fully functional **Account and Security** modal integrated into the Profile page.
-### What's New in this Update:
- * **Account Settings & Security Modal:** Added a dedicated settings hub accessible from the profile view.
- * **Password Management:** Functional password change form with validation checks.
- * **Two-Factor Authentication (2FA):** Interactive toggle for enhanced account protection.
- * **Login Activity Monitor:** A list showing active sessions and devices with a remote sign-out option.
- * **Account Deactivation / Deletion:** Simulated account termination safety flow with confirmation prompts.
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -44,6 +36,7 @@ Here is the updated **VIBE** web application code. This version includes a fully
             align-items: center;
         }
 
+        /* App Container Shell */
         #app {
             position: relative;
             width: 100%;
@@ -65,6 +58,7 @@ Here is the updated **VIBE** web application code. This version includes a fully
             }
         }
 
+        /* Top Header */
         .app-header {
             position: absolute;
             top: 0;
@@ -118,6 +112,7 @@ Here is the updated **VIBE** web application code. This version includes a fully
             border-radius: 2px;
         }
 
+        /* Main Viewport Feed */
         .feed-container {
             position: relative;
             width: 100%;
@@ -149,6 +144,7 @@ Here is the updated **VIBE** web application code. This version includes a fully
             object-fit: cover;
         }
 
+        /* Reel Overlays & UI Elements */
         .reel-overlay {
             position: absolute;
             bottom: calc(var(--nav-height) + 16px);
@@ -220,6 +216,7 @@ Here is the updated **VIBE** web application code. This version includes a fully
             color: var(--text-muted);
         }
 
+        /* Interaction Sidebar (Right) */
         .reel-actions {
             display: flex;
             flex-direction: column;
@@ -265,6 +262,7 @@ Here is the updated **VIBE** web application code. This version includes a fully
             text-shadow: 0 1px 2px rgba(0,0,0,0.5);
         }
 
+        /* Bottom Navigation Bar */
         .nav-bar {
             position: absolute;
             bottom: 0;
@@ -330,6 +328,7 @@ Here is the updated **VIBE** web application code. This version includes a fully
             fill: none;
         }
 
+        /* Modals & Fullscreens (Inbox, Profile, Camera Studio) */
         .app-screen {
             position: absolute;
             inset: 0;
@@ -361,9 +360,9 @@ Here is the updated **VIBE** web application code. This version includes a fully
             border: none;
             color: var(--text-main);
             cursor: pointer;
-            font-size: 16px;
         }
 
+        /* Studio / Camera Recording Modal */
         #studio-screen {
             background: #000;
         }
@@ -457,6 +456,7 @@ Here is the updated **VIBE** web application code. This version includes a fully
             background: #ff3b30;
         }
 
+        /* Inbox / Chat Screen */
         .inbox-list {
             flex: 1;
             overflow-y: auto;
@@ -498,23 +498,13 @@ Here is the updated **VIBE** web application code. This version includes a fully
             color: var(--text-muted);
         }
 
+        /* Profile Screen */
         .profile-header-sec {
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 24px 20px;
             border-bottom: 1px solid var(--border-color);
-            position: relative;
-        }
-
-        .settings-icon-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: none;
-            border: none;
-            color: var(--text-main);
-            cursor: pointer;
         }
 
         .profile-avatar-large {
@@ -572,154 +562,13 @@ Here is the updated **VIBE** web application code. This version includes a fully
             overflow: hidden;
         }
 
-        .grid-item video {
+        .grid-item img, .grid-item video {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
 
-        /* Settings and Security Sub-Screen Styles */
-        .settings-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
-
-        .settings-group {
-            background: var(--surface-color);
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
-            padding: 16px;
-        }
-
-        .settings-group-title {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 12px;
-        }
-
-        .settings-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .settings-item:last-child {
-            border-bottom: none;
-            padding-bottom: 0;
-        }
-
-        .settings-item:first-of-type {
-            padding-top: 0;
-        }
-
-        .settings-label {
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .settings-subtext {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-top: 2px;
-        }
-
-        /* Toggle Switch Styling */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 24px;
-        }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #333;
-            transition: .3s;
-            border-radius: 24px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .3s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background-color: var(--primary-color);
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(20px);
-        }
-
-        .form-input {
-            width: 100%;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid var(--border-color);
-            padding: 10px 14px;
-            border-radius: 8px;
-            color: #fff;
-            font-size: 14px;
-            margin-top: 8px;
-            margin-bottom: 12px;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-        }
-
-        .btn-primary {
-            background: var(--primary-color);
-            color: #fff;
-            border: none;
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-
-        .btn-primary:active {
-            opacity: 0.85;
-        }
-
-        .btn-danger-text {
-            background: none;
-            border: none;
-            color: #ff3b30;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            text-align: left;
-            padding: 4px 0;
-        }
-
+        /* Toast notification */
         #toast {
             position: absolute;
             top: 70px;
@@ -747,19 +596,25 @@ Here is the updated **VIBE** web application code. This version includes a fully
 <body>
 
     <div id="app">
+        <!-- Toast feedback container -->
         <div id="toast">Action completed</div>
 
+        <!-- Top Header Navigation -->
         <header class="app-header">
             <div class="app-logo">VIBE</div>
             <div class="header-tabs">
                 <div class="header-tab active" data-feed="following">Following</div>
                 <div class="header-tab" data-feed="foryou">For You</div>
             </div>
-            <div style="width: 24px;"></div>
+            <div style="width: 24px;"></div> <!-- Spacer alignment -->
         </header>
 
-        <div class="feed-container" id="feedContainer"></div>
+        <!-- Main Video Feed Container -->
+        <div class="feed-container" id="feedContainer">
+            <!-- Dynamically populated reels -->
+        </div>
 
+        <!-- Bottom Tab Navigation Bar -->
         <nav class="nav-bar">
             <button class="nav-item active" data-tab="home">
                 <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
@@ -835,6 +690,13 @@ Here is the updated **VIBE** web application code. This version includes a fully
                         <div class="chat-snippet">Check out the collab idea I sent over.</div>
                     </div>
                 </div>
+                <div class="chat-row">
+                    <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150" class="chat-avatar">
+                    <div class="chat-details">
+                        <div class="chat-name">Alexis Cole</div>
+                        <div class="chat-snippet">Haha that transition was super clean!</div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -845,9 +707,6 @@ Here is the updated **VIBE** web application code. This version includes a fully
                 <button class="screen-close-btn" data-close="profile">✕</button>
             </div>
             <div class="profile-header-sec">
-                <button class="settings-icon-btn" id="openSettingsBtn" title="Account & Security">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                </button>
                 <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" class="profile-avatar-large">
                 <div class="profile-handle">@creator_alex</div>
                 <div class="profile-bio">Creating cinematic short-form stories 🎬 | Tech & Design Vibe ✨</div>
@@ -866,87 +725,14 @@ Here is the updated **VIBE** web application code. This version includes a fully
                     </div>
                 </div>
             </div>
-            <div class="profile-grid" id="profileGrid"></div>
-        </div>
-
-        <!-- Account and Security Screen -->
-        <div class="app-screen" id="settings-screen">
-            <div class="screen-header">
-                <button class="screen-close-btn" id="closeSettingsBtn">←</button>
-                <span>Account & Security</span>
-                <div style="width: 24px;"></div>
-            </div>
-            <div class="settings-content">
-                <!-- Login Info Group -->
-                <div class="settings-group">
-                    <div class="settings-group-title">Account Details</div>
-                    <div class="settings-item">
-                        <div>
-                            <div class="settings-label">Email Address</div>
-                            <div class="settings-subtext">alex.creator@vibe.app</div>
-                        </div>
-                        <button class="follow-btn" onclick="showToast('Verification email sent')">Edit</button>
-                    </div>
-                    <div class="settings-item">
-                        <div>
-                            <div class="settings-label">Phone Number</div>
-                            <div class="settings-subtext">+1 (555) ***-8942</div>
-                        </div>
-                        <button class="follow-btn" onclick="showToast('OTP verification dispatched')">Update</button>
-                    </div>
-                </div>
-
-                <!-- Security & Password Group -->
-                <div class="settings-group">
-                    <div class="settings-group-title">Security Settings</div>
-                    <div class="settings-item" style="flex-direction: column; align-items: flex-start;">
-                        <div class="settings-label">Change Password</div>
-                        <input type="password" id="currentPass" class="form-input" placeholder="Current Password">
-                        <input type="password" id="newPass" class="form-input" placeholder="New Password">
-                        <button class="btn-primary" id="updatePassBtn">Update Password</button>
-                    </div>
-                    <div class="settings-item" style="margin-top: 12px;">
-                        <div>
-                            <div class="settings-label">Two-Factor Authentication</div>
-                            <div class="settings-subtext">Secure your account with SMS codes</div>
-                        </div>
-                        <label class="switch">
-                            <input type="checkbox" id="tfaToggle" checked>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Active Sessions Group -->
-                <div class="settings-group">
-                    <div class="settings-group-title">Device Management</div>
-                    <div class="settings-item">
-                        <div>
-                            <div class="settings-label">iPhone 15 Pro (Current)</div>
-                            <div class="settings-subtext">Cape Town, South Africa • Active Now</div>
-                        </div>
-                    </div>
-                    <div class="settings-item">
-                        <div>
-                            <div class="settings-label">MacBook Pro 16"</div>
-                            <div class="settings-subtext">Last active 2 hours ago</div>
-                        </div>
-                        <button class="btn-danger-text" onclick="showToast('Session terminated successfully')">Log out</button>
-                    </div>
-                </div>
-
-                <!-- Danger Zone -->
-                <div class="settings-group">
-                    <div class="settings-group-title" style="color: #ff3b30;">Danger Zone</div>
-                    <div class="settings-item">
-                        <button class="btn-danger-text" onclick="confirmDeactivation()">Deactivate or Delete Account</button>
-                    </div>
-                </div>
+            <div class="profile-grid" id="profileGrid">
+                <!-- User media items populated dynamically -->
             </div>
         </div>
     </div>
 
     <script>
+        // Mock data feeds
         const feedData = [
             {
                 id: 1,
@@ -985,10 +771,12 @@ Here is the updated **VIBE** web application code. This version includes a fully
 
         const feedContainer = document.getElementById('feedContainer');
         const profileGrid = document.getElementById('profileGrid');
+        let activeVideoElement = null;
 
+        // Initialize Feed UI
         function renderFeed() {
             feedContainer.innerHTML = '';
-            feedData.forEach((item) => {
+            feedData.forEach((item, index) => {
                 const card = document.createElement('div');
                 card.className = 'reel-card';
                 card.innerHTML = `
@@ -1031,6 +819,7 @@ Here is the updated **VIBE** web application code. This version includes a fully
                 feedContainer.appendChild(card);
             });
 
+            // Populate Profile Grid mock items
             profileGrid.innerHTML = '';
             feedData.forEach(item => {
                 const gridItem = document.createElement('div');
@@ -1042,13 +831,19 @@ Here is the updated **VIBE** web application code. This version includes a fully
             setupIntersectionObserver();
         }
 
+        // Intersection Observer for auto-playing active center video in viewport
         function setupIntersectionObserver() {
-            const observerOptions = { root: feedContainer, threshold: 0.6 };
+            const observerOptions = {
+                root: feedContainer,
+                threshold: 0.6
+            };
+
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     const video = entry.target.querySelector('video');
                     if (entry.isIntersecting) {
                         video.play().catch(() => {});
+                        activeVideoElement = video;
                     } else {
                         video.pause();
                         video.currentTime = 0;
@@ -1056,9 +851,12 @@ Here is the updated **VIBE** web application code. This version includes a fully
                 });
             }, observerOptions);
 
-            document.querySelectorAll('.reel-card').forEach(card => observer.observe(card));
+            document.querySelectorAll('.reel-card').forEach(card => {
+                observer.observe(card);
+            });
         }
 
+        // Interaction Handlers
         function handleLike(btn) {
             btn.classList.toggle('liked');
             showToast(btn.classList.contains('liked') ? 'Added to liked reels' : 'Unliked');
@@ -1082,15 +880,16 @@ Here is the updated **VIBE** web application code. This version includes a fully
             const toast = document.getElementById('toast');
             toast.innerText = msg;
             toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 2000);
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
         }
 
-        // Navigation Tabs Routing
+        // Tab Navigation routing
         const navItems = document.querySelectorAll('.nav-item');
         const studioScreen = document.getElementById('studio-screen');
         const inboxScreen = document.getElementById('inbox-screen');
         const profileScreen = document.getElementById('profile-screen');
-        const settingsScreen = document.getElementById('settings-screen');
 
         navItems.forEach(item => {
             item.addEventListener('click', () => {
@@ -1102,7 +901,6 @@ Here is the updated **VIBE** web application code. This version includes a fully
                     studioScreen.classList.remove('open');
                     inboxScreen.classList.remove('open');
                     profileScreen.classList.remove('open');
-                    settingsScreen.classList.remove('open');
                 } else if (tab === 'create') {
                     studioScreen.classList.add('open');
                     startCamera();
@@ -1116,15 +914,7 @@ Here is the updated **VIBE** web application code. This version includes a fully
             });
         });
 
-        // Settings Screen Triggers
-        document.getElementById('openSettingsBtn').addEventListener('click', () => {
-            settingsScreen.classList.add('open');
-        });
-
-        document.getElementById('closeSettingsBtn').addEventListener('click', () => {
-            settingsScreen.classList.remove('open');
-        });
-
+        // Close Screen Triggers
         document.getElementById('closeStudio').addEventListener('click', () => {
             studioScreen.classList.remove('open');
             stopCamera();
@@ -1138,34 +928,7 @@ Here is the updated **VIBE** web application code. This version includes a fully
             });
         });
 
-        // Security Actions Logic
-        document.getElementById('updatePassBtn').addEventListener('click', () => {
-            const current = document.getElementById('currentPass').value;
-            const newP = document.getElementById('newPass').value;
-            if(!current || !newP) {
-                showToast("Please fill out all password fields");
-                return;
-            }
-            showToast("Password updated successfully!");
-            document.getElementById('currentPass').value = '';
-            document.getElementById('newPass').value = '';
-        });
-
-        document.getElementById('tfaToggle').addEventListener('change', (e) => {
-            if(e.target.checked) {
-                showToast("Two-Factor Authentication enabled");
-            } else {
-                showToast("Two-Factor Authentication disabled");
-            }
-        });
-
-        function confirmDeactivation() {
-            if(confirm("Are you sure you want to deactivate your VIBE account? This action is irreversible.")) {
-                showToast("Account deactivation sequence started");
-            }
-        }
-
-        // Camera Studio
+        // Camera Studio Logic
         let mediaStream = null;
         const cameraPreview = document.getElementById('camera-preview');
         
@@ -1185,6 +948,7 @@ Here is the updated **VIBE** web application code. This version includes a fully
             }
         }
 
+        // Filter Switcher
         document.querySelectorAll('.filter-pill').forEach(pill => {
             pill.addEventListener('click', (e) => {
                 document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
@@ -1194,6 +958,7 @@ Here is the updated **VIBE** web application code. This version includes a fully
             });
         });
 
+        // Shutter recording simulation
         const shutterBtn = document.getElementById('shutterBtn');
         let isRecording = false;
         shutterBtn.addEventListener('click', () => {
@@ -1211,9 +976,8 @@ Here is the updated **VIBE** web application code. This version includes a fully
             }
         });
 
+        // Initial setup execution
         renderFeed();
     </script>
 </body>
 </html>
-
-```
