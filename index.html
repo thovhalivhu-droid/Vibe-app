@@ -24,12 +24,12 @@
     .video-container { width: 100%; height: 380px; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; cursor: pointer; }
     video { width: 100%; height: 100%; object-fit: cover; }
 
-    /* DURATION BADGE STYLES */
+    /* FLOATING LIVE DURATION BADGE (FADES SMOOTHLY AFTER 3 SECONDS) */
     .duration-badge {
       position: absolute;
       top: 12px;
       left: 12px;
-      background: rgba(0, 0, 0, 0.7);
+      background: rgba(0, 0, 0, 0.75);
       color: #fff;
       padding: 6px 12px;
       border-radius: 20px;
@@ -40,16 +40,18 @@
       pointer-events: none;
       opacity: 0;
       transition: opacity 1s ease-out;
+      font-variant-numeric: tabular-nums;
     }
     .duration-badge.visible {
       opacity: 1;
       transition: opacity 0.2s ease-in;
     }
     
-    /* MUTE & OPTIONS BUTTON STYLES */
-    .mute-btn, .options-btn {
+    /* MUTE BUTTON (TOP RIGHT) */
+    .mute-btn {
       position: absolute;
       top: 12px;
+      right: 12px;
       width: 42px;
       height: 42px;
       border: none;
@@ -66,15 +68,37 @@
       transition: transform 0.15s ease;
       transform: scale(1);
     }
-    .mute-btn { right: 12px; }
-    .options-btn { right: 60px; font-weight: bold; }
-    .mute-btn:active, .options-btn:active {
-      transform: scale(0.95);
+    .mute-btn:active { transform: scale(0.95); }
+
+    /* THREE-DOT MENU BUTTON (BOTTOM RIGHT OF VIDEO CONTAINER) */
+    .options-btn-bottom {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      width: 38px;
+      height: 38px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.65);
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      transition: transform 0.15s ease, background 0.2s;
+      transform: scale(1);
     }
+    .options-btn-bottom:active { transform: scale(0.95); background: rgba(0,0,0,0.85); }
 
     .info { padding: 14px 16px; }
     .creator { font-weight: 800; margin-bottom: 6px; color: #e1e3ec; }
     .caption { font-size: 14px; margin-bottom: 12px; color: #ccc; line-height: 1.4; white-space: pre-line; }
+    
+    /* ALL VIDEO ACTIONS ROW */
     .actions { display: flex; gap: 18px; align-items: center; font-size: 14px; color: #aaa; }
     .action-btn { cursor: pointer; display: flex; align-items: center; gap: 6px; user-select: none; transition: transform 0.15s ease; transform: scale(1); }
     .action-btn:active { transform: scale(0.95); }
@@ -162,9 +186,7 @@
       transition: transform 0.15s ease, color 0.2s;
       transform: scale(1);
     }
-    .nav-btn:active {
-      transform: scale(0.95);
-    }
+    .nav-btn:active { transform: scale(0.95); }
 
     .nav-btn svg { 
       width: 22px; 
@@ -179,11 +201,7 @@
     .nav-btn.active { color: #ff4d79; }
     .nav-btn.active svg { stroke: #ff4d79; }
 
-    .create-btn-wrapper {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
+    .create-btn-wrapper { display: flex; justify-content: center; align-items: center; }
 
     .create-btn { 
       background: linear-gradient(135deg, #ff4d79, #fe2c55); 
@@ -201,12 +219,7 @@
       transform: scale(1);
     }
 
-    .create-btn svg {
-      width: 24px;
-      height: 24px;
-      stroke: #fff;
-      stroke-width: 2.5;
-    }
+    .create-btn svg { width: 24px; height: 24px; stroke: #fff; stroke-width: 2.5; }
 
     .create-btn:active {
       transform: scale(0.95);
@@ -234,7 +247,7 @@
     .menu-option-btn:active { transform: scale(0.95); background: #1a1c29; }
     .menu-option-btn.highlight { border-color: #ff4d79; color: #ff4d79; }
 
-    /* INSTAGRAM STYLE CAPTION MODAL SPECIFICS */
+    /* CAPTION MODAL STYLES */
     .caption-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid #232535; padding-bottom: 12px; }
     .caption-modal-title { font-weight: bold; font-size: 16px; }
     .caption-post-btn { color: #3897f0; font-weight: 700; background: none; border: none; cursor: pointer; font-size: 15px; transition: transform 0.15s ease; transform: scale(1); }
@@ -279,10 +292,10 @@
         <!-- POST 1 -->
         <div class="card">
           <div class="video-container" onclick="toggleVideoPlayback(this, event)">
-            <video src="https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" playsinline loop preload="metadata" onplay="handleVideoPlay(this)"></video>
-            <div class="duration-badge">0:00</div>
-            <button class="options-btn" onclick="openVideoOptionsMenu(this, event)">⋮</button>
+            <video src="https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" playsinline loop preload="metadata" onplay="handleVideoPlay(this)" ontimeupdate="updateVideoTimeDisplay(this)"></video>
+            <div class="duration-badge">0:00 / 0:00</div>
             <button class="mute-btn" onclick="toggleMute(this, event)">🔊</button>
+            <button class="options-btn-bottom" onclick="openVideoOptionsMenu(this, event)">⋮</button>
           </div>
           <div class="info">
             <div class="creator">@rafter6</div>
@@ -290,6 +303,7 @@
             <div class="actions">
               <span class="action-btn" onclick="toggleLike(this, 128)">❤️ <span class="like-count">128</span></span>
               <span class="action-btn" onclick="openCommentModal(this)">💬 <span class="comment-count">24</span></span>
+              <span class="action-btn" onclick="shareVideoActionFromBtn(this)">📤 <span>Share</span></span>
               <span class="action-btn">👁️ <span class="view-count">1.4k</span></span>
             </div>
           </div>
@@ -298,10 +312,10 @@
         <!-- POST 2 -->
         <div class="card">
           <div class="video-container" onclick="toggleVideoPlayback(this, event)">
-            <video src="https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4" playsinline loop preload="metadata" onplay="handleVideoPlay(this)"></video>
-            <div class="duration-badge">0:00</div>
-            <button class="options-btn" onclick="openVideoOptionsMenu(this, event)">⋮</button>
+            <video src="https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4" playsinline loop preload="metadata" onplay="handleVideoPlay(this)" ontimeupdate="updateVideoTimeDisplay(this)"></video>
+            <div class="duration-badge">0:00 / 0:00</div>
             <button class="mute-btn" onclick="toggleMute(this, event)">🔊</button>
+            <button class="options-btn-bottom" onclick="openVideoOptionsMenu(this, event)">⋮</button>
           </div>
           <div class="info">
             <div class="creator">@vibe_creator</div>
@@ -309,6 +323,7 @@
             <div class="actions">
               <span class="action-btn" onclick="toggleLike(this, 76)">❤️ <span class="like-count">76</span></span>
               <span class="action-btn" onclick="openCommentModal(this)">💬 <span class="comment-count">9</span></span>
+              <span class="action-btn" onclick="shareVideoActionFromBtn(this)">📤 <span>Share</span></span>
               <span class="action-btn">👁️ <span class="view-count">850</span></span>
             </div>
           </div>
@@ -445,7 +460,7 @@
     </div>
   </div>
 
-  <!-- INSTAGRAM-STYLE CAPTION CREATION MODAL -->
+  <!-- CAPTION CREATION MODAL -->
   <div id="caption-modal" class="modal-overlay">
     <div class="modal-content">
       <div class="caption-modal-header">
@@ -570,19 +585,25 @@
       return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
     }
 
+    /* UPDATES LIVE MOVING TIME (CURRENT / TOTAL) */
+    function updateVideoTimeDisplay(video) {
+      const container = video.closest('.video-container');
+      if (!container) return;
+      const badge = container.querySelector('.duration-badge');
+      if (!badge) return;
+
+      const current = formatTime(video.currentTime);
+      const total = formatTime(video.duration);
+      badge.textContent = `${current} / ${total}`;
+    }
+
+    /* SHOW BADGE AND FADE OUT SMOOTHLY AFTER 3 SECONDS */
     function showVideoDuration(container) {
       const video = container.querySelector('video');
       const badge = container.querySelector('.duration-badge');
       if (!video || !badge) return;
 
-      if (!isNaN(video.duration) && video.duration > 0) {
-        badge.textContent = formatTime(video.duration);
-      } else {
-        video.addEventListener('loadedmetadata', function onMeta() {
-          badge.textContent = formatTime(video.duration);
-          video.removeEventListener('loadedmetadata', onMeta);
-        });
-      }
+      updateVideoTimeDisplay(video);
 
       if (badge.fadeTimeout) clearTimeout(badge.fadeTimeout);
 
@@ -610,7 +631,7 @@
     }
 
     function toggleVideoPlayback(container, event) {
-      if (event && (event.target.classList.contains('mute-btn') || event.target.classList.contains('options-btn'))) return;
+      if (event && (event.target.classList.contains('mute-btn') || event.target.classList.contains('options-btn-bottom'))) return;
       const video = container.querySelector('video');
       if (!video) return;
 
@@ -631,7 +652,7 @@
       btn.textContent = video.muted ? '🔇' : '🔊';
     }
 
-    /* THREE-DOT MENU FUNCTIONS */
+    /* BOTTOM-RIGHT THREE-DOT MENU FUNCTIONS */
     function openVideoOptionsMenu(btn, event) {
       event.stopPropagation();
       const videoContainer = btn.closest('.video-container');
@@ -675,6 +696,19 @@
         alert('Link copied to share!');
       }
       closeVideoOptionsMenu();
+    }
+
+    function shareVideoActionFromBtn(btn) {
+      const card = btn.closest('.card');
+      const video = card ? card.querySelector('video') : null;
+      if (video && video.src) {
+        if (navigator.share) {
+          navigator.share({ title: 'VIBE Video', url: video.src }).catch(() => {});
+        } else {
+          navigator.clipboard.writeText(video.src);
+          alert('Link copied to share!');
+        }
+      }
     }
 
     function copyFrameAction() {
@@ -822,7 +856,7 @@
       output.innerHTML = html;
     }
 
-    /* DIRECT GALLERY UPLOAD LOGIC & INSTAGRAM-STYLE CAPTION MODAL */
+    /* DIRECT GALLERY UPLOAD LOGIC */
     function openGalleryDirectly() {
       document.getElementById('direct-gallery-input').click();
     }
@@ -866,10 +900,10 @@
       newCard.className = 'card';
       newCard.innerHTML = `
         <div class="video-container" onclick="toggleVideoPlayback(this, event)">
-          <video src="${currentPendingVideoUrl}" playsinline loop preload="metadata" onplay="handleVideoPlay(this)"></video>
-          <div class="duration-badge">0:00</div>
-          <button class="options-btn" onclick="openVideoOptionsMenu(this, event)">⋮</button>
+          <video src="${currentPendingVideoUrl}" playsinline loop preload="metadata" onplay="handleVideoPlay(this)" ontimeupdate="updateVideoTimeDisplay(this)"></video>
+          <div class="duration-badge">0:00 / 0:00</div>
           <button class="mute-btn" onclick="toggleMute(this, event)">${isGlobalMuted ? '🔇' : '🔊'}</button>
+          <button class="options-btn-bottom" onclick="openVideoOptionsMenu(this, event)">⋮</button>
         </div>
         <div class="info">
           <div class="creator">${currentHandle}</div>
@@ -877,6 +911,7 @@
           <div class="actions">
             <span class="action-btn" onclick="toggleLike(this, 0)">❤️ <span class="like-count">0</span></span>
             <span class="action-btn" onclick="openCommentModal(this)">💬 <span class="comment-count">0</span></span>
+            <span class="action-btn" onclick="shareVideoActionFromBtn(this)">📤 <span>Share</span></span>
             <span class="action-btn">👁️ <span class="view-count">0</span></span>
           </div>
         </div>
