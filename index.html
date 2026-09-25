@@ -24,7 +24,7 @@
 
     .reel-card { height: 100%; width: 100%; snap-align: start; snap-stop: always; position: relative; background: #000; }
     .reel-video-container { width: 100%; height: 100%; position: relative; cursor: pointer; }
-    video { width: 100%; height: 100%; object-fit: cover; }
+    video, img.media-preview { width: 100%; height: 100%; object-fit: cover; }
 
     .unmute-overlay {
       position: absolute;
@@ -70,6 +70,7 @@
     .action-btn-vertical { background: none; border: none; color: #fff; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; cursor: pointer; }
     .action-icon { width: 42px; height: 42px; border-radius: 50%; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; font-size: 20px; }
 
+    /* BOTTOM NAV */
     .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; height: 65px; background: #0c0d12; border-top: 1px solid rgba(255,255,255,0.1); display: grid; grid-template-columns: repeat(5, 1fr); align-items: center; z-index: 100; }
     .nav-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; color: #8e8e93; font-size: 10px; font-weight: 500; cursor: pointer; border: none; background: none; gap: 3px; }
     .nav-btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; }
@@ -80,6 +81,72 @@
     .create-btn { width: 46px; height: 30px; background: #00f2fe; border-radius: 8px; position: relative; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; box-shadow: -3px 0 0 #ff0050, 3px 0 0 #00f2fe; }
     .create-btn-inner { width: 100%; height: 100%; background: #ffffff; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
     .create-btn-inner svg { width: 16px; height: 16px; stroke: #000; stroke-width: 3; }
+
+    /* CREATE MODAL */
+    .create-modal {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 430px;
+      height: 100vh;
+      background: #121318;
+      z-index: 200;
+      display: none;
+      flex-direction: column;
+      padding: 20px;
+      justify-content: space-between;
+    }
+    .create-modal.active { display: flex; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .modal-title { font-size: 18px; font-weight: bold; }
+    .close-btn { background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; }
+    
+    .media-preview-box {
+      border: 2px dashed rgba(255,255,255,0.3);
+      border-radius: 12px;
+      height: 220px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #aaa;
+      background: #1c1d24;
+      overflow: hidden;
+      position: relative;
+    }
+    .media-preview-box video, .media-preview-box img { display: none; width: 100%; height: 100%; object-fit: cover; }
+    
+    .upload-buttons { display: flex; gap: 10px; margin-top: 12px; }
+    .btn-select { flex: 1; background: #1c1d24; border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 12px; border-radius: 10px; text-align: center; cursor: pointer; font-size: 13px; font-weight: 600; }
+    
+    .caption-input {
+      width: 100%;
+      height: 90px;
+      background: #1c1d24;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 12px;
+      color: #fff;
+      font-family: inherit;
+      resize: none;
+      margin-top: 12px;
+    }
+    .caption-input:focus { outline: 1px solid #ff4d79; }
+
+    .publish-btn {
+      width: 100%;
+      background: linear-gradient(90deg, #ff0050, #ff4d79);
+      color: #fff;
+      border: none;
+      padding: 14px;
+      border-radius: 25px;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
   </style>
 </head>
 <body>
@@ -114,25 +181,37 @@
           </div>
         </div>
 
-        <!-- REEL 2 -->
-        <div class="reel-card">
-          <div class="reel-video-container" onclick="togglePlayPause(this)">
-            <video class="feed-video" src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4" playsinline loop muted></video>
-            <div class="unmute-overlay">🔊 Tap screen for sound</div>
-          </div>
-          <div class="reel-overlay">
-            <div class="reel-info">
-              <div class="creator">@vibe_creator</div>
-              <div class="caption">New creator? Post it. Someone might discover you today 🔥</div>
-            </div>
-            <div class="reel-actions">
-              <button class="action-btn-vertical"><div class="action-icon">❤️</div><span>76</span></button>
-              <button class="action-btn-vertical"><div class="action-icon">💬</div><span>9</span></button>
-            </div>
-          </div>
+      </div>
+    </div>
+
+    <!-- CREATE REEL MODAL -->
+    <div id="create-modal" class="create-modal">
+      <div>
+        <div class="modal-header">
+          <div class="modal-title">Create Reel</div>
+          <button class="close-btn" onclick="closeCreateModal()">✕</button>
+        </div>
+        
+        <div class="media-preview-box">
+          <span id="upload-placeholder">📸 Record or upload media</span>
+          <video id="preview-video" controls></video>
+          <img id="preview-image" alt="Preview">
         </div>
 
+        <div class="upload-buttons">
+          <!-- Opens direct phone camera for video or photo -->
+          <label for="camera-input" class="btn-select">📷 Camera</label>
+          <!-- Opens gallery file manager -->
+          <label for="gallery-input" class="btn-select">📁 Gallery</label>
+        </div>
+
+        <input type="file" id="camera-input" accept="image/*,video/*" capture="environment" style="display:none;" onchange="handleMediaSelect(event)">
+        <input type="file" id="gallery-input" accept="image/*,video/*" style="display:none;" onchange="handleMediaSelect(event)">
+
+        <textarea id="reel-caption" class="caption-input" placeholder="Write a caption..."></textarea>
       </div>
+
+      <button class="publish-btn" onclick="publishReel()">Post Reel</button>
     </div>
 
     <nav class="bottom-nav">
@@ -145,7 +224,7 @@
         <span>Discover</span>
       </button>
       <div class="create-btn-wrapper">
-        <button class="create-btn">
+        <button class="create-btn" onclick="openCreateModal()">
           <div class="create-btn-inner">
             <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
           </div>
@@ -164,11 +243,13 @@
 
   <script>
     let isGlobalMuted = true;
+    let selectedMediaUrl = null;
+    let selectedMediaType = null; // 'video' or 'image'
 
-    // Automatically plays video in viewport and pauses all scrolled-out videos
+    // IntersectionObserver for playing active video in scroll feed
     const observerOptions = {
       root: document.getElementById('reels-feed'),
-      threshold: 0.6 // Video must be 60% visible to play
+      threshold: 0.6
     };
 
     const observer = new IntersectionObserver((entries) => {
@@ -177,21 +258,19 @@
         if (!video) return;
 
         if (entry.isIntersecting) {
-          video.currentTime = 0; // Reset video to beginning when swiped into view
+          video.currentTime = 0;
           video.play().catch(() => {});
         } else {
-          video.pause(); // Instantly pause non-visible videos
+          video.pause();
         }
       });
     }, observerOptions);
 
-    // Attach observer to all reel cards
-    document.querySelectorAll('.reel-card').forEach(card => {
-      observer.observe(card);
-    });
+    document.querySelectorAll('.reel-card').forEach(card => observer.observe(card));
 
     function togglePlayPause(container) {
       const video = container.querySelector('video');
+      if (!video) return;
       
       if (isGlobalMuted) {
         isGlobalMuted = false;
@@ -215,6 +294,100 @@
       if (!isGlobalMuted) {
         document.querySelectorAll('.unmute-overlay').forEach(el => el.classList.add('hidden'));
       }
+    }
+
+    /* CREATE MODAL & MEDIA HANDLERS */
+    function openCreateModal() {
+      document.getElementById('create-modal').classList.add('active');
+    }
+
+    function closeCreateModal() {
+      document.getElementById('create-modal').classList.remove('active');
+    }
+
+    function handleMediaSelect(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      selectedMediaUrl = URL.createObjectURL(file);
+      const videoPreview = document.getElementById('preview-video');
+      const imgPreview = document.getElementById('preview-image');
+      const placeholder = document.getElementById('upload-placeholder');
+
+      placeholder.style.display = 'none';
+
+      if (file.type.startsWith('video/')) {
+        selectedMediaType = 'video';
+        imgPreview.style.display = 'none';
+        videoPreview.src = selectedMediaUrl;
+        videoPreview.style.display = 'block';
+      } else if (file.type.startsWith('image/')) {
+        selectedMediaType = 'image';
+        videoPreview.style.display = 'none';
+        imgPreview.src = selectedMediaUrl;
+        imgPreview.style.display = 'block';
+      }
+    }
+
+    function publishReel() {
+      const captionText = document.getElementById('reel-caption').value || "New Post!";
+      const feed = document.getElementById('reels-feed');
+
+      if (!selectedMediaUrl) {
+        alert("Please record or select a video/photo first!");
+        return;
+      }
+
+      const newCard = document.createElement('div');
+      newCard.className = 'reel-card';
+
+      if (selectedMediaType === 'video') {
+        newCard.innerHTML = `
+          <div class="reel-video-container" onclick="togglePlayPause(this)">
+            <video class="feed-video" src="${selectedMediaUrl}" playsinline loop muted></video>
+            <div class="unmute-overlay ${!isGlobalMuted ? 'hidden' : ''}">🔊 Tap screen for sound</div>
+          </div>
+          <div class="reel-overlay">
+            <div class="reel-info">
+              <div class="creator">@you</div>
+              <div class="caption">${captionText}</div>
+            </div>
+            <div class="reel-actions">
+              <button class="action-btn-vertical"><div class="action-icon">❤️</div><span>0</span></button>
+              <button class="action-btn-vertical"><div class="action-icon">💬</div><span>0</span></button>
+            </div>
+          </div>
+        `;
+        observer.observe(newCard);
+      } else {
+        newCard.innerHTML = `
+          <div class="reel-video-container">
+            <img src="${selectedMediaUrl}" class="media-preview" alt="User Photo">
+          </div>
+          <div class="reel-overlay">
+            <div class="reel-info">
+              <div class="creator">@you</div>
+              <div class="caption">${captionText}</div>
+            </div>
+            <div class="reel-actions">
+              <button class="action-btn-vertical"><div class="action-icon">❤️</div><span>0</span></button>
+              <button class="action-btn-vertical"><div class="action-icon">💬</div><span>0</span></button>
+            </div>
+          </div>
+        `;
+      }
+
+      feed.prepend(newCard);
+      closeCreateModal();
+      feed.scrollTop = 0;
+
+      // Reset form controls
+      document.getElementById('reel-caption').value = '';
+      document.getElementById('preview-video').style.display = 'none';
+      document.getElementById('preview-image').style.display = 'none';
+      document.getElementById('upload-placeholder').style.display = 'block';
+      selectedMediaUrl = null;
+      selectedMediaType = null;
     }
   </script>
 </body>
