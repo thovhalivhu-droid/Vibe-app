@@ -224,15 +224,59 @@
       align-items: center;
       justify-content: center;
     }
-    .camera-preview-container video { width: 100%; height: 100%; object-fit: contain; }
+    .camera-preview-container video { 
+      width: 100%; 
+      height: 100%; 
+      object-fit: contain; 
+      transition: filter 0.3s ease;
+    }
+
+    /* FILTER STYLES */
+    .filter-none { filter: none; }
+    .filter-vintage { filter: sepia(0.5) contrast(1.1) brightness(0.9); }
+    .filter-bw { filter: grayscale(1); }
+    .filter-warm { filter: sepia(0.3) saturate(1.4) hue-rotate(-10deg); }
+    .filter-vivid { filter: saturate(1.8) contrast(1.2); }
+    .filter-soft { filter: brightness(1.1) blur(0.5px) contrast(0.95); }
+
+    /* FILTERS SCROLL BAR */
+    .filter-bar {
+      width: 100%;
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding: 8px 4px;
+      margin-bottom: 8px;
+      scrollbar-width: none;
+    }
+    .filter-bar::-webkit-scrollbar { display: none; }
+
+    .filter-chip {
+      padding: 6px 14px;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+      white-space: nowrap;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+      transition: all 0.2s ease;
+    }
+    .filter-chip.active {
+      background: #fe2c55;
+      border-color: #fe2c55;
+    }
 
     .creator-bottom-controls {
       z-index: 10;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 12px;
       align-items: center;
       margin-bottom: 20px;
+      width: 100%;
     }
 
     .record-controls {
@@ -370,22 +414,31 @@
     </nav>
   </div>
 
-  <!-- CREATOR MODAL WITH ROTATE CAMERA BUTTON -->
+  <!-- CREATOR MODAL WITH FILTERS & FLIP CAMERA -->
   <div id="create-modal" class="create-modal">
     <div class="creator-header">
       <button class="close-modal-btn" onclick="closeCreateModal()">✕</button>
       <div style="font-weight: 700; font-size: 16px;">Create</div>
-      <!-- ROTATE CAMERA BUTTON -->
       <button class="rotate-cam-btn" onclick="switchCamera()" title="Flip Camera">
         <svg viewBox="0 0 24 24"><path d="M9.37 5.51A7 7 0 0 0 4 12c0 3.87 3.13 7 7 7 3.53 0 6.43-2.61 6.92-6h-2.06c-.46 2.28-2.48 4-4.86 4-2.76 0-5-2.24-5-5 0-2.05 1.23-3.81 3-4.58V11l4-3.5L9 4v1.51zM14.63 18.49A7 7 0 0 0 20 12c0-3.87-3.13-7-7-7-3.53 0-6.43 2.61-6.92 6h2.06c.46-2.28 2.48-4 4.86-4 2.76 0 5 2.24 5 5 0 2.05-1.23 3.81-3 4.58V13l-4 3.5 4 3.5v-1.51z"/></svg>
       </button>
     </div>
 
     <div class="camera-preview-container">
-      <video id="camera-stream" autoplay playsinline muted></video>
+      <video id="camera-stream" class="filter-none" autoplay playsinline muted></video>
     </div>
 
     <div class="creator-bottom-controls">
+      <!-- LIVE FILTER SELECTOR -->
+      <div class="filter-bar">
+        <button class="filter-chip active" onclick="applyFilter('filter-none', this)">Normal</button>
+        <button class="filter-chip" onclick="applyFilter('filter-vintage', this)">Vintage</button>
+        <button class="filter-chip" onclick="applyFilter('filter-bw', this)">B&W</button>
+        <button class="filter-chip" onclick="applyFilter('filter-warm', this)">Warm</button>
+        <button class="filter-chip" onclick="applyFilter('filter-vivid', this)">Vivid</button>
+        <button class="filter-chip" onclick="applyFilter('filter-soft', this)">Soft</button>
+      </div>
+
       <div class="record-controls">
         <button class="upload-gallery-btn" onclick="openGalleryDirectly()">📁 Upload</button>
         <button id="record-trigger" class="record-trigger-btn" onclick="toggleRecording()">
@@ -399,7 +452,7 @@
   <script>
     let cameraStream = null;
     let isRecording = false;
-    let currentFacingMode = 'user'; // 'user' for front, 'environment' for back
+    let currentFacingMode = 'user';
 
     function toggleVideoPlayback(container) {
       const video = container.querySelector('video');
@@ -443,6 +496,15 @@
           console.warn("Camera permission ungranted or unavailable.", err);
         }
       }
+    }
+
+    function applyFilter(filterClass, element) {
+      const cameraPreview = document.getElementById('camera-stream');
+      if (cameraPreview) {
+        cameraPreview.className = filterClass;
+      }
+      document.querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('active'));
+      element.classList.add('active');
     }
 
     async function openCreateModal() {
@@ -540,4 +602,3 @@
   </script>
 </body>
 </html>
- 
