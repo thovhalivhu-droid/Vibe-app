@@ -152,7 +152,144 @@
       justify-content: center;
     }
     .action-icon-circle svg { width: 26px; height: 26px; fill: #ffffff; }
+    
+    /* Active states for buttons */
     .action-btn-vertical.liked .action-icon-circle svg { fill: #fe2c55; }
+    .action-btn-vertical.saved .action-icon-circle svg { fill: #f2a900; }
+
+    /* COMMENTS & SHARE MODALS */
+    .comments-modal, .share-modal {
+      position: fixed;
+      bottom: -100%;
+      left: 0;
+      width: 100%;
+      background: #161823;
+      border-top-left-radius: 16px;
+      border-top-right-radius: 16px;
+      z-index: 500;
+      display: flex;
+      flex-direction: column;
+      transition: bottom 0.3s ease-in-out;
+    }
+    .comments-modal { height: 60vh; }
+    .share-modal { height: auto; padding-bottom: 24px; }
+    
+    .comments-modal.active, .share-modal.active { bottom: 0; }
+    
+    .comments-header, .share-header {
+      padding: 16px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      position: relative;
+    }
+    .comments-close, .share-close {
+      position: absolute;
+      right: 16px;
+      top: 14px;
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    
+    .comments-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .comment-item { font-size: 13px; line-height: 1.4; }
+    .comment-user { font-weight: 700; margin-right: 6px; color: rgba(255,255,255,0.8); }
+    
+    .comments-input-area {
+      padding: 12px 16px;
+      display: flex;
+      gap: 10px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      background: #121212;
+    }
+    .comments-input-area input {
+      flex: 1;
+      background: #222;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 20px;
+      padding: 8px 14px;
+      color: #fff;
+      font-size: 13px;
+      outline: none;
+    }
+    .comments-input-area button {
+      background: #fe2c55;
+      color: #fff;
+      border: none;
+      padding: 0 16px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    /* SHARE OPTIONS GRID */
+    .share-section-title { font-size: 12px; color: rgba(255,255,255,0.5); padding: 16px 16px 8px 16px; font-weight: 600; }
+    .share-row {
+      display: flex;
+      gap: 20px;
+      overflow-x: auto;
+      padding: 4px 16px 12px 16px;
+      scrollbar-width: none;
+    }
+    .share-row::-webkit-scrollbar { display: none; }
+    
+    .share-app-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      flex-shrink: 0;
+    }
+    .share-app-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: #2b2d3d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .share-app-icon svg { width: 24px; height: 24px; fill: #fff; }
+
+    .share-actions-list {
+      display: flex;
+      flex-direction: column;
+      padding: 0 16px;
+      gap: 4px;
+    }
+    .share-action-row-btn {
+      background: #222433;
+      border: none;
+      color: #fff;
+      padding: 14px 16px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      text-align: left;
+    }
+    .share-action-row-btn svg { width: 20px; height: 20px; fill: #fff; }
 
     /* FRIENDS VIEW STYLES */
     .friends-container { padding: 70px 16px 80px 16px; }
@@ -282,7 +419,6 @@
       height: 100%;
       object-fit: cover;
     }
-    /* VIDEO VIEW COUNT BADGE */
     .post-views-badge {
       position: absolute;
       bottom: 6px;
@@ -601,25 +737,25 @@
               <div class="caption">Everybody says stay motivated... I need my bank balance motivated first 😂</div>
             </div>
             <div class="reel-actions">
-              <button class="action-btn-vertical" onclick="this.classList.toggle('liked')">
+              <button class="action-btn-vertical" onclick="toggleLike(this)">
                 <div class="action-icon-circle">
                   <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                 </div>
-                <span>128K</span>
+                <span class="action-count">128</span>
               </button>
-              <button class="action-btn-vertical">
+              <button class="action-btn-vertical" onclick="openComments(this)">
                 <div class="action-icon-circle">
                   <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
                 </div>
-                <span>1,240</span>
+                <span class="action-count">1</span>
               </button>
-              <button class="action-btn-vertical">
+              <button class="action-btn-vertical" onclick="toggleSave(this)">
                 <div class="action-icon-circle">
                   <svg viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>
                 </div>
-                <span>854</span>
+                <span class="action-count">854</span>
               </button>
-              <button class="action-btn-vertical">
+              <button class="action-btn-vertical" onclick="openShareModal(this)">
                 <div class="action-icon-circle">
                   <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7 0-.24-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
                 </div>
@@ -628,6 +764,67 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- COMMENTS MODAL PANEL -->
+    <div id="comments-modal" class="comments-modal">
+      <div class="comments-header">
+        <span id="comments-title-count">1 comments</span>
+        <button class="comments-close" onclick="closeComments()">✕</button>
+      </div>
+      <div class="comments-list" id="comments-list-container">
+        <div class="comment-item">
+          <span class="comment-user">@carla_99</span>
+          <span>Haha that video was hilarious 😂</span>
+        </div>
+      </div>
+      <div class="comments-input-area">
+        <input type="text" id="comment-input-field" placeholder="Add comment..." />
+        <button onclick="postComment()">Post</button>
+      </div>
+    </div>
+
+    <!-- SHARE MODAL PANEL -->
+    <div id="share-modal" class="share-modal">
+      <div class="share-header">
+        <span>Share to</span>
+        <button class="share-close" onclick="closeShareModal()">✕</button>
+      </div>
+      <div class="share-section-title">Send to Apps</div>
+      <div class="share-row">
+        <button class="share-app-item" onclick="shareToApp('WhatsApp')">
+          <div class="share-app-icon" style="background: #25d366;"><svg viewBox="0 0 24 24"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm0 1.65c4.56 0 8.26 3.7 8.26 8.26 0 4.56-3.7 8.26-8.26 8.26-1.53 0-3.02-.42-4.32-1.21l-.31-.18-3.21.84.85-3.13-.2-.32a8.21 8.21 0 0 1-1.26-4.42c0-4.56 3.7-8.26 8.26-8.26zm4.51 10.14c-.25-.13-1.47-.72-1.7-.8s-.4-.13-.57.13-.65.8-.8 1-.29.22-.54.09c-.25-.13-1.05-.39-2-1.24-.74-.66-1.24-1.47-1.39-1.72s-.02-.39.11-.52c.11-.11.25-.29.38-.44s.17-.25.25-.42c.08-.17.04-.32-.02-.45s-.57-1.37-.78-1.88c-.2-.5-.41-.43-.57-.44h-.49c-.17 0-.44.06-.67.31s-.88.86-.88 2.1 0.9 2.43 1.02 2.6c.13.17 1.76 2.69 4.27 3.77.6.26 1.07.41 1.44.53.61.19 1.16.16 1.6-.02.49-.2 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18s-.25-.19-.5-.32z"/></svg></div>
+          <span>WhatsApp</span>
+        </button>
+        <button class="share-app-item" onclick="shareToApp('Facebook')">
+          <div class="share-app-icon" style="background: #1877f2;"><svg viewBox="0 0 24 24"><path d="M12 2.04c-5.5 0-9.96 4.46-9.96 9.96 0 5 3.66 9.13 8.44 9.88v-6.99h-2.54v-2.89h2.54V9.79c0-2.51 1.49-3.89 3.78-3.89 1.09 0 2.23.19 2.23.19v2.47h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.45 2.89h-2.33v6.99c4.78-.75 8.44-4.88 8.44-9.88 0-5.5-4.46-9.96-9.96-9.96z"/></svg></div>
+          <span>Facebook</span>
+        </button>
+        <button class="share-app-item" onclick="shareToApp('Twitter / X')">
+          <div class="share-app-icon" style="background: #000000;"><svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></div>
+          <span>Twitter / X</span>
+        </button>
+        <button class="share-app-item" onclick="shareToApp('Instagram')">
+          <div class="share-app-icon" style="background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);"><svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></div>
+          <span>Instagram</span>
+        </button>
+        <button class="share-app-item" onclick="shareToApp('Snapchat')">
+          <div class="share-app-icon" style="background: #fffc00;"><svg viewBox="0 0 24 24"><path d="M12.015 2c-3.11 0-5.632 2.45-5.632 5.473 0 1.714.717 3.247 1.85 4.324-.316.32-.782.55-1.393.684-.71.157-1.571.213-2.458.172-.44-.02-.821.285-.89.722-.07.45.228.874.675.943 1.294.202 2.502.13 3.498-.22 0 0 .524.498.412 1.047-.1.493-.82 1.135-1.677 1.436-.933.324-1.859.356-1.921.358-.45.016-.79.4-.775.852.015.44.385.786.827.786h.02c.427-.01 1.574-.06 2.766-.474 1.036-.36 1.844-.99 2.37-1.733.56.762 1.394 1.408 2.464 1.776 1.192.41 2.339.46 2.765.474h.02c.442 0 .812-.345.827-.785.015-.452-.325-.837-.775-.853-.062-.002-.988-.034-1.92-.358-.858-.302-1.578-.944-1.678-1.437-.112-.55 0-1.047 0-1.047.996.35 2.204.422 3.498.22.447-.07.745-.493.675-.943-.07-.437-.45-.742-.89-.722-.887.04-1.748-.015-2.458-.172-.611-.134-1.077-.364-1.393-.684 1.133-1.077 1.85-2.61 1.85-4.324 0-3.023-2.522-5.473-5.632-5.473z"/></svg></div>
+          <span>Snapchat</span>
+        </button>
+      </div>
+
+      <div class="share-section-title">Actions</div>
+      <div class="share-actions-list">
+        <button class="share-action-row-btn" onclick="downloadCurrentMedia()">
+          <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+          <span>Download video / image</span>
+        </button>
+        <button class="share-action-row-btn" onclick="copyShareLink()">
+          <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+          <span>Copy link</span>
+        </button>
       </div>
     </div>
 
@@ -720,9 +917,7 @@
           </div>
         </div>
         <div style="width: 100%; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 2px; text-align: center; padding-bottom: 8px; font-weight: 600; font-size: 14px;">My Posts</div>
-        <div class="profile-posts-grid" id="profile-posts-grid">
-          <!-- Dynamically populated user posts go here with view counts -->
-        </div>
+        <div class="profile-posts-grid" id="profile-posts-grid"></div>
       </div>
     </div>
 
@@ -835,6 +1030,8 @@
     let mediaRecorder = null;
     let recordedChunks = [];
     let customAvatarUrl = '';
+    let activeCommentButton = null;
+    let activeActiveReelCard = null;
 
     function enableAudio(event, btn) {
       event.stopPropagation();
@@ -844,6 +1041,140 @@
         video.muted = false;
         btn.style.display = 'none';
       }
+    }
+
+    /* LIKE, SAVE, AND COMMENT FUNCTIONALITY */
+    function toggleLike(btn) {
+      btn.classList.toggle('liked');
+      const countSpan = btn.querySelector('.action-count');
+      let count = parseInt(countSpan.textContent);
+      if (btn.classList.contains('liked')) {
+        countSpan.textContent = count + 1;
+      } else {
+        countSpan.textContent = count - 1;
+      }
+    }
+
+    function toggleSave(btn) {
+      btn.classList.toggle('saved');
+      const countSpan = btn.querySelector('.action-count');
+      let count = parseInt(countSpan.textContent);
+      if (btn.classList.contains('saved')) {
+        countSpan.textContent = count + 1;
+      } else {
+        countSpan.textContent = count - 1;
+      }
+    }
+
+    function openComments(btn) {
+      activeCommentButton = btn;
+      const modal = document.getElementById('comments-modal');
+      modal.classList.add('active');
+    }
+
+    function closeComments() {
+      const modal = document.getElementById('comments-modal');
+      modal.classList.remove('active');
+    }
+
+    function postComment() {
+      const input = document.getElementById('comment-input-field');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const listContainer = document.getElementById('comments-list-container');
+      const currentHandle = document.getElementById('profile-handle-display').textContent;
+
+      const commentEl = document.createElement('div');
+      commentEl.className = 'comment-item';
+      commentEl.innerHTML = `<span class="comment-user">${currentHandle}</span><span>${text}</span>`;
+      listContainer.appendChild(commentEl);
+
+      input.value = '';
+      listContainer.scrollTop = listContainer.scrollHeight;
+
+      if (activeCommentButton) {
+        const countSpan = activeCommentButton.querySelector('.action-count');
+        let count = parseInt(countSpan.textContent);
+        countSpan.textContent = count + 1;
+        document.getElementById('comments-title-count').textContent = `${count + 1} comments`;
+      }
+    }
+
+    /* SHARE MODAL & APP OPTIONS FUNCTIONALITY */
+    function openShareModal(btn) {
+      activeActiveReelCard = btn.closest('.reel-card');
+      const modal = document.getElementById('share-modal');
+      modal.classList.add('active');
+    }
+
+    function closeShareModal() {
+      const modal = document.getElementById('share-modal');
+      modal.classList.remove('active');
+    }
+
+    function shareToApp(appName) {
+      const shareUrl = window.location.href;
+      const text = "Check out this awesome VIBE reel!";
+      
+      if (appName === 'WhatsApp') {
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text + " " + shareUrl)}`, '_blank');
+      } else if (appName === 'Facebook') {
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank');
+      } else if (appName === 'Twitter / X') {
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`, '_blank');
+      } else {
+        if (navigator.share) {
+          navigator.share({ title: 'VIBE Reel', url: shareUrl }).catch(() => {});
+        } else {
+          alert(`Sharing to ${appName}... Link ready!`);
+        }
+      }
+      closeShareModal();
+    }
+
+    function copyShareLink() {
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        alert("Link copied to clipboard!");
+        closeShareModal();
+      }).catch(() => {
+        alert("Failed to copy link.");
+      });
+    }
+
+    function downloadCurrentMedia() {
+      if (!activeActiveReelCard) {
+        alert("No active media selected.");
+        return;
+      }
+      const video = activeActiveReelCard.querySelector('video');
+      const img = activeActiveReelCard.querySelector('img');
+      
+      let mediaSrc = '';
+      let extension = 'mp4';
+
+      if (video) {
+        mediaSrc = video.src;
+        extension = mediaSrc.startsWith('blob:') ? 'webm' : 'mp4';
+      } else if (img) {
+        mediaSrc = img.src;
+        extension = 'jpg';
+      }
+
+      if (!mediaSrc) {
+        alert("Media source not found.");
+        return;
+      }
+
+      const a = document.createElement('a');
+      a.href = mediaSrc;
+      a.download = `vibe-media-${Date.now()}.${extension}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      
+      alert("Download started successfully!");
+      closeShareModal();
     }
 
     function switchTab(tabName) {
@@ -940,16 +1271,6 @@
           if (video && !video.paused) video.pause();
         }
       });
-    }
-
-    function jumpToReel(index) {
-      switchTab('home');
-      const feed = document.getElementById('reels-feed');
-      const targetCard = feed.querySelectorAll('.reel-card')[index];
-      if (targetCard) {
-        feed.scrollTop = targetCard.offsetTop;
-        handleReelScroll();
-      }
     }
 
     async function startCamera(facingMode = 'user') {
@@ -1161,25 +1482,25 @@
             <div class="caption">New post 🔥</div>
           </div>
           <div class="reel-actions">
-            <button class="action-btn-vertical" onclick="this.classList.toggle('liked')">
+            <button class="action-btn-vertical" onclick="toggleLike(this)">
               <div class="action-icon-circle">
                 <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
               </div>
-              <span>0</span>
+              <span class="action-count">0</span>
             </button>
-            <button class="action-btn-vertical">
+            <button class="action-btn-vertical" onclick="openComments(this)">
               <div class="action-icon-circle">
                 <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
               </div>
-              <span>0</span>
+              <span class="action-count">0</span>
             </button>
-            <button class="action-btn-vertical">
+            <button class="action-btn-vertical" onclick="toggleSave(this)">
               <div class="action-icon-circle">
                 <svg viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>
               </div>
-              <span>0</span>
+              <span class="action-count">0</span>
             </button>
-            <button class="action-btn-vertical">
+            <button class="action-btn-vertical" onclick="openShareModal(this)">
               <div class="action-icon-circle">
                 <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7 0-.24-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
               </div>
@@ -1199,8 +1520,6 @@
       const profileMediaHtml = (type === 'image') 
         ? `<img src="${srcUrl}" class="feed-photo ${activeFilterClass}" alt="User Photo" />`
         : `<video src="${srcUrl}" class="${activeFilterClass}" playsinline preload="metadata"></video>`;
-
-      thumb.setAttribute('onclick', `toggleProfileThumb(this)`);
       
       thumb.innerHTML = `
         ${profileMediaHtml}
@@ -1217,23 +1536,10 @@
       handleReelScroll();
     }
 
-    function toggleProfileThumb(thumbElement) {
-      const video = thumbElement.querySelector('video');
-      if (!video) return; 
-      
-      if (video.paused) {
-        document.querySelectorAll('#profile-posts-grid video').forEach(v => {
-          if (v !== video) v.pause();
-        });
-        video.play().catch(() => {});
-      } else {
-        video.pause();
-      }
-    }
-
     window.addEventListener('DOMContentLoaded', () => {
       handleReelScroll();
     });
   </script>
 </body>
 </html>
+ 
