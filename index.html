@@ -141,6 +141,15 @@ button{font:inherit}
 .storyHeaderAvatar{width:32px;height:32px;border-radius:50%;object-fit:cover}
 .storyHeaderName{font-weight:700;font-size:14px}
 .storyTimeBadge{font-size:11px;color:var(--muted)}
+
+/* Story Views Footer */
+.storyFooterViews{position:absolute;bottom:20px;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:8px;z-index:15;cursor:pointer;background:rgba(0,0,0,0.4);padding:8px 16px;width:fit-content;margin:0 auto;border-radius:20px;backdrop-filter:blur(6px)}
+.storyFooterViews img{width:22px;height:22px;border-radius:50%;border:1px solid var(--cyan);object-fit:cover}
+.storyFooterViews span{font-size:13px;font-weight:700;color:#fff}
+
+/* Story Viewers List Modal */
+.storyViewersModal{position:absolute;bottom:0;left:0;right:0;height:55%;background:#14151c;z-index:90;border-top-left-radius:20px;border-top-right-radius:20px;display:none;flex-direction:column;transform:translateY(100%);transition:transform .3s ease}
+.storyViewersModal.open{display:flex;transform:translateY(0)}
 </style>
 </head>
 <body>
@@ -311,6 +320,25 @@ button{font:inherit}
   </div>
   <button class="close" id="closeStoryModal" style="position:absolute;top:20px;right:15px;z-index:20;background:rgba(0,0,0,0.5);border-radius:50%;width:36px;height:36px;">×</button>
   <div class="storyContentArea" id="storyContentArea"></div>
+  
+  <div class="storyFooterViews" id="storyFooterViewsBtn">
+    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" alt="">
+    <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150" alt="" style="margin-left:-12px;">
+    <span id="storyViewsCountText">34 views</span>
+  </div>
+</div>
+
+<!-- Story Viewers List Modal -->
+<div id="storyViewersModal" class="storyViewersModal">
+  <div class="commentHeader">
+    <span>Story Views (34)</span>
+    <button class="close" id="closeStoryViewersModal" style="position:absolute;right:16px;top:10px;font-size:22px;">×</button>
+  </div>
+  <div class="commentList" id="storyViewersListContainer">
+    <div class="messageItem"><img class="messageAvatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150"><div class="messageContent"><div class="messageName">Elena Rostova</div><div class="messageSnippet">Viewed 1m ago</div></div></div>
+    <div class="messageItem"><img class="messageAvatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150"><div class="messageContent"><div class="messageName">Liam Chen</div><div class="messageSnippet">Viewed 15m ago</div></div></div>
+    <div class="messageItem"><img class="messageAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"><div class="messageContent"><div class="messageName">Sophia Taylor</div><div class="messageSnippet">Viewed 42m ago</div></div></div>
+  </div>
 </div>
 
 </div>
@@ -710,7 +738,7 @@ document.getElementById('publishBtn').onclick=()=> {
 
 document.getElementById('publishStoryBtn').onclick=()=>{
  if(!selectedMedia){showToast('Choose a video or picture first');return}
- const storyItem={id:Date.now(), url:selectedMedia.url, type:selectedMedia.type, timestamp:Date.now()};
+ const storyItem={id:Date.now(), url:selectedMedia.url, type:selectedMedia.type, timestamp:Date.now(), viewsCount: 34};
  storiesData.unshift(storyItem);
  postScreen.classList.remove('open');
  selectedMedia=null;
@@ -752,6 +780,8 @@ function playStory(index){
  const hoursAgo = Math.floor((Date.now() - story.timestamp) / (1000 * 60 * 60));
  document.getElementById('storyTimeBadge').textContent = hoursAgo === 0 ? 'Just now' : `${hoursAgo}h ago`;
 
+ document.getElementById('storyViewsCountText').textContent = (story.viewsCount || 34) + ' views';
+
  const contentArea = document.getElementById('storyContentArea');
  contentArea.innerHTML = '';
  const el = document.createElement(story.type === 'video' ? 'video' : 'img');
@@ -780,6 +810,16 @@ function playStory(index){
   playStory(currentStoryIndex + 1);
  }, 5000);
 }
+
+document.getElementById('storyFooterViewsBtn').onclick=()=>{
+ clearTimeout(storyTimer);
+ document.getElementById('storyViewersModal').classList.add('open');
+};
+
+document.getElementById('closeStoryViewersModal').onclick=()=>{
+ document.getElementById('storyViewersModal').classList.remove('open');
+ playStory(currentStoryIndex);
+};
 
 document.getElementById('closeStoryModal').onclick=()=>{
  clearTimeout(storyTimer);
@@ -859,9 +899,9 @@ document.querySelectorAll('.nav button').forEach(b=>b.onclick=async()=>{
  b.classList.add('active');
 
  if(tab==='create'){studio.classList.add('open');await startCamera()}
- else if(tab==='home'){[studio,inbox,profile,discover,postScreen,document.getElementById('soundModal'),document.getElementById('editProfileModal'),document.getElementById('commentModal'),document.getElementById('storyModal')].forEach(x=>x.classList.remove('open'))}
+ else if(tab==='home'){[studio,inbox,profile,discover,postScreen,document.getElementById('soundModal'),document.getElementById('editProfileModal'),document.getElementById('commentModal'),document.getElementById('storyModal'),document.getElementById('storyViewersModal')].forEach(x=>x.classList.remove('open'))}
  else if(tab==='discover'){discover.classList.add('open')}
- else if(tab==='inbox'){inbox.classList.add('open')}
+ else if(tab==='inbox'){inbox.binbox?.classList.add('open') || inbox.classList.add('open')}
  else if(tab==='profile'){profile.classList.add('open')}
 });
 
