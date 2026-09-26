@@ -24,8 +24,11 @@ button{font:inherit}
 .caption{font-size:14px;line-height:1.4;margin-bottom:8px}.caption span{color:var(--cyan);font-weight:700;cursor:pointer}.audio{font-size:12px;color:#ddd}
 .actions{display:flex;flex-direction:column;align-items:center;gap:15px}.action{background:none;border:0;color:#fff;text-align:center}.circle{width:45px;height:45px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#ffffff22;backdrop-filter:blur(8px);font-size:23px}.count{font-size:11px;font-weight:700;margin-top:3px}.liked .circle{color:var(--pink)}.saved .circle{color:var(--cyan)}
 .mute{position:absolute;top:68px;right:16px;z-index:7;width:40px;height:40px;border:0;border-radius:50%;background:#0008;color:#fff;font-size:19px}
-.nav{position:absolute;bottom:0;left:0;right:0;height:var(--nav);z-index:50;display:flex;justify-content:space-around;align-items:center;background:#171820ee;backdrop-filter:blur(16px);border-top:1px solid #ffffff12}
-.nav button{background:none;border:0;color:#9a9dac;font-size:10px;display:flex;flex-direction:column;align-items:center;gap:4px;width:20%;cursor:pointer}.nav button.active{color:#fff}.nav .plus{width:42px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--pink),var(--cyan));color:#fff;font-size:22px;line-height:1}
+
+/* ALWAYS ON TOP & TOUCHABLE NAVIGATION */
+.nav{position:absolute;bottom:0;left:0;right:0;height:var(--nav);z-index:100;display:flex;justify-content:space-around;align-items:center;background:#171820ee;backdrop-filter:blur(16px);border-top:1px solid #ffffff12;pointer-events:auto}
+.nav button{background:none;border:0;color:#9a9dac;font-size:10px;display:flex;flex-direction:column;align-items:center;gap:4px;width:20%;cursor:pointer;pointer-events:auto}.nav button.active{color:#fff}.nav .plus{width:42px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--pink),var(--cyan));color:#fff;font-size:22px;line-height:1}
+
 .screen{position:absolute;top:0;left:0;right:0;bottom:var(--nav);z-index:40;background:var(--bg);transform:translateY(100%);transition:.3s;display:flex;flex-direction:column}.screen.open{transform:translateY(0)}
 .screenHead{height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid #ffffff10;font-weight:800}.close{border:0;background:none;color:#fff;font-size:24px;cursor:pointer}
 #studio{background:#000;bottom:0;z-index:60}
@@ -54,7 +57,7 @@ button{font:inherit}
 .postPanel textarea{width:100%;height:90px;background:#1a1b22;color:#fff;border:1px solid #ffffff15;border-radius:12px;padding:12px;resize:none;margin-bottom:12px}
 .postBtn{width:100%;padding:13px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--pink),var(--cyan));color:#fff;font-weight:800;cursor:pointer}
 .hidden{display:none!important}
-.toast{position:absolute;z-index:100;top:70px;left:50%;transform:translateX(-50%) translateY(-15px);opacity:0;background:#000e;padding:9px 16px;border-radius:20px;font-size:13px;transition:.2s;pointer-events:none}
+.toast{position:absolute;z-index:110;top:70px;left:50%;transform:translateX(-50%) translateY(-15px);opacity:0;background:#000e;padding:9px 16px;border-radius:20px;font-size:13px;transition:.2s;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%)}
 
 .discoverBody{flex:1;overflow-y:auto;padding:15px}
@@ -91,7 +94,7 @@ button{font:inherit}
 .userPostThumb img, .userPostThumb video{width:100%;height:100%;object-fit:cover}
 
 /* Sound Modal */
-.modalScreen{position:absolute;inset:0;z-index:60;background:#0f1015;display:none;flex-direction:column}
+.modalScreen{position:absolute;inset:0;z-index:90;background:#0f1015;display:none;flex-direction:column}
 .modalScreen.open{display:flex}
 .soundItem{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid #ffffff0a;cursor:pointer}
 .soundTitle{font-weight:700;font-size:14px}.soundAuthor{font-size:12px;color:var(--muted)}
@@ -116,7 +119,7 @@ button{font:inherit}
 }
 
 /* Comment Screen Drawer */
-.commentModal{position:absolute;bottom:0;left:0;right:0;height:65%;background:#14151c;z-index:70;border-top-left-radius:20px;border-top-right-radius:20px;display:none;flex-direction:column;transform:translateY(100%);transition:transform .3s ease}
+.commentModal{position:absolute;bottom:0;left:0;right:0;height:65%;background:#14151c;z-index:105;border-top-left-radius:20px;border-top-right-radius:20px;display:none;flex-direction:column;transform:translateY(100%);transition:transform .3s ease}
 .commentModal.open{display:flex;transform:translateY(0)}
 .commentHeader{padding:16px;text-align:center;font-weight:800;border-bottom:1px solid #ffffff10;position:relative}
 .commentList{flex:1;overflow-y:auto;padding:15px}
@@ -130,7 +133,7 @@ button{font:inherit}
 .commentSendBtn{background:var(--pink);border:0;color:#fff;font-weight:700;padding:8px 16px;border-radius:20px;cursor:pointer}
 
 /* Story Viewer Modal */
-.storyModal{position:absolute;inset:0;background:#000;z-index:80;display:none;flex-direction:column;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.storyModal{position:absolute;inset:0;background:#000;z-index:110;display:none;flex-direction:column;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .storyModal.open{display:flex}
 .storyBarContainer{display:flex;gap:4px;padding:10px;position:absolute;top:0;left:0;right:0;z-index:10}
 .storyBarSegment{flex:1;height:3px;background:rgba(255,255,255,0.3);border-radius:2px;overflow:hidden}
@@ -150,7 +153,7 @@ button{font:inherit}
 .storyFooterViews span{font-size:13px;font-weight:700;color:#fff}
 
 /* Story Viewers List Modal */
-.storyViewersModal{position:absolute;bottom:0;left:0;right:0;height:55%;background:#14151c;z-index:90;border-top-left-radius:20px;border-top-right-radius:20px;display:none;flex-direction:column;transform:translateY(100%);transition:transform .3s ease}
+.storyViewersModal{position:absolute;bottom:0;left:0;right:0;height:55%;background:#14151c;z-index:120;border-top-left-radius:20px;border-top-right-radius:20px;display:none;flex-direction:column;transform:translateY(100%);transition:transform .3s ease}
 .storyViewersModal.open{display:flex;transform:translateY(0)}
 </style>
 </head>
@@ -989,3 +992,4 @@ renderFeed();
 </script>
 </body>
 </html>
+ 
