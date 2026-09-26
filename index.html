@@ -415,7 +415,7 @@ input:checked+.slider:before{transform:translateX(20px)}
   <button class="textBtn" id="proceedToPostBtn" style="color:var(--cyan); font-size:15px;">Next →</button>
 </div>
 
-<!-- Styled Top Text Editor Bar -->
+<!-- Styled Top Text Editor Bar (Hidden by default) -->
 <div id="topTextEditorBar" class="topTextEditorBar">
   <input type="text" id="topTextEditorInput" class="topTextEditorInput" placeholder="Type your text here..." autocomplete="off">
   <button id="topTextEditorDoneBtn" class="topTextEditorDoneBtn">Done</button>
@@ -1278,7 +1278,6 @@ document.getElementById('toolTextBtn').onclick = () => {
   const inputEl = document.getElementById('topTextEditorInput');
   inputEl.focus();
   
-  // Create a new text element on canvas if none is currently active being typed
   if(!activeLiveTextElement){
    const layer = document.getElementById('editorOverlaysLayer');
    const div = document.createElement('div');
@@ -2006,35 +2005,6 @@ document.querySelectorAll('.nav button').forEach(btn=>{
   }
  };
 });
-
-document.querySelectorAll('.close[data-close]').forEach(btn=>{
- btn.onclick=()=>{
-  const target=btn.dataset.close;
-  if(target==='discover') discover.classList.remove('open');
-  if(target==='inbox') inbox.classList.remove('open');
-  if(target==='profile') profile.classList.remove('open');
-  updateNavActiveState('home');
- };
-});
-
-document.getElementById('closeStudio').onclick=()=>{
- studio.classList.remove('open');
- appContainer.classList.remove('hide-nav-for-create');
- stopCamera();
- updateNavActiveState('home');
-};
-
-document.getElementById('soundSelectBtn').onclick=()=>{
- document.getElementById('soundModal').classList.add('open');
-};
-document.getElementById('closeSoundModal').onclick=()=>{
- document.getElementById('soundModal').classList.remove('open');
-};
-
-document.getElementById('closePost').onclick=()=>{
- postScreen.classList.remove('open');
- appContainer.classList.remove('hide-nav-for-create');
-};
 
 renderFeed();
 </script>
