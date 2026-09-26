@@ -55,11 +55,16 @@ button{font:inherit}
 .inner{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--cyan));transition:.2s}
 .shutter.recording .inner{width:34px;height:34px;border-radius:9px;background:#f33}
 
-.postPanel{padding:18px;overflow:auto;flex:1}
-.previewBox{width:100%;height:300px;background:#000;border-radius:15px;overflow:hidden;display:flex;align-items:center;justify-content:center;margin-bottom:15px}
-.previewBox video,.previewBox img{width:100%;height:100%;object-fit:contain}
-.postPanel textarea{width:100%;height:90px;background:#1a1b22;color:#fff;border:1px solid #ffffff15;border-radius:12px;padding:12px;resize:none;margin-bottom:12px}
-.postBtn{width:100%;padding:13px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--pink),var(--cyan));color:#fff;font-weight:800;cursor:pointer}
+/* Enhanced Post Screen & Full-Screen Media Preview Layout */
+.postPanel{padding:16px;display:flex;flex-direction:column;flex:1;overflow:hidden;position:relative}
+.previewBox{width:100%;flex:1;background:#000;border-radius:16px;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;transition:all .3s ease}
+.previewBox.expanded{position:absolute;inset:0;border-radius:0;z-index:50}
+.previewBox video,.previewBox img{width:100%;height:100%;object-fit:cover}
+.captionBoxContainer{margin-top:12px;margin-bottom:12px}
+.postPanel textarea{width:100%;height:75px;background:#1a1b22;color:#fff;border:1px solid #ffffff15;border-radius:14px;padding:12px;resize:none;font-size:14px;outline:none}
+.postBottomActionSheet{display:flex;flex-direction:column;gap:8px;background:#14151c;padding:12px;border-radius:16px;border:1px solid #ffffff10}
+.postBtn{width:100%;padding:13px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--pink),var(--cyan));color:#fff;font-weight:800;cursor:pointer;font-size:14px}
+
 .hidden{display:none!important}
 .toast{position:absolute;z-index:110;top:70px;left:50%;transform:translateX(-50%) translateY(-15px);opacity:0;background:#000e;padding:9px 16px;border-radius:20px;font-size:13px;transition:.2s;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%)}
@@ -383,12 +388,16 @@ input:checked+.slider:before{transform:translateX(20px)}
 <section id="postScreen" class="screen">
 <div class="screenHead"><button class="close" id="closePost">×</button><span>Post to VIBE</span><span style="width:24px"></span></div>
 <div class="postPanel">
-<div id="previewBox" class="previewBox"><div style="color:#777">Choose a video or picture</div></div>
-<textarea id="captionInput" placeholder="Write a caption with #hashtags..."></textarea>
-<div style="display:flex;gap:10px">
-  <button id="publishBtn" class="postBtn">Post to VIBE</button>
-  <button id="publishStoryBtn" class="postBtn" style="background:var(--cyan);color:#000">Add as Story (24h)</button>
-</div>
+  <div id="previewBox" class="previewBox" title="Tap to expand preview">
+    <div style="color:#777">Choose a video or picture</div>
+  </div>
+  <div class="captionBoxContainer">
+    <textarea id="captionInput" placeholder="Write a clean caption with #hashtags..."></textarea>
+  </div>
+  <div class="postBottomActionSheet">
+    <button id="publishBtn" class="postBtn">Post to Feed</button>
+    <button id="publishStoryBtn" class="postBtn" style="background:var(--cyan);color:#000">Add as Story (24h)</button>
+  </div>
 </div>
 </section>
 
@@ -1135,8 +1144,13 @@ photoFileInput.onchange = e => {
 function openPost(file,type){
  selectedMedia={file,type,url:URL.createObjectURL(file)};studio.classList.remove('open');stopCamera();postScreen.classList.add('open');
  const box=document.getElementById('previewBox');box.innerHTML='';
- const el=document.createElement(type==='video'?'video':'img');el.src=selectedMedia.url;if(type==='video'){el.controls=true;el.playsInline=true}box.appendChild(el);
+ const el=document.createElement(type==='video'?'video':'img');el.src=selectedMedia.url;if(type==='video'){el.controls=false;el.playsInline=true;el.muted=true;el.loop=true;el.play().catch(()=>{})}box.appendChild(el);
 }
+
+// Tap to expand preview handler
+document.getElementById('previewBox').onclick = () => {
+  document.getElementById('previewBox').classList.toggle('expanded');
+};
 
 document.getElementById('publishBtn').onclick=()=> {
  if(!selectedMedia){showToast('Choose a video or picture first');return}
