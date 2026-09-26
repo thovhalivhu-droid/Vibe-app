@@ -176,11 +176,28 @@ input:checked+.slider:before{transform:translateX(20px)}
 .liveOverlayInfo { position: absolute; top: 16px; left: 16px; display: flex; gap: 8px; align-items: center; z-index: 10; }
 .liveBadge { background: var(--pink); color: #fff; font-size: 11px; font-weight: 900; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; letter-spacing: 1px; animation: pulse 1s infinite; }
 .liveViewersBadge { background: rgba(0,0,0,0.6); backdrop-filter: blur(6px); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; }
-.liveChatOverlay { position: absolute; bottom: 20px; left: 16px; right: 16px; height: 160px; display: flex; flex-direction: column; justify-content: flex-end; pointer-events: none; z-index: 10; overflow: hidden; }
-.liveChatList { display: flex; flex-direction: column; gap: 6px; overflow-y: auto; scrollbar-width: none; }
+
+/* Live Chat and Likes Overlay */
+.liveChatOverlay { position: absolute; bottom: 10px; left: 12px; right: 70px; height: 180px; display: flex; flex-direction: column; justify-content: flex-end; z-index: 15; pointer-events: none; overflow: hidden; }
+.liveChatList { display: flex; flex-direction: column; gap: 6px; overflow-y: auto; scrollbar-width: none; pointer-events: auto; padding-right: 4px; }
 .liveChatList::-webkit-scrollbar { display: none; }
-.liveChatMsg { background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); padding: 6px 10px; border-radius: 10px; font-size: 12px; width: fit-content; max-width: 80%; }
-.liveChatUser { font-weight: 700; color: var(--cyan); margin-right: 4px; }
+.liveChatMsg { background: rgba(0,0,0,0.45); backdrop-filter: blur(4px); padding: 6px 10px; border-radius: 14px; font-size: 12px; width: fit-content; max-width: 90%; word-break: break-word; }
+.liveChatUser { font-weight: 700; color: var(--cyan); margin-right: 6px; }
+
+/* Floating Likes Container */
+#liveLikesContainer { position: absolute; bottom: 10px; right: 12px; width: 55px; height: 220px; pointer-events: none; overflow: hidden; z-index: 15; }
+.floating-like { position: absolute; bottom: 0; right: 10px; font-size: 26px; animation: floatUpLive 2s ease-out forwards; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4)); }
+@keyframes floatUpLive {
+  0% { transform: translateY(0) scale(0.4); opacity: 0; }
+  20% { opacity: 1; transform: translateY(-50px) scale(1.2); }
+  100% { transform: translateY(-200px) scale(1); opacity: 0; }
+}
+
+/* Live Input Bar inside control panel */
+.liveInputRow { display: flex; gap: 8px; align-items: center; width: 100%; padding: 0 15px; }
+.liveInputField { flex: 1; background: #1a1b22; border: 1px solid #ffffff15; border-radius: 20px; padding: 10px 14px; color: #fff; font-size: 13px; outline: none; }
+.liveSendBtn { background: var(--pink); border: 0; color: #fff; font-weight: 700; padding: 10px 16px; border-radius: 20px; cursor: pointer; }
+.liveHeartBtn { background: rgba(255,255,255,0.15); border: 0; font-size: 20px; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -225,12 +242,14 @@ input:checked+.slider:before{transform:translateX(20px)}
       <div style="position:absolute; bottom:4px; background:rgba(0,0,0,0.6); padding:2px 6px; font-size:10px; border-radius:4px;" id="activeGuestName">Guest</div>
     </div>
 
+    <!-- Live Stream Floating Comments & Likes Display -->
     <div class="liveChatOverlay">
       <div class="liveChatList" id="liveChatListContainer">
         <div class="liveChatMsg"><span class="liveChatUser">Liam Chen:</span>Hello everyone! 🔥</div>
         <div class="liveChatMsg"><span class="liveChatUser">Elena Rostova:</span>So excited for this stream!</div>
       </div>
     </div>
+    <div id="liveLikesContainer"></div>
   </div>
 </div>
 
@@ -259,11 +278,18 @@ input:checked+.slider:before{transform:translateX(20px)}
 </div>
 
 <!-- Live Stream Mode Control Row -->
-<div id="liveModePanel" class="hidden" style="width:100%; display:flex; justify-content:space-around; align-items:center; padding: 0 15px; flex:1;">
-  <button class="textBtn" id="liveFlipBtn" onclick="flipCamera()">Flip ⟳</button>
-  <button class="postBtn" id="startLiveBtn" onclick="toggleLiveStream()" style="width: 130px; background: var(--pink);">Go LIVE Now</button>
-  <button class="textBtn" id="openGuestRequestsBtn" onclick="openGuestRequestsModal()" style="color:var(--cyan); font-weight:700;">Guests 👥 <span id="guestBadgeCount" style="background:var(--pink); color:#fff; padding:1px 5px; border-radius:8px; font-size:10px; margin-left:2px;">2</span></button>
-  <button class="textBtn" id="liveMuteMicBtn" onclick="toggleLiveMic()">Mute</button>
+<div id="liveModePanel" class="hidden" style="width:100%; display:flex; flex-direction:column; justify-content:center; gap:8px; flex:1;">
+  <div class="liveInputRow">
+    <input type="text" id="liveCommentInput" class="liveInputField" placeholder="Say something to your live viewers..." autocomplete="off">
+    <button id="liveSendChatBtn" class="liveSendBtn">Send</button>
+    <button id="liveTapLikeBtn" class="liveHeartBtn" title="Send Heart">❤️</button>
+  </div>
+  <div style="display:flex; justify-content:space-around; align-items:center; width:100%; padding: 0 10px;">
+    <button class="textBtn" id="liveFlipBtn" onclick="flipCamera()">Flip ⟳</button>
+    <button class="postBtn" id="startLiveBtn" onclick="toggleLiveStream()" style="width: 120px; background: var(--pink); padding: 10px;">Go LIVE Now</button>
+    <button class="textBtn" id="openGuestRequestsBtn" onclick="openGuestRequestsModal()" style="color:var(--cyan); font-weight:700;">Guests 👥 <span id="guestBadgeCount" style="background:var(--pink); color:#fff; padding:1px 5px; border-radius:8px; font-size:10px; margin-left:2px;">2</span></button>
+    <button class="textBtn" id="liveMuteMicBtn" onclick="toggleLiveMic()">Mute</button>
+  </div>
 </div>
 
 </div>
@@ -275,9 +301,7 @@ input:checked+.slider:before{transform:translateX(20px)}
     <span>Incoming Guest Requests</span>
     <button class="close" id="closeGuestRequestsModal" style="position:absolute;right:16px;top:10px;font-size:22px;">×</button>
   </div>
-  <div class="commentList" id="guestRequestsListContainer">
-    <!-- Rendered dynamically -->
-  </div>
+  <div class="commentList" id="guestRequestsListContainer"></div>
 </div>
 
 <!-- Sound Picker Modal -->
@@ -489,9 +513,7 @@ input:checked+.slider:before{transform:translateX(20px)}
         <span>Blocked Accounts</span>
         <button class="close" onclick="closeBlockedAccounts()">×</button>
     </div>
-    <div style="display: flex; flex-direction: column; gap: 12px; max-width: 600px; margin: 20px auto 0 auto; width:100%; padding-bottom: 40px;" id="blockedAccountsListContainer">
-        <!-- Dynamically rendered list of blocked accounts -->
-    </div>
+    <div style="display: flex; flex-direction: column; gap: 12px; max-width: 600px; margin: 20px auto 0 auto; width:100%; padding-bottom: 40px;" id="blockedAccountsListContainer"></div>
 </section>
 
 <!-- Privacy Policy Modal Screen -->
@@ -1272,6 +1294,46 @@ function switchStudioMode(mode) {
   }
 }
 
+function spawnLiveLike() {
+  const container = document.getElementById('liveLikesContainer');
+  if(!container) return;
+  const heart = document.createElement('div');
+  heart.className = 'floating-like';
+  const hearts = ['❤️', '💖', '🔥', '✨'];
+  heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+  heart.style.right = (Math.random() * 25) + 'px';
+  container.appendChild(heart);
+  setTimeout(() => heart.remove(), 2000);
+}
+
+function addLiveChatMessage(user, text) {
+  if(!text.trim()) return;
+  const chatList = document.getElementById('liveChatListContainer');
+  const msgDiv = document.createElement('div');
+  msgDiv.className = 'liveChatMsg';
+  msgDiv.innerHTML = `<span class="liveChatUser">${user}:</span>${text}`;
+  chatList.appendChild(msgDiv);
+  chatList.scrollTop = chatList.scrollHeight;
+}
+
+document.getElementById('liveSendChatBtn').onclick = () => {
+  const input = document.getElementById('liveCommentInput');
+  addLiveChatMessage(myProfile.username, input.value);
+  input.value = '';
+};
+
+document.getElementById('liveCommentInput').onkeypress = (e) => {
+  if(e.key === 'Enter') {
+    const input = document.getElementById('liveCommentInput');
+    addLiveChatMessage(myProfile.username, input.value);
+    input.value = '';
+  }
+};
+
+document.getElementById('liveTapLikeBtn').onclick = () => {
+  spawnLiveLike();
+};
+
 function toggleLiveStream() {
   const btn = document.getElementById('startLiveBtn');
   const overlayElements = document.getElementById('liveStreamOverlayElements');
@@ -1284,7 +1346,7 @@ function toggleLiveStream() {
     overlayElements.classList.remove('hidden');
     showToast('You are now LIVE! 🔴');
 
-    // Simulate incoming viewer comments
+    // Simulate incoming viewer comments and automated likes
     const sampleChatUsers = ['Sophia Taylor', 'Marcus Vance', 'Alex Rivera', 'Chloe Bennett'];
     const sampleChatTexts = ['Hey everyone! 👋', 'Loving this broadcast!', 'Drop a heart if you see this ❤️', 'Awesome quality!'];
     
@@ -1292,16 +1354,12 @@ function toggleLiveStream() {
       liveViewersCountNum += Math.floor(Math.random() * 7) - 2;
       document.getElementById('liveViewersCount').textContent = `👁 ${formatCount(liveViewersCountNum)}`;
 
-      const chatList = document.getElementById('liveChatListContainer');
       const randomUser = sampleChatUsers[Math.floor(Math.random() * sampleChatUsers.length)];
       const randomText = sampleChatTexts[Math.floor(Math.random() * sampleChatTexts.length)];
-      
-      const msgDiv = document.createElement('div');
-      msgDiv.className = 'liveChatMsg';
-      msgDiv.innerHTML = `<span class="liveChatUser">${randomUser}:</span>${randomText}`;
-      chatList.appendChild(msgDiv);
-      chatList.scrollTop = chatList.scrollHeight;
-    }, 3000);
+      addLiveChatMessage(randomUser, randomText);
+
+      if(Math.random() > 0.4) spawnLiveLike();
+    }, 3500);
 
   } else {
     isLiveActive = false;
@@ -1385,7 +1443,6 @@ function acceptGuest(id) {
     activeGuest = guestRequestsData[reqIndex];
     guestRequestsData.splice(reqIndex, 1);
     
-    // Display Guest Widget on stream
     document.getElementById('activeGuestAvatar').src = activeGuest.avatar;
     document.getElementById('activeGuestName').textContent = activeGuest.name;
     document.getElementById('activeGuestPreviewWidget').classList.remove('hidden');
@@ -1560,7 +1617,6 @@ document.querySelectorAll('.nav button').forEach(b=>b.onclick=async()=>{
   studio.classList.add('open');
   await startCamera();
  } else {
-  // Ensure nav and header stay visible when switching to Discover, Inbox, or Me
   appContainer.classList.remove('hide-nav-for-create');
   if(tab==='discover'){discover.classList.add('open')}
   else if(tab==='inbox'){inbox.classList.add('open')}
