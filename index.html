@@ -1182,8 +1182,32 @@ function unblockAccount(id) {
     showToast('Account unblocked');
 }
 
-function downloadUserData() {
-    showToast('Your data export request has been submitted.');
+function downloadData() {
+    try {
+        const safetyData = JSON.stringify({
+            timestamp: new Date().toISOString(),
+            status: "active",
+            module: "Safety",
+            profile: myProfile,
+            blockedCount: blockedAccountsData.length
+        }, null, 2);
+
+        const blob = new Blob([safetyData], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "vibe-safety-data-export.json";
+        document.body.appendChild(a);
+        a.click();
+        
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('Your data export request has been submitted.');
+    } catch (error) {
+        console.error("Failed to download safety data:", error);
+        showToast('Failed to download data export.');
+    }
 }
 
 function openPrivacyPolicy() {
@@ -1244,3 +1268,4 @@ renderFeed();
 </script>
 </body>
 </html>
+ 
