@@ -155,6 +155,15 @@ button{font:inherit}
 /* Story Viewers List Modal */
 .storyViewersModal{position:absolute;bottom:0;left:0;right:0;height:55%;background:#14151c;z-index:120;border-top-left-radius:20px;border-top-right-radius:20px;display:none;flex-direction:column;transform:translateY(100%);transition:transform .3s ease}
 .storyViewersModal.open{display:flex;transform:translateY(0)}
+
+/* Security & Privacy Settings Screen Styles */
+#security-settings-screen{background-color: var(--bg); color: var(--text); z-index: 50; overflow-y: auto;}
+.switch{position:relative;display:inline-block;width:44px;height:24px}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background-color:#333;transition:.3s;border-radius:24px}
+.slider:before{position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background-color:white;transition:.3s;border-radius:50%}
+input:checked+.slider{background-color:var(--pink)}
+input:checked+.slider:before{transform:translateX(20px)}
 </style>
 </head>
 <body>
@@ -278,7 +287,10 @@ button{font:inherit}
       <div><span id="statFollowers">1.2K</span>Followers</div>
       <div><span id="statLikes">8.4K</span>Likes</div>
     </div>
-    <button class="editProfileBtn" id="editProfileBtn">Edit Profile</button>
+    <div style="display:flex; gap:8px; justify-content:center; margin-top:12px;">
+      <button class="editProfileBtn" id="editProfileBtn" style="margin-top:0;">Edit Profile</button>
+      <button class="editProfileBtn" onclick="openSecuritySettings()" style="margin-top:0; border-color:var(--cyan); color:var(--cyan);">Privacy & Security</button>
+    </div>
   </div>
   
   <div class="profileSubTabs">
@@ -288,6 +300,88 @@ button{font:inherit}
 
   <div class="userPostsGrid" id="userPostsGrid"></div>
 </div>
+</section>
+
+<!-- Security and Privacy Settings Screen -->
+<section id="security-settings-screen" class="screen" style="padding: 20px;">
+    <div class="screenHead">
+        <span>Security and Privacy</span>
+        <button class="close" onclick="closeSecuritySettings()">×</button>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 24px; max-width: 600px; margin: 20px auto 0 auto; width:100%; padding-bottom: 40px;">
+        <!-- Account Privacy Group -->
+        <div>
+            <h3 style="font-size: 13px; color: var(--muted); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.5px;">Account Privacy</h3>
+            <div style="background: var(--surface); border-radius: 12px; padding: 0 16px; border: 1px solid #ffffff10;">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid #ffffff10;">
+                    <div>
+                        <div style="font-size: 15px; font-weight: 500;">Private Account</div>
+                        <div style="font-size: 12px; color: var(--muted); margin-top: 2px;">Only approved followers can see your videos</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="private-account-toggle" onchange="togglePrivateAccount(this)">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 0;">
+                    <div>
+                        <div style="font-size: 15px; font-weight: 500;">Allow Direct Messages</div>
+                        <div style="font-size: 12px; color: var(--muted); margin-top: 2px;">Choose who can send you direct messages</div>
+                    </div>
+                    <select id="dm-permission-select" onchange="updateDMPermissions(this.value)" style="background: #2a2a2a; color: white; border: none; padding: 8px 12px; border-radius: 8px; font-size: 13px; outline: none;">
+                        <option value="everyone">Everyone</option>
+                        <option value="followers">Followers only</option>
+                        <option value="none">Nobody</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Group -->
+        <div>
+            <h3 style="font-size: 13px; color: var(--muted); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.5px;">Login & Security</h3>
+            <div style="background: var(--surface); border-radius: 12px; padding: 0 16px; border: 1px solid #ffffff10;">
+                <div onclick="openPasswordModal()" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid #ffffff10; cursor: pointer;">
+                    <div>
+                        <div style="font-size: 15px; font-weight: 500;">Change Password</div>
+                        <div style="font-size: 12px; color: var(--muted); margin-top: 2px;">Update your account password regularly</div>
+                    </div>
+                    <span style="color: var(--muted); font-size: 14px;">›</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 0;">
+                    <div>
+                        <div style="font-size: 15px; font-weight: 500;">Two-Factor Authentication</div>
+                        <div style="font-size: 12px; color: var(--muted); margin-top: 2px;">Add an extra layer of security</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="tfa-toggle" onchange="toggleTFA(this)">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data & Safety Group -->
+        <div>
+            <h3 style="font-size: 13px; color: var(--muted); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.5px;">Safety</h3>
+            <div style="background: var(--surface); border-radius: 12px; padding: 0 16px; border: 1px solid #ffffff10;">
+                <div onclick="openBlockedAccounts()" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid #ffffff10; cursor: pointer;">
+                    <div>
+                        <div style="font-size: 15px; font-weight: 500;">Blocked Accounts</div>
+                        <div style="font-size: 12px; color: var(--muted); margin-top: 2px;">Manage accounts you have blocked</div>
+                    </div>
+                    <span style="color: var(--muted); font-size: 14px;">›</span>
+                </div>
+                <div onclick="downloadUserData()" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 0; cursor: pointer;">
+                    <div>
+                        <div style="font-size: 15px; font-weight: 500;">Download Data</div>
+                        <div style="font-size: 12px; color: var(--muted); margin-top: 2px;">Get a copy of your VIBE data</div>
+                    </div>
+                    <span style="color: var(--muted); font-size: 14px;">›</span>
+                </div>
+            </div>
+        </div>
+    </div>
 </section>
 
 <!-- Edit Profile Modal -->
@@ -973,6 +1067,41 @@ document.getElementById('avatarFileInput').onchange=e=>{
  }
 };
 
+// Security and Privacy Settings Navigation & Handlers
+function openSecuritySettings() {
+    document.getElementById('profile').classList.remove('open');
+    document.getElementById('security-settings-screen').classList.add('open');
+}
+
+function closeSecuritySettings() {
+    document.getElementById('security-settings-screen').classList.remove('open');
+    document.getElementById('profile').classList.add('open');
+}
+
+function togglePrivateAccount(element) {
+    showToast(element.checked ? 'Account set to Private' : 'Account set to Public');
+}
+
+function updateDMPermissions(value) {
+    showToast('DM permissions updated: ' + value);
+}
+
+function toggleTFA(element) {
+    showToast(element.checked ? 'Two-Factor Authentication Enabled' : 'Two-Factor Authentication Disabled');
+}
+
+function openPasswordModal() {
+    showToast('Password change flow triggered.');
+}
+
+function openBlockedAccounts() {
+    showToast('Opening blocked accounts list.');
+}
+
+function downloadUserData() {
+    showToast('Your data export request has been submitted.');
+}
+
 document.querySelectorAll('.tab').forEach(t=>{
  t.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');showToast('Switched to '+t.textContent);};
 });
@@ -981,7 +1110,7 @@ document.querySelectorAll('.nav button').forEach(b=>b.onclick=async()=>{
  const tab=b.dataset.tab;
  
  if(tab === 'home') {
-  [studio,inbox,profile,discover,postScreen,document.getElementById('soundModal'),document.getElementById('editProfileModal'),document.getElementById('commentModal'),document.getElementById('storyModal'),document.getElementById('storyViewersModal')].forEach(x=>x.classList.remove('open'));
+  [studio,inbox,profile,discover,postScreen,document.getElementById('security-settings-screen'),document.getElementById('soundModal'),document.getElementById('editProfileModal'),document.getElementById('commentModal'),document.getElementById('storyModal'),document.getElementById('storyViewersModal')].forEach(x=>x.classList.remove('open'));
   updateNavActiveState('home');
   return;
  }
@@ -990,7 +1119,7 @@ document.querySelectorAll('.nav button').forEach(b=>b.onclick=async()=>{
   return;
  }
 
- [studio,inbox,profile,discover].forEach(x=>x.classList.remove('open'));
+ [studio,inbox,profile,discover,document.getElementById('security-settings-screen')].forEach(x=>x.classList.remove('open'));
  updateNavActiveState(tab);
 
  if(tab==='create'){studio.classList.add('open');await startCamera()}
@@ -1019,4 +1148,3 @@ renderFeed();
 </script>
 </body>
 </html>
- 
