@@ -1560,6 +1560,7 @@ document.querySelectorAll('.nav button').forEach(b=>b.onclick=async()=>{
   studio.classList.add('open');
   await startCamera();
  } else {
+  // Ensure nav and header stay visible when switching to Discover, Inbox, or Me
   appContainer.classList.remove('hide-nav-for-create');
   if(tab==='discover'){discover.classList.add('open')}
   else if(tab==='inbox'){inbox.classList.add('open')}
