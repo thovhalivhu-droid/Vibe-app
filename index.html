@@ -276,6 +276,7 @@ input:checked+.slider:before{transform:translateX(20px)}
     <div class="liveOverlayInfo">
       <span class="liveBadge">LIVE</span>
       <span class="liveViewersBadge" id="liveViewersCount">👁 1.4K</span>
+      <span class="liveViewersBadge" id="liveHeartCountBadge">❤️ 0</span>
     </div>
     
     <!-- Multi-Guest Co-Host Grid Widget (Up to 4 Guests) -->
@@ -327,7 +328,7 @@ input:checked+.slider:before{transform:translateX(20px)}
     <button class="textBtn" id="liveFlipBtn" onclick="flipCamera()">Flip ⟳</button>
     <button class="postBtn" id="startLiveBtn" onclick="toggleLiveStream()" style="width: 110px; background: var(--pink); padding: 10px;">Go LIVE Now</button>
     <button class="textBtn" id="openGuestRequestsBtn" onclick="openGuestRequestsModal()" style="color:var(--cyan); font-weight:700;">Guests 👥 <span id="guestBadgeCount" style="background:var(--pink); color:#fff; padding:1px 5px; border-radius:8px; font-size:10px; margin-left:2px;">3</span></button>
-    <button class="textBtn" id="openLiveSettingsBtn" onclick="openLiveSettingsModal()" style="font-weight:700;">Settings ⚙</button>
+    <button class="textBtn" id="openLiveSettingsModal" onclick="openLiveSettingsModal()" style="font-weight:700;">Settings ⚙</button>
     <button class="textBtn" id="liveMuteMicBtn" onclick="toggleLiveMic()">Mute</button>
   </div>
 </div>
@@ -730,13 +731,12 @@ let guestRequestsData = [
   { id: 203, name: "Sophia Taylor", username: "@sophia_t", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" }
 ];
 
-// Pending message requests array for Inbox
 let pendingMessageRequests = [
   { id: 301, name: "Marcus Vance", username: "@marcus_v", text: "Hey! Loved your content, can we chat?", avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" },
   { id: 302, name: "Chloe Bennett", username: "@chloeb", text: "Sent you a message request.", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" }
 ];
 
-let activeGuests = []; // Supports up to 4 co-hosting guests
+let activeGuests = []; 
 let allowGuestRequestsEnabled = true;
 
 let notificationsData=[
@@ -762,6 +762,7 @@ let activeTabKey = 'home';
 let isLiveActive = false;
 let liveSimInterval = null;
 let liveViewersCountNum = 1420;
+let liveHeartCountNum = 0;
 
 function updateNavActiveState(tabKey) {
  activeTabKey = tabKey;
@@ -1290,7 +1291,6 @@ document.querySelectorAll('.soundItem').forEach(item=>{
  };
 });
 
-// Inbox sub-tab switching & Pending Requests handling
 function renderInboxRequests() {
   const container = document.getElementById('inboxContentContainer');
   container.innerHTML = '';
@@ -1390,7 +1390,6 @@ document.getElementById('avatarFileInput').onchange=e=>{
  }
 };
 
-// Studio Mode Switcher (Video vs Live Stream)
 function switchStudioMode(mode) {
   if(isLiveActive) {
     showToast('Please end your live stream first');
@@ -1414,7 +1413,13 @@ function switchStudioMode(mode) {
   }
 }
 
-function spawnLiveLike() {
+function spawnLiveLike(increment = 1) {
+  liveHeartCountNum += increment;
+  const heartBadge = document.getElementById('liveHeartCountBadge');
+  if(heartBadge) {
+    heartBadge.textContent = `❤️ ${formatCount(liveHeartCountNum)}`;
+  }
+
   const container = document.getElementById('liveLikesContainer');
   if(!container) return;
   const heart = document.createElement('div');
@@ -1451,7 +1456,7 @@ document.getElementById('liveCommentInput').onkeypress = (e) => {
 };
 
 document.getElementById('liveTapLikeBtn').onclick = () => {
-  spawnLiveLike();
+  spawnLiveLike(1);
 };
 
 function toggleLiveStream() {
@@ -1461,6 +1466,8 @@ function toggleLiveStream() {
   if(!isLiveActive) {
     if(!mediaStream) { showToast('Camera permission required to go live'); return; }
     isLiveActive = true;
+    liveHeartCountNum = 0;
+    document.getElementById('liveHeartCountBadge').textContent = `❤️ 0`;
     btn.textContent = 'End Live';
     btn.style.background = '#f33';
     overlayElements.classList.remove('hidden');
@@ -1477,7 +1484,7 @@ function toggleLiveStream() {
       const randomText = sampleChatTexts[Math.floor(Math.random() * sampleChatTexts.length)];
       addLiveChatMessage(randomUser, randomText);
 
-      if(Math.random() > 0.4) spawnLiveLike();
+      if(Math.random() > 0.4) spawnLiveLike(Math.floor(Math.random() * 3) + 1);
     }, 3500);
 
   } else {
@@ -1502,7 +1509,6 @@ function toggleLiveMic() {
   }
 }
 
-// Live Stream Settings Modal Handlers
 function openLiveSettingsModal() {
   document.getElementById('liveSettingsModal').classList.add('open');
 }
@@ -1525,7 +1531,6 @@ function toggleGuestRequestsSetting(element) {
   }
 }
 
-// Guest Requests Handlers
 function openGuestRequestsModal() {
   if(!allowGuestRequestsEnabled) {
     showToast('Guest requests are currently disabled in live settings');
@@ -1640,7 +1645,6 @@ function updateActiveGuestsGrid() {
   });
 }
 
-// Security and Privacy Settings Navigation & Handlers
 function openSecuritySettings() {
     document.getElementById('profile').classList.remove('open');
     document.getElementById('security-settings-screen').classList.add('open');
