@@ -348,7 +348,7 @@ let feedData=[
 }
 ];
 
-let storiesData = []; // Array of active 24h stories {id, url, type, timestamp}
+let storiesData = []; 
 
 let notificationsData=[
 {type:"like",user:"Elena Rostova",text:"liked your video",time:"2m ago",avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150"},
@@ -708,7 +708,6 @@ document.getElementById('publishBtn').onclick=()=>{
  feedData.unshift(item);renderFeed();postScreen.classList.remove('open');selectedMedia=null;document.getElementById('captionInput').value='';showToast('Posted to VIBE 🎉');
 };
 
-// Add Story Action (Vanish after 24 hrs)
 document.getElementById('publishStoryBtn').onclick=()=>{
  if(!selectedMedia){showToast('Choose a video or picture first');return}
  const storyItem={id:Date.now(), url:selectedMedia.url, type:selectedMedia.type, timestamp:Date.now()};
@@ -720,13 +719,11 @@ document.getElementById('publishStoryBtn').onclick=()=>{
  showToast('Story added! It will vanish in 24 hours ⏳');
 };
 
-// Avatar Story Trigger click
 document.getElementById('avatarStoryTrigger').onclick=()=>{
  const activeStories = getValidStories();
  if(activeStories.length > 0){
   openStoryViewer();
  } else {
-  // If no story, jump straight to creation camera
   document.querySelector('[data-tab="create"]').click();
   showToast('Record or upload media to publish a story');
  };
@@ -762,7 +759,6 @@ function playStory(index){
  if(story.type === 'video'){ el.autoplay = true; el.playsInline = true; el.muted = false; }
  contentArea.appendChild(el);
 
- // Build progress bars
  const barContainer = document.getElementById('storyBarContainer');
  barContainer.innerHTML = '';
  activeStories.forEach((_, i)=>{
@@ -881,3 +877,4 @@ renderFeed();
 </script>
 </body>
 </html>
+ 
