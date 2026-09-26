@@ -973,7 +973,7 @@ document.querySelectorAll('.nav button').forEach(b=>b.onclick=async()=>{
  if(tab==='create'){studio.classList.add('open');await startCamera()}
  else if(tab==='home'){[studio,inbox,profile,discover,postScreen,document.getElementById('soundModal'),document.getElementById('editProfileModal'),document.getElementById('commentModal'),document.getElementById('storyModal'),document.getElementById('storyViewersModal')].forEach(x=>x.classList.remove('open'))}
  else if(tab==='discover'){discover.classList.add('open')}
- else if(tab==='inbox'){inbox.binbox?.classList.add('open') || inbox.classList.add('open')}
+ else if(tab==='inbox'){inbox.classList.add('open')}
  else if(tab==='profile'){profile.classList.add('open')}
 });
 
