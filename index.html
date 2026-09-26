@@ -10,7 +10,7 @@
 html,body{width:100%;height:100%;overflow:hidden;background:#000;color:var(--text)}
 button{font:inherit}
 #app{position:relative;width:100%;height:100%;max-width:480px;margin:auto;background:var(--bg);overflow:hidden}
-.header{position:absolute;top:0;left:0;right:0;height:58px;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:linear-gradient(#0f1015dd,transparent)}
+.header{position:absolute;top:0;left:0;right:0;height:58px;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:linear-gradient(#0f1015dd,transparent);transition:.3s}
 .logo{font-size:23px;font-weight:900;background:linear-gradient(45deg,var(--pink),var(--cyan));-webkit-background-clip:text;color:transparent}
 .tabs{display:flex;gap:22px;font-weight:700}.tab{color:#8d8f9b;position:relative;cursor:pointer}.tab.active{color:#fff}.tab.active:after{content:"";position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);width:18px;height:3px;border-radius:5px;background:var(--pink)}
 .feed{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none}.feed::-webkit-scrollbar{display:none}
@@ -25,10 +25,15 @@ button{font:inherit}
 .actions{display:flex;flex-direction:column;align-items:center;gap:15px}.action{background:none;border:0;color:#fff;text-align:center}.circle{width:45px;height:45px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#ffffff22;backdrop-filter:blur(8px);font-size:23px}.count{font-size:11px;font-weight:700;margin-top:3px}.liked .circle{color:var(--pink)}.saved .circle{color:var(--cyan)}
 .mute{position:absolute;top:68px;right:16px;z-index:7;width:40px;height:40px;border:0;border-radius:50%;background:#0008;color:#fff;font-size:19px}
 
-.nav{position:absolute;bottom:0;left:0;right:0;height:var(--nav);z-index:100;display:flex;justify-content:space-around;align-items:center;background:#171820ee;backdrop-filter:blur(16px);border-top:1px solid #ffffff12;pointer-events:auto}
+.nav{position:absolute;bottom:0;left:0;right:0;height:var(--nav);z-index:100;display:flex;justify-content:space-around;align-items:center;background:#171820ee;backdrop-filter:blur(16px);border-top:1px solid #ffffff12;pointer-events:auto;transition:transform .3s ease}
 .nav button{background:none;border:0;color:#9a9dac;font-size:10px;display:flex;flex-direction:column;align-items:center;gap:4px;width:20%;cursor:pointer;pointer-events:auto}.nav button.active{color:#fff}.nav .plus{width:42px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--pink),var(--cyan));color:#fff;font-size:22px;line-height:1}
 
-.screen{position:absolute;top:0;left:0;right:0;bottom:var(--nav);z-index:40;background:var(--bg);transform:translateY(100%);transition:.3s;display:flex;flex-direction:column}.screen.open{transform:translateY(0)}
+/* Hide Navigation and Header when app is in sub-screen / create mode */
+#app.hide-nav .nav { transform: translateY(100%); pointer-events: none; }
+#app.hide-nav .header { transform: translateY(-100%); pointer-events: none; }
+
+.screen{position:absolute;top:0;left:0;right:0;bottom:0;z-index:40;background:var(--bg);transform:translateY(100%);transition:.3s;display:flex;flex-direction:column}
+.screen.open{transform:translateY(0)}
 .screenHead{height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid #ffffff10;font-weight:800}.close{border:0;background:none;color:#fff;font-size:24px;cursor:pointer}
 #studio{background:#000;bottom:0;z-index:60}
 .camera{position:relative;flex:1;background:#111;overflow:hidden}
@@ -529,6 +534,7 @@ input:checked+.slider:before{transform:translateX(20px)}
 </div>
 
 <script>
+const appContainer=document.getElementById('app');
 const feed=document.getElementById('feed');
 const toast=document.getElementById('toast');
 const studio=document.getElementById('studio');
@@ -799,6 +805,7 @@ function renderDiscoverGrid(filterText=""){
   else { cell.innerHTML = `<video src="${item.video}" muted playsinline></video>`; }
   cell.onclick = () => {
    discover.classList.remove('open');
+   appContainer.classList.remove('hide-nav');
    updateNavActiveState('home');
    const idx = feedData.findIndex(f => f.id === item.id);
    if(idx !== -1) { feed.children[idx].scrollIntoView({behavior:'smooth'}); }
@@ -854,6 +861,7 @@ function renderProfileGrid(){
   else { cell.innerHTML = `<video src="${item.video}" muted playsinline></video>`; }
   cell.onclick = () => {
    profile.classList.remove('open');
+   appContainer.classList.remove('hide-nav');
    updateNavActiveState('home');
    const idx = feedData.findIndex(f => f.id === item.id);
    if(idx !== -1) { feed.children[idx].scrollIntoView({behavior:'smooth'}); }
@@ -940,7 +948,7 @@ document.getElementById('publishBtn').onclick=()=> {
  const caption=document.getElementById('captionInput').value.trim()||'New VIBE ✨ #VIBE';
  const item={id:Date.now(),author:'You',caption,audio:selectedSound,likes:0,commentsCount:0,shares:0,views:'1',avatar:myProfile.avatar,commentsList:[]};
  if(selectedMedia.type==='video')item.video=selectedMedia.url;else item.image=selectedMedia.url;
- feedData.unshift(item);renderFeed();postScreen.classList.remove('open');selectedMedia=null;document.getElementById('captionInput').value='';showToast('Posted to VIBE 🎉');
+ feedData.unshift(item);renderFeed();postScreen.classList.remove('open');appContainer.classList.remove('hide-nav');selectedMedia=null;document.getElementById('captionInput').value='';showToast('Posted to VIBE 🎉');
 };
 
 document.getElementById('publishStoryBtn').onclick=()=>{
@@ -948,6 +956,7 @@ document.getElementById('publishStoryBtn').onclick=()=>{
  const storyItem={id:Date.now(), url:selectedMedia.url, type:selectedMedia.type, timestamp:Date.now(), viewsCount: 34};
  storiesData.unshift(storyItem);
  postScreen.classList.remove('open');
+ appContainer.classList.remove('hide-nav');
  selectedMedia=null;
  document.getElementById('captionInput').value='';
  renderProfileGrid();
@@ -1309,7 +1318,7 @@ function unblockAccount(id) {
     showToast('Account unblocked');
 }
 
-function downloadData() {
+function downloadUserData() {
     try {
         const safetyData = JSON.stringify({
             timestamp: new Date().toISOString(),
@@ -1358,6 +1367,7 @@ document.querySelectorAll('.nav button').forEach(b=>b.onclick=async()=>{
  
  if(tab === 'home') {
   [studio,inbox,profile,discover,postScreen,document.getElementById('security-settings-screen'),document.getElementById('blocked-accounts-screen'),document.getElementById('soundModal'),document.getElementById('editProfileModal'),document.getElementById('commentModal'),document.getElementById('storyModal'),document.getElementById('storyViewersModal')].forEach(x=>x.classList.remove('open'));
+  appContainer.classList.remove('hide-nav');
   updateNavActiveState('home');
   return;
  }
@@ -1369,6 +1379,8 @@ document.querySelectorAll('.nav button').forEach(b=>b.onclick=async()=>{
  [studio,inbox,profile,discover,document.getElementById('security-settings-screen'),document.getElementById('blocked-accounts-screen')].forEach(x=>x.classList.remove('open'));
  updateNavActiveState(tab);
 
+ appContainer.classList.add('hide-nav');
+
  if(tab==='create'){studio.classList.add('open');await startCamera()}
  else if(tab==='discover'){discover.classList.add('open')}
  else if(tab==='inbox'){inbox.classList.add('open')}
@@ -1378,17 +1390,20 @@ document.querySelectorAll('.nav button').forEach(b=>b.onclick=async()=>{
 document.getElementById('closeStudio').onclick=()=>{
  if(isLiveActive) { toggleLiveStream(); }
  studio.classList.remove('open');
+ appContainer.classList.remove('hide-nav');
  if(recording)stopRecording();
  stopCamera();
  updateNavActiveState('home');
 };
 document.getElementById('closePost').onclick=()=>{
  postScreen.classList.remove('open');
+ appContainer.classList.remove('hide-nav');
  updateNavActiveState('home');
 };
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>{
  const screenId = b.dataset.close;
  document.getElementById(screenId).classList.remove('open');
+ appContainer.classList.remove('hide-nav');
  updateNavActiveState('home');
 });
 
