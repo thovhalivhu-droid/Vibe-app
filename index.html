@@ -23,6 +23,40 @@ button{font:inherit}
 .name{font-weight:800;font-size:15px}.follow{border:0;border-radius:18px;padding:5px 11px;background:var(--pink);color:#fff;font-size:12px;font-weight:700}
 .caption{font-size:14px;line-height:1.4;margin-bottom:8px}.caption span{color:var(--cyan);font-weight:700;cursor:pointer}.audio{font-size:12px;color:#ddd}
 .actions{display:flex;flex-direction:column;align-items:center;gap:15px}.action{background:none;border:0;color:#fff;text-align:center}.circle{width:45px;height:45px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#ffffff22;backdrop-filter:blur(8px);font-size:23px}.count{font-size:11px;font-weight:700;margin-top:3px}.liked .circle{color:var(--pink)}.saved .circle{color:var(--cyan)}
+
+/* Vertical Edit Menu Styles on the Right Side */
+.vertical-edit-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
+}
+.vertical-edit-menu.open {
+  max-height: 250px;
+  opacity: 1;
+  margin-top: 5px;
+}
+.sub-edit-btn {
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+.sub-edit-btn:hover {
+  background: var(--pink);
+  border-color: var(--pink);
+}
+
 .mute{position:absolute;top:68px;right:16px;z-index:7;width:40px;height:40px;border:0;border-radius:50%;background:#0008;color:#fff;font-size:19px}
 
 .nav{position:absolute;bottom:0;left:0;right:0;height:var(--nav);z-index:100;display:flex;justify-content:space-around;align-items:center;background:#171820ee;backdrop-filter:blur(16px);border-top:1px solid #ffffff12;pointer-events:auto;transition:transform .3s ease}
@@ -891,6 +925,15 @@ function renderFeed(filteredList){
     <button class="action commentBtn"><div class="circle">💬</div><div class="count">${item.commentsList.length}</div></button>
     <button class="action saveBtn ${item.isSaved ? 'saved' : ''}"><div class="circle">${item.isSaved ? '★' : '☆'}</div><div class="count">Save</div></button>
     <button class="action shareBtn"><div class="circle">↗</div><div class="count">${formatCount(item.shares)}</div></button>
+    
+    <!-- Edit Button with Vertical Dropdown Menu -->
+    <button class="action editMenuToggleBtn"><div class="circle">✏️</div><div class="count">Edit</div></button>
+    <div class="vertical-edit-menu">
+      <button class="sub-edit-btn" onclick="triggerEditAction('trim', ${item.id})">Trim</button>
+      <button class="sub-edit-btn" onclick="triggerEditAction('filter', ${item.id})">Filters</button>
+      <button class="sub-edit-btn" onclick="triggerEditAction('speed', ${item.id})">Speed</button>
+      <button class="sub-edit-btn" onclick="triggerEditAction('audio', ${item.id})">Audio</button>
+    </div>
   </div></div>`;
   feed.appendChild(card);
   
@@ -899,6 +942,13 @@ function renderFeed(filteredList){
   const commentActionBtn=card.querySelector('.commentBtn');
   const saveBtn=card.querySelector('.saveBtn');
   const shareBtn=card.querySelector('.shareBtn');
+  const editToggleBtn = card.querySelector('.editMenuToggleBtn');
+  const verticalMenu = card.querySelector('.vertical-edit-menu');
+
+  editToggleBtn.onclick = e => {
+    e.stopPropagation();
+    verticalMenu.classList.toggle('open');
+  };
   
   card.querySelector('.mute').onclick=e=>{e.stopPropagation();muted=!muted;document.querySelectorAll('.reel-video').forEach(x=>x.muted=muted);document.querySelectorAll('.mute').forEach(b=>b.textContent=muted?'🔇':'🔊')};
   
@@ -954,6 +1004,7 @@ function renderFeed(filteredList){
   let lastTap = 0;
   card.onclick = (e) => {
    if(e.target.closest('button') || e.target.closest('.hashtag') || e.target.closest('.author')) return;
+   verticalMenu.classList.remove('open'); // close menu on outside tap
    const currentTime = new Date().getTime();
    const tapLength = currentTime - lastTap;
    if (tapLength < 300 && tapLength > 0) {
@@ -983,6 +1034,10 @@ function renderFeed(filteredList){
  setupObserver();
  renderDiscoverGrid();
  renderProfileGrid();
+}
+
+function triggerEditAction(actionType, itemId) {
+  showToast(`Action selected: ${actionType.toUpperCase()} for item #${itemId}`);
 }
 
 function openCommentsModal(item){
@@ -1268,7 +1323,6 @@ document.getElementById('toolFilterBtn').onclick = () => {
 };
 
 document.getElementById('toolTextBtn').onclick = () => {
-  // If the user clicks text button, open post screen where the text bar is rendered
   editorScreen.classList.remove('open');
   openPostScreenFromEditor();
   const bar = document.getElementById('topTextEditorBar');
