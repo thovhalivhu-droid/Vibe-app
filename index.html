@@ -365,7 +365,7 @@ input:checked+.slider:before{transform:translateX(20px)}
             </div>
         </div>
 
-        <!-- Data & Safety Group -->
+        <!-- Safety Group -->
         <div>
             <h3 style="font-size: 13px; color: var(--muted); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.5px;">Safety</h3>
             <div style="background: var(--surface); border-radius: 12px; padding: 0 16px; border: 1px solid #ffffff10;">
@@ -380,6 +380,34 @@ input:checked+.slider:before{transform:translateX(20px)}
                     <div>
                         <div style="font-size: 15px; font-weight: 500;">Download Data</div>
                         <div style="font-size: 12px; color: var(--muted); margin-top: 2px;">Get a copy of your VIBE data</div>
+                    </div>
+                    <span style="color: var(--muted); font-size: 14px;">›</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Legal Group (Separate) -->
+        <div>
+            <h3 style="font-size: 13px; color: var(--muted); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.5px;">Legal</h3>
+            <div style="background: var(--surface); border-radius: 12px; padding: 0 16px; border: 1px solid #ffffff10;">
+                <div onclick="openPrivacyPolicy()" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid #ffffff10; cursor: pointer;">
+                    <div>
+                        <div style="font-size: 15px; font-weight: 500;">Privacy Policy</div>
+                        <div style="font-size: 12px; color: var(--muted); margin-top: 2px;">Read how we collect and protect your data</div>
+                    </div>
+                    <span style="color: var(--muted); font-size: 14px;">›</span>
+                </div>
+                <div onclick="openTermsOfService()" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid #ffffff10; cursor: pointer;">
+                    <div>
+                        <div style="font-size: 15px; font-weight: 500;">Terms of Service</div>
+                        <div style="font-size: 12px; color: var(--muted); margin-top: 2px;">Review the rules and guidelines for using VIBE</div>
+                    </div>
+                    <span style="color: var(--muted); font-size: 14px;">›</span>
+                </div>
+                <div onclick="openCookiePolicy()" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 0; cursor: pointer;">
+                    <div>
+                        <div style="font-size: 15px; font-weight: 500;">Cookie Policy</div>
+                        <div style="font-size: 12px; color: var(--muted); margin-top: 2px;">Learn how we use cookies and tracking technologies</div>
                     </div>
                     <span style="color: var(--muted); font-size: 14px;">›</span>
                 </div>
@@ -1104,6 +1132,18 @@ function openBlockedAccounts() {
 
 function downloadUserData() {
     showToast('Your data export request has been submitted.');
+}
+
+function openPrivacyPolicy() {
+    showToast('Opening Privacy Policy...');
+}
+
+function openTermsOfService() {
+    showToast('Opening Terms of Service...');
+}
+
+function openCookiePolicy() {
+    showToast('Opening Cookie Policy...');
 }
 
 document.querySelectorAll('.tab').forEach(t=>{
