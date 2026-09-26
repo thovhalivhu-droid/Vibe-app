@@ -25,7 +25,6 @@ button{font:inherit}
 .actions{display:flex;flex-direction:column;align-items:center;gap:15px}.action{background:none;border:0;color:#fff;text-align:center}.circle{width:45px;height:45px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#ffffff22;backdrop-filter:blur(8px);font-size:23px}.count{font-size:11px;font-weight:700;margin-top:3px}.liked .circle{color:var(--pink)}.saved .circle{color:var(--cyan)}
 .mute{position:absolute;top:68px;right:16px;z-index:7;width:40px;height:40px;border:0;border-radius:50%;background:#0008;color:#fff;font-size:19px}
 
-/* ALWAYS ON TOP & TOUCHABLE NAVIGATION */
 .nav{position:absolute;bottom:0;left:0;right:0;height:var(--nav);z-index:100;display:flex;justify-content:space-around;align-items:center;background:#171820ee;backdrop-filter:blur(16px);border-top:1px solid #ffffff12;pointer-events:auto}
 .nav button{background:none;border:0;color:#9a9dac;font-size:10px;display:flex;flex-direction:column;align-items:center;gap:4px;width:20%;cursor:pointer;pointer-events:auto}.nav button.active{color:#fff}.nav .plus{width:42px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--pink),var(--cyan));color:#fff;font-size:22px;line-height:1}
 
@@ -272,7 +271,13 @@ input:checked+.slider:before{transform:translateX(20px)}
 </section>
 
 <section id="profile" class="screen">
-<div class="screenHead"><span>My Profile</span><button class="close" data-close="profile">×</button></div>
+<div class="screenHead">
+  <span>My Profile</span>
+  <div style="display: flex; align-items: center; gap: 12px;">
+    <button onclick="openSecuritySettings()" style="background: none; border: none; color: #fff; font-size: 20px; cursor: pointer;" title="Security & Privacy">⚙</button>
+    <button class="close" data-close="profile" style="position: static; font-size: 24px;">×</button>
+  </div>
+</div>
 <div class="profileBody">
   <div class="profileHeaderInfo">
     <div class="avatarWrapper" id="avatarStoryTrigger" title="Tap to view story or add one">
@@ -289,7 +294,6 @@ input:checked+.slider:before{transform:translateX(20px)}
     </div>
     <div style="display:flex; gap:8px; justify-content:center; margin-top:12px;">
       <button class="editProfileBtn" id="editProfileBtn" style="margin-top:0;">Edit Profile</button>
-      <button class="editProfileBtn" onclick="openSecuritySettings()" style="margin-top:0; border-color:var(--cyan); color:var(--cyan);">Privacy & Security</button>
     </div>
   </div>
   
