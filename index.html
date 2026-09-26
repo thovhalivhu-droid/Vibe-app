@@ -63,10 +63,10 @@ button{font:inherit}
 .editorOverlayElement:hover{border-color:rgba(255,255,255,0.4)}
 .editorOverlayElement.text-element{font-size:20px;font-weight:700;color:#fff;background:rgba(0,0,0,0.5);border-radius:8px;backdrop-filter:blur(4px);padding:8px 12px;text-shadow:0 2px 4px rgba(0,0,0,0.5)}
 
-/* Styled Text Editor Bar at Top (Hidden by default) */
+/* Styled Text Editor Bar inside Post Screen (Hidden by default) */
 .topTextEditorBar {
   position: absolute;
-  top: 0;
+  top: 58px;
   left: 0;
   right: 0;
   background: rgba(20, 21, 28, 0.95);
@@ -415,12 +415,6 @@ input:checked+.slider:before{transform:translateX(20px)}
   <button class="textBtn" id="proceedToPostBtn" style="color:var(--cyan); font-size:15px;">Next →</button>
 </div>
 
-<!-- Styled Top Text Editor Bar (Hidden by default) -->
-<div id="topTextEditorBar" class="topTextEditorBar">
-  <input type="text" id="topTextEditorInput" class="topTextEditorInput" placeholder="Type your text here..." autocomplete="off">
-  <button id="topTextEditorDoneBtn" class="topTextEditorDoneBtn">Done</button>
-</div>
-
 <div class="editorCanvasContainer" id="editorCanvasContainer">
   <canvas id="editorDrawingCanvas"></canvas>
   <div id="editorOverlaysLayer" style="position:absolute; inset:0; pointer-events:none;"></div>
@@ -499,6 +493,13 @@ input:checked+.slider:before{transform:translateX(20px)}
 
 <section id="postScreen" class="screen">
 <div class="screenHead"><button class="close" id="closePost">×</button><span>Post to VIBE</span><span style="width:24px"></span></div>
+
+<!-- Styled Top Text Editor Bar (Rendered only on Post Screen) -->
+<div id="topTextEditorBar" class="topTextEditorBar">
+  <input type="text" id="topTextEditorInput" class="topTextEditorInput" placeholder="Type your text here..." autocomplete="off">
+  <button id="topTextEditorDoneBtn" class="topTextEditorDoneBtn">Done</button>
+</div>
+
 <div class="postPanel">
   <div id="previewBox" class="previewBox" title="Tap to expand preview">
     <div style="color:#777">Choose a video or picture</div>
@@ -1214,7 +1215,6 @@ function openEditor(file, type){
  studio.classList.remove('open');stopCamera();
  editorScreen.classList.add('open');
 
- // Hide top text input & Done button when editor opens
  closeTopTextEditor();
 
  const container = document.getElementById('editorCanvasContainer');
@@ -1268,33 +1268,12 @@ document.getElementById('toolFilterBtn').onclick = () => {
 };
 
 document.getElementById('toolTextBtn').onclick = () => {
- const btn = document.getElementById('toolTextBtn');
- const bar = document.getElementById('topTextEditorBar');
- const isOpen = bar.classList.contains('open');
- 
- hideAllEditorTrays();
- 
- if(!isOpen){
+  // If the user clicks text button, open post screen where the text bar is rendered
+  editorScreen.classList.remove('open');
+  openPostScreenFromEditor();
+  const bar = document.getElementById('topTextEditorBar');
   bar.classList.add('open');
-  btn.classList.add('active');
-  const inputEl = document.getElementById('topTextEditorInput');
-  inputEl.focus();
-  
-  if(!activeLiveTextElement){
-   const layer = document.getElementById('editorOverlaysLayer');
-   const div = document.createElement('div');
-   div.className = 'editorOverlayElement text-element';
-   div.textContent = '';
-   div.style.left = '25%';
-   div.style.top = '45%';
-   makeDraggable(div);
-   layer.appendChild(div);
-   activeLiveTextElement = div;
-  }
-  inputEl.value = activeLiveTextElement.textContent;
- } else {
-  closeTopTextEditor();
- }
+  document.getElementById('topTextEditorInput').focus();
 };
 
 document.getElementById('topTextEditorInput').oninput = (e) => {
@@ -1305,18 +1284,12 @@ document.getElementById('topTextEditorInput').oninput = (e) => {
 
 document.getElementById('topTextEditorDoneBtn').onclick = () => {
   closeTopTextEditor();
-  saveEditorState();
   showToast('Text added!');
 };
 
 function closeTopTextEditor() {
   const bar = document.getElementById('topTextEditorBar');
   bar.classList.remove('open');
-  document.getElementById('toolTextBtn').classList.remove('active');
-  if(activeLiveTextElement && !activeLiveTextElement.textContent.trim()){
-    activeLiveTextElement.remove();
-  }
-  activeLiveTextElement = null;
 }
 
 document.getElementById('toolDrawBtn').onclick = () => {
@@ -2008,11 +1981,26 @@ document.querySelectorAll('.nav button').forEach(btn=>{
  };
 });
 
-document.getElementById('soundSelectBtn').onclick=()=>document.getElementById('soundModal').classList.add('open');
-document.getElementById('closeSoundModal').onclick=()=>document.getElementById('soundModal').classList.remove('open');
-document.getElementById('closeStudio').onclick=()=>{studio.classList.remove('open');appContainer.classList.remove('hide-nav-for-create');stopCamera();updateNavActiveState('home');};
-document.getElementById('closePost').onclick=()=>postScreen.classList.remove('open');
-document.querySelectorAll('.close[data-close]').forEach(b=>b.onclick=()=>{document.getElementById(b.dataset.close).classList.remove('open');updateNavActiveState('home');});
+document.querySelectorAll('.close[data-close]').forEach(btn=>{
+ btn.onclick=()=>{
+  const targetId=btn.dataset.close;
+  document.getElementById(targetId).classList.remove('open');
+  updateNavActiveState('home');
+ };
+});
+
+document.getElementById('closeStudio').onclick=()=>{
+ studio.classList.remove('open');
+ appContainer.classList.remove('hide-nav-for-create');
+ stopCamera();
+ updateNavActiveState('home');
+};
+
+document.getElementById('closePost').onclick=()=>{
+ postScreen.classList.remove('open');
+ appContainer.classList.remove('hide-nav-for-create');
+ updateNavActiveState('home');
+};
 
 renderFeed();
 </script>
