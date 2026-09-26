@@ -130,15 +130,15 @@ button{font:inherit}
 .commentSendBtn{background:var(--pink);border:0;color:#fff;font-weight:700;padding:8px 16px;border-radius:20px;cursor:pointer}
 
 /* Story Viewer Modal */
-.storyModal{position:absolute;inset:0;background:#000;z-index:80;display:none;flex-direction:column;user-select:none;-webkit-user-select:none}
+.storyModal{position:absolute;inset:0;background:#000;z-index:80;display:none;flex-direction:column;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .storyModal.open{display:flex}
 .storyBarContainer{display:flex;gap:4px;padding:10px;position:absolute;top:0;left:0;right:0;z-index:10}
 .storyBarSegment{flex:1;height:3px;background:rgba(255,255,255,0.3);border-radius:2px;overflow:hidden}
 .storyBarFill{width:0%;height:100%;background:#fff}
 .storyBarFill.running{transition:width linear}
 .storyBarFill.paused{transition:none!important}
-.storyContentArea{flex:1;display:flex;align-items:center;justify-content:center;position:relative}
-.storyContentArea img, .storyContentArea video{width:100%;height:100%;object-fit:contain}
+.storyContentArea{flex:1;display:flex;align-items:center;justify-content:center;position:relative;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.storyContentArea img, .storyContentArea video{width:100%;height:100%;object-fit:contain;pointer-events:none}
 .storyHeaderInfo{position:absolute;top:25px;left:15px;display:flex;align-items:center;gap:10px;z-index:10}
 .storyHeaderAvatar{width:32px;height:32px;border-radius:50%;object-fit:cover}
 .storyHeaderName{font-weight:700;font-size:14px}
@@ -989,4 +989,3 @@ renderFeed();
 </script>
 </body>
 </html>
- 
