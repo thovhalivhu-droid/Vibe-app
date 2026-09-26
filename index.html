@@ -1250,6 +1250,7 @@ function toggleViewerJoinRequest() {
   if(isViewerRequestingToJoin){
     btn.textContent = 'Request Sent...';
     btn.style.background = '#666';
+    // Simulate incoming request for the host dashboard
     guestRequests.push({ id: Date.now(), name: "You (Viewer)", avatar: myProfile.avatar });
     updateGuestCounts();
     showToast('Join request sent to host!');
