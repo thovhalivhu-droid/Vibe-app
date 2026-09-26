@@ -176,6 +176,49 @@ input:checked+.slider:before{transform:translateX(20px)}
 .liveBadge { background: var(--pink); color: #fff; font-size: 11px; font-weight: 900; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; letter-spacing: 1px; animation: pulse 1s infinite; }
 .liveViewersBadge { background: rgba(0,0,0,0.6); backdrop-filter: blur(6px); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; }
 
+/* Dynamic Multi-Guest Grid Container (Supports up to 4 guests) */
+#activeGuestsGrid {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 15;
+}
+.guest-slot {
+  width: 100px;
+  height: 130px;
+  background: #222;
+  border: 2px solid var(--cyan);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.guest-slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.guest-slot-name {
+  position: absolute;
+  bottom: 4px;
+  background: rgba(0,0,0,0.6);
+  padding: 2px 6px;
+  font-size: 10px;
+  border-radius: 4px;
+  color: #fff;
+  max-width: 90%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* Live Chat and Likes Overlay */
 .liveChatOverlay { position: absolute; bottom: 10px; left: 12px; right: 70px; height: 180px; display: flex; flex-direction: column; justify-content: flex-end; z-index: 15; pointer-events: none; overflow: hidden; }
 .liveChatList { display: flex; flex-direction: column; gap: 6px; overflow-y: auto; scrollbar-width: none; pointer-events: auto; padding-right: 4px; }
@@ -235,11 +278,8 @@ input:checked+.slider:before{transform:translateX(20px)}
       <span class="liveViewersBadge" id="liveViewersCount">👁 1.4K</span>
     </div>
     
-    <!-- Active Guest Co-Host Video Preview Widget -->
-    <div id="activeGuestPreviewWidget" class="hidden" style="position:absolute; top:16px; right:16px; width:90px; height:130px; background:#222; border:2px solid var(--cyan); border-radius:12px; overflow:hidden; z-index:15; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-      <img id="activeGuestAvatar" src="" style="width:100%; height:100%; object-fit:cover;">
-      <div style="position:absolute; bottom:4px; background:rgba(0,0,0,0.6); padding:2px 6px; font-size:10px; border-radius:4px;" id="activeGuestName">Guest</div>
-    </div>
+    <!-- Multi-Guest Co-Host Grid Widget (Up to 4 Guests) -->
+    <div id="activeGuestsGrid" class="hidden"></div>
 
     <!-- Live Stream Floating Comments & Likes Display -->
     <div class="liveChatOverlay">
@@ -286,7 +326,7 @@ input:checked+.slider:before{transform:translateX(20px)}
   <div style="display:flex; justify-content:space-around; align-items:center; width:100%; padding: 0 10px;">
     <button class="textBtn" id="liveFlipBtn" onclick="flipCamera()">Flip ⟳</button>
     <button class="postBtn" id="startLiveBtn" onclick="toggleLiveStream()" style="width: 110px; background: var(--pink); padding: 10px;">Go LIVE Now</button>
-    <button class="textBtn" id="openGuestRequestsBtn" onclick="openGuestRequestsModal()" style="color:var(--cyan); font-weight:700;">Guests 👥 <span id="guestBadgeCount" style="background:var(--pink); color:#fff; padding:1px 5px; border-radius:8px; font-size:10px; margin-left:2px;">2</span></button>
+    <button class="textBtn" id="openGuestRequestsBtn" onclick="openGuestRequestsModal()" style="color:var(--cyan); font-weight:700;">Guests 👥 <span id="guestBadgeCount" style="background:var(--pink); color:#fff; padding:1px 5px; border-radius:8px; font-size:10px; margin-left:2px;">3</span></button>
     <button class="textBtn" id="openLiveSettingsBtn" onclick="openLiveSettingsModal()" style="font-weight:700;">Settings ⚙</button>
     <button class="textBtn" id="liveMuteMicBtn" onclick="toggleLiveMic()">Mute</button>
   </div>
@@ -305,7 +345,7 @@ input:checked+.slider:before{transform:translateX(20px)}
     <div style="display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 14px 16px; border-radius: 12px; border: 1px solid #ffffff10;">
       <div>
         <div style="font-size: 15px; font-weight: 700;">Allow Guest Requests</div>
-        <div style="font-size: 12px; color: var(--muted); margin-top: 2px;">Let viewers request to co-host your stream</div>
+        <div style="font-size: 12px; color: var(--muted); margin-top: 2px;">Let viewers request to co-host your stream (Up to 4 guests)</div>
       </div>
       <label class="switch">
         <input type="checkbox" id="allow-guest-requests-toggle" checked onchange="toggleGuestRequestsSetting(this)">
@@ -686,7 +726,8 @@ let blockedAccountsData = [
 
 let guestRequestsData = [
   { id: 201, name: "Elena Rostova", username: "@elena_vibe", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" },
-  { id: 202, name: "Liam Chen", username: "@liam_tech", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150" }
+  { id: 202, name: "Liam Chen", username: "@liam_tech", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150" },
+  { id: 203, name: "Sophia Taylor", username: "@sophia_t", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" }
 ];
 
 // Pending message requests array for Inbox
@@ -695,7 +736,7 @@ let pendingMessageRequests = [
   { id: 302, name: "Chloe Bennett", username: "@chloeb", text: "Sent you a message request.", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" }
 ];
 
-let activeGuest = null;
+let activeGuests = []; // Supports up to 4 co-hosting guests
 let allowGuestRequestsEnabled = true;
 
 let notificationsData=[
@@ -1445,7 +1486,8 @@ function toggleLiveStream() {
     btn.style.background = 'var(--pink)';
     overlayElements.classList.add('hidden');
     clearInterval(liveSimInterval);
-    if(activeGuest) removeActiveGuest();
+    activeGuests = [];
+    updateActiveGuestsGrid();
     showToast('Live stream ended.');
   }
 }
@@ -1477,7 +1519,8 @@ function toggleGuestRequestsSetting(element) {
     showToast('Guest requests enabled');
   } else {
     guestBtn.style.display = 'none';
-    if(activeGuest) removeActiveGuest();
+    activeGuests = [];
+    updateActiveGuestsGrid();
     showToast('Guest requests disabled');
   }
 }
@@ -1502,19 +1545,22 @@ function renderGuestRequestsList() {
   
   document.getElementById('guestBadgeCount').textContent = guestRequestsData.length;
 
-  if (activeGuest) {
-    container.innerHTML += `
-      <div style="background:rgba(0,242,254,0.1); border:1px solid var(--cyan); padding:10px 14px; border-radius:12px; margin-bottom:15px; display:flex; align-items:center; justify-content:space-between;">
-        <div style="display:flex; align-items:center; gap:10px;">
-          <img src="${activeGuest.avatar}" style="width:36px; height:36px; border-radius:50%; object-fit:cover;">
-          <div>
-            <div style="font-size:13px; font-weight:700;">${activeGuest.name} (Co-Hosting)</div>
-            <div style="font-size:11px; color:var(--cyan);">Live on stream</div>
+  if (activeGuests.length > 0) {
+    container.innerHTML += `<div style="font-size: 13px; font-weight: 700; color: var(--cyan); margin-bottom: 8px;">Active Co-Hosts (${activeGuests.length}/4):</div>`;
+    activeGuests.forEach(guest => {
+      container.innerHTML += `
+        <div style="background:rgba(0,242,254,0.1); border:1px solid var(--cyan); padding:10px 14px; border-radius:12px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <img src="${guest.avatar}" style="width:36px; height:36px; border-radius:50%; object-fit:cover;">
+            <div>
+              <div style="font-size:13px; font-weight:700;">${guest.name}</div>
+              <div style="font-size:11px; color:var(--cyan);">Live on stream</div>
+            </div>
           </div>
+          <button onclick="removeActiveGuest(${guest.id})" style="background:#f33; border:0; color:#fff; padding:6px 12px; border-radius:14px; font-weight:700; font-size:11px; cursor:pointer;">Disconnect</button>
         </div>
-        <button onclick="removeActiveGuest()" style="background:#f33; border:0; color:#fff; padding:6px 12px; border-radius:14px; font-weight:700; font-size:11px; cursor:pointer;">Disconnect</button>
-      </div>
-    `;
+      `;
+    });
   }
 
   if (guestRequestsData.length === 0) {
@@ -1522,6 +1568,7 @@ function renderGuestRequestsList() {
     return;
   }
 
+  container.innerHTML += `<div style="font-size: 13px; font-weight: 700; color: var(--muted); margin: 12px 0 8px 0;">Incoming Requests:</div>`;
   guestRequestsData.forEach(req => {
     container.innerHTML += `
       <div class="messageItem" style="justify-content:space-between;">
@@ -1529,7 +1576,7 @@ function renderGuestRequestsList() {
           <img class="messageAvatar" src="${req.avatar}">
           <div class="messageContent">
             <div class="messageName">${req.name}</div>
-            <div class="messageSnippet">${req.username} wants to join as guest</div>
+            <div class="messageSnippet">${req.username} wants to join</div>
           </div>
         </div>
         <div style="display:flex; gap:6px;">
@@ -1542,17 +1589,19 @@ function renderGuestRequestsList() {
 }
 
 function acceptGuest(id) {
+  if (activeGuests.length >= 4) {
+    showToast('Maximum limit of 4 guests reached!');
+    return;
+  }
   const reqIndex = guestRequestsData.findIndex(r => r.id === id);
   if (reqIndex !== -1) {
-    activeGuest = guestRequestsData[reqIndex];
+    const guest = guestRequestsData[reqIndex];
     guestRequestsData.splice(reqIndex, 1);
+    activeGuests.push(guest);
     
-    document.getElementById('activeGuestAvatar').src = activeGuest.avatar;
-    document.getElementById('activeGuestName').textContent = activeGuest.name;
-    document.getElementById('activeGuestPreviewWidget').classList.remove('hidden');
-
+    updateActiveGuestsGrid();
     renderGuestRequestsList();
-    showToast(`${activeGuest.name} joined your live stream! 🎥`);
+    showToast(`${guest.name} joined your live stream! 🎥`);
   }
 }
 
@@ -1562,12 +1611,33 @@ function declineGuest(id) {
   showToast('Guest request declined');
 }
 
-function removeActiveGuest() {
-  if(!activeGuest) return;
-  showToast(`${activeGuest.name} was disconnected.`);
-  activeGuest = null;
-  document.getElementById('activeGuestPreviewWidget').classList.add('hidden');
+function removeActiveGuest(id) {
+  const guest = activeGuests.find(g => g.id === id);
+  activeGuests = activeGuests.filter(g => g.id !== id);
+  updateActiveGuestsGrid();
   renderGuestRequestsList();
+  if(guest) showToast(`${guest.name} was disconnected.`);
+}
+
+function updateActiveGuestsGrid() {
+  const gridContainer = document.getElementById('activeGuestsGrid');
+  gridContainer.innerHTML = '';
+  
+  if (activeGuests.length === 0) {
+    gridContainer.classList.add('hidden');
+    return;
+  }
+
+  gridContainer.classList.remove('hidden');
+  activeGuests.forEach(guest => {
+    const slot = document.createElement('div');
+    slot.className = 'guest-slot';
+    slot.innerHTML = `
+      <img src="${guest.avatar}" alt="${guest.name}">
+      <div class="guest-slot-name">${guest.name}</div>
+    `;
+    gridContainer.appendChild(slot);
+  });
 }
 
 // Security and Privacy Settings Navigation & Handlers
