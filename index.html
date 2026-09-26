@@ -1214,6 +1214,9 @@ function openEditor(file, type){
  studio.classList.remove('open');stopCamera();
  editorScreen.classList.add('open');
 
+ // Hide top text input & Done button when editor opens
+ closeTopTextEditor();
+
  const container = document.getElementById('editorCanvasContainer');
  const existingMedia = container.querySelector('video, img');
  if(existingMedia) existingMedia.remove();
@@ -1234,7 +1237,6 @@ function openEditor(file, type){
  redoStack = [];
  saveEditorState();
  hideAllEditorTrays();
- closeTopTextEditor();
 }
 
 function hideAllEditorTrays(){
