@@ -396,11 +396,12 @@ input:checked+.slider:before{transform:translateX(20px)}
   </div>
 
   <div class="editorToolsRow">
+    <button class="editorToolBtn" id="toolUndoBtn" title="Undo">↩ Undo</button>
+    <button class="editorToolBtn" id="toolRedoBtn" title="Redo">↪ Redo</button>
     <button class="editorToolBtn" id="toolEmojiBtn">😀 Emoji</button>
     <button class="editorToolBtn" id="toolTextBtn">✍️ Text</button>
     <button class="editorToolBtn" id="toolDrawBtn">🖌️ Draw</button>
     <button class="editorToolBtn" id="toolFilterBtn">✨ Filters</button>
-    <button class="editorToolBtn" id="toolSoundBtn">♫ Audio</button>
   </div>
 </div>
 </section>
@@ -831,11 +832,28 @@ let liveViewersCountNum = 1420;
 let liveHeartCountNum = 0;
 
 // Editor State Variables
-let editorMode = null; // 'draw', etc.
+let editorMode = null; 
 let isDrawing = false;
 let drawCanvas, drawCtx;
 let activeDraggedElement = null;
-let dragOffsetX = 0, dragOffsetY = 0;
+
+// Undo/Redo History Stacks
+let undoStack = [];
+let redoStack = [];
+
+function saveEditorState() {
+  const overlaysHtml = document.getElementById('editorOverlaysLayer').innerHTML;
+  const canvasDataUrl = drawCanvas.toDataURL();
+  const currentFilter = document.querySelector('#editorCanvasContainer video, #editorCanvasContainer img')?.style.filter || '';
+  
+  undoStack.push({
+    overlaysHtml,
+    canvasDataUrl,
+    filter: currentFilter
+  });
+  // Clear redo stack on a new modification action
+  redoStack = [];
+}
 
 function updateNavActiveState(tabKey) {
  activeTabKey = tabKey;
@@ -1206,7 +1224,6 @@ function openEditor(file, type){
  editorScreen.classList.add('open');
 
  const container = document.getElementById('editorCanvasContainer');
- // Keep canvas and overlays layer, remove any previous media element
  const existingMedia = container.querySelector('video, img');
  if(existingMedia) existingMedia.remove();
 
@@ -1215,15 +1232,16 @@ function openEditor(file, type){
  if(type==='video'){el.controls=false;el.playsInline=true;el.muted=true;el.loop=true;el.play().catch(()=>{})}
  container.insertBefore(el, container.firstChild);
 
- // Setup drawing canvas
  drawCanvas = document.getElementById('editorDrawingCanvas');
  drawCtx = drawCanvas.getContext('2d');
  drawCanvas.width = container.clientWidth || 360;
  drawCanvas.height = container.clientHeight || 640;
  drawCtx.clearRect(0,0,drawCanvas.width, drawCanvas.height);
 
- // Clear overlays layer
  document.getElementById('editorOverlaysLayer').innerHTML = '';
+ undoStack = [];
+ redoStack = [];
+ saveEditorState(); // Initial state snapshot
  hideAllEditorTrays();
 }
 
@@ -1276,10 +1294,49 @@ document.getElementById('toolDrawBtn').onclick = () => {
  }
 };
 
-document.getElementById('toolSoundBtn').onclick = () => {
- hideAllEditorTrays();
- document.getElementById('soundModal').classList.add('open');
+// Undo / Redo Button Actions
+document.getElementById('toolUndoBtn').onclick = () => {
+  if (undoStack.length <= 1) {
+    showToast('Nothing more to undo');
+    return;
+  }
+  // Pop current state onto redo stack
+  const currentState = undoStack.pop();
+  redoStack.push(currentState);
+
+  // Restore previous state
+  const prevState = undoStack[undoStack.length - 1];
+  restoreEditorState(prevState);
+  showToast('Undo');
 };
+
+document.getElementById('toolRedoBtn').onclick = () => {
+  if (redoStack.length === 0) {
+    showToast('Nothing to redo');
+    return;
+  }
+  const nextState = redoStack.pop();
+  undoStack.push(nextState);
+  restoreEditorState(nextState);
+  showToast('Redo');
+};
+
+function restoreEditorState(state) {
+  document.getElementById('editorOverlaysLayer').innerHTML = state.overlaysHtml;
+  // Re-enable dragging for restored overlay elements
+  document.querySelectorAll('.editorOverlayElement').forEach(el => makeDraggable(el));
+  
+  const img = new Image();
+  img.onload = () => {
+    drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+    drawCtx.drawImage(img, 0, 0);
+  };
+  img.src = state.canvasDataUrl;
+
+  const container = document.getElementById('editorCanvasContainer');
+  const mediaEl = container.querySelector('video, img');
+  if(mediaEl) mediaEl.style.filter = state.filter;
+}
 
 function addEmojiToCanvas(emoji){
  const layer = document.getElementById('editorOverlaysLayer');
@@ -1290,7 +1347,8 @@ function addEmojiToCanvas(emoji){
  div.style.top = '40%';
  makeDraggable(div);
  layer.appendChild(div);
- showToast('Added emoji. Drag to reposition!');
+ saveEditorState();
+ showToast('Added emoji!');
 }
 
 function addTextToCanvas(text){
@@ -1302,7 +1360,8 @@ function addTextToCanvas(text){
  div.style.top = '45%';
  makeDraggable(div);
  layer.appendChild(div);
- showToast('Added text. Drag to reposition!');
+ saveEditorState();
+ showToast('Added text!');
 }
 
 function applyEditorFilter(filterCss, chipEl){
@@ -1311,6 +1370,7 @@ function applyEditorFilter(filterCss, chipEl){
  const container = document.getElementById('editorCanvasContainer');
  const mediaEl = container.querySelector('video, img');
  if(mediaEl) mediaEl.style.filter = filterCss;
+ saveEditorState();
  showToast('Filter applied!');
 }
 
@@ -1341,7 +1401,10 @@ drawCanvas.onmousemove = drawCanvas.ontouchmove = (e) => {
 };
 
 drawCanvas.onmouseup = drawCanvas.ontouchend = () => {
- drawingActive = false;
+ if(drawingActive){
+  drawingActive = false;
+  saveEditorState();
+ }
 };
 
 // Draggable helper for overlays
@@ -1372,6 +1435,9 @@ function makeDraggable(elm){
  }
 
  function closeDragElement() {
+  if (document.onmousemove || document.ontouchmove) {
+    saveEditorState();
+  }
   document.onmouseup = null;
   document.onmousemove = null;
   document.ontouchend = null;
@@ -1885,7 +1951,6 @@ function renderGuestRequestsList() {
         </div>
         <div style="display:flex; gap:6px;">
           <button onclick="acceptGuest(${req.id})" style="background:var(--pink); border:0; color:#fff; padding:6px 12px; border-radius:14px; font-weight:700; font-size:11px; cursor:pointer;">Accept</button>
-          <button onclick="declineGuest(${req.id})" style="background:#2a2a2a; border:0; color:#fff; padding:6px 12px; border-radius:14px; font-weight:700; font-size:11px; cursor:pointer;">Decline</button>
         </div>
       </div>
     `;
@@ -1894,232 +1959,116 @@ function renderGuestRequestsList() {
 
 function acceptGuest(id) {
   if (activeGuests.length >= 4) {
-    showToast('Maximum limit of 4 guests reached!');
+    showToast('Maximum of 4 guests reached');
     return;
   }
   const reqIndex = guestRequestsData.findIndex(r => r.id === id);
-  if (reqIndex !== -1) {
-    const guest = guestRequestsData[reqIndex];
-    guestRequestsData.splice(reqIndex, 1);
+  if(reqIndex !== -1) {
+    const guest = guestRequestsData.splice(reqIndex, 1)[0];
     activeGuests.push(guest);
-    
-    updateActiveGuestsGrid();
     renderGuestRequestsList();
-    showToast(`${guest.name} joined your live stream! 🎥`);
+    updateActiveGuestsGrid();
+    showToast(`${guest.name} joined as co-host!`);
   }
-}
-
-function declineGuest(id) {
-  guestRequestsData = guestRequestsData.filter(r => r.id !== id);
-  renderGuestRequestsList();
-  showToast('Guest request declined');
 }
 
 function removeActiveGuest(id) {
-  const guest = activeGuests.find(g => g.id === id);
   activeGuests = activeGuests.filter(g => g.id !== id);
-  updateActiveGuestsGrid();
   renderGuestRequestsList();
-  if(guest) showToast(`${guest.name} was disconnected.`);
+  updateActiveGuestsGrid();
+  showToast('Guest disconnected');
 }
 
 function updateActiveGuestsGrid() {
-  const gridContainer = document.getElementById('activeGuestsGrid');
-  gridContainer.innerHTML = '';
-  
-  if (activeGuests.length === 0) {
-    gridContainer.classList.add('hidden');
+  const grid = document.getElementById('activeGuestsGrid');
+  if(!grid) return;
+  if(!isLiveActive || activeGuests.length === 0) {
+    grid.classList.add('hidden');
+    grid.innerHTML = '';
     return;
   }
-
-  gridContainer.classList.remove('hidden');
+  grid.classList.remove('hidden');
+  grid.innerHTML = '';
   activeGuests.forEach(guest => {
-    const slot = document.createElement('div');
-    slot.className = 'guest-slot';
-    slot.innerHTML = `
-      <img src="${guest.avatar}" alt="${guest.name}">
-      <div class="guest-slot-name">${guest.name}</div>
+    grid.innerHTML += `
+      <div class="guest-slot">
+        <img src="${guest.avatar}" alt="">
+        <div class="guest-slot-name">${guest.name}</div>
+      </div>
     `;
-    gridContainer.appendChild(slot);
   });
 }
 
-function openSecuritySettings() {
-    document.getElementById('profile').classList.remove('open');
-    document.getElementById('security-settings-screen').classList.add('open');
-}
+document.getElementById('navHomeBtn').onclick=()=>{updateNavActiveState('home');discover.classList.remove('open');inbox.classList.remove('open');profile.classList.remove('open');studio.classList.remove('open');stopCamera();};
+document.getElementById('navDiscoverBtn').onclick=()=>{updateNavActiveState('discover');discover.classList.add('open');inbox.classList.remove('open');profile.classList.remove('open');studio.classList.remove('open');stopCamera();renderDiscoverGrid();};
+document.getElementById('navCreateBtn').onclick=()=>{updateNavActiveState('create');studio.classList.add('open');appContainer.classList.add('hide-nav-for-create');startCamera();};
+document.getElementById('navInboxBtn').onclick=()=>{updateNavActiveState('inbox');inbox.classList.add('open');discover.classList.remove('open');profile.classList.remove('open');studio.classList.remove('open');stopCamera();};
+document.getElementById('navProfileBtn').onclick=()=>{updateNavActiveState('profile');profile.classList.add('open');discover.classList.remove('open');inbox.classList.remove('open');studio.classList.remove('open');stopCamera();renderProfileGrid();};
 
-function closeSecuritySettings() {
-    document.getElementById('security-settings-screen').classList.remove('open');
-    document.getElementById('profile').classList.add('open');
-}
-
-function togglePrivateAccount(element) {
-    showToast(element.checked ? 'Account set to Private' : 'Account set to Public');
-}
-
-function updateDMPermissions(value) {
-    showToast('DM permissions updated: ' + value);
-}
-
-function toggleTFA(element) {
-    showToast(element.checked ? 'Two-Factor Authentication Enabled' : 'Two-Factor Authentication Disabled');
-}
-
-function openPasswordModal() {
-    showToast('Password change flow triggered.');
-}
-
-function openBlockedAccounts() {
-    document.getElementById('security-settings-screen').classList.remove('open');
-    document.getElementById('blocked-accounts-screen').classList.add('open');
-    renderBlockedAccounts();
-}
-
-function closeBlockedAccounts() {
-    document.getElementById('blocked-accounts-screen').classList.remove('open');
-    document.getElementById('security-settings-screen').classList.add('open');
-}
-
-function renderBlockedAccounts() {
-    const container = document.getElementById('blockedAccountsListContainer');
-    container.innerHTML = '';
-    if (blockedAccountsData.length === 0) {
-        container.innerHTML = `<div style="text-align:center; color:var(--muted); padding-top:40px; font-size:13px;">No blocked accounts.</div>`;
-        return;
-    }
-    blockedAccountsData.forEach(acc => {
-        container.innerHTML += `
-            <div style="display: flex; align-items: center; justify-content: space-between; background: var(--surface); padding: 12px 16px; border-radius: 12px; border: 1px solid #ffffff10;">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <img src="${acc.avatar}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
-                    <div>
-                        <div style="font-size: 14px; font-weight: 700;">${acc.name}</div>
-                        <div style="font-size: 12px; color: var(--muted);">@${acc.username}</div>
-                    </div>
-                </div>
-                <button onclick="unblockAccount(${acc.id})" style="background: transparent; border: 1px solid var(--pink); color: var(--pink); padding: 6px 14px; border-radius: 16px; font-weight: 700; font-size: 12px; cursor: pointer;">Unblock</button>
-            </div>
-        `;
-    });
-}
-
-function unblockAccount(id) {
-    blockedAccountsData = blockedAccountsData.filter(acc => acc.id !== id);
-    renderBlockedAccounts();
-    showToast('Account unblocked');
-}
-
-function downloadUserData() {
-    try {
-        const safetyData = JSON.stringify({
-            timestamp: new Date().toISOString(),
-            status: "active",
-            module: "Safety",
-            profile: myProfile,
-            blockedCount: blockedAccountsData.length
-        }, null, 2);
-
-        const blob = new Blob([safetyData], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "vibe-safety-data-export.json";
-        document.body.appendChild(a);
-        a.click();
-        
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        showToast('Your data export request has been submitted.');
-    } catch (error) {
-        console.error("Failed to download safety data:", error);
-        showToast('Failed to download data export.');
-    }
-}
-
-function openPrivacyPolicy() {
-    document.getElementById('security-settings-screen').classList.remove('open');
-    document.getElementById('privacy-policy-screen').classList.add('open');
-}
-
-function closePrivacyPolicy() {
-    document.getElementById('privacy-policy-screen').classList.remove('open');
-    document.getElementById('security-settings-screen').classList.add('open');
-}
-
-function openTermsOfService() {
-    document.getElementById('security-settings-screen').classList.remove('open');
-    document.getElementById('terms-service-screen').classList.add('open');
-}
-
-function closeTermsOfService() {
-    document.getElementById('terms-service-screen').classList.remove('open');
-    document.getElementById('security-settings-screen').classList.add('open');
-}
-
-function openCookiePolicy() {
-    document.getElementById('security-settings-screen').classList.remove('open');
-    document.getElementById('cookie-policy-screen').classList.add('open');
-}
-
-function closeCookiePolicy() {
-    document.getElementById('cookie-policy-screen').classList.remove('open');
-    document.getElementById('security-settings-screen').classList.add('open');
-}
-
-document.querySelectorAll('.tab').forEach(t=>{
- t.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');showToast('Switched to '+t.textContent);};
-});
-
-document.querySelectorAll('.nav button').forEach(b=>b.onclick=async()=>{
- const tab=b.dataset.tab;
- 
- if(tab === 'home') {
-  [studio,editorScreen,inbox,profile,discover,postScreen,document.getElementById('security-settings-screen'),document.getElementById('blocked-accounts-screen'),document.getElementById('privacy-policy-screen'),document.getElementById('terms-service-screen'),document.getElementById('cookie-policy-screen'),document.getElementById('soundModal'),document.getElementById('editProfileModal'),document.getElementById('commentModal'),document.getElementById('storyModal'),document.getElementById('storyViewersModal'),document.getElementById('guestRequestsModal'),document.getElementById('liveSettingsModal')].forEach(x=>x.classList.remove('open'));
-  appContainer.classList.remove('hide-nav-for-create');
+document.querySelectorAll('.close[data-close]').forEach(btn=>{
+ btn.onclick=()=>{
+  const targetId = btn.dataset.close;
+  document.getElementById(targetId).classList.remove('open');
   updateNavActiveState('home');
-  return;
-}
-
- if(tab === activeTabKey) {
-  return;
- }
-
- [studio,editorScreen,inbox,profile,discover,document.getElementById('security-settings-screen'),document.getElementById('blocked-accounts-screen'),document.getElementById('privacy-policy-screen'),document.getElementById('terms-service-screen'),document.getElementById('cookie-policy-screen'),document.getElementById('guestRequestsModal'),document.getElementById('liveSettingsModal')].forEach(x=>x.classList.remove('open'));
- updateNavActiveState(tab);
-
- if(tab==='create'){
-  appContainer.classList.add('hide-nav-for-create');
-  studio.classList.add('open');
-  await startCamera();
- } else {
-  appContainer.classList.remove('hide-nav-for-create');
-  if(tab==='discover'){discover.classList.add('open')}
-  else if(tab==='inbox'){inbox.classList.add('open')}
-  else if(tab==='profile'){profile.classList.add('open')}
- }
+ };
 });
 
 document.getElementById('closeStudio').onclick=()=>{
- if(isLiveActive) { toggleLiveStream(); }
  studio.classList.remove('open');
  appContainer.classList.remove('hide-nav-for-create');
- if(recording)stopRecording();
  stopCamera();
  updateNavActiveState('home');
 };
-document.getElementById('closePost').onclick=()=>{
- postScreen.classList.remove('open');
- appContainer.classList.remove('hide-nav-for-create');
- updateNavActiveState('home');
-};
-document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>{
- const screenId = b.dataset.close;
- document.getElementById(screenId).classList.remove('open');
- appContainer.classList.remove('hide-nav-for-create');
- updateNavActiveState('home');
-});
+
+document.getElementById('soundSelectBtn').onclick=()=>{document.getElementById('soundModal').classList.add('open')};
+document.getElementById('closeSoundModal').onclick=()=>{document.getElementById('soundModal').classList.remove('open')};
+document.getElementById('closePost').onclick=()=>postScreen.classList.remove('open');
+
+function openSecuritySettings(){document.getElementById('security-settings-screen').classList.add('open')}
+function closeSecuritySettings(){document.getElementById('security-settings-screen').classList.remove('open')}
+function openBlockedAccounts(){document.getElementById('blocked-accounts-screen').classList.add('open');renderBlockedAccountsList()}
+function closeBlockedAccounts(){document.getElementById('blocked-accounts-screen').classList.remove('open')}
+function openPrivacyPolicy(){document.getElementById('privacy-policy-screen').classList.add('open')}
+function closePrivacyPolicy(){document.getElementById('privacy-policy-screen').classList.remove('open')}
+function openTermsOfService(){document.getElementById('terms-service-screen').classList.add('open')}
+function closeTermsOfService(){document.getElementById('terms-service-screen').classList.remove('open')}
+function openCookiePolicy(){document.getElementById('cookie-policy-screen').classList.add('open')}
+function closeCookiePolicy(){document.getElementById('cookie-policy-screen').classList.remove('open')}
+
+function renderBlockedAccountsList(){
+  const container = document.getElementById('blockedAccountsListContainer');
+  container.innerHTML = '';
+  if(blockedAccountsData.length === 0){
+    container.innerHTML = `<div style="text-align:center; color:var(--muted); padding-top:20px; font-size:13px;">No blocked accounts.</div>`;
+    return;
+  }
+  blockedAccountsData.forEach(acc => {
+    container.innerHTML += `
+      <div style="background:var(--surface); border:1px solid #ffffff10; border-radius:12px; padding:12px 16px; display:flex; align-items:center; justify-content:space-between;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <img src="${acc.avatar}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
+          <div>
+            <div style="font-size:14px; font-weight:700;">${acc.name}</div>
+            <div style="font-size:12px; color:var(--muted);">@${acc.username}</div>
+          </div>
+        </div>
+        <button onclick="unblockAccount(${acc.id})" style="background:#2a2a2a; border:0; color:#fff; padding:6px 14px; border-radius:14px; font-weight:700; font-size:12px; cursor:pointer;">Unblock</button>
+      </div>
+    `;
+  });
+}
+
+function unblockAccount(id){
+  blockedAccountsData = blockedAccountsData.filter(a => a.id !== id);
+  renderBlockedAccountsList();
+  showToast('Account unblocked');
+}
+
+function togglePrivateAccount(el){showToast(el.checked ? 'Account set to Private 🔒' : 'Account set to Public 🌍')}
+function updateDMPermissions(val){showToast('DM permissions updated to: ' + val)}
+function openPasswordModal(){showToast('Change password prompt opened')}
+function toggleTFA(el){showToast(el.checked ? 'Two-Factor Authentication enabled 🛡️' : 'Two-Factor Authentication disabled')}
+function downloadUserData(){showToast('Data export requested. We will email you shortly.')}
 
 renderFeed();
 </script>
