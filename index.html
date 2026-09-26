@@ -22,22 +22,32 @@ button{font:inherit}
 .info{max-width:73%}.author{display:flex;align-items:center;gap:9px;margin-bottom:8px}.avatar{width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid var(--pink)}
 .name{font-weight:800;font-size:15px}.follow{border:0;border-radius:18px;padding:5px 11px;background:var(--pink);color:#fff;font-size:12px;font-weight:700}
 .caption{font-size:14px;line-height:1.4;margin-bottom:8px}.caption span{color:var(--cyan);font-weight:700;cursor:pointer}.audio{font-size:12px;color:#ddd}
-.actions{display:flex;flex-direction:column;align-items:center;gap:15px}.action{background:none;border:0;color:#fff;text-align:center}.circle{width:45px;height:45px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#ffffff22;backdrop-filter:blur(8px);font-size:23px}.count{font-size:11px;font-weight:700;margin-top:3px}.liked .circle{color:var(--pink)}.saved .circle{color:var(--cyan)}
+.actions{display:flex;flex-direction:column;align-items:center;gap:15px;position:relative}
+.action{background:none;border:0;color:#fff;text-align:center}.circle{width:45px;height:45px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#ffffff22;backdrop-filter:blur(8px);font-size:23px}.count{font-size:11px;font-weight:700;margin-top:3px}.liked .circle{color:var(--pink)}.saved .circle{color:var(--cyan)}
 
-/* Vertical Edit Menu Styles on the Right Side */
+/* Vertical Edit Menu Styles on the Right Side (Hidden by default) */
 .vertical-edit-menu {
+  position: absolute;
+  right: 60px;
+  bottom: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   max-height: 0;
   opacity: 0;
   overflow: hidden;
   transition: all 0.3s ease-in-out;
+  background: rgba(15, 16, 21, 0.85);
+  backdrop-filter: blur(10px);
+  padding: 0 8px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 20;
 }
 .vertical-edit-menu.open {
-  max-height: 250px;
+  max-height: 400px;
   opacity: 1;
-  margin-top: 5px;
+  padding: 8px;
 }
 .sub-edit-btn {
   background: rgba(0, 0, 0, 0.6);
@@ -45,12 +55,13 @@ button{font:inherit}
   color: #fff;
   font-size: 11px;
   font-weight: 700;
-  padding: 6px 10px;
+  padding: 6px 12px;
   border-radius: 12px;
   cursor: pointer;
   backdrop-filter: blur(6px);
   white-space: nowrap;
   transition: background 0.2s;
+  text-align: center;
 }
 .sub-edit-btn:hover {
   background: var(--pink);
@@ -926,13 +937,18 @@ function renderFeed(filteredList){
     <button class="action saveBtn ${item.isSaved ? 'saved' : ''}"><div class="circle">${item.isSaved ? '★' : '☆'}</div><div class="count">Save</div></button>
     <button class="action shareBtn"><div class="circle">↗</div><div class="count">${formatCount(item.shares)}</div></button>
     
-    <!-- Edit Button with Vertical Dropdown Menu -->
+    <!-- Edit Button with Vertical Dropdown Menu (Hidden by default) -->
     <button class="action editMenuToggleBtn"><div class="circle">✏️</div><div class="count">Edit</div></button>
     <div class="vertical-edit-menu">
-      <button class="sub-edit-btn" onclick="triggerEditAction('trim', ${item.id})">Trim</button>
-      <button class="sub-edit-btn" onclick="triggerEditAction('filter', ${item.id})">Filters</button>
-      <button class="sub-edit-btn" onclick="triggerEditAction('speed', ${item.id})">Speed</button>
-      <button class="sub-edit-btn" onclick="triggerEditAction('audio', ${item.id})">Audio</button>
+      <button class="sub-edit-btn" onclick="triggerEditAction('undo', ${item.id})">Undo</button>
+      <button class="sub-edit-btn" onclick="triggerEditAction('redo', ${item.id})">Redo</button>
+      <button class="sub-edit-btn" onclick="triggerEditAction('emoji', ${item.id})">Emoji</button>
+      <button class="sub-edit-btn" onclick="triggerEditAction('text', ${item.id})">Text</button>
+      <button class="sub-edit-btn" onclick="triggerEditAction('draw', ${item.id})">Draw</button>
+      <button class="sub-edit-btn" onclick="triggerEditAction('filter', ${item.id})">Filter</button>
+      <button class="sub-edit-btn" onclick="triggerEditAction('crop', ${item.id})">Crop</button>
+      <button class="sub-edit-btn" onclick="triggerEditAction('rotate', ${item.id})">Rotate</button>
+      <button class="sub-edit-btn" onclick="triggerEditAction('sound', ${item.id})">Sound</button>
     </div>
   </div></div>`;
   feed.appendChild(card);
@@ -1037,7 +1053,18 @@ function renderFeed(filteredList){
 }
 
 function triggerEditAction(actionType, itemId) {
-  showToast(`Action selected: ${actionType.toUpperCase()} for item #${itemId}`);
+  if (actionType === 'text') {
+    // Open text editor bar in post screen instead of posting directly
+    postScreen.classList.add('open');
+    const bar = document.getElementById('topTextEditorBar');
+    bar.classList.add('open');
+    document.getElementById('topTextEditorInput').focus();
+    showToast('Text editor opened');
+  } else if (actionType === 'sound') {
+    document.getElementById('soundModal').classList.add('open');
+  } else {
+    showToast(`Action selected: ${actionType.toUpperCase()} for item #${itemId}`);
+  }
 }
 
 function openCommentsModal(item){
