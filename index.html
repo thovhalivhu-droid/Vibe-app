@@ -360,6 +360,7 @@ input:checked+.slider:before{transform:translateX(20px)}
 <div class="inboxBody">
   <div class="inboxSubTabs">
     <span class="inboxSubTab active" data-inbox-tab="messages">Messages</span>
+    <span class="inboxSubTab" data-inbox-tab="requests">Requests <span id="inboxRequestsBadge" style="background:var(--pink); color:#fff; padding:1px 6px; border-radius:8px; font-size:10px; margin-left:2px;">2</span></span>
     <span class="inboxSubTab" data-inbox-tab="notifications">Notifications</span>
   </div>
   <div id="inboxContentContainer">
@@ -686,6 +687,12 @@ let blockedAccountsData = [
 let guestRequestsData = [
   { id: 201, name: "Elena Rostova", username: "@elena_vibe", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" },
   { id: 202, name: "Liam Chen", username: "@liam_tech", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150" }
+];
+
+// Pending message requests array for Inbox
+let pendingMessageRequests = [
+  { id: 301, name: "Marcus Vance", username: "@marcus_v", text: "Hey! Loved your content, can we chat?", avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" },
+  { id: 302, name: "Chloe Bennett", username: "@chloeb", text: "Sent you a message request.", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" }
 ];
 
 let activeGuest = null;
@@ -1242,16 +1249,67 @@ document.querySelectorAll('.soundItem').forEach(item=>{
  };
 });
 
+// Inbox sub-tab switching & Pending Requests handling
+function renderInboxRequests() {
+  const container = document.getElementById('inboxContentContainer');
+  container.innerHTML = '';
+  
+  const badge = document.getElementById('inboxRequestsBadge');
+  if(badge) {
+    badge.textContent = pendingMessageRequests.length;
+    badge.style.display = pendingMessageRequests.length > 0 ? 'inline-block' : 'none';
+  }
+
+  if(pendingMessageRequests.length === 0) {
+    container.innerHTML = `<div style="text-align:center;color:var(--muted);padding-top:40px;font-size:13px;">No pending message requests.</div>`;
+    return;
+  }
+
+  pendingMessageRequests.forEach(req => {
+    container.innerHTML += `
+      <div class="messageItem" style="justify-content:space-between;" id="request-row-${req.id}">
+        <div style="display:flex; align-items:center; gap:12px; flex:1; min-width:0;">
+          <img class="messageAvatar" src="${req.avatar}">
+          <div class="messageContent" style="min-width:0;">
+            <div class="messageName">${req.name}</div>
+            <div class="messageSnippet" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${req.text}</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:6px; margin-left:8px;">
+          <button onclick="acceptMessageRequest(${req.id})" style="background:var(--pink); border:0; color:#fff; padding:6px 12px; border-radius:14px; font-weight:700; font-size:11px; cursor:pointer;">Accept</button>
+          <button onclick="declineMessageRequest(${req.id})" style="background:#2a2a2a; border:0; color:#fff; padding:6px 12px; border-radius:14px; font-weight:700; font-size:11px; cursor:pointer;">Decline</button>
+        </div>
+      </div>
+    `;
+  });
+}
+
+function acceptMessageRequest(id) {
+  pendingMessageRequests = pendingMessageRequests.filter(r => r.id !== id);
+  renderInboxRequests();
+  showToast('Message request accepted!');
+}
+
+function declineMessageRequest(id) {
+  pendingMessageRequests = pendingMessageRequests.filter(r => r.id !== id);
+  renderInboxRequests();
+  showToast('Message request declined');
+}
+
 document.querySelectorAll('.inboxSubTab').forEach(tab=>{
  tab.onclick=()=>{
   document.querySelectorAll('.inboxSubTab').forEach(x=>x.classList.remove('active'));
   tab.classList.add('active');
   const container = document.getElementById('inboxContentContainer');
   container.innerHTML = '';
-  if(tab.dataset.inboxTab === 'messages'){
+  const subTabType = tab.dataset.inboxTab;
+
+  if(subTabType === 'messages'){
    container.innerHTML = `
     <div class="messageItem"><img class="messageAvatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150"><div class="messageContent"><div class="messageName">Elena Rostova</div><div class="messageSnippet">Loved your recent vibe post! ✨</div></div></div>
     <div class="messageItem"><img class="messageAvatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150"><div class="messageContent"><div class="messageName">Liam Chen</div><div class="messageSnippet">Let's collaborate on a clip soon.</div></div></div>`;
+  } else if(subTabType === 'requests'){
+   renderInboxRequests();
   } else {
    notificationsData.forEach(n=>{
     container.innerHTML += `<div class="messageItem"><img class="messageAvatar" src="${n.avatar}"><div class="messageContent"><div class="messageName">${n.user}</div><div class="messageSnippet">${n.text}</div></div><div style="font-size:11px;color:var(--muted)">${n.time}</div></div>`;
@@ -1367,7 +1425,6 @@ function toggleLiveStream() {
     overlayElements.classList.remove('hidden');
     showToast('You are now LIVE! 🔴');
 
-    // Simulate incoming viewer comments and automated likes
     const sampleChatUsers = ['Sophia Taylor', 'Marcus Vance', 'Alex Rivera', 'Chloe Bennett'];
     const sampleChatTexts = ['Hey everyone! 👋', 'Loving this broadcast!', 'Drop a heart if you see this ❤️', 'Awesome quality!'];
     
