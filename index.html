@@ -28,7 +28,6 @@ button{font:inherit}
 .nav{position:absolute;bottom:0;left:0;right:0;height:var(--nav);z-index:100;display:flex;justify-content:space-around;align-items:center;background:#171820ee;backdrop-filter:blur(16px);border-top:1px solid #ffffff12;pointer-events:auto;transition:transform .3s ease}
 .nav button{background:none;border:0;color:#9a9dac;font-size:10px;display:flex;flex-direction:column;align-items:center;gap:4px;width:20%;cursor:pointer;pointer-events:auto}.nav button.active{color:#fff}.nav .plus{width:42px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--pink),var(--cyan));color:#fff;font-size:22px;line-height:1}
 
-/* Hide Navigation and Header ONLY when Create screen is open */
 #app.hide-nav-for-create .nav { transform: translateY(100%); pointer-events: none; }
 #app.hide-nav-for-create .header { transform: translateY(-100%); pointer-events: none; }
 
@@ -181,6 +180,26 @@ input:checked+.slider:before{transform:translateX(20px)}
 .liveChatList::-webkit-scrollbar { display: none; }
 .liveChatMsg { background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); padding: 6px 10px; border-radius: 10px; font-size: 12px; width: fit-content; max-width: 80%; }
 .liveChatUser { font-weight: 700; color: var(--cyan); margin-right: 4px; }
+
+/* Live Co-Hosting Grid & Guest Panel */
+.liveGuestGrid { position: absolute; top: 60px; left: 12px; right: 12px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; z-index: 12; }
+.liveGuestCell { background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; height: 110px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.liveGuestCell img { width: 100%; height: 100%; object-fit: cover; }
+.liveGuestTag { position: absolute; bottom: 6px; left: 6px; background: rgba(0,0,0,0.7); padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+.liveGuestControls { position: absolute; top: 6px; right: 6px; display: flex; gap: 4px; }
+.liveGuestActionBtn { background: rgba(0,0,0,0.7); border: none; color: #fff; width: 22px; height: 22px; border-radius: 50%; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+.guestManagementModal { position: absolute; inset: 0; background: rgba(0,0,0,0.85); z-index: 130; display: none; flex-direction: column; padding: 20px; }
+.guestManagementModal.open { display: flex; }
+.guestSubTabs { display: flex; gap: 15px; margin-bottom: 15px; border-bottom: 1px solid #ffffff10; padding-bottom: 10px; }
+.guestSubTab { font-weight: 700; color: var(--muted); cursor: pointer; font-size: 14px; }
+.guestSubTab.active { color: #fff; border-bottom: 2px solid var(--pink); }
+.guestListContainer { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+.guestRequestCard { display: flex; align-items: center; justify-content: space-between; background: var(--surface); padding: 12px 16px; border-radius: 12px; border: 1px solid #ffffff10; }
+.guestActionButtons { display: flex; gap: 8px; }
+.acceptBtn { background: var(--pink); border: none; color: #fff; padding: 6px 12px; border-radius: 14px; font-weight: 700; font-size: 12px; cursor: pointer; }
+.declineBtn { background: #333; border: none; color: #fff; padding: 6px 12px; border-radius: 14px; font-weight: 700; font-size: 12px; cursor: pointer; }
+.requestJoinFloatingBtn { position: absolute; top: 16px; right: 16px; z-index: 15; background: var(--pink); border: none; color: #fff; font-weight: 700; padding: 8px 14px; border-radius: 16px; font-size: 12px; cursor: pointer; box-shadow: 0 4px 12px rgba(255,42,95,0.4); }
 </style>
 </head>
 <body>
@@ -218,6 +237,8 @@ input:checked+.slider:before{transform:translateX(20px)}
       <span class="liveBadge">LIVE</span>
       <span class="liveViewersBadge" id="liveViewersCount">👁 1.4K</span>
     </div>
+    <button class="requestJoinFloatingBtn" id="requestJoinLiveBtn" onclick="toggleViewerJoinRequest()">Request to Join</button>
+    <div class="liveGuestGrid" id="liveGuestGridContainer"></div>
     <div class="liveChatOverlay">
       <div class="liveChatList" id="liveChatListContainer">
         <div class="liveChatMsg"><span class="liveChatUser">Liam Chen:</span>Hello everyone! 🔥</div>
@@ -254,12 +275,23 @@ input:checked+.slider:before{transform:translateX(20px)}
 <!-- Live Stream Mode Control Row -->
 <div id="liveModePanel" class="hidden" style="width:100%; display:flex; justify-content:space-around; align-items:center; padding: 0 15px; flex:1;">
   <button class="textBtn" id="liveFlipBtn" onclick="flipCamera()">Flip ⟳</button>
-  <button class="postBtn" id="startLiveBtn" onclick="toggleLiveStream()" style="width: 140px; background: var(--pink);">Go LIVE Now</button>
-  <button class="textBtn" id="liveMuteMicBtn" onclick="toggleLiveMic()">Mute Mic</button>
+  <button class="postBtn" id="startLiveBtn" onclick="toggleLiveStream()" style="width: 120px; background: var(--pink);">Go LIVE Now</button>
+  <button class="textBtn" id="liveGuestsBtn" onclick="openGuestManagementModal()" style="color:var(--cyan);">Guests (0)</button>
+  <button class="textBtn" id="liveMuteMicBtn" onclick="toggleLiveMic()">Mute</button>
 </div>
 
 </div>
 </section>
+
+<!-- Live Guest Management Modal -->
+<div id="guestManagementModal" class="guestManagementModal">
+  <div class="screenHead"><span>Manage Live Guests</span><button class="close" onclick="closeGuestManagementModal()">×</button></div>
+  <div class="guestSubTabs" style="margin-top: 15px;">
+    <span class="guestSubTab active" data-guest-tab="requests" onclick="switchGuestSubTab('requests')">Requests (<span id="reqCountBadge">0</span>)</span>
+    <span class="guestSubTab" data-guest-tab="friends" onclick="switchGuestSubTab('friends')">Invite Friends</span>
+  </div>
+  <div class="guestListContainer" id="guestModalListContainer"></div>
+</div>
 
 <!-- Sound Picker Modal -->
 <div id="soundModal" class="modalScreen">
@@ -361,7 +393,6 @@ input:checked+.slider:before{transform:translateX(20px)}
         <button class="close" onclick="closeSecuritySettings()">×</button>
     </div>
     <div style="display: flex; flex-direction: column; gap: 24px; max-width: 600px; margin: 20px auto 0 auto; width:100%; padding-bottom: 40px;">
-        <!-- Account Privacy Group -->
         <div>
             <h3 style="font-size: 13px; color: var(--muted); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.5px;">Account Privacy</h3>
             <div style="background: var(--surface); border-radius: 12px; padding: 0 16px; border: 1px solid #ffffff10;">
@@ -389,7 +420,6 @@ input:checked+.slider:before{transform:translateX(20px)}
             </div>
         </div>
 
-        <!-- Security Group -->
         <div>
             <h3 style="font-size: 13px; color: var(--muted); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.5px;">Login & Security</h3>
             <div style="background: var(--surface); border-radius: 12px; padding: 0 16px; border: 1px solid #ffffff10;">
@@ -413,7 +443,6 @@ input:checked+.slider:before{transform:translateX(20px)}
             </div>
         </div>
 
-        <!-- Safety Group -->
         <div>
             <h3 style="font-size: 13px; color: var(--muted); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.5px;">Safety</h3>
             <div style="background: var(--surface); border-radius: 12px; padding: 0 16px; border: 1px solid #ffffff10;">
@@ -434,7 +463,6 @@ input:checked+.slider:before{transform:translateX(20px)}
             </div>
         </div>
 
-        <!-- Legal Group (Separate) -->
         <div>
             <h3 style="font-size: 13px; color: var(--muted); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.5px;">Legal</h3>
             <div style="background: var(--surface); border-radius: 12px; padding: 0 16px; border: 1px solid #ffffff10;">
@@ -470,9 +498,7 @@ input:checked+.slider:before{transform:translateX(20px)}
         <span>Blocked Accounts</span>
         <button class="close" onclick="closeBlockedAccounts()">×</button>
     </div>
-    <div style="display: flex; flex-direction: column; gap: 12px; max-width: 600px; margin: 20px auto 0 auto; width:100%; padding-bottom: 40px;" id="blockedAccountsListContainer">
-        <!-- Dynamically rendered list of blocked accounts -->
-    </div>
+    <div style="display: flex; flex-direction: column; gap: 12px; max-width: 600px; margin: 20px auto 0 auto; width:100%; padding-bottom: 40px;" id="blockedAccountsListContainer"></div>
 </section>
 
 <!-- Privacy Policy Modal Screen -->
@@ -483,11 +509,9 @@ input:checked+.slider:before{transform:translateX(20px)}
     </div>
     <div style="max-width: 600px; margin: 20px auto; width: 100%; padding-bottom: 40px; color: var(--muted); font-size: 14px; line-height: 1.6; display: flex; flex-direction: column; gap: 16px;">
         <h2 style="color: var(--text); font-size: 18px;">1. Information We Collect</h2>
-        <p>We collect information you provide directly to us when creating an account, posting content, or communicating with other users on VIBE. This includes your profile details, videos, comments, and direct messages.</p>
+        <p>We collect information you provide directly to us when creating an account, posting content, or communicating with other users on VIBE.</p>
         <h2 style="color: var(--text); font-size: 18px;">2. How We Use Your Information</h2>
-        <p>Your information helps us operate, personalize, and improve VIBE, providing you tailored content feeds, relevant recommendations, and secure messaging features.</p>
-        <h2 style="color: var(--text); font-size: 18px;">3. Data Sharing and Security</h2>
-        <p>We implement robust technical and organizational security measures to protect your personal data against unauthorized access, alteration, or disclosure.</p>
+        <p>Your information helps us operate, personalize, and improve VIBE.</p>
     </div>
 </section>
 
@@ -499,11 +523,7 @@ input:checked+.slider:before{transform:translateX(20px)}
     </div>
     <div style="max-width: 600px; margin: 20px auto; width: 100%; padding-bottom: 40px; color: var(--muted); font-size: 14px; line-height: 1.6; display: flex; flex-direction: column; gap: 16px;">
         <h2 style="color: var(--text); font-size: 18px;">1. Acceptance of Terms</h2>
-        <p>By accessing or using VIBE, you agree to be bound by these Terms of Service. If you do not agree to all terms, please do not use our platform.</p>
-        <h2 style="color: var(--text); font-size: 18px;">2. User Conduct</h2>
-        <p>You agree not to post content that is harmful, abusive, harassing, or violates intellectual property rights. VIBE maintains a zero-tolerance policy for abusive behavior.</p>
-        <h2 style="color: var(--text); font-size: 18px;">3. Content Ownership</h2>
-        <p>You retain ownership of the videos and media you create and post on VIBE, while granting us a license to display and distribute your content within the app experience.</p>
+        <p>By accessing or using VIBE, you agree to be bound by these Terms of Service.</p>
     </div>
 </section>
 
@@ -515,11 +535,7 @@ input:checked+.slider:before{transform:translateX(20px)}
     </div>
     <div style="max-width: 600px; margin: 20px auto; width: 100%; padding-bottom: 40px; color: var(--muted); font-size: 14px; line-height: 1.6; display: flex; flex-direction: column; gap: 16px;">
         <h2 style="color: var(--text); font-size: 18px;">1. What Are Cookies?</h2>
-        <p>Cookies are small text files stored on your device that help us remember your preferences, session state, and app configurations across visits.</p>
-        <h2 style="color: var(--text); font-size: 18px;">2. How We Use Cookies</h2>
-        <p>We use essential cookies to maintain your login session, preferences, and security tokens, as well as analytical cookies to understand user interaction patterns.</p>
-        <h2 style="color: var(--text); font-size: 18px;">3. Managing Cookies</h2>
-        <p>You can control or delete cookies through your browser settings, though disabling certain essential cookies may impact app functionality.</p>
+        <p>Cookies are small text files stored on your device that help us remember your preferences.</p>
     </div>
 </section>
 
@@ -575,7 +591,6 @@ input:checked+.slider:before{transform:translateX(20px)}
   <div class="commentList" id="storyViewersListContainer">
     <div class="messageItem"><img class="messageAvatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150"><div class="messageContent"><div class="messageName">Elena Rostova</div><div class="messageSnippet">Viewed 1m ago</div></div></div>
     <div class="messageItem"><img class="messageAvatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150"><div class="messageContent"><div class="messageName">Liam Chen</div><div class="messageSnippet">Viewed 15m ago</div></div></div>
-    <div class="messageItem"><img class="messageAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"><div class="messageContent"><div class="messageName">Sophia Taylor</div><div class="messageSnippet">Viewed 42m ago</div></div></div>
   </div>
 </div>
 
@@ -616,16 +631,11 @@ let feedData=[
 ];
 
 let storiesData = []; 
-
 let blockedAccountsData = [
-  { id: 101, username: "user_blocked_1", name: "Marcus Vance", avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" },
-  { id: 102, username: "spam_account_99", name: "Spam Bot", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150" }
+  { id: 101, username: "user_blocked_1", name: "Marcus Vance", avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" }
 ];
-
 let notificationsData=[
-{type:"like",user:"Elena Rostova",text:"liked your video",time:"2m ago",avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150"},
-{type:"follow",user:"Liam Chen",text:"started following you",time:"1h ago",avatar:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150"},
-{type:"comment",user:"Sophia Taylor",text:"commented: 'Amazing work!'",time:"3h ago",avatar:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"}
+{type:"like",user:"Elena Rostova",text:"liked your video",time:"2m ago",avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150"}
 ];
 
 let myProfile={username:"@creator_vibe",bio:"Short-form content creator & explorer ✨",avatar:"https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150"};
@@ -645,6 +655,20 @@ let activeTabKey = 'home';
 let isLiveActive = false;
 let liveSimInterval = null;
 let liveViewersCountNum = 1420;
+
+// Live Guest Co-Hosting State
+let guestRequests = [
+  { id: 1, name: "Sophia Taylor", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" },
+  { id: 2, name: "Marcus Vance", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150" }
+];
+let activeGuests = [];
+let friendsList = [
+  { id: 201, name: "Elena Rostova", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" },
+  { id: 202, name: "Liam Chen", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150" },
+  { id: 203, name: "Chloe Bennett", avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" }
+];
+let activeGuestSubTab = 'requests';
+let isViewerRequestingToJoin = false;
 
 function updateNavActiveState(tabKey) {
  activeTabKey = tabKey;
@@ -897,7 +921,7 @@ function renderProfileGrid(){
   : feedData.filter(i => i.isSaved);
 
  if(listToDisplay.length === 0){
-  grid.innerHTML = `<div style="grid-column:span 3;text-align:center;color:var(--muted);padding-top:40px;font-size:13px;">${profileActiveTab === 'posts' ? 'No posts yet.' : 'No saved videos yet. Tap the star icon on any video to save it here!'}</div>`;
+  grid.innerHTML = `<div style="grid-column:span 3;text-align:center;color:var(--muted);padding-top:40px;font-size:13px;">${profileActiveTab === 'posts' ? 'No posts yet.' : 'No saved videos yet.'}</div>`;
   return;
  }
 
@@ -918,14 +942,14 @@ function renderProfileGrid(){
 
 async function startCamera(){
  try{mediaStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing},audio:true});camera.srcObject=mediaStream}
- catch(e){showToast('Camera unavailable. You can still upload a video or picture.')}
+ catch(e){showToast('Camera unavailable. You can still upload.')}
 }
 function stopCamera(){if(mediaStream){mediaStream.getTracks().forEach(t=>t.stop());mediaStream=null}camera.srcObject=null}
 
 function formatTime(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
 
 function startRecording(){
- if(!mediaStream){showToast('Camera permission is needed to record');return}
+ if(!mediaStream){showToast('Camera permission is needed');return}
  chunks=[];recordSeconds=0;recording=true;
  timer.classList.remove('hidden');
  timerText.textContent='00:00';
@@ -937,7 +961,7 @@ function startRecording(){
  timerInterval=setInterval(()=>{
   recordSeconds++;
   timerText.textContent=formatTime(recordSeconds);
-  if(recordSeconds>=600){ stopRecording(); showToast('Maximum recording limit of 10 minutes reached'); }
+  if(recordSeconds>=600){ stopRecording(); showToast('Maximum recording limit reached'); }
  },1000);
  showToast('Recording started');
 }
@@ -954,7 +978,7 @@ function stopRecording(){
 }
 
 function takePhoto(){
- if(!mediaStream){showToast('Camera is required to snap a photo');return;}
+ if(!mediaStream){showToast('Camera required');return;}
  const canvas=document.createElement('canvas');
  canvas.width=camera.videoWidth||720;
  canvas.height=camera.videoHeight||1280;
@@ -979,8 +1003,8 @@ shutterBtn.onmouseup = shutterBtn.ontouchend = (e) => {
 
 document.getElementById('uploadBtn').onclick=()=>fileInput.click();
 fileInput.onchange=e=>{const file=e.target.files[0];if(!file)return;
- if(file.type.startsWith('video/')&&file.size){const url=URL.createObjectURL(file);const vid=document.createElement('video');vid.preload='metadata';vid.onloadedmetadata=()=>{URL.revokeObjectURL(vid.src);if(vid.duration>600){showToast('Video must be 10 minutes or less');fileInput.value='';return}openPost(file,'video')};vid.src=url}
- else if(file.type.startsWith('image/'))openPost(file,'image');else showToast('Please choose a video or picture');
+ if(file.type.startsWith('video/')){openPost(file,'video')}
+ else if(file.type.startsWith('image/'))openPost(file,'image');
 };
 
 function openPost(file,type){
@@ -990,15 +1014,15 @@ function openPost(file,type){
 }
 
 document.getElementById('publishBtn').onclick=()=> {
- if(!selectedMedia){showToast('Choose a video or picture first');return}
+ if(!selectedMedia){showToast('Choose media first');return}
  const caption=document.getElementById('captionInput').value.trim()||'New VIBE ✨ #VIBE';
  const item={id:Date.now(),author:'You',caption,audio:selectedSound,likes:0,commentsCount:0,shares:0,views:'1',avatar:myProfile.avatar,commentsList:[]};
  if(selectedMedia.type==='video')item.video=selectedMedia.url;else item.image=selectedMedia.url;
- feedData.unshift(item);renderFeed();postScreen.classList.remove('open');appContainer.classList.remove('hide-nav-for-create');selectedMedia=null;document.getElementById('captionInput').value='';showToast('Posted to VIBE 🎉');
+ feedData.unshift(item);renderFeed();postScreen.classList.remove('open');appContainer.classList.remove('hide-nav-for-create');selectedMedia=null;document.getElementById('captionInput').value='';showToast('Posted!');
 };
 
 document.getElementById('publishStoryBtn').onclick=()=>{
- if(!selectedMedia){showToast('Choose a video or picture first');return}
+ if(!selectedMedia){showToast('Choose media first');return}
  const storyItem={id:Date.now(), url:selectedMedia.url, type:selectedMedia.type, timestamp:Date.now(), viewsCount: 34};
  storiesData.unshift(storyItem);
  postScreen.classList.remove('open');
@@ -1006,17 +1030,13 @@ document.getElementById('publishStoryBtn').onclick=()=>{
  selectedMedia=null;
  document.getElementById('captionInput').value='';
  renderProfileGrid();
- showToast('Story added! It will vanish in 24 hours ⏳');
+ showToast('Story added!');
 };
 
 document.getElementById('avatarStoryTrigger').onclick=()=>{
  const activeStories = getValidStories();
- if(activeStories.length > 0){
-  openStoryViewer();
- } else {
-  document.getElementById('navCreateBtn').click();
-  showToast('Record or upload media to publish a story');
- };
+ if(activeStories.length > 0){ openStoryViewer(); } 
+ else { document.getElementById('navCreateBtn').click(); }
 };
 
 function openStoryViewer(){
@@ -1029,45 +1049,28 @@ function openStoryViewer(){
 
 function playStory(index){
  const activeStories = getValidStories();
- if(index >= activeStories.length){
-  document.getElementById('storyModal').classList.remove('open');
-  return;
- }
+ if(index >= activeStories.length){ document.getElementById('storyModal').classList.remove('open'); return; }
  currentStoryIndex = index;
  const story = activeStories[index];
- 
  document.getElementById('storyHeaderAvatar').src = myProfile.avatar;
  document.getElementById('storyHeaderName').textContent = myProfile.username;
- 
- const hoursAgo = Math.floor((Date.now() - story.timestamp) / (1000 * 60 * 60));
- document.getElementById('storyTimeBadge').textContent = hoursAgo === 0 ? 'Just now' : `${hoursAgo}h ago`;
-
+ document.getElementById('storyTimeBadge').textContent = 'Just now';
  document.getElementById('storyViewsCountText').textContent = (story.viewsCount || 34) + ' views';
 
  const contentArea = document.getElementById('storyContentArea');
  contentArea.innerHTML = '';
  const el = document.createElement(story.type === 'video' ? 'video' : 'img');
  el.src = story.url;
- if(story.type === 'video'){ 
-  el.autoplay = true; 
-  el.playsInline = true; 
-  el.muted = false; 
-  currentStoryVideoEl = el;
- } else {
-  currentStoryVideoEl = null;
- }
+ if(story.type === 'video'){ el.autoplay = true; el.playsInline = true; el.muted = false; currentStoryVideoEl = el; } else { currentStoryVideoEl = null; }
  contentArea.appendChild(el);
 
  const barContainer = document.getElementById('storyBarContainer');
  barContainer.innerHTML = '';
  activeStories.forEach((_, i)=>{
-  const seg = document.createElement('div');
-  seg.className = 'storyBarSegment';
-  const fill = document.createElement('div');
-  fill.className = 'storyBarFill';
+  const seg = document.createElement('div'); seg.className = 'storyBarSegment';
+  const fill = document.createElement('div'); fill.className = 'storyBarFill';
   if(i < index) fill.style.width = '100%';
-  seg.appendChild(fill);
-  barContainer.appendChild(seg);
+  seg.appendChild(fill); barContainer.appendChild(seg);
  });
 
  storyDuration = 5000;
@@ -1079,84 +1082,48 @@ function startStoryTimer(){
  clearTimeouts();
  storyStartTime = Date.now();
  isStoryPaused = false;
- 
- const activeStories = getValidStories();
  const fill = document.querySelectorAll('.storyBarFill')[currentStoryIndex];
  if(!fill) return;
-
  fill.style.transition = `width ${storyTimeRemaining}ms linear`;
- fill.classList.add('running');
- fill.classList.remove('paused');
- void fill.offsetWidth;
- fill.style.width = '100%';
-
- if(currentStoryVideoEl && currentStoryVideoEl.paused){
-  currentStoryVideoEl.play().catch(()=>{});
- }
-
- storyTimeout = setTimeout(() => {
-  playStory(currentStoryIndex + 1);
- }, storyTimeRemaining);
+ fill.classList.add('running'); fill.classList.remove('paused');
+ void fill.offsetWidth; fill.style.width = '100%';
+ if(currentStoryVideoEl && currentStoryVideoEl.paused) currentStoryVideoEl.play().catch(()=>{});
+ storyTimeout = setTimeout(() => { playStory(currentStoryIndex + 1); }, storyTimeRemaining);
 }
 
 function pauseStoryTimer(){
  if(isStoryPaused) return;
  isStoryPaused = true;
- 
  const elapsed = Date.now() - storyStartTime;
  storyTimeRemaining = Math.max(0, storyTimeRemaining - elapsed);
  clearTimeouts();
-
  const fill = document.querySelectorAll('.storyBarFill')[currentStoryIndex];
  if(fill){
-  const computedWidth = window.getComputedStyle(fill).width;
-  fill.classList.remove('running');
-  fill.classList.add('paused');
-  fill.style.width = computedWidth;
+  fill.classList.remove('running'); fill.classList.add('paused');
+  fill.style.width = window.getComputedStyle(fill).width;
  }
-
- if(currentStoryVideoEl && !currentStoryVideoEl.paused){
-  currentStoryVideoEl.pause();
- }
+ if(currentStoryVideoEl && !currentStoryVideoEl.paused) currentStoryVideoEl.pause();
 }
 
-function clearTimeouts(){
- clearTimeout(storyTimeout);
- storyTimeout = null;
-}
+function clearTimeouts(){ clearTimeout(storyTimeout); storyTimeout = null; }
 
 const storyModalEl = document.getElementById('storyModal');
 storyModalEl.onmousedown = storyModalEl.ontouchstart = (e) => {
  if(e.target.closest('#storyFooterViewsBtn') || e.target.closest('#closeStoryModal')) return;
  pauseStoryTimer();
 };
-
 storyModalEl.onmouseup = storyModalEl.ontouchend = (e) => {
  if(e.target.closest('#storyFooterViewsBtn') || e.target.closest('#closeStoryModal')) return;
- if(isStoryPaused){
-  startStoryTimer();
- }
+ if(isStoryPaused) startStoryTimer();
 };
 
-document.getElementById('storyFooterViewsBtn').onclick=()=>{
- pauseStoryTimer();
- document.getElementById('storyViewersModal').classList.add('open');
-};
-
-document.getElementById('closeStoryViewersModal').onclick=()=>{
- document.getElementById('storyViewersModal').classList.remove('open');
- startStoryTimer();
-};
-
-document.getElementById('closeStoryModal').onclick=()=>{
- clearTimeouts();
- document.getElementById('storyModal').classList.remove('open');
-};
+document.getElementById('storyFooterViewsBtn').onclick=()=>{ pauseStoryTimer(); document.getElementById('storyViewersModal').classList.add('open'); };
+document.getElementById('closeStoryViewersModal').onclick=()=>{ document.getElementById('storyViewersModal').classList.remove('open'); startStoryTimer(); };
+document.getElementById('closeStoryModal').onclick=()=>{ clearTimeouts(); document.getElementById('storyModal').classList.remove('open'); };
 
 async function flipCamera(){
  facing=facing==='user'?'environment':'user';
- stopCamera();
- await startCamera();
+ stopCamera(); await startCamera();
 }
 
 document.getElementById('flipBtn').onclick=flipCamera;
@@ -1180,9 +1147,7 @@ document.querySelectorAll('.inboxSubTab').forEach(tab=>{
   const container = document.getElementById('inboxContentContainer');
   container.innerHTML = '';
   if(tab.dataset.inboxTab === 'messages'){
-   container.innerHTML = `
-    <div class="messageItem"><img class="messageAvatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150"><div class="messageContent"><div class="messageName">Elena Rostova</div><div class="messageSnippet">Loved your recent vibe post! ✨</div></div></div>
-    <div class="messageItem"><img class="messageAvatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150"><div class="messageContent"><div class="messageName">Liam Chen</div><div class="messageSnippet">Let's collaborate on a clip soon.</div></div></div>`;
+   container.innerHTML = `<div class="messageItem"><img class="messageAvatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150"><div class="messageContent"><div class="messageName">Elena Rostova</div><div class="messageSnippet">Loved your recent vibe post! ✨</div></div></div>`;
   } else {
    notificationsData.forEach(n=>{
     container.innerHTML += `<div class="messageItem"><img class="messageAvatar" src="${n.avatar}"><div class="messageContent"><div class="messageName">${n.user}</div><div class="messageSnippet">${n.text}</div></div><div style="font-size:11px;color:var(--muted)">${n.time}</div></div>`;
@@ -1201,48 +1166,34 @@ document.getElementById('saveProfileBtn').onclick=()=>{
  myProfile.username = document.getElementById('editUsernameInput').value.trim() || myProfile.username;
  myProfile.bio = document.getElementById('editBioInput').value.trim() || myProfile.bio;
  document.getElementById('editProfileModal').classList.remove('open');
- renderProfileGrid();
- showToast('Profile updated successfully!');
+ renderProfileGrid(); showToast('Profile updated!');
 };
 
 document.getElementById('profileAvatarImg').onclick=(e)=>{
  e.stopPropagation();
- const activeStories = getValidStories();
- if(activeStories.length === 0){
-  document.getElementById('avatarFileInput').click();
- }
+ if(getValidStories().length === 0) document.getElementById('avatarFileInput').click();
 };
 document.getElementById('avatarFileInput').onchange=e=>{
  const file = e.target.files[0];
  if(file && file.type.startsWith('image/')){
   myProfile.avatar = URL.createObjectURL(file);
-  renderProfileGrid();
-  renderFeed();
-  showToast('Profile picture updated!');
+  renderProfileGrid(); renderFeed(); showToast('Profile picture updated!');
  }
 };
 
-// Studio Mode Switcher (Video vs Live Stream)
 function switchStudioMode(mode) {
-  if(isLiveActive) {
-    showToast('Please end your live stream first');
-    return;
-  }
+  if(isLiveActive) { showToast('Please end your live stream first'); return; }
   const videoTab = document.getElementById('modeVideoTab');
   const liveTab = document.getElementById('modeLiveTab');
   const videoPanel = document.getElementById('videoModePanel');
   const livePanel = document.getElementById('liveModePanel');
 
   if(mode === 'video') {
-    videoTab.classList.add('active');
-    liveTab.classList.remove('active');
-    videoPanel.classList.remove('hidden');
-    livePanel.classList.add('hidden');
+    videoTab.classList.add('active'); liveTab.classList.remove('active');
+    videoPanel.classList.remove('hidden'); livePanel.classList.add('hidden');
   } else {
-    liveTab.classList.add('active');
-    videoTab.classList.remove('active');
-    livePanel.classList.remove('hidden');
-    videoPanel.classList.add('hidden');
+    liveTab.classList.add('active'); videoTab.classList.remove('active');
+    livePanel.classList.remove('hidden'); videoPanel.classList.add('hidden');
   }
 }
 
@@ -1251,38 +1202,32 @@ function toggleLiveStream() {
   const overlayElements = document.getElementById('liveStreamOverlayElements');
   
   if(!isLiveActive) {
-    if(!mediaStream) { showToast('Camera permission required to go live'); return; }
+    if(!mediaStream) { showToast('Camera permission required'); return; }
     isLiveActive = true;
-    btn.textContent = 'End Live';
-    btn.style.background = '#f33';
+    btn.textContent = 'End Live'; btn.style.background = '#f33';
     overlayElements.classList.remove('hidden');
     showToast('You are now LIVE! 🔴');
 
-    // Simulate incoming viewer comments
-    const sampleChatUsers = ['Sophia Taylor', 'Marcus Vance', 'Alex Rivera', 'Chloe Bennett'];
-    const sampleChatTexts = ['Hey everyone! 👋', 'Loving this broadcast!', 'Drop a heart if you see this ❤️', 'Awesome quality!'];
+    const sampleChatUsers = ['Sophia Taylor', 'Marcus Vance', 'Alex Rivera'];
+    const sampleChatTexts = ['Hey everyone! 👋', 'Loving this broadcast!', '❤️'];
     
     liveSimInterval = setInterval(() => {
       liveViewersCountNum += Math.floor(Math.random() * 7) - 2;
       document.getElementById('liveViewersCount').textContent = `👁 ${formatCount(liveViewersCountNum)}`;
-
       const chatList = document.getElementById('liveChatListContainer');
-      const randomUser = sampleChatUsers[Math.floor(Math.random() * sampleChatUsers.length)];
-      const randomText = sampleChatTexts[Math.floor(Math.random() * sampleChatTexts.length)];
-      
       const msgDiv = document.createElement('div');
       msgDiv.className = 'liveChatMsg';
-      msgDiv.innerHTML = `<span class="liveChatUser">${randomUser}:</span>${randomText}`;
-      chatList.appendChild(msgDiv);
-      chatList.scrollTop = chatList.scrollHeight;
+      msgDiv.innerHTML = `<span class="liveChatUser">${sampleChatUsers[Math.floor(Math.random()*sampleChatUsers.length)}:</span>${sampleChatTexts[Math.floor(Math.random()*sampleChatTexts.length)]}`;
+      chatList.appendChild(msgDiv); chatList.scrollTop = chatList.scrollHeight;
     }, 3000);
 
   } else {
     isLiveActive = false;
-    btn.textContent = 'Go LIVE Now';
-    btn.style.background = 'var(--pink)';
+    btn.textContent = 'Go LIVE Now'; btn.style.background = 'var(--pink)';
     overlayElements.classList.add('hidden');
     clearInterval(liveSimInterval);
+    activeGuests = [];
+    renderLiveGuestGrid();
     showToast('Live stream ended.');
   }
 }
@@ -1292,9 +1237,171 @@ function toggleLiveMic() {
   const audioTrack = mediaStream.getAudioTracks()[0];
   if(audioTrack) {
     audioTrack.enabled = !audioTrack.enabled;
-    document.getElementById('liveMuteMicBtn').textContent = audioTrack.enabled ? 'Mute Mic' : 'Unmute Mic';
-    showToast(audioTrack.enabled ? 'Microphone unmuted' : 'Microphone muted');
+    document.getElementById('liveMuteMicBtn').textContent = audioTrack.enabled ? 'Mute' : 'Unmute';
+    showToast(audioTrack.enabled ? 'Mic unmuted' : 'Mic muted');
   }
+}
+
+// Live Guest Co-Hosting Functions
+function toggleViewerJoinRequest() {
+  if(!isLiveActive) return;
+  isViewerRequestingToJoin = !isViewerRequestingToJoin;
+  const btn = document.getElementById('requestJoinLiveBtn');
+  if(isViewerRequestingToJoin){
+    btn.textContent = 'Request Sent...';
+    btn.style.background = '#666';
+    // Simulate incoming request for the host dashboard
+    guestRequests.push({ id: Date.now(), name: "You (Viewer)", avatar: myProfile.avatar });
+    updateGuestCounts();
+    showToast('Join request sent to host!');
+  } else {
+    btn.textContent = 'Request to Join';
+    btn.style.background = 'var(--pink)';
+    showToast('Request canceled');
+  }
+}
+
+function openGuestManagementModal() {
+  document.getElementById('guestManagementModal').classList.add('open');
+  renderGuestModalContent();
+}
+
+function closeGuestManagementModal() {
+  document.getElementById('guestManagementModal').classList.remove('open');
+}
+
+function switchGuestSubTab(tab) {
+  activeGuestSubTab = tab;
+  document.querySelectorAll('.guestSubTab').forEach(el => el.classList.remove('active'));
+  document.querySelector(`.guestSubTab[data-guest-tab="${tab}"]`).classList.add('active');
+  renderGuestModalContent();
+}
+
+function updateGuestCounts() {
+  document.getElementById('reqCountBadge').textContent = guestRequests.length;
+  document.getElementById('liveGuestsBtn').textContent = `Guests (${activeGuests.length})`;
+}
+
+function renderGuestModalContent() {
+  updateGuestCounts();
+  const container = document.getElementById('guestModalListContainer');
+  container.innerHTML = '';
+
+  if(activeGuestSubTab === 'requests') {
+    if(guestRequests.length === 0) {
+      container.innerHTML = `<div style="text-align:center;color:var(--muted);padding-top:40px;font-size:13px;">No pending guest requests</div>`;
+      return;
+    }
+    guestRequests.forEach(req => {
+      container.innerHTML += `
+        <div class="guestRequestCard">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <img src="${req.avatar}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;">
+            <div style="font-weight:700;font-size:14px;">${req.name}</div>
+          </div>
+          <div class="guestActionButtons">
+            <button class="acceptBtn" onclick="acceptGuestRequest(${req.id})">Accept</button>
+            <button class="declineBtn" onclick="declineGuestRequest(${req.id})">Decline</button>
+          </div>
+        </div>
+      `;
+    });
+  } else {
+    friendsList.forEach(friend => {
+      const isAlreadyGuest = activeGuests.some(g => g.id === friend.id);
+      container.innerHTML += `
+        <div class="guestRequestCard">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <img src="${friend.avatar}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;">
+            <div style="font-weight:700;font-size:14px;">${friend.name}</div>
+          </div>
+          <button class="acceptBtn" ${isAlreadyGuest ? 'disabled style="background:#444;cursor:not-allowed;"' : `onclick="inviteFriendToCoHost(${friend.id})"`}>${isAlreadyGuest ? 'Live' : 'Invite'}</button>
+        </div>
+      `;
+    });
+  }
+}
+
+function acceptGuestRequest(id) {
+  if(activeGuests.length >= 4) {
+    showToast('Maximum of 4 guests allowed on live at once');
+    return;
+  }
+  const reqIdx = guestRequests.findIndex(r => r.id === id);
+  if(reqIdx !== -1) {
+    const guest = guestRequests.splice(reqIdx, 1)[0];
+    activeGuests.push({ ...guest, muted: false });
+    renderLiveGuestGrid();
+    renderGuestModalContent();
+    showToast(`${guest.name} joined the live stream!`);
+  }
+}
+
+function declineGuestRequest(id) {
+  guestRequests = guestRequests.filter(r => r.id !== id);
+  renderGuestModalContent();
+  showToast('Request declined');
+}
+
+function inviteFriendToCoHost(id) {
+  if(activeGuests.length >= 4) {
+    showToast('Maximum of 4 guests allowed on live at once');
+    return;
+  }
+  const friend = friendsList.find(f => f.id === id);
+  if(friend && !activeGuests.some(g => g.id === friend.id)) {
+    activeGuests.push({ ...friend, muted: false });
+    renderLiveGuestGrid();
+    renderGuestModalContent();
+    showToast(`Invited ${friend.name} to co-host!`);
+  }
+}
+
+function removeActiveGuest(id) {
+  activeGuests = activeGuests.filter(g => g.id !== id);
+  renderLiveGuestGrid();
+  renderGuestModalContent();
+  showToast('Guest removed from live');
+}
+
+function toggleGuestMute(id) {
+  const guest = activeGuests.find(g => g.id === id);
+  if(guest) {
+    guest.muted = !guest.muted;
+    renderLiveGuestGrid();
+    showToast(guest.muted ? `${guest.name} muted` : `${guest.name} unmuted`);
+  }
+}
+
+function guestLeaveCoHost(id) {
+  activeGuests = activeGuests.filter(g => g.id !== id);
+  renderLiveGuestGrid();
+  isViewerRequestingToJoin = false;
+  const reqBtn = document.getElementById('requestJoinLiveBtn');
+  if(reqBtn) { reqBtn.textContent = 'Request to Join'; reqBtn.style.background = 'var(--pink)'; }
+  showToast('You left the co-host grid');
+}
+
+function renderLiveGuestGrid() {
+  const gridContainer = document.getElementById('liveGuestGridContainer');
+  gridContainer.innerHTML = '';
+  activeGuests.forEach(guest => {
+    const isMe = guest.name.includes("You");
+    gridContainer.innerHTML += `
+      <div class="liveGuestCell">
+        <img src="${guest.avatar}">
+        <div class="liveGuestTag">${guest.name} ${guest.muted ? '🔇' : ''}</div>
+        <div class="liveGuestControls">
+          ${isMe 
+            ? `<button class="liveGuestActionBtn" onclick="guestLeaveCoHost(${guest.id})" title="Leave">✕</button>` 
+            : `<button class="liveGuestActionBtn" onclick="toggleGuestMute(${guest.id})">${guest.muted ? '🔈' : '🔇'}</button>
+               <button class="liveGuestActionBtn" onclick="removeActiveGuest(${guest.id})">✕</button>`
+          }
+        </div>
+      </div>
+    `;
+  });
+  updateGuestCounts();
 }
 
 // Security and Privacy Settings Navigation & Handlers
@@ -1302,39 +1409,23 @@ function openSecuritySettings() {
     document.getElementById('profile').classList.remove('open');
     document.getElementById('security-settings-screen').classList.add('open');
 }
-
 function closeSecuritySettings() {
     document.getElementById('security-settings-screen').classList.remove('open');
     document.getElementById('profile').classList.add('open');
 }
-
-function togglePrivateAccount(element) {
-    showToast(element.checked ? 'Account set to Private' : 'Account set to Public');
-}
-
-function updateDMPermissions(value) {
-    showToast('DM permissions updated: ' + value);
-}
-
-function toggleTFA(element) {
-    showToast(element.checked ? 'Two-Factor Authentication Enabled' : 'Two-Factor Authentication Disabled');
-}
-
-function openPasswordModal() {
-    showToast('Password change flow triggered.');
-}
-
+function togglePrivateAccount(element) { showToast(element.checked ? 'Account set to Private' : 'Account set to Public'); }
+function updateDMPermissions(value) { showToast('DM permissions updated: ' + value); }
+function toggleTFA(element) { showToast(element.checked ? '2FA Enabled' : '2FA Disabled'); }
+function openPasswordModal() { showToast('Password change flow triggered.'); }
 function openBlockedAccounts() {
     document.getElementById('security-settings-screen').classList.remove('open');
     document.getElementById('blocked-accounts-screen').classList.add('open');
     renderBlockedAccounts();
 }
-
 function closeBlockedAccounts() {
     document.getElementById('blocked-accounts-screen').classList.remove('open');
     document.getElementById('security-settings-screen').classList.add('open');
 }
-
 function renderBlockedAccounts() {
     const container = document.getElementById('blockedAccountsListContainer');
     container.innerHTML = '';
@@ -1347,80 +1438,24 @@ function renderBlockedAccounts() {
             <div style="display: flex; align-items: center; justify-content: space-between; background: var(--surface); padding: 12px 16px; border-radius: 12px; border: 1px solid #ffffff10;">
                 <div style="display: flex; align-items: center; gap: 12px;">
                     <img src="${acc.avatar}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
-                    <div>
-                        <div style="font-size: 14px; font-weight: 700;">${acc.name}</div>
-                        <div style="font-size: 12px; color: var(--muted);">@${acc.username}</div>
-                    </div>
+                    <div><div style="font-size: 14px; font-weight: 700;">${acc.name}</div><div style="font-size: 12px; color: var(--muted);">@${acc.username}</div></div>
                 </div>
                 <button onclick="unblockAccount(${acc.id})" style="background: transparent; border: 1px solid var(--pink); color: var(--pink); padding: 6px 14px; border-radius: 16px; font-weight: 700; font-size: 12px; cursor: pointer;">Unblock</button>
             </div>
         `;
     });
 }
-
 function unblockAccount(id) {
     blockedAccountsData = blockedAccountsData.filter(acc => acc.id !== id);
-    renderBlockedAccounts();
-    showToast('Account unblocked');
+    renderBlockedAccounts(); showToast('Account unblocked');
 }
-
-function downloadUserData() {
-    try {
-        const safetyData = JSON.stringify({
-            timestamp: new Date().toISOString(),
-            status: "active",
-            module: "Safety",
-            profile: myProfile,
-            blockedCount: blockedAccountsData.length
-        }, null, 2);
-
-        const blob = new Blob([safetyData], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "vibe-safety-data-export.json";
-        document.body.appendChild(a);
-        a.click();
-        
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        showToast('Your data export request has been submitted.');
-    } catch (error) {
-        console.error("Failed to download safety data:", error);
-        showToast('Failed to download data export.');
-    }
-}
-
-function openPrivacyPolicy() {
-    document.getElementById('security-settings-screen').classList.remove('open');
-    document.getElementById('privacy-policy-screen').classList.add('open');
-}
-
-function closePrivacyPolicy() {
-    document.getElementById('privacy-policy-screen').classList.remove('open');
-    document.getElementById('security-settings-screen').classList.add('open');
-}
-
-function openTermsOfService() {
-    document.getElementById('security-settings-screen').classList.remove('open');
-    document.getElementById('terms-service-screen').classList.add('open');
-}
-
-function closeTermsOfService() {
-    document.getElementById('terms-service-screen').classList.remove('open');
-    document.getElementById('security-settings-screen').classList.add('open');
-}
-
-function openCookiePolicy() {
-    document.getElementById('security-settings-screen').classList.remove('open');
-    document.getElementById('cookie-policy-screen').classList.add('open');
-}
-
-function closeCookiePolicy() {
-    document.getElementById('cookie-policy-screen').classList.remove('open');
-    document.getElementById('security-settings-screen').classList.add('open');
-}
+function downloadUserData() { showToast('Data export requested.'); }
+function openPrivacyPolicy() { document.getElementById('security-settings-screen').classList.remove('open'); document.getElementById('privacy-policy-screen').classList.add('open'); }
+function closePrivacyPolicy() { document.getElementById('privacy-policy-screen').classList.remove('open'); document.getElementById('security-settings-screen').classList.add('open'); }
+function openTermsOfService() { document.getElementById('security-settings-screen').classList.remove('open'); document.getElementById('terms-service-screen').classList.add('open'); }
+function closeTermsOfService() { document.getElementById('terms-service-screen').classList.remove('open'); document.getElementById('security-settings-screen').classList.add('open'); }
+function openCookiePolicy() { document.getElementById('security-settings-screen').classList.remove('open'); document.getElementById('cookie-policy-screen').classList.add('open'); }
+function closeCookiePolicy() { document.getElementById('cookie-policy-screen').classList.remove('open'); document.getElementById('security-settings-screen').classList.add('open'); }
 
 document.querySelectorAll('.tab').forEach(t=>{
  t.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');showToast('Switched to '+t.textContent);};
@@ -1428,17 +1463,13 @@ document.querySelectorAll('.tab').forEach(t=>{
 
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=async()=>{
  const tab=b.dataset.tab;
- 
  if(tab === 'home') {
-  [studio,inbox,profile,discover,postScreen,document.getElementById('security-settings-screen'),document.getElementById('blocked-accounts-screen'),document.getElementById('privacy-policy-screen'),document.getElementById('terms-service-screen'),document.getElementById('cookie-policy-screen'),document.getElementById('soundModal'),document.getElementById('editProfileModal'),document.getElementById('commentModal'),document.getElementById('storyModal'),document.getElementById('storyViewersModal')].forEach(x=>x.classList.remove('open'));
+  [studio,inbox,profile,discover,postScreen,document.getElementById('security-settings-screen'),document.getElementById('blocked-accounts-screen'),document.getElementById('privacy-policy-screen'),document.getElementById('terms-service-screen'),document.getElementById('cookie-policy-screen'),document.getElementById('soundModal'),document.getElementById('editProfileModal'),document.getElementById('commentModal'),document.getElementById('storyModal'),document.getElementById('storyViewersModal'),document.getElementById('guestManagementModal')].forEach(x=>x.classList.remove('open'));
   appContainer.classList.remove('hide-nav-for-create');
   updateNavActiveState('home');
   return;
  }
-
- if(tab === activeTabKey) {
-  return;
- }
+ if(tab === activeTabKey) return;
 
  [studio,inbox,profile,discover,document.getElementById('security-settings-screen'),document.getElementById('blocked-accounts-screen'),document.getElementById('privacy-policy-screen'),document.getElementById('terms-service-screen'),document.getElementById('cookie-policy-screen')].forEach(x=>x.classList.remove('open'));
  updateNavActiveState(tab);
@@ -1448,19 +1479,18 @@ document.querySelectorAll('.nav button').forEach(b=>b.onclick=async()=>{
   studio.classList.add('open');
   await startCamera();
  } else {
-  // Ensure nav and header stay visible when switching to Discover, Inbox, or Me
   appContainer.classList.remove('hide-nav-for-create');
-  if(tab==='discover'){discover.classList.add('open')}
-  else if(tab==='inbox'){inbox.classList.add('open')}
-  else if(tab==='profile'){profile.classList.add('open')}
+  if(tab==='discover') discover.classList.add('open');
+  else if(tab==='inbox') inbox.classList.add('open');
+  else if(tab==='profile') profile.classList.add('open');
  }
 });
 
 document.getElementById('closeStudio').onclick=()=>{
- if(isLiveActive) { toggleLiveStream(); }
+ if(isLiveActive) toggleLiveStream();
  studio.classList.remove('open');
  appContainer.classList.remove('hide-nav-for-create');
- if(recording)stopRecording();
+ if(recording) stopRecording();
  stopCamera();
  updateNavActiveState('home');
 };
