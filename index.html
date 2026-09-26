@@ -173,11 +173,11 @@ button{font:inherit}
 <main id="feed" class="feed"></main>
 
 <nav class="nav">
-<button class="active" data-tab="home">⌂<span>Home</span></button>
-<button data-tab="discover">⌕<span>Discover</span></button>
-<button data-tab="create"><span class="plus">+</span><span>Create</span></button>
-<button data-tab="inbox">♡<span>Inbox</span></button>
-<button data-tab="profile">◎<span>Me</span></button>
+<button class="active" data-tab="home" id="navHomeBtn">⌂<span>Home</span></button>
+<button data-tab="discover" id="navDiscoverBtn">⌕<span>Discover</span></button>
+<button data-tab="create" id="navCreateBtn"><span class="plus">+</span><span>Create</span></button>
+<button data-tab="inbox" id="navInboxBtn">♡<span>Inbox</span></button>
+<button data-tab="profile" id="navProfileBtn">◎<span>Me</span></button>
 </nav>
 
 <section id="studio" class="screen">
@@ -402,6 +402,15 @@ let storyTimeRemaining = 5000;
 let isStoryPaused = false;
 let currentStoryVideoEl = null;
 
+let activeTabKey = 'home';
+
+function updateNavActiveState(tabKey) {
+ activeTabKey = tabKey;
+ document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+ const activeBtn = document.querySelector(`.nav button[data-tab="${tabKey}"]`);
+ if(activeBtn) activeBtn.classList.add('active');
+}
+
 function showToast(msg){toast.textContent=msg;toast.classList.add('show');clearTimeout(showToast.t);showToast.t=setTimeout(()=>toast.classList.remove('show'),2200)}
 
 function parseCaptions(text){
@@ -492,7 +501,7 @@ function renderFeed(filteredList){
    tag.onclick=(e)=>{
     e.stopPropagation();
     const query = tag.textContent;
-    document.querySelector('[data-tab="discover"]').click();
+    document.getElementById('navDiscoverBtn').click();
     document.getElementById('searchInput').value = query;
     filterDiscover(query);
    };
@@ -601,8 +610,8 @@ function renderDiscoverGrid(filterText=""){
   if(item.image) { cell.innerHTML = `<img src="${item.image}" alt="">`; }
   else { cell.innerHTML = `<video src="${item.video}" muted playsinline></video>`; }
   cell.onclick = () => {
-   [studio,inbox,profile,discover,postScreen].forEach(x=>x.classList.remove('open'));
-   document.querySelector('[data-tab="home"]').click();
+   discover.classList.remove('open');
+   updateNavActiveState('home');
    const idx = feedData.findIndex(f => f.id === item.id);
    if(idx !== -1) { feed.children[idx].scrollIntoView({behavior:'smooth'}); }
   };
@@ -656,8 +665,8 @@ function renderProfileGrid(){
   if(item.image) { cell.innerHTML = `<img src="${item.image}" alt="">`; }
   else { cell.innerHTML = `<video src="${item.video}" muted playsinline></video>`; }
   cell.onclick = () => {
-   [studio,inbox,profile,discover,postScreen].forEach(x=>x.classList.remove('open'));
-   document.querySelector('[data-tab="home"]').click();
+   profile.classList.remove('open');
+   updateNavActiveState('home');
    const idx = feedData.findIndex(f => f.id === item.id);
    if(idx !== -1) { feed.children[idx].scrollIntoView({behavior:'smooth'}); }
   };
@@ -762,7 +771,7 @@ document.getElementById('avatarStoryTrigger').onclick=()=>{
  if(activeStories.length > 0){
   openStoryViewer();
  } else {
-  document.querySelector('[data-tab="create"]').click();
+  document.getElementById('navCreateBtn').click();
   showToast('Record or upload media to publish a story');
  };
 };
@@ -970,11 +979,21 @@ document.querySelectorAll('.tab').forEach(t=>{
 
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=async()=>{
  const tab=b.dataset.tab;
- document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
- b.classList.add('active');
+ 
+ if(tab === 'home') {
+  [studio,inbox,profile,discover,postScreen,document.getElementById('soundModal'),document.getElementById('editProfileModal'),document.getElementById('commentModal'),document.getElementById('storyModal'),document.getElementById('storyViewersModal')].forEach(x=>x.classList.remove('open'));
+  updateNavActiveState('home');
+  return;
+ }
+
+ if(tab === activeTabKey) {
+  return;
+ }
+
+ [studio,inbox,profile,discover].forEach(x=>x.classList.remove('open'));
+ updateNavActiveState(tab);
 
  if(tab==='create'){studio.classList.add('open');await startCamera()}
- else if(tab==='home'){[studio,inbox,profile,discover,postScreen,document.getElementById('soundModal'),document.getElementById('editProfileModal'),document.getElementById('commentModal'),document.getElementById('storyModal'),document.getElementById('storyViewersModal')].forEach(x=>x.classList.remove('open'))}
  else if(tab==='discover'){discover.classList.add('open')}
  else if(tab==='inbox'){inbox.classList.add('open')}
  else if(tab==='profile'){profile.classList.add('open')}
@@ -984,9 +1003,17 @@ document.getElementById('closeStudio').onclick=()=>{
  studio.classList.remove('open');
  if(recording)stopRecording();
  stopCamera();
+ updateNavActiveState('home');
 };
-document.getElementById('closePost').onclick=()=>postScreen.classList.remove('open');
-document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>document.getElementById(b.dataset.close).classList.remove('open'));
+document.getElementById('closePost').onclick=()=>{
+ postScreen.classList.remove('open');
+ updateNavActiveState('home');
+};
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>{
+ const screenId = b.dataset.close;
+ document.getElementById(screenId).classList.remove('open');
+ updateNavActiveState('home');
+});
 
 renderFeed();
 </script>
