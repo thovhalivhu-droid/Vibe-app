@@ -360,6 +360,17 @@ input:checked+.slider:before{transform:translateX(20px)}
 .liveInputField { flex: 1; background: #1a1b22; border: 1px solid #ffffff15; border-radius: 20px; padding: 10px 14px; color: #fff; font-size: 13px; outline: none; }
 .liveSendBtn { background: var(--pink); border: 0; color: #fff; font-weight: 700; padding: 10px 16px; border-radius: 20px; cursor: pointer; }
 .liveHeartBtn { background: rgba(255,255,255,0.15); border: 0; font-size: 20px; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+/* UPDATED MENU CONTAINER AND ITEMS STYLES */
+.vertical-edit-menu {
+  position: fixed;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 </style>
 </head>
 <body>
@@ -1021,7 +1032,7 @@ function renderFeed(filteredList){
   let lastTap = 0;
   card.onclick = (e) => {
    if(e.target.closest('button') || e.target.closest('.hashtag') || e.target.closest('.author')) return;
-   verticalMenu.classList.remove('open'); // close menu on outside tap
+   verticalMenu.classList.remove('open');
    const currentTime = new Date().getTime();
    const tapLength = currentTime - lastTap;
    if (tapLength < 300 && tapLength > 0) {
@@ -1055,7 +1066,6 @@ function renderFeed(filteredList){
 
 function triggerEditAction(actionType, itemId) {
   if (actionType === 'text') {
-    // Open text editor bar in post screen instead of posting directly
     postScreen.classList.add('open');
     const bar = document.getElementById('topTextEditorBar');
     bar.classList.add('open');
@@ -1955,48 +1965,18 @@ document.getElementById('closeLiveSettingsModal').onclick = () => {
 function toggleGuestRequestsSetting(element) {
   allowGuestRequestsEnabled = element.checked;
   const guestBtn = document.getElementById('openGuestRequestsBtn');
-  if(allowGuestRequestsEnabled) {
-    guestBtn.style.display = 'inline-block';
-    showToast('Guest requests enabled');
-  } else {
-    guestBtn.style.display = 'none';
-    activeGuests = [];
-    showToast('Guest requests disabled');
+  if(guestBtn) {
+    guestBtn.style.opacity = allowGuestRequestsEnabled ? '1' : '0.5';
   }
+  showToast(allowGuestRequestsEnabled ? 'Guest requests enabled' : 'Guest requests disabled');
 }
 
 function openGuestRequestsModal() {
-  if(!allowGuestRequestsEnabled) {
-    showToast('Guest requests are disabled in settings');
+  if (!allowGuestRequestsEnabled) {
+    showToast('Guest requests are currently disabled in settings');
     return;
   }
-  const container = document.getElementById('guestRequestsListContainer');
-  container.innerHTML = '';
-  
-  const badgeCount = document.getElementById('guestBadgeCount');
-  if(badgeCount) badgeCount.textContent = guestRequestsData.length;
-
-  if(guestRequestsData.length === 0) {
-    container.innerHTML = `<div style="text-align:center;color:var(--muted);padding-top:40px;font-size:13px;">No pending guest requests.</div>`;
-  } else {
-    guestRequestsData.forEach(req => {
-      container.innerHTML += `
-        <div class="messageItem" style="justify-content:space-between;" id="guest-req-${req.id}">
-          <div style="display:flex; align-items:center; gap:12px; flex:1; min-width:0;">
-            <img class="messageAvatar" src="${req.avatar}">
-            <div class="messageContent" style="min-width:0;">
-              <div class="messageName">${req.name}</div>
-              <div class="messageSnippet">${req.username} requested to join</div>
-            </div>
-          </div>
-          <div style="display:flex; gap:6px; margin-left:8px;">
-            <button onclick="acceptGuestRequest(${req.id})" style="background:var(--pink); border:0; color:#fff; padding:6px 12px; border-radius:14px; font-weight:700; font-size:11px; cursor:pointer;">Accept</button>
-            <button onclick="declineGuestRequest(${req.id})" style="background:#2a2a2a; border:0; color:#fff; padding:6px 12px; border-radius:14px; font-weight:700; font-size:11px; cursor:pointer;">Decline</button>
-          </div>
-        </div>
-      `;
-    });
-  }
+  renderGuestRequestsList();
   document.getElementById('guestRequestsModal').classList.add('open');
 }
 
@@ -2004,126 +1984,113 @@ document.getElementById('closeGuestRequestsModal').onclick = () => {
   document.getElementById('guestRequestsModal').classList.remove('open');
 };
 
-function acceptGuestRequest(id) {
-  if(activeGuests.length >= 4) {
-    showToast('Maximum of 4 guests reached!');
+function renderGuestRequestsList() {
+  const container = document.getElementById('guestRequestsListContainer');
+  const badgeCount = document.getElementById('guestBadgeCount');
+  if(badgeCount) badgeCount.textContent = guestRequestsData.length;
+
+  container.innerHTML = '';
+  if(guestRequestsData.length === 0) {
+    container.innerHTML = `<div style="text-align:center;color:var(--muted);padding-top:40px;font-size:13px;">No incoming guest requests.</div>`;
     return;
   }
-  const req = guestRequestsData.find(r => r.id === id);
-  if(req) {
-    guestRequestsData = guestRequestsData.filter(r => r.id !== id);
-    activeGuests.push(req);
-    renderActiveGuestsGrid();
-    openGuestRequestsModal();
-    showToast(`${req.name} joined your stream as guest!`);
+
+  guestRequestsData.forEach(guest => {
+    container.innerHTML += `
+      <div class="messageItem" style="justify-content:space-between;" id="guest-req-${guest.id}">
+        <div style="display:flex; align-items:center; gap:12px; flex:1; min-width:0;">
+          <img class="messageAvatar" src="${guest.avatar}">
+          <div class="messageContent" style="min-width:0;">
+            <div class="messageName">${guest.name}</div>
+            <div class="messageSnippet">${guest.username} wants to join stream</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:6px; margin-left:8px;">
+          <button onclick="acceptGuestRequest(${guest.id})" style="background:var(--pink); border:0; color:#fff; padding:6px 12px; border-radius:14px; font-weight:700; font-size:11px; cursor:pointer;">Accept</button>
+          <button onclick="declineGuestRequest(${guest.id})" style="background:#2a2a2a; border:0; color:#fff; padding:6px 12px; border-radius:14px; font-weight:700; font-size:11px; cursor:pointer;">Decline</button>
+        </div>
+      </div>
+    `;
+  });
+}
+
+function acceptGuestRequest(id) {
+  const guest = guestRequestsData.find(g => g.id === id);
+  if(guest) {
+    if(activeGuests.length >= 4) {
+      showToast('Maximum guest limit (4) reached!');
+      return;
+    }
+    guestRequestsData = guestRequestsData.filter(g => g.id !== id);
+    activeGuests.push(guest);
+    renderGuestRequestsList();
+    updateActiveGuestsGrid();
+    document.getElementById('guestRequestsModal').classList.remove('open');
+    showToast(`${guest.name} joined your live stream! 🎉`);
   }
 }
 
 function declineGuestRequest(id) {
-  guestRequestsData = guestRequestsData.filter(r => r.id !== id);
-  renderGuestBadgeCount();
-  openGuestRequestsModal();
+  guestRequestsData = guestRequestsData.filter(g => g.id !== id);
+  renderGuestRequestsList();
   showToast('Guest request declined');
 }
 
-function renderGuestBadgeCount() {
-  const badgeCount = document.getElementById('guestBadgeCount');
-  if(badgeCount) badgeCount.textContent = guestRequestsData.length;
-}
-
-function renderActiveGuestsGrid() {
+function updateActiveGuestsGrid() {
   const grid = document.getElementById('activeGuestsGrid');
   if(!grid) return;
+  grid.innerHTML = '';
   if(activeGuests.length === 0) {
     grid.classList.add('hidden');
-    grid.innerHTML = '';
     return;
   }
   grid.classList.remove('hidden');
-  grid.innerHTML = '';
   activeGuests.forEach(guest => {
     grid.innerHTML += `
       <div class="guest-slot">
-        <img src="${guest.avatar}" alt="">
+        <img src="${guest.avatar}" alt="${guest.name}">
         <div class="guest-slot-name">${guest.name}</div>
       </div>
     `;
   });
 }
 
-function openSecuritySettings(){
- profile.classList.remove('open');
- document.getElementById('security-settings-screen').classList.add('open');
+function openSecuritySettings() {
+  document.getElementById('security-settings-screen').classList.add('open');
 }
-function closeSecuritySettings(){
- document.getElementById('security-settings-screen').classList.remove('open');
- profile.classList.add('open');
+function closeSecuritySettings() {
+  document.getElementById('security-settings-screen').classList.remove('open');
 }
-
-function togglePrivateAccount(el){ showToast(el.checked ? 'Account set to Private' : 'Account set to Public'); }
-function updateDMPermissions(val){ showToast('DM permissions updated: ' + val); }
-function openPasswordModal(){ showToast('Password change prompt opened'); }
-function toggleTFA(el){ showToast(el.checked ? '2FA Enabled 🔒' : '2FA Disabled'); }
-function openBlockedAccounts(){ showToast('Blocked accounts list (' + blockedAccountsData.length + ')'); }
-function downloadUserData(){ showToast('Your VIBE data export has been requested 📂'); }
-function openPrivacyPolicy(){ showToast('Opening Privacy Policy...'); }
-function openTermsOfService(){ showToast('Opening Terms of Service...'); }
-function openCookiePolicy(){ showToast('Opening Cookie Policy...'); }
-
-document.querySelectorAll('.tab').forEach(tab=>{
- tab.onclick=()=>{
-  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-  tab.classList.add('active');
-  showToast('Switched to ' + tab.textContent + ' feed');
- };
-});
-
-document.querySelectorAll('.nav button').forEach(btn=>{
- const tabKey = btn.dataset.tab;
- if(!tabKey) return;
- btn.onclick=()=>{
-  updateNavActiveState(tabKey);
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('open'));
-  appContainer.classList.remove('hide-nav-for-create');
-  stopCamera();
-
-  if(tabKey==='discover'){ discover.classList.add('open'); }
-  else if(tabKey==='create'){
-   appContainer.classList.add('hide-nav-for-create');
-   studio.classList.add('open');
-   startCamera();
-  }
-  else if(tabKey==='inbox'){ inbox.classList.add('open'); }
-  else if(tabKey==='profile'){ profile.classList.add('open'); }
- };
-});
-
-document.querySelectorAll('.close').forEach(btn=>{
- btn.onclick=()=>{
-  const screen = btn.closest('.screen');
-  if(screen){
-   screen.classList.remove('open');
-   appContainer.classList.remove('hide-nav-for-create');
-   stopCamera();
-   updateNavActiveState('home');
-  }
- };
-});
-
-document.querySelectorAll('[data-close]').forEach(btn=>{
- btn.onclick=()=>{
-  const targetId = btn.dataset.close;
-  const screen = document.getElementById(targetId);
-  if(screen){
-   screen.classList.remove('open');
-   appContainer.classList.remove('hide-nav-for-create');
-   updateNavActiveState('home');
-  }
- };
-});
+function togglePrivateAccount(el) {
+  showToast(el.checked ? 'Account set to Private' : 'Account set to Public');
+}
+function updateDMPermissions(val) {
+  showToast('DM permissions updated: ' + val);
+}
+function openPasswordModal() {
+  showToast('Password change prompt opened');
+}
+function toggleTFA(el) {
+  showToast(el.checked ? 'Two-Factor Authentication enabled' : 'Two-Factor Authentication disabled');
+}
+function openBlockedAccounts() {
+  showToast('Opening blocked accounts list...');
+}
+function downloadUserData() {
+  showToast('Data download requested. We will email you shortly.');
+}
+function openPrivacyPolicy() {
+  showToast('Opening Privacy Policy...');
+}
+function openTermsOfService() {
+  showToast('Opening Terms of Service...');
+}
+function openCookiePolicy() {
+  showToast('Opening Cookie Policy...');
+}
 
 renderFeed();
-updateNavActiveState('home');
+startCamera();
 </script>
 </body>
 </html>
