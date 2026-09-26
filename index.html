@@ -14,11 +14,11 @@ button{font:inherit}
 .logo{font-size:23px;font-weight:900;background:linear-gradient(45deg,var(--pink),var(--cyan));-webkit-background-clip:text;color:transparent}
 .tabs{display:flex;gap:22px;font-weight:700}.tab{color:#8d8f9b;position:relative;cursor:pointer}.tab.active{color:#fff}.tab.active:after{content:"";position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);width:18px;height:3px;border-radius:5px;background:var(--pink)}
 .feed{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none}.feed::-webkit-scrollbar{display:none}
-.reel{height:100%;min-height:100%;position:relative;background:#000;scroll-snap-align:start;scroll-snap-stop:always;display:flex;align-items:center;justify-content:center}
-.reel video,.reel img{width:100%;height:100%;object-fit:cover}
+.reel{height:100%;min-height:100%;position:relative;background:#000;scroll-snap-align:start;scroll-snap-stop:always;display:flex;align-items:center;justify-content:center;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.reel video,.reel img{width:100%;height:100%;object-fit:cover;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;pointer-events:none}
 .reel img{display:none}
 .reel.image video{display:none}.reel.image img{display:block}
-.overlay{position:absolute;left:0;right:0;bottom:var(--nav);padding:22px 18px 16px;display:flex;justify-content:space-between;align-items:flex-end;background:linear-gradient(transparent,rgba(0,0,0,.82));z-index:5}
+.overlay{position:absolute;left:0;right:0;bottom:var(--nav);padding:22px 18px 16px;display:flex;justify-content:space-between;align-items:flex-end;background:linear-gradient(transparent,rgba(0,0,0,.82));z-index:5;pointer-events:auto}
 .info{max-width:73%}.author{display:flex;align-items:center;gap:9px;margin-bottom:8px}.avatar{width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid var(--pink)}
 .name{font-weight:800;font-size:15px}.follow{border:0;border-radius:18px;padding:5px 11px;background:var(--pink);color:#fff;font-size:12px;font-weight:700}
 .caption{font-size:14px;line-height:1.4;margin-bottom:8px}.caption span{color:var(--cyan);font-weight:700;cursor:pointer}.audio{font-size:12px;color:#ddd}
