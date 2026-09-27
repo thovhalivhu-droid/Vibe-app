@@ -246,6 +246,58 @@ button{font:inherit}
   color: #fff;
 }
 
+/* Editor Modals / Drawers for Tools */
+.editor-tool-drawer {
+  position: absolute;
+  bottom: 90px;
+  left: 12px;
+  right: 12px;
+  background: rgba(20, 21, 28, 0.95);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  padding: 16px;
+  z-index: 25;
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+}
+.editor-tool-drawer.open {
+  display: flex;
+}
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+  font-size: 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 8px;
+}
+.sticker-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  max-height: 160px;
+  overflow-y: auto;
+}
+.sticker-item {
+  font-size: 28px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 8px;
+  transition: transform 0.2s;
+}
+.sticker-item:hover {
+  transform: scale(1.1);
+  background: rgba(255,255,255,0.15);
+}
+
 /* Edit Toolbar legacy completely hidden */
 .edit-toolbar, .editorToolbar { display: none !important; }
 .editorToolsRow{display:flex;justify-content:space-around;align-items:center}
@@ -542,25 +594,86 @@ input:checked+.slider:before{transform:translateX(20px)}
   <button id="editorMuteBtn" class="mute" title="Mute/Unmute Video">🔊</button>
 </div>
 
+<!-- Music Drawer -->
+<div id="editorMusicDrawer" class="editor-tool-drawer">
+  <div class="drawer-header"><span>Select Background Track</span><button class="close" onclick="closeEditorDrawers()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">×</button></div>
+  <div style="display:flex; flex-direction:column; gap:6px; max-height:160px; overflow-y:auto;">
+    <div class="soundItem" onclick="selectEditorMusic('Lofi Chill Beats')"><div><div class="soundTitle">Lofi Chill Beats</div><div class="soundAuthor">ChillHop Records</div></div><button class="useSoundBtn">Use</button></div>
+    <div class="soundItem" onclick="selectEditorMusic('Ambient Space')"><div><div class="soundTitle">Ambient Space</div><div class="soundAuthor">Cosmic Waves</div></div><button class="useSoundBtn">Use</button></div>
+    <div class="soundItem" onclick="selectEditorMusic('Summer Vibes Remix')"><div><div class="soundTitle">Summer Vibes Remix</div><div class="soundAuthor">DJ Sunset</div></div><button class="useSoundBtn">Use</button></div>
+  </div>
+</div>
+
+<!-- Stickers Drawer -->
+<div id="editorStickersDrawer" class="editor-tool-drawer">
+  <div class="drawer-header"><span>Choose a Sticker</span><button class="close" onclick="closeEditorDrawers()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">×</button></div>
+  <div class="sticker-grid">
+    <div class="sticker-item" onclick="addStickerToCanvas('🔥')">🔥</div>
+    <div class="sticker-item" onclick="addStickerToCanvas('✨')">✨</div>
+    <div class="sticker-item" onclick="addStickerToCanvas('💖')">💖</div>
+    <div class="sticker-item" onclick="addStickerToCanvas('🚀')">🚀</div>
+    <div class="sticker-item" onclick="addStickerToCanvas('😎')">😎</div>
+    <div class="sticker-item" onclick="addStickerToCanvas('⭐')">⭐</div>
+    <div class="sticker-item" onclick="addStickerToCanvas('🎉')">🎉</div>
+    <div class="sticker-item" onclick="addStickerToCanvas('💯')">💯</div>
+  </div>
+</div>
+
+<!-- Text Input Drawer -->
+<div id="editorTextDrawer" class="editor-tool-drawer">
+  <div class="drawer-header"><span>Add Custom Text</span><button class="close" onclick="closeEditorDrawers()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">×</button></div>
+  <div style="display:flex; gap:8px;">
+    <input type="text" id="editorTextInputField" class="topTextEditorInput" placeholder="Type text overlay..." autocomplete="off">
+    <button class="topTextEditorDoneBtn" onclick="commitEditorText()">Add</button>
+  </div>
+</div>
+
+<!-- Effects Drawer -->
+<div id="editorEffectsDrawer" class="editor-tool-drawer">
+  <div class="drawer-header"><span>Visual Effects</span><button class="close" onclick="closeEditorDrawers()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">×</button></div>
+  <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:4px;">
+    <button class="editorFilterChip active" onclick="applyEditorFilter('', this)">Normal</button>
+    <button class="editorFilterChip" onclick="applyEditorFilter('sepia(0.7) contrast(1.2)', this)">Vintage</button>
+    <button class="editorFilterChip" onclick="applyEditorFilter('grayscale(1)', this)">B&W</button>
+    <button class="editorFilterChip" onclick="applyEditorFilter('hue-rotate(90deg) saturate(1.8)', this)">Neon</button>
+    <button class="editorFilterChip" onclick="applyEditorFilter('brightness(1.3) contrast(1.4)', this)">Vivid</button>
+  </div>
+</div>
+
+<!-- Mention Drawer -->
+<div id="editorMentionDrawer" class="editor-tool-drawer">
+  <div class="drawer-header"><span>Mention a Creator</span><button class="close" onclick="closeEditorDrawers()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">×</button></div>
+  <div style="display:flex; flex-direction:column; gap:6px; max-height:150px; overflow-y:auto;">
+    <div class="messageItem" onclick="addMentionToCanvas('@elena_rostova')" style="cursor:pointer; padding:6px 0;">
+      <img class="messageAvatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" style="width:32px;height:32px;">
+      <div class="messageContent"><div class="messageName" style="font-size:13px;">Elena Rostova</div><div class="messageSnippet">@elena_rostova</div></div>
+    </div>
+    <div class="messageItem" onclick="addMentionToCanvas('@liam_chen')" style="cursor:pointer; padding:6px 0;">
+      <img class="messageAvatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150" style="width:32px;height:32px;">
+      <div class="messageContent"><div class="messageName" style="font-size:13px;">Liam Chen</div><div class="messageSnippet">@liam_chen</div></div>
+    </div>
+  </div>
+</div>
+
 <!-- Custom Bottom Editing Toolbar -->
 <div class="bottom-edit-toolbar">
-  <button class="edit-tool-btn" id="toolMusicBtn" onclick="showToast('Music editor selected')">
+  <button class="edit-tool-btn" id="toolMusicBtn" onclick="toggleEditorDrawer('editorMusicDrawer')">
     <span class="tool-icon">🎵</span>
     <span class="tool-label">Music</span>
   </button>
-  <button class="edit-tool-btn" id="toolStickersBtn" onclick="showToast('Stickers selector opened')">
+  <button class="edit-tool-btn" id="toolStickersBtn" onclick="toggleEditorDrawer('editorStickersDrawer')">
     <span class="tool-icon">⭐</span>
     <span class="tool-label">Stickers</span>
   </button>
-  <button class="edit-tool-btn" id="toolCustomTextBtn" onclick="proceedToPostScreen(); document.getElementById('topTextEditorBar').classList.add('open'); document.getElementById('topTextEditorInput').focus();">
+  <button class="edit-tool-btn" id="toolCustomTextBtn" onclick="toggleEditorDrawer('editorTextDrawer')">
     <span class="tool-icon">✍️</span>
     <span class="tool-label">Text</span>
   </button>
-  <button class="edit-tool-btn" id="toolEffectsBtn" onclick="showToast('Effects palette opened')">
+  <button class="edit-tool-btn" id="toolEffectsBtn" onclick="toggleEditorDrawer('editorEffectsDrawer')">
     <span class="tool-icon">✨</span>
     <span class="tool-label">Effects</span>
   </button>
-  <button class="edit-tool-btn" id="toolMentionBtn" onclick="showToast('Mention tag opened')">
+  <button class="edit-tool-btn" id="toolMentionBtn" onclick="toggleEditorDrawer('editorMentionDrawer')">
     <span class="tool-icon">@</span>
     <span class="tool-label">Mention</span>
   </button>
@@ -1470,7 +1583,7 @@ function openEditor(mediaList){
  studio.classList.remove('open');stopCamera();
  editorScreen.classList.add('open');
 
- closeTopTextEditor();
+ closeEditorDrawers();
 
  const container = document.getElementById('editorCanvasContainer');
  container.querySelectorAll('video, img').forEach(el => el.remove());
@@ -1534,21 +1647,136 @@ document.getElementById('editorMuteBtn').onclick = (e) => {
   showToast(isMuted ? 'Muted' : 'Sound On');
 };
 
-function closeTopTextEditor() {
-  const bar = document.getElementById('topTextEditorBar');
-  bar.classList.remove('open');
+/* Functional Bottom Toolbar Handlers */
+function closeEditorDrawers() {
+  document.querySelectorAll('.editor-tool-drawer').forEach(d => d.classList.remove('open'));
 }
 
-document.getElementById('topTextEditorInput').oninput = (e) => {
-  if(activeLiveTextElement){
-    activeLiveTextElement.textContent = e.target.value;
+function toggleEditorDrawer(drawerId) {
+  const drawer = document.getElementById(drawerId);
+  const isOpen = drawer.classList.contains('open');
+  closeEditorDrawers();
+  if(!isOpen) {
+    drawer.classList.add('open');
   }
-};
+}
 
-document.getElementById('topTextEditorDoneBtn').onclick = () => {
-  closeTopTextEditor();
+function selectEditorMusic(trackName) {
+  selectedSound = trackName;
+  closeEditorDrawers();
+  showToast(`Music selected: ${trackName}`);
+}
+
+function addStickerToCanvas(emoji) {
+  const layer = document.getElementById('editorOverlaysLayer');
+  const el = document.createElement('div');
+  el.className = 'editorOverlayElement';
+  el.textContent = emoji;
+  el.style.top = '40%';
+  el.style.left = '40%';
+  makeElementDraggable(el);
+  layer.appendChild(el);
+  closeEditorDrawers();
+  showToast('Sticker added! Drag to position');
+}
+
+function commitEditorText() {
+  const input = document.getElementById('editorTextInputField');
+  const val = input.value.trim();
+  if(!val) return;
+  const layer = document.getElementById('editorOverlaysLayer');
+  const el = document.createElement('div');
+  el.className = 'editorOverlayElement text-element';
+  el.textContent = val;
+  el.style.top = '50%';
+  el.style.left = '30%';
+  makeElementDraggable(el);
+  layer.appendChild(el);
+  input.value = '';
+  closeEditorDrawers();
   showToast('Text added!');
-};
+}
+
+function applyEditorFilter(filterStyle, btnEl) {
+  const container = document.getElementById('editorCanvasContainer');
+  container.querySelectorAll('video, img').forEach(el => {
+    el.style.filter = filterStyle;
+  });
+  document.querySelectorAll('.editorFilterChip').forEach(c => c.classList.remove('active'));
+  if(btnEl) btnEl.classList.add('active');
+  showToast('Effect applied');
+}
+
+function addMentionToCanvas(username) {
+  const layer = document.getElementById('editorOverlaysLayer');
+  const el = document.createElement('div');
+  el.className = 'editorOverlayElement text-element';
+  el.style.background = 'rgba(0, 242, 254, 0.7)';
+  el.style.color = '#000';
+  el.textContent = username;
+  el.style.top = '45%';
+  el.style.left = '35%';
+  makeElementDraggable(el);
+  layer.appendChild(el);
+  closeEditorDrawers();
+  showToast(`Mentioned ${username}`);
+}
+
+function makeElementDraggable(elm) {
+  let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+  elm.onmousedown = dragMouseDown;
+  elm.onttouchstart = dragTouchStart;
+
+  function dragMouseDown(e) {
+    e = e || window.event;
+    e.preventDefault();
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    document.onmouseup = closeDragElement;
+    document.onmousemove = elementDrag;
+  }
+
+  function elementDrag(e) {
+    e = e || window.event;
+    e.preventDefault();
+    pos1 = pos3 - e.clientX;
+    pos2 = pos4 - e.clientY;
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    elm.style.top = (elm.offsetTop - pos2) + "px";
+    elm.style.left = (elm.offsetLeft - pos1) + "px";
+  }
+
+  function closeDragElement() {
+    document.onmouseup = null;
+    document.onmousemove = null;
+  }
+
+  function dragTouchStart(e) {
+    if(e.touches.length === 1) {
+      pos3 = e.touches[0].clientX;
+      pos4 = e.touches[0].clientY;
+      document.ontouchend = closeTouchDrag;
+      document.ontouchmove = elementTouchDrag;
+    }
+  }
+
+  function elementTouchDrag(e) {
+    if(e.touches.length === 1) {
+      pos1 = pos3 - e.touches[0].clientX;
+      pos2 = pos4 - e.touches[0].clientY;
+      pos3 = e.touches[0].clientX;
+      pos4 = e.touches[0].clientY;
+      elm.style.top = (elm.offsetTop - pos2) + "px";
+      elm.style.left = (elm.offsetLeft - pos1) + "px";
+    }
+  }
+
+  function closeTouchDrag() {
+    document.ontouchend = null;
+    document.ontouchmove = null;
+  }
+}
 
 document.getElementById('closeEditorBtn').onclick = () => {
  editorScreen.classList.remove('open');
