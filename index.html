@@ -999,7 +999,7 @@ function renderFeed(filteredList){
       };
     }
 
-    // Tap video to show controls & toggle play/pause state
+    // Tap anywhere on the video area to show controls & toggle play/pause state
     let tapTimeout = null;
     v.parentElement.addEventListener('click', (e) => {
       if (e.target.closest('.overlay') || e.target.closest('.mute') || e.target.closest('.vertical-edit-menu')) return;
