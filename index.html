@@ -102,8 +102,9 @@ button{font:inherit}
 
 /* Editor Screen Styles */
 #editorScreen{background:#0b0c10;z-index:70}
-.editorCanvasContainer{flex:1;position:relative;background:#000;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.editorCanvasContainer{flex:1;position:relative;background:#000;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:4px}
 .editorCanvasContainer video, .editorCanvasContainer img{width:100%;height:100%;object-fit:contain}
+.editorCanvasContainer.multi-item {display:grid;grid-template-columns:repeat(auto-fit, minmax(0, 1fr));}
 #editorDrawingCanvas{position:absolute;inset:0;pointer-events:auto;cursor:crosshair}
 .editorOverlayElement{position:absolute;cursor:move;user-select:none;padding:6px 10px;font-size:22px;border:1px dashed transparent;transition:border .2s}
 .editorOverlayElement:hover{border-color:rgba(255,255,255,0.4)}
@@ -172,7 +173,7 @@ button{font:inherit}
 
 /* Enhanced Post Screen */
 .postPanel{padding:16px;display:flex;flex-direction:column;flex:1;overflow:hidden;position:relative}
-.previewBox{width:100%;flex:1;background:#000;border-radius:16px;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;transition:all .3s ease}
+.previewBox{width:100%;flex:1;background:#000;border-radius:16px;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;transition:all .3s ease;gap:4px}
 .previewBox.expanded{position:absolute;inset:0;border-radius:0;z-index:50}
 .previewBox video,.previewBox img{width:100%;height:100%;object-fit:cover}
 .captionBoxContainer{margin-top:12px;margin-bottom:12px}
@@ -423,11 +424,11 @@ input:checked+.slider:before{transform:translateX(20px)}
   </div>
   <div class="controlRow">
   <div style="display:flex; gap:8px;">
-    <button class="textBtn" id="uploadVideoBtn">Video</button>
-    <button class="textBtn" id="uploadPhotoBtn">Photo</button>
+    <button class="textBtn" id="uploadVideoBtn">Video (1-3)</button>
+    <button class="textBtn" id="uploadPhotoBtn">Photo (1-3)</button>
   </div>
-  <input id="videoFileInput" class="hidden" type="file" accept="video/*">
-  <input id="photoFileInput" class="hidden" type="file" accept="image/*">
+  <input id="videoFileInput" class="hidden" type="file" accept="video/*" multiple>
+  <input id="photoFileInput" class="hidden" type="file" accept="image/*" multiple>
   
   <button class="shutter" id="shutter"><span class="inner"></span></button>
   <button class="textBtn" id="flipBtn">Flip ⟳</button>
@@ -860,7 +861,7 @@ let notificationsData=[
 ];
 
 let myProfile={username:"@creator_vibe",bio:"Short-form content creator & explorer ✨",avatar:"https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150"};
-let activeVideo=null, muted=true, mediaStream=null, recorder=null, chunks=[], recording=false, recordSeconds=0, timerInterval=null, facing="user", selectedMedia=null;
+let activeVideo=null, muted=true, mediaStream=null, recorder=null, chunks=[], recording=false, recordSeconds=0, timerInterval=null, facing="user", selectedMediaList=[];
 let pressTimer=null, isLongPress=false, selectedSound="Original Audio";
 let activeCommentPostId=null;
 let profileActiveTab = 'posts';
@@ -902,11 +903,9 @@ function updateNavActiveState(tabKey) {
  const activeBtn = document.querySelector(`.nav button[data-tab="${tabKey}"]`);
  if(activeBtn) activeBtn.classList.add('active');
  
- // Pause all feed videos if leaving home tab
  if(tabKey !== 'home') {
    pauseAllFeedVideos();
  } else {
-   // Re-evaluate visibility when returning to Home
    setTimeout(setupObserver, 50);
  }
 }
@@ -954,7 +953,6 @@ function renderFeed(filteredList){
     <button class="action saveBtn ${item.isSaved ? 'saved' : ''}"><div class="circle">${item.isSaved ? '★' : '☆'}</div><div class="count">Save</div></button>
     <button class="action shareBtn"><div class="circle">↗</div><div class="count">${formatCount(item.shares)}</div></button>
     
-    <!-- Edit Button with Vertical Dropdown Menu (Hidden by default) -->
     <button class="action editMenuToggleBtn"><div class="circle">✏️</div><div class="count">Edit</div></button>
     <div class="vertical-edit-menu">
       <button class="sub-edit-btn" onclick="triggerEditAction('undo', ${item.id})">Undo</button>
@@ -1139,7 +1137,6 @@ function setupObserver(){
  const ob=new IntersectionObserver(entries=>entries.forEach(en=>{
   const v=en.target.querySelector('video');
   if(!v) return;
-  // Play ONLY if the video is intersecting threshold AND active tab is home
   if(en.isIntersecting && activeTabKey === 'home'){
    if(activeVideo&&activeVideo!==v){activeVideo.pause()}
    activeVideo=v;
@@ -1246,7 +1243,7 @@ function startRecording(){
  timerText.textContent='00:00';
  try{recorder=new MediaRecorder(mediaStream,{mimeType:'video/webm'})}catch(e){recorder=new MediaRecorder(mediaStream)}
  recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
- recorder.onstop=()=>{const blob=new Blob(chunks,{type:recorder.mimeType||'video/webm'});openEditor(blob,'video');};
+ recorder.onstop=()=>{const blob=new Blob(chunks,{type:recorder.mimeType||'video/webm'});openEditor([{file:blob, type:'video', url:URL.createObjectURL(blob)}]);};
  recorder.start(250);
  document.getElementById('shutter').classList.add('recording');
  timerInterval=setInterval(()=>{
@@ -1275,7 +1272,10 @@ function takePhoto(){
  canvas.height=camera.videoHeight||1280;
  const ctx=canvas.getContext('2d');
  ctx.drawImage(camera,0,0,canvas.width,canvas.height);
- canvas.toBlob(blob=>{ openEditor(blob,'image'); showToast('Photo captured! 📸'); },'image/jpeg',0.9);
+ canvas.toBlob(blob=>{ 
+   openEditor([{file:blob, type:'image', url:URL.createObjectURL(blob)}]); 
+   showToast('Photo captured! 📸'); 
+ },'image/jpeg',0.9);
 }
 
 const shutterBtn = document.getElementById('shutter');
@@ -1295,59 +1295,90 @@ shutterBtn.onmouseup = shutterBtn.ontouchend = (e) => {
 document.getElementById('uploadVideoBtn').onclick = () => videoFileInput.click();
 document.getElementById('uploadPhotoBtn').onclick = () => photoFileInput.click();
 
-videoFileInput.onchange = e => {
- const file = e.target.files[0];
- if(!file) return;
- const url = URL.createObjectURL(file);
- const vid = document.createElement('video');
- vid.preload = 'metadata';
- vid.onloadedmetadata = () => {
-  URL.revokeObjectURL(vid.src);
-  if(vid.duration > 600){
-   showToast('Video must be 10 minutes or less');
-   videoFileInput.value = '';
-   return;
+function handleFileInputFiles(files, defaultType) {
+  const incomingFiles = Array.from(files);
+  if(incomingFiles.length === 0) return;
+
+  if(incomingFiles.length > 3) {
+    showToast('You can select a maximum of 3 items.');
+    return;
   }
-  openEditor(file, 'video');
- };
- vid.src = url;
+
+  const mediaList = [];
+  let processedCount = 0;
+
+  incomingFiles.forEach(file => {
+    const isVid = file.type.startsWith('video/');
+    const isImg = file.type.startsWith('image/');
+    const type = isVid ? 'video' : (isImg ? 'image' : defaultType);
+    const url = URL.createObjectURL(file);
+
+    if (type === 'video') {
+      const vid = document.createElement('video');
+      vid.preload = 'metadata';
+      vid.onloadedmetadata = () => {
+        URL.revokeObjectURL(vid.src);
+        if(vid.duration > 600){
+          showToast('Videos must be 10 minutes or less');
+          return;
+        }
+        mediaList.push({ file, type, url });
+        processedCount++;
+        if(processedCount === incomingFiles.length) {
+          openEditor(mediaList);
+        }
+      };
+      vid.src = url;
+    } else {
+      mediaList.push({ file, type, url });
+      processedCount++;
+      if(processedCount === incomingFiles.length) {
+        openEditor(mediaList);
+      }
+    }
+  });
+}
+
+videoFileInput.onchange = e => {
+  handleFileInputFiles(e.target.files, 'video');
+  videoFileInput.value = '';
 };
 
 photoFileInput.onchange = e => {
- const file = e.target.files[0];
- if(!file) return;
- if(file.type.startsWith('image/')){
-  openEditor(file, 'image');
- } else {
-  showToast('Please choose a valid image file');
- }
+  handleFileInputFiles(e.target.files, 'image');
+  photoFileInput.value = '';
 };
 
-function openEditor(file, type){
- selectedMedia={file,type,url:URL.createObjectURL(file)};
+function openEditor(mediaList){
+ selectedMediaList = mediaList;
  studio.classList.remove('open');stopCamera();
  editorScreen.classList.add('open');
 
  closeTopTextEditor();
 
  const container = document.getElementById('editorCanvasContainer');
- const existingMedia = container.querySelector('video, img');
- if(existingMedia) existingMedia.remove();
+ container.querySelectorAll('video, img').forEach(el => el.remove());
 
- const el = document.createElement(type==='video'?'video':'img');
- el.src = selectedMedia.url;
- if(type==='video'){
-   el.controls=false;
-   el.playsInline=true;
-   el.muted=false; 
-   el.loop=true;
-   el.play().catch(()=>{});
-   document.getElementById('editorMuteBtn').style.display = 'block';
-   document.getElementById('editorMuteBtn').textContent = '🔊';
+ if(selectedMediaList.length > 1) {
+   container.classList.add('multi-item');
  } else {
-   document.getElementById('editorMuteBtn').style.display = 'none';
+   container.classList.remove('multi-item');
  }
- container.insertBefore(el, container.firstChild);
+
+ selectedMediaList.forEach(item => {
+   const el = document.createElement(item.type==='video'?'video':'img');
+   el.src = item.url;
+   if(item.type==='video'){
+     el.controls=false;
+     el.playsInline=true;
+     el.muted=false; 
+     el.loop=true;
+     el.play().catch(()=>{});
+   }
+   container.insertBefore(el, container.firstChild);
+ });
+
+ document.getElementById('editorMuteBtn').style.display = selectedMediaList.some(i => i.type === 'video') ? 'block' : 'none';
 
  drawCanvas = document.getElementById('editorDrawingCanvas');
  drawCtx = drawCanvas.getContext('2d');
@@ -1365,11 +1396,10 @@ function openEditor(file, type){
 document.getElementById('editorMuteBtn').onclick = (e) => {
   e.stopPropagation();
   const container = document.getElementById('editorCanvasContainer');
-  const vid = container.querySelector('video');
-  if(vid) {
+  container.querySelectorAll('video').forEach(vid => {
     vid.muted = !vid.muted;
-    document.getElementById('editorMuteBtn').textContent = vid.muted ? '🔇' : '🔊';
-  }
+  });
+  document.getElementById('editorMuteBtn').textContent = document.getElementById('editorMuteBtn').textContent === '🔊' ? '🔇' : '🔊';
 };
 
 function hideAllEditorTrays(){
@@ -1475,8 +1505,9 @@ function restoreEditorState(state) {
   img.src = state.canvasDataUrl;
 
   const container = document.getElementById('editorCanvasContainer');
-  const mediaEl = container.querySelector('video, img');
-  if(mediaEl) mediaEl.style.filter = state.filter;
+  container.querySelectorAll('video, img').forEach(mediaEl => {
+    mediaEl.style.filter = state.filter;
+  });
 }
 
 function addEmojiToCanvas(emoji){
@@ -1496,8 +1527,9 @@ function applyEditorFilter(filterCss, chipEl){
  document.querySelectorAll('.editorFilterChip').forEach(c=>c.classList.remove('active'));
  chipEl.classList.add('active');
  const container = document.getElementById('editorCanvasContainer');
- const mediaEl = container.querySelector('video, img');
- if(mediaEl) mediaEl.style.filter = filterCss;
+ container.querySelectorAll('video, img').forEach(mediaEl => {
+   mediaEl.style.filter = filterCss;
+ });
  saveEditorState();
  showToast('Filter applied!');
 }
@@ -1579,10 +1611,7 @@ document.getElementById('closeEditorBtn').onclick = () => {
 
 document.getElementById('proceedToPostBtn').onclick = () => {
   const container = document.getElementById('editorCanvasContainer');
-  const activeVideo = container.querySelector('video');
-  if (activeVideo) {
-    activeVideo.pause();
-  }
+  container.querySelectorAll('video').forEach(vid => vid.pause());
 
   editorScreen.classList.remove('open');
   openPostScreenFromEditor();
@@ -1592,9 +1621,19 @@ function openPostScreenFromEditor(){
  postScreen.classList.add('open');
  const box=document.getElementById('previewBox');
  box.innerHTML='';
- const mediaClone = document.querySelector('#editorCanvasContainer video, #editorCanvasContainer img').cloneNode(true);
- mediaClone.style.filter = document.querySelector('#editorCanvasContainer video, #editorCanvasContainer img').style.filter;
- box.appendChild(mediaClone);
+ 
+ const container = document.getElementById('editorCanvasContainer');
+ if(selectedMediaList.length > 1) {
+   box.classList.add('multi-item');
+ } else {
+   box.classList.remove('multi-item');
+ }
+
+ container.querySelectorAll('video, img').forEach(mediaEl => {
+   const clone = mediaEl.cloneNode(true);
+   clone.style.filter = mediaEl.style.filter;
+   box.appendChild(clone);
+ });
 }
 
 document.getElementById('previewBox').onclick = () => {
@@ -1602,20 +1641,22 @@ document.getElementById('previewBox').onclick = () => {
 };
 
 document.getElementById('publishBtn').onclick=()=> {
- if(!selectedMedia){showToast('Choose a video or picture first');return}
+ if(selectedMediaList.length === 0){showToast('Choose video(s) or picture(s) first');return}
  const caption=document.getElementById('captionInput').value.trim()||'New VIBE ✨ #VIBE';
+ const primaryMedia = selectedMediaList[0];
  const item={id:Date.now(),author:'You',caption,audio:selectedSound,likes:0,commentsCount:0,shares:0,views:'1',avatar:myProfile.avatar,commentsList:[]};
- if(selectedMedia.type==='video')item.video=selectedMedia.url;else item.image=selectedMedia.url;
- feedData.unshift(item);renderFeed();postScreen.classList.remove('open');appContainer.classList.remove('hide-nav-for-create');selectedMedia=null;document.getElementById('captionInput').value='';showToast('Posted to VIBE 🎉');
+ if(primaryMedia.type==='video')item.video=primaryMedia.url;else item.image=primaryMedia.url;
+ feedData.unshift(item);renderFeed();postScreen.classList.remove('open');appContainer.classList.remove('hide-nav-for-create');selectedMediaList=[];document.getElementById('captionInput').value='';showToast('Posted to VIBE 🎉');
 };
 
 document.getElementById('publishStoryBtn').onclick=()=>{
- if(!selectedMedia){showToast('Choose a video or picture first');return}
- const storyItem={id:Date.now(), url:selectedMedia.url, type:selectedMedia.type, timestamp:Date.now(), viewsCount: 34};
+ if(selectedMediaList.length === 0){showToast('Choose video(s) or picture(s) first');return}
+ const primaryMedia = selectedMediaList[0];
+ const storyItem={id:Date.now(), url:primaryMedia.url, type:primaryMedia.type, timestamp:Date.now(), viewsCount: 34};
  storiesData.unshift(storyItem);
  postScreen.classList.remove('open');
  appContainer.classList.remove('hide-nav-for-create');
- selectedMedia=null;
+ selectedMediaList=[];
  document.getElementById('captionInput').value='';
  renderProfileGrid();
  showToast('Story added! It will vanish in 24 hours ⏳');
@@ -1905,230 +1946,70 @@ function switchStudioMode(mode) {
   }
 }
 
-function spawnLiveLike(increment = 1) {
-  liveHeartCountNum += increment;
-  const heartBadge = document.getElementById('liveHeartCountBadge');
-  if(heartBadge) {
-    heartBadge.textContent = `❤️ ${formatCount(liveHeartCountNum)}`;
-  }
-
-  const container = document.getElementById('liveLikesContainer');
-  if(!container) return;
-  const heart = document.createElement('div');
-  heart.className = 'floating-like';
-  const hearts = ['❤️', '💖', '🔥', '✨'];
-  heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
-  heart.style.right = (Math.random() * 25) + 'px';
-  container.appendChild(heart);
-  setTimeout(() => heart.remove(), 2000);
-}
-
-function addLiveChatMessage(user, text) {
-  if(!text.trim()) return;
-  const chatList = document.getElementById('liveChatListContainer');
-  const msgDiv = document.createElement('div');
-  msgDiv.className = 'liveChatMsg';
-  msgDiv.innerHTML = `<span class="liveChatUser">${user}:</span>${text}`;
-  chatList.appendChild(msgDiv);
-  chatList.scrollTop = chatList.scrollHeight;
-}
-
-document.getElementById('liveSendChatBtn').onclick = () => {
-  const input = document.getElementById('liveCommentInput');
-  addLiveChatMessage(myProfile.username, input.value);
-  input.value = '';
-};
-
-document.getElementById('liveCommentInput').onkeypress = (e) => {
-  if(e.key === 'Enter') {
-    const input = document.getElementById('liveCommentInput');
-    addLiveChatMessage(myProfile.username, input.value);
-    input.value = '';
-  }
-};
-
-document.getElementById('liveTapLikeBtn').onclick = () => {
-  spawnLiveLike(1);
-};
-
-function toggleLiveStream() {
-  const btn = document.getElementById('startLiveBtn');
-  const overlayElements = document.getElementById('liveStreamOverlayElements');
-  
-  if(!isLiveActive) {
-    if(!mediaStream) { showToast('Camera permission required to go live'); return; }
-    isLiveActive = true;
-    liveHeartCountNum = 0;
-    document.getElementById('liveHeartCountBadge').textContent = `❤️ 0`;
-    btn.textContent = 'End Live';
-    btn.style.background = '#f33';
-    overlayElements.classList.remove('hidden');
-    showToast('You are now LIVE! 🔴');
-
-    const sampleChatUsers = ['Sophia Taylor', 'Marcus Vance', 'Alex Rivera', 'Chloe Bennett'];
-    const sampleChatTexts = ['Hey everyone! 👋', 'Loving this broadcast!', 'Drop a heart if you see this ❤️', 'Awesome quality!'];
-    
-    liveSimInterval = setInterval(() => {
-      liveViewersCountNum += Math.floor(Math.random() * 7) - 2;
-      document.getElementById('liveViewersCount').textContent = `👁 ${formatCount(liveViewersCountNum)}`;
-
-      if(Math.random() > 0.4) {
-        const u = sampleChatUsers[Math.floor(Math.random() * sampleChatUsers.length)];
-        const t = sampleChatTexts[Math.floor(Math.random() * sampleChatTexts.length)];
-        addLiveChatMessage(u, t);
-      }
-      if(Math.random() > 0.3) {
-        spawnLiveLike(Math.floor(Math.random() * 3) + 1);
-      }
-    }, 2500);
+document.querySelectorAll('.tab').forEach(t=>{
+ t.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  const feedTab = t.dataset.feedTab;
+  if(feedTab === 'following'){
+   renderFeed(feedData);
+   showToast('Showing Following feed');
   } else {
-    isLiveActive = false;
-    clearInterval(liveSimInterval);
-    btn.textContent = 'Go LIVE Now';
-    btn.style.background = 'var(--pink)';
-    overlayElements.classList.add('hidden');
-    showToast('Live stream ended.');
+   const shuffled = [...feedData].reverse();
+   renderFeed(shuffled);
+   showToast('Showing For You feed');
   }
-}
-
-function openLiveSettingsModal() { document.getElementById('liveSettingsModal').classList.add('open'); }
-document.getElementById('closeLiveSettingsModal').onclick = () => { document.getElementById('liveSettingsModal').classList.remove('open'); };
-
-function toggleGuestRequestsSetting(checkbox) {
-  allowGuestRequestsEnabled = checkbox.checked;
-  showToast(allowGuestRequestsEnabled ? 'Guest requests enabled' : 'Guest requests disabled');
-}
-
-function openGuestRequestsModal() {
-  renderGuestRequestsList();
-  document.getElementById('guestRequestsModal').classList.add('open');
-}
-document.getElementById('closeGuestRequestsModal').onclick = () => { document.getElementById('guestRequestsModal').classList.remove('open'); };
-
-function renderGuestRequestsList() {
-  const container = document.getElementById('guestRequestsListContainer');
-  container.innerHTML = '';
-  document.getElementById('guestBadgeCount').textContent = guestRequestsData.length;
-
-  if(guestRequestsData.length === 0) {
-    container.innerHTML = `<div style="text-align:center;color:var(--muted);padding-top:40px;font-size:13px;">No incoming guest requests.</div>`;
-    return;
-  }
-
-  guestRequestsData.forEach(g => {
-    container.innerHTML += `
-      <div class="messageItem" style="justify-content:space-between;" id="guest-req-${g.id}">
-        <div style="display:flex; align-items:center; gap:12px; flex:1; min-width:0;">
-          <img class="messageAvatar" src="${g.avatar}">
-          <div class="messageContent" style="min-width:0;">
-            <div class="messageName">${g.name}</div>
-            <div class="messageSnippet">${g.username} wants to join as guest</div>
-          </div>
-        </div>
-        <div style="display:flex; gap:6px; margin-left:8px;">
-          <button onclick="acceptGuest(${g.id})" style="background:var(--pink); border:0; color:#fff; padding:6px 12px; border-radius:14px; font-weight:700; font-size:11px; cursor:pointer;">Accept</button>
-          <button onclick="declineGuest(${g.id})" style="background:#2a2a2a; border:0; color:#fff; padding:6px 12px; border-radius:14px; font-weight:700; font-size:11px; cursor:pointer;">Decline</button>
-        </div>
-      </div>
-    `;
-  });
-}
-
-function acceptGuest(id) {
-  const idx = guestRequestsData.findIndex(g => g.id === id);
-  if(idx !== -1) {
-    const guest = guestRequestsData.splice(idx, 1)[0];
-    if(activeGuests.length < 4) {
-      activeGuests.push(guest);
-      updateActiveGuestsGrid();
-      showToast(`${guest.name} joined your live stream! 🎉`);
-    } else {
-      showToast('Maximum of 4 guests reached');
-    }
-    renderGuestRequestsList();
-  }
-}
-
-function declineGuest(id) {
-  guestRequestsData = guestRequestsData.filter(g => g.id !== id);
-  renderGuestRequestsList();
-  showToast('Guest request declined');
-}
-
-function updateActiveGuestsGrid() {
-  const grid = document.getElementById('activeGuestsGrid');
-  if(activeGuests.length === 0) {
-    grid.classList.add('hidden');
-    grid.innerHTML = '';
-    return;
-  }
-  grid.classList.remove('hidden');
-  grid.innerHTML = '';
-  activeGuests.forEach(g => {
-    grid.innerHTML += `
-      <div class="guest-slot">
-        <img src="${g.avatar}">
-        <div class="guest-slot-name">${g.name}</div>
-      </div>
-    `;
-  });
-}
-
-let micMuted = false;
-function toggleLiveMic() {
-  micMuted = !micMuted;
-  if(mediaStream) {
-    mediaStream.getAudioTracks().forEach(t => { t.enabled = !micMuted; });
-  }
-  const btn = document.getElementById('liveMuteMicBtn');
-  btn.textContent = micMuted ? 'Unmute' : 'Mute';
-  btn.style.color = micMuted ? 'var(--pink)' : '#fff';
-  showToast(micMuted ? 'Microphone muted' : 'Microphone unmuted');
-}
-
-function openSecuritySettings() { document.getElementById('security-settings-screen').classList.add('open'); }
-function closeSecuritySettings() { document.getElementById('security-settings-screen').classList.remove('open'); }
-function togglePrivateAccount(cb) { showToast(cb.checked ? 'Account set to Private' : 'Account set to Public'); }
-function updateDMPermissions(val) { showToast(`Direct Messages updated to: ${val}`); }
-function openPasswordModal() { showToast('Password change prompt opened'); }
-function toggleTFA(cb) { showToast(cb.checked ? 'Two-Factor Authentication enabled' : 'Two-Factor Authentication disabled'); }
-function openBlockedAccounts() { showToast('Blocked accounts manager opened'); }
-function downloadUserData() { showToast('Your data download has started...'); }
-function openPrivacyPolicy() { showToast('Opening Privacy Policy...'); }
-function openTermsOfService() { showToast('Opening Terms of Service...'); }
-function openCookiePolicy() { showToast('Opening Cookie Policy...'); }
-
-document.querySelectorAll('.nav button').forEach(btn=>{
- btn.onclick=()=>{
-  const tab = btn.dataset.tab;
-  if(tab === 'create'){
-   appContainer.classList.add('hide-nav-for-create');
-   studio.classList.add('open');
-   startCamera();
-   return;
-  }
-  
-  updateNavActiveState(tab);
-  
-  document.querySelectorAll('.screen').forEach(s=>{
-   if(s.id !== 'studio' && s.id !== 'editorScreen' && s.id !== 'postScreen' && s.id !== 'soundModal' && s.id !== 'editProfileModal' && s.id !== 'commentModal' && s.id !== 'storyModal' && s.id !== 'storyViewersModal' && s.id !== 'liveSettingsModal' && s.id !== 'guestRequestsModal' && s.id !== 'security-settings-screen') {
-    s.classList.remove('open');
-   }
-  });
-  
-  if(tab === 'discover') discover.classList.add('open');
-  if(tab === 'inbox') inbox.classList.add('open');
-  if(tab === 'profile') profile.classList.add('open');
  };
 });
 
-document.querySelectorAll('.screenHead .close, [data-close]').forEach(btn=>{
- btn.onclick=(e)=>{
-  const screen = e.target.closest('.screen');
-  if(screen){
-   screen.classList.remove('open');
-   updateNavActiveState('home');
+document.querySelectorAll('.nav button').forEach(btn=>{
+ btn.onclick=()=>{
+  const tab=btn.dataset.tab;
+  updateNavActiveState(tab);
+  
+  discover.classList.remove('open');
+  inbox.classList.remove('open');
+  profile.classList.remove('open');
+  studio.classList.remove('open');
+  editorScreen.classList.remove('open');
+  postScreen.classList.remove('open');
+  appContainer.classList.remove('hide-nav-for-create');
+  stopCamera();
+
+  if(tab==='home'){
+   // Home feed
+  }else if(tab==='discover'){
+   discover.classList.add('open');
+   renderDiscoverGrid();
+  }else if(tab==='create'){
+   appContainer.classList.add('hide-nav-for-create');
+   studio.classList.add('open');
+   startCamera();
+  }else if(tab==='inbox'){
+   inbox.classList.add('open');
+  }else if(tab==='profile'){
+   profile.classList.add('open');
   }
+ };
+});
+
+document.querySelectorAll('.close').forEach(b=>{
+ b.onclick=()=>{
+  const targetId = b.dataset.close;
+  if(targetId){
+   document.getElementById(targetId).classList.remove('open');
+  } else {
+   studio.classList.remove('open');
+   editorScreen.classList.remove('open');
+   postScreen.classList.remove('open');
+   discover.classList.remove('open');
+   inbox.classList.remove('open');
+   profile.classList.remove('open');
+   document.getElementById('security-settings-screen').classList.remove('open');
+  }
+  appContainer.classList.remove('hide-nav-for-create');
+  stopCamera();
+  updateNavActiveState('home');
  };
 });
 
@@ -2139,18 +2020,24 @@ document.getElementById('closeStudio').onclick=()=>{
  updateNavActiveState('home');
 };
 
-document.getElementById('closePost').onclick=()=>{
- postScreen.classList.remove('open');
- appContainer.classList.remove('hide-nav-for-create');
- updateNavActiveState('home');
-};
-
 document.getElementById('soundSelectBtn').onclick=()=>{
  document.getElementById('soundModal').classList.add('open');
 };
 document.getElementById('closeSoundModal').onclick=()=>{
  document.getElementById('soundModal').classList.remove('open');
 };
+
+function openSecuritySettings(){ document.getElementById('security-settings-screen').classList.add('open'); }
+function closeSecuritySettings(){ document.getElementById('security-settings-screen').classList.remove('open'); }
+function togglePrivateAccount(el){ showToast(el.checked ? 'Account set to Private' : 'Account set to Public'); }
+function updateDMPermissions(val){ showToast(`Direct message permissions updated to: ${val}`); }
+function openPasswordModal(){ showToast('Password change prompt opened'); }
+function toggleTFA(el){ showToast(el.checked ? 'Two-Factor Authentication enabled' : 'Two-Factor Authentication disabled'); }
+function openBlockedAccounts(){ showToast('Blocked accounts list opened'); }
+function downloadUserData(){ showToast('Data export requested. We will email you shortly.'); }
+function openPrivacyPolicy(){ showToast('Opening Privacy Policy'); }
+function openTermsOfService(){ showToast('Opening Terms of Service'); }
+function openCookiePolicy(){ showToast('Opening Cookie Policy'); }
 
 renderFeed();
 </script>
