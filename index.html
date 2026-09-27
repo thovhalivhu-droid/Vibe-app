@@ -477,6 +477,89 @@ button{font:inherit}
 .commentInputField{flex:1;background:#1a1b22;border:1px solid #ffffff15;border-radius:20px;padding:10px 14px;color:#fff;font-size:13px;outline:none}
 .commentSendBtn{background:var(--pink);border:0;color:#fff;font-weight:700;padding:8px 16px;border-radius:20px;cursor:pointer}
 
+/* Report User Bottom Sheet Styles */
+.report-modal {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #14151c;
+  z-index: 130;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
+  box-shadow: 0 -10px 30px rgba(0,0,0,0.6);
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+.report-modal.open {
+  transform: translateY(0);
+}
+.report-header {
+  font-size: 16px;
+  font-weight: 800;
+  text-align: center;
+  position: relative;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.report-reasons-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.report-reason-item {
+  background: #1a1b22;
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 12px 16px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.report-reason-item:hover {
+  background: rgba(255,255,255,0.05);
+}
+.report-reason-item.selected {
+  background: var(--pink);
+  border-color: var(--pink);
+  color: #fff;
+}
+.report-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+.report-btn-submit {
+  flex: 1;
+  background: linear-gradient(135deg, var(--pink), var(--cyan));
+  border: none;
+  color: #fff;
+  font-weight: 800;
+  padding: 12px;
+  border-radius: 14px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.report-btn-cancel {
+  flex: 1;
+  background: #1a1b22;
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #fff;
+  font-weight: 700;
+  padding: 12px;
+  border-radius: 14px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
 /* Story Viewer Modal */
 .storyModal{position:absolute;inset:0;background:#000;z-index:110;display:none;flex-direction:column;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .storyModal.open{display:flex}
@@ -688,7 +771,6 @@ input:checked+.slider:before{transform:translateX(20px)}
   <button id="editorMuteBtn" class="mute" title="Mute/Unmute Video">🔊</button>
 </div>
 
-<!-- Added Editor Caption Box -->
 <div class="editor-caption-wrapper">
   <textarea id="editorCaptionInput" class="editor-caption-input" placeholder="Write a caption with #hashtags before posting..."></textarea>
 </div>
@@ -754,7 +836,6 @@ input:checked+.slider:before{transform:translateX(20px)}
   </div>
 </div>
 
-<!-- Custom Bottom Editing Toolbar -->
 <div class="bottom-edit-toolbar">
   <button class="edit-tool-btn" id="toolMusicBtn" onclick="toggleEditorDrawer('editorMusicDrawer')">
     <span class="tool-icon">🎵</span>
@@ -913,7 +994,7 @@ input:checked+.slider:before{transform:translateX(20px)}
 </div>
 </section>
 
-<!-- NEW SCREEN: Privacy & Security Settings -->
+<!-- Privacy & Security Settings Screen -->
 <section id="securitySettingsScreen" class="screen" style="z-index: 150;">
   <div class="screenHead">
     <button class="close" onclick="closeSecuritySettings()">×</button>
@@ -971,7 +1052,7 @@ input:checked+.slider:before{transform:translateX(20px)}
   </div>
 </section>
 
-<!-- NEW SCREEN: Privacy Policy -->
+<!-- Privacy Policy -->
 <section id="privacyPolicyScreen" class="screen" style="z-index: 150;">
   <div class="screenHead">
     <button class="close" onclick="closePrivacyPolicy()">×</button>
@@ -995,6 +1076,26 @@ input:checked+.slider:before{transform:translateX(20px)}
   <div class="commentInputArea">
     <input type="text" id="commentInputField" class="commentInputField" placeholder="Add a comment...">
     <button id="commentSendBtn" class="commentSendBtn">Post</button>
+  </div>
+</div>
+
+<!-- REPORT USER BOTTOM-SHEET POPUP -->
+<div id="reportUserModal" class="report-modal">
+  <div class="report-header">
+    <span>Report User</span>
+    <button class="close" id="closeReportModal" style="position:absolute;right:0;top:0;background:none;border:none;color:#fff;font-size:22px;cursor:pointer;">×</button>
+  </div>
+  <div style="font-size: 13px; color: var(--muted);">Please select a reason for reporting this user. Your report is confidential.</div>
+  <div class="report-reasons-list" id="reportReasonsList">
+    <div class="report-reason-item" data-reason="Harassment or bullying">Harassment or bullying</div>
+    <div class="report-reason-item" data-reason="Inappropriate content or nudity">Inappropriate content or nudity</div>
+    <div class="report-reason-item" data-reason="Spam or fake account">Spam or fake account</div>
+    <div class="report-reason-item" data-reason="Hate speech or symbols">Hate speech or symbols</div>
+    <div class="report-reason-item" data-reason="Intellectual property violation">Intellectual property violation</div>
+  </div>
+  <div class="report-actions">
+    <button class="report-btn-cancel" id="cancelReportBtn">Cancel</button>
+    <button class="report-btn-submit" id="submitReportBtn">Submit Report</button>
   </div>
 </div>
 
@@ -1097,6 +1198,39 @@ let drawCanvas, drawCtx;
 let undoStack = [];
 let redoStack = [];
 let activeLiveTextElement = null;
+
+// Report User Popup State and Control Logic
+let selectedReportReason = null;
+
+function openReportUserModal() {
+  selectedReportReason = null;
+  document.querySelectorAll('.report-reason-item').forEach(el => el.classList.remove('selected'));
+  document.getElementById('reportUserModal').classList.add('open');
+}
+
+function closeReportUserModal() {
+  document.getElementById('reportUserModal').classList.remove('open');
+}
+
+document.querySelectorAll('.report-reason-item').forEach(item => {
+  item.onclick = () => {
+    document.querySelectorAll('.report-reason-item').forEach(el => el.classList.remove('selected'));
+    item.classList.add('selected');
+    selectedReportReason = item.dataset.reason;
+  };
+});
+
+document.getElementById('closeReportModal').onclick = closeReportUserModal;
+document.getElementById('cancelReportBtn').onclick = closeReportUserModal;
+
+document.getElementById('submitReportBtn').onclick = () => {
+  if (!selectedReportReason) {
+    showToast('Please select a reason to report');
+    return;
+  }
+  showToast('Report submitted successfully. Thank you!');
+  closeReportUserModal();
+};
 
 function openSecuritySettings() {
   document.getElementById('setting-private-account').checked = userPrivacySettings.privateAccount;
@@ -1248,6 +1382,7 @@ function renderFeed(filteredList){
     <button class="action commentBtn"><div class="circle">💬</div><div class="count">${item.commentsList.length}</div></button>
     <button class="action saveBtn ${item.isSaved ? 'saved' : ''}"><div class="circle">${item.isSaved ? '★' : '☆'}</div><div class="count">Save</div></button>
     <button class="action shareBtn"><div class="circle">↗</div><div class="count">${formatCount(item.shares)}</div></button>
+    <button class="action reportBtn" onclick="openReportUserModal()" title="Report User"><div class="circle" style="font-size:16px;">⚠️</div><div class="count">Report</div></button>
   </div></div>`;
   feed.appendChild(card);
   
@@ -1294,7 +1429,6 @@ function renderFeed(filteredList){
     const pauseBtn = v.parentElement.querySelector('.custom-pause-btn');
     let hideControlsTimer = null;
 
-    // Set duration text when metadata is loaded
     v.addEventListener('loadedmetadata', () => {
       if (durationIndicator && !isNaN(v.duration)) {
         durationIndicator.textContent = formatTime(Math.floor(v.duration));
@@ -1455,7 +1589,6 @@ function renderFeed(filteredList){
  });
 
  setupObserver();
- setupSwipeAutoplayFallback();
  renderDiscoverGrid();
  renderProfileGrid();
 }
@@ -1523,65 +1656,6 @@ function setupObserver(){
      }
    }
  }, 100);
-}
-
-function setupSwipeAutoplayFallback() {
-  let touchStartY = 0;
-
-  window.addEventListener('touchstart', (e) => {
-    if(e.changedTouches && e.changedTouches.length > 0) {
-      touchStartY = e.changedTouches[0].screenY;
-    }
-  }, { passive: true });
-
-  window.addEventListener('touchend', (e) => {
-    if(activeTabKey !== 'home') return;
-    if(!e.changedTouches || e.changedTouches.length === 0) return;
-    
-    let touchEndY = e.changedTouches[0].screenY;
-    let swipeDistance = touchStartY - touchEndY;
-
-    if (Math.abs(swipeDistance) > 40) {
-      setTimeout(() => {
-        document.querySelectorAll('.reel').forEach(card => {
-          const rect = card.getBoundingClientRect();
-          const isCentered = rect.top >= -20 && rect.top <= 20;
-          const v = card.querySelector('video');
-
-          if (v) {
-            const pauseBtn = card.querySelector('.custom-pause-btn');
-            const controlOverlay = card.querySelector('.video-control-overlay');
-            const durationIndicator = card.querySelector('.video-duration-indicator');
-
-            if (isCentered) {
-              if (activeVideo && activeVideo !== v) {
-                activeVideo.pause();
-                const prevCard = activeVideo.closest('.reel');
-                if (prevCard) {
-                  const prevControl = prevCard.querySelector('.video-control-overlay');
-                  const prevDuration = prevCard.querySelector('.video-duration-indicator');
-                  const prevBtn = prevCard.querySelector('.custom-pause-btn');
-                  if (prevControl) prevControl.classList.remove('show');
-                  if (prevDuration) prevDuration.classList.remove('show');
-                  if (prevBtn) prevBtn.textContent = '▶';
-                }
-              }
-              activeVideo = v;
-              v.muted = muted;
-              v.play().then(() => {
-                if (pauseBtn) pauseBtn.textContent = '⏸';
-              }).catch(() => {});
-            } else {
-              v.pause();
-              if (controlOverlay) controlOverlay.classList.remove('show');
-              if (durationIndicator) durationIndicator.classList.remove('show');
-              if (pauseBtn) pauseBtn.textContent = '▶';
-            }
-          }
-        });
-      }, 150);
-    }
-  }, { passive: true });
 }
 
 function openCommentsModal(item){
@@ -1721,465 +1795,7 @@ function renderProfileGrid(){
  });
 }
 
-async function startCamera(){
- try{mediaStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing},audio:true});camera.srcObject=mediaStream}
- catch(e){showToast('Camera unavailable. You can still upload a video or picture.')}
-}
-function stopCamera(){if(mediaStream){mediaStream.getTracks().forEach(t=>t.stop());mediaStream=null}camera.srcObject=null}
-
-function formatTime(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
-
-function startRecording(){
- if(!mediaStream){showToast('Camera permission is needed to record');return}
- chunks=[];recordSeconds=0;recording=true;
- timer.classList.remove('hidden');
- timerText.textContent='00:00';
- try{recorder=new MediaRecorder(mediaStream,{mimeType:'video/webm'})}catch(e){recorder=new MediaRecorder(mediaStream)}
- recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
- recorder.onstop=()=>{const blob=new Blob(chunks,{type:recorder.mimeType||'video/webm'});openEditor([{file:blob, type:'video', url:URL.createObjectURL(blob)}]);};
- recorder.start(250);
- document.getElementById('shutter').classList.add('recording');
- timerInterval=setInterval(()=>{
-  recordSeconds++;
-  timerText.textContent=formatTime(recordSeconds);
-  if(recordSeconds>=600){ stopRecording(); showToast('Maximum recording limit of 10 minutes reached'); }
- },1000);
- showToast('Recording started');
-}
-
-function stopRecording(){
- if(!recording)return;
- recording=false;
- clearInterval(timerInterval);
- timerInterval=null;
- if(recorder&&recorder.state!=='inactive')recorder.stop();
- document.getElementById('shutter').classList.remove('recording');
- timer.classList.add('hidden');
- showToast('Recording stopped');
-}
-
-function takePhoto(){
- if(!mediaStream){showToast('Camera is required to snap a photo');return;}
- const canvas=document.createElement('canvas');
- canvas.width=camera.videoWidth||720;
- canvas.height=camera.videoHeight||1280;
- const ctx=canvas.getContext('2d');
- ctx.drawImage(camera,0,0,canvas.width,canvas.height);
- canvas.toBlob(blob=>{ 
-   openEditor([{file:blob, type:'image', url:URL.createObjectURL(blob)}]); 
-   showToast('Photo captured! 📸'); 
- },'image/jpeg',0.9);
-}
-
-const shutterBtn = document.getElementById('shutter');
-shutterBtn.onmousedown = shutterBtn.ontouchstart = (e) => {
- e.preventDefault();
- if(recording){stopRecording();return;}
- isLongPress = false;
- pressTimer = setTimeout(() => { isLongPress = true; startRecording(); }, 2000);
-};
-
-shutterBtn.onmouseup = shutterBtn.ontouchend = (e) => {
- e.preventDefault();
- clearTimeout(pressTimer);
- if(!recording && !isLongPress){takePhoto();}
-};
-
-document.getElementById('uploadVideoBtn').onclick = () => videoFileInput.click();
-document.getElementById('uploadPhotoBtn').onclick = () => photoFileInput.click();
-
-function handleFileInputFiles(files, defaultType) {
-  const incomingFiles = Array.from(files);
-  if(incomingFiles.length === 0) return;
-
-  if(incomingFiles.length > 3) {
-    showToast('You can select 1 to 3 items only.');
-    return;
-  }
-
-  const mediaList = [];
-  let processedCount = 0;
-
-  incomingFiles.forEach(file => {
-    const isVid = file.type.startsWith('video/') || defaultType === 'video';
-    const isImg = file.type.startsWith('image/') || defaultType === 'image';
-    const type = isVid ? 'video' : (isImg ? 'image' : defaultType);
-    
-    const url = URL.createObjectURL(file);
-
-    if (type === 'video') {
-      const vid = document.createElement('video');
-      vid.preload = 'metadata';
-      vid.onloadedmetadata = () => {
-        if(vid.duration > 600){
-          showToast('Videos must be 10 minutes or less');
-          URL.revokeObjectURL(url);
-          return;
-        }
-        if (url) {
-          mediaList.push({ file, type: 'video', url });
-        }
-        processedCount++;
-        if(processedCount === incomingFiles.length) {
-          openEditor(mediaList);
-        }
-      };
-      vid.onerror = () => {
-        if (url) {
-          mediaList.push({ file, type: 'video', url });
-        }
-        processedCount++;
-        if(processedCount === incomingFiles.length) {
-          openEditor(mediaList);
-        }
-      };
-      vid.src = url;
-    } else {
-      if (url) {
-        mediaList.push({ file, type: 'image', url });
-      }
-      processedCount++;
-      if(processedCount === incomingFiles.length) {
-        openEditor(mediaList);
-      }
-    }
-  });
-}
-
-videoFileInput.onchange = e => {
-  handleFileInputFiles(e.target.files, 'video');
-  videoFileInput.value = '';
-};
-
-photoFileInput.onchange = e => {
-  handleFileInputFiles(e.target.files, 'image');
-  photoFileInput.value = '';
-};
-
-function openEditor(mediaList){
- selectedMediaList = mediaList;
- studio.classList.remove('open');stopCamera();
- editorScreen.classList.add('open');
-
- closeEditorDrawers();
- document.getElementById('editorCaptionInput').value = '';
-
- const container = document.getElementById('editorCanvasContainer');
- container.querySelectorAll('video, img').forEach(el => el.remove());
-
- if(selectedMediaList.length > 1) {
-   container.classList.add('multi-item');
- } else {
-   container.classList.remove('multi-item');
- }
-
- selectedMediaList.forEach(item => {
-   const slideEl = document.createElement('div');
-   slideEl.className = selectedMediaList.length > 1 ? 'reel-media-slide' : '';
-   slideEl.style.width = '100%';
-   slideEl.style.height = '100%';
-   slideEl.style.display = 'flex';
-   slideEl.style.alignItems = 'center';
-   slideEl.style.justifyContent = 'center';
-   
-   const el = document.createElement(item.type==='video'?'video':'img');
-   el.src = item.url;
-   if(item.type==='video'){
-     el.controls = false;
-     el.playsInline = true;
-     el.muted = true;
-     el.loop = true;
-     el.preload = 'auto';
-     el.currentTime = 0.001; 
-     el.play().catch(()=>{});
-   }
-   slideEl.appendChild(el);
-   container.insertBefore(slideEl, container.firstChild);
- });
-
- const hasVideo = selectedMediaList.some(i => i.type === 'video');
- const muteBtn = document.getElementById('editorMuteBtn');
- muteBtn.style.display = hasVideo ? 'block' : 'none';
- muteBtn.textContent = '🔇';
-
- drawCanvas = document.getElementById('editorDrawingCanvas');
- drawCtx = drawCanvas.getContext('2d');
- drawCanvas.width = container.clientWidth || 360;
- drawCanvas.height = container.clientHeight || 640;
- drawCtx.clearRect(0,0,drawCanvas.width, drawCanvas.height);
-
- document.getElementById('editorOverlaysLayer').innerHTML = '';
- undoStack = [];
- redoStack = [];
- saveEditorState();
-}
-
-document.getElementById('editorMuteBtn').onclick = (e) => {
-  e.stopPropagation();
-  const container = document.getElementById('editorCanvasContainer');
-  let isMuted = false;
-  container.querySelectorAll('video').forEach(vid => {
-    vid.muted = !vid.muted;
-    isMuted = vid.muted;
-  });
-  document.getElementById('editorMuteBtn').textContent = isMuted ? '🔇' : '🔊';
-  showToast(isMuted ? 'Muted' : 'Sound On');
-};
-
-function closeEditorDrawers() {
-  document.querySelectorAll('.editor-tool-drawer').forEach(d => d.classList.remove('open'));
-}
-
-function toggleEditorDrawer(drawerId) {
-  const drawer = document.getElementById(drawerId);
-  const isOpen = drawer.classList.contains('open');
-  closeEditorDrawers();
-  if(!isOpen) {
-    drawer.classList.add('open');
-  }
-}
-
-function selectEditorMusic(trackName) {
-  selectedSound = trackName;
-  closeEditorDrawers();
-  showToast(`Music selected: ${trackName}`);
-}
-
-function addStickerToCanvas(emoji) {
-  const layer = document.getElementById('editorOverlaysLayer');
-  const el = document.createElement('div');
-  el.className = 'editorOverlayElement';
-  el.textContent = emoji;
-  el.style.top = '40%';
-  el.style.left = '40%';
-  makeElementDraggable(el);
-  layer.appendChild(el);
-  closeEditorDrawers();
-  showToast('Sticker added! Drag to position');
-}
-
-function commitEditorText() {
-  const input = document.getElementById('editorTextInputField');
-  const val = input.value.trim();
-  if(!val) return;
-  const layer = document.getElementById('editorOverlaysLayer');
-  const el = document.createElement('div');
-  el.className = 'editorOverlayElement text-element';
-  el.textContent = val;
-  el.style.top = '50%';
-  el.style.left = '30%';
-  makeElementDraggable(el);
-  layer.appendChild(el);
-  input.value = '';
-  closeEditorDrawers();
-  showToast('Text added!');
-}
-
-function applyEditorFilter(filterStyle, btnEl) {
-  const container = document.getElementById('editorCanvasContainer');
-  container.querySelectorAll('video, img').forEach(el => {
-    el.style.filter = filterStyle;
-  });
-  document.querySelectorAll('.editorFilterChip').forEach(c => c.classList.remove('active'));
-  if(btnEl) btnEl.classList.add('active');
-  showToast('Effect applied');
-}
-
-function addMentionToCanvas(username) {
-  const layer = document.getElementById('editorOverlaysLayer');
-  const el = document.createElement('div');
-  el.className = 'editorOverlayElement text-element';
-  el.style.background = 'rgba(0, 242, 254, 0.7)';
-  el.style.color = '#000';
-  el.textContent = username;
-  el.style.top = '45%';
-  el.style.left = '35%';
-  makeElementDraggable(el);
-  layer.appendChild(el);
-  closeEditorDrawers();
-  showToast(`Mentioned ${username}`);
-}
-
-function makeElementDraggable(elm) {
-  let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-  elm.onmousedown = dragMouseDown;
-  elm.onttouchstart = dragTouchStart;
-
-  function dragMouseDown(e) {
-    e = e || window.event;
-    e.preventDefault();
-    pos3 = e.clientX;
-    pos4 = e.clientY;
-    document.onmouseup = closeDragElement;
-    document.onmousemove = elementDrag;
-  }
-
-  function elementDrag(e) {
-    e = e || window.event;
-    e.preventDefault();
-    pos1 = pos3 - e.clientX;
-    pos2 = pos4 - e.clientY;
-    pos3 = e.clientX;
-    pos4 = e.clientY;
-    elm.style.top = (elm.offsetTop - pos2) + "px";
-    elm.style.left = (elm.offsetLeft - pos1) + "px";
-  }
-
-  function closeDragElement() {
-    document.onmouseup = null;
-    document.onmousemove = null;
-  }
-
-  function dragTouchStart(e) {
-    if(e.touches.length === 1) {
-      pos3 = e.touches[0].clientX;
-      pos4 = e.touches[0].clientY;
-      document.ontouchend = closeTouchDrag;
-      document.ontouchmove = elementTouchDrag;
-    }
-  }
-
-  function elementTouchDrag(e) {
-    if(e.touches.length === 1) {
-      pos1 = pos3 - e.touches[0].clientX;
-      pos2 = pos4 - e.touches[0].clientY;
-      pos3 = e.touches[0].clientX;
-      pos4 = e.touches[0].clientY;
-      elm.style.top = (elm.offsetTop - pos2) + "px";
-      elm.style.left = (elm.offsetLeft - pos1) + "px";
-    }
-  }
-
-  function closeTouchDrag() {
-    document.ontouchend = null;
-    document.ontouchmove = null;
-  }
-}
-
-document.getElementById('closeEditorBtn').onclick = () => {
- editorScreen.classList.remove('open');
- appContainer.classList.remove('hide-nav-for-create');
- updateNavActiveState('home');
-};
-
-document.getElementById('editorQuickPostBtn').onclick = () => {
-  if (!selectedMediaList || selectedMediaList.length === 0) {
-    showToast('Choose video(s) or picture(s) first');
-    return;
-  }
-  
-  const customCaption = document.getElementById('editorCaptionInput').value.trim();
-  const caption = customCaption !== '' ? customCaption : 'My New VIBE Post ✨ #VIBE';
-
-  const newItem = {
-    id: Date.now(),
-    author: 'You',
-    caption: caption,
-    audio: selectedSound,
-    likes: 0,
-    commentsCount: 0,
-    shares: 0,
-    views: '1',
-    avatar: myProfile.avatar,
-    mediaList: [...selectedMediaList],
-    commentsList: []
-  };
-
-  feedData.unshift(newItem);
-  renderFeed();
-  
-  editorScreen.classList.remove('open');
-  appContainer.classList.remove('hide-nav-for-create');
-  updateNavActiveState('home');
-  selectedMediaList = [];
-  document.getElementById('editorCaptionInput').value = '';
-  showToast('Published to Home feed successfully! 🎉');
-};
-
-document.getElementById('publishBtn').onclick=()=> {
- if(selectedMediaList.length === 0){showToast('Choose video(s) or picture(s) first');return}
- const caption=document.getElementById('captionInput').value.trim()||'New VIBE ✨ #VIBE';
- const item={
-   id:Date.now(),
-   author:'You',
-   caption,
-   audio:selectedSound,
-   likes:0,
-   commentsCount:0,
-   shares:0,
-   views:'1',
-   avatar:myProfile.avatar,
-   mediaList: [...selectedMediaList],
-   commentsList:[]
- };
- feedData.unshift(item);
- renderFeed();
- postScreen.classList.remove('open');
- appContainer.classList.remove('hide-nav-for-create');
- selectedMediaList=[];
- document.getElementById('captionInput').value='';
- showToast('Posted to VIBE 🎉');
-};
-
-document.getElementById('publishStoryBtn').onclick=()=>{
- if(selectedMediaList.length === 0){showToast('Choose video(s) or picture(s) first');return}
- const primaryMedia = selectedMediaList[0];
- const storyItem={id:Date.now(), url:primaryMedia.url, type:primaryMedia.type, timestamp:Date.now(), viewsCount: 34};
- storiesData.unshift(storyItem);
- postScreen.classList.remove('open');
- appContainer.classList.remove('hide-nav-for-create');
- selectedMediaList=[];
- document.getElementById('captionInput').value='';
- renderProfileGrid();
- showToast('Story added! It will vanish in 24 hours ⏳');
-};
-
-document.querySelectorAll('.nav button[data-tab]').forEach(btn => {
-  btn.onclick = () => {
-    const tabKey = btn.dataset.tab;
-    updateNavActiveState(tabKey);
-    
-    if (tabKey === 'home') {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('open'));
-    } else if (tabKey === 'discover') {
-      discover.classList.add('open');
-      renderDiscoverGrid();
-    } else if (tabKey === 'create') {
-      appContainer.classList.add('hide-nav-for-create');
-      studio.classList.add('open');
-      startCamera();
-    } else if (tabKey === 'inbox') {
-      inbox.classList.add('open');
-    } else if (tabKey === 'profile') {
-      profile.classList.add('open');
-      renderProfileGrid();
-    }
-  };
-});
-
-document.querySelectorAll('.close[data-close]').forEach(btn => {
-  btn.onclick = () => {
-    const target = btn.dataset.close;
-    if (target === 'discover') discover.classList.remove('open');
-    if (target === 'inbox') inbox.classList.remove('open');
-    if (target === 'profile') profile.classList.remove('open');
-    updateNavActiveState('home');
-  };
-});
-
-document.getElementById('closeStudio').onclick = () => {
-  studio.classList.remove('open');
-  appContainer.classList.remove('hide-nav-for-create');
-  stopCamera();
-  updateNavActiveState('home');
-};
-
-document.getElementById('closePost').onclick = () => {
-  postScreen.classList.remove('open');
-  appContainer.classList.remove('hide-nav-for-create');
-  updateNavActiveState('home');
-};
-
+// Initialize feed render on load
 renderFeed();
 </script>
 </body>
