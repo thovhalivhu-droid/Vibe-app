@@ -29,17 +29,6 @@ button{font:inherit}
   scrollbar-width: none;
 }
 .reel-media-slider::-webkit-scrollbar { display: none; }
-.reel-media-slide.has-side-by-side-photos {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 4px;
-  background: #000;
-}
-.reel-media-slide.has-side-by-side-photos img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
 .reel-media-slide {
   flex: 0 0 100%;
   width: 100%;
@@ -884,40 +873,34 @@ function renderFeed(filteredList){
   let dotsHtml = '';
   const mediaList = item.mediaList && item.mediaList.length > 0 ? item.mediaList : [{type: item.video ? 'video' : 'image', url: item.video || item.image || ''}];
   
-  const allPhotos = mediaList.length > 1 && mediaList.every(m => m.type === 'image');
+  const isSinglePhoto = mediaList.length === 1 && mediaList[0].type === 'image';
+
+  if(isSinglePhoto) {
+    card.classList.add('image');
+  }
 
   if(mediaList.length > 1) {
     mediaHtml = `<div class="reel-media-slider">`;
-    if (allPhotos) {
-      mediaHtml += `<div class="reel-media-slide has-side-by-side-photos">`;
-      mediaList.forEach(m => {
-        mediaHtml += `<img src="${m.url}" alt="">`;
-      });
-      mediaHtml += `</div>`;
-    } else {
-      mediaList.forEach((m) => {
-        if(m.type === 'video') {
-          mediaHtml += `
-            <div class="reel-media-slide" style="position:relative;">
-              <video class="reel-video" src="${m.url}" loop playsinline preload="auto" ${muted?'muted':''}></video>
-              <div class="video-control-overlay">
-                <button class="custom-pause-btn" title="Toggle Play/Pause">⏸</button>
-              </div>
-            </div>`;
-        } else {
-          mediaHtml += `<div class="reel-media-slide"><img class="reel-image" style="display:block" src="${m.url}" alt=""></div>`;
-        }
-      });
-    }
+    mediaList.forEach((m) => {
+      if(m.type === 'video') {
+        mediaHtml += `
+          <div class="reel-media-slide" style="position:relative;">
+            <video class="reel-video" src="${m.url}" loop playsinline preload="auto" ${muted?'muted':''}></video>
+            <div class="video-control-overlay">
+              <button class="custom-pause-btn" title="Toggle Play/Pause">⏸</button>
+            </div>
+          </div>`;
+      } else {
+        mediaHtml += `<div class="reel-media-slide"><img class="reel-image" style="display:block" src="${m.url}" alt=""></div>`;
+      }
+    });
     mediaHtml += `</div>`;
 
-    if (!allPhotos) {
-      dotsHtml = `<div class="carousel-dots">`;
-      mediaList.forEach((_, idx) => {
-        dotsHtml += `<div class="carousel-dot ${idx === 0 ? 'active' : ''}"></div>`;
-      });
-      dotsHtml += `</div>`;
-    }
+    dotsHtml = `<div class="carousel-dots">`;
+    mediaList.forEach((_, idx) => {
+      dotsHtml += `<div class="carousel-dot ${idx === 0 ? 'active' : ''}"></div>`;
+    });
+    dotsHtml += `</div>`;
   } else {
     const m = mediaList[0];
     if(m.type === 'video') {
@@ -934,7 +917,7 @@ function renderFeed(filteredList){
   card.innerHTML=`
   ${mediaHtml}
   ${dotsHtml}
-  <button class="mute">${muted?'🔇':'🔊'}</button>
+  <button class="mute" style="${isSinglePhoto ? 'display:none;' : ''}">${muted?'🔇':'🔊'}</button>
   <div class="overlay"><div class="info"><div class="author"><img class="avatar" src="${item.avatar}"><span class="name">${item.author}</span><button class="follow">Follow</button></div><div class="caption">${parseCaptions(item.caption)}</div><div class="audio">♫ ${item.audio}</div></div>
   <div class="actions">
     <button class="action like ${item.isLiked ? 'liked' : ''}"><div class="circle">${item.isLiked ? '♥' : '♡'}</div><div class="count">${formatCount(item.likes)}</div></button>
@@ -1004,7 +987,7 @@ function renderFeed(filteredList){
   });
 
   const slider = card.querySelector('.reel-media-slider');
-  if(slider && !allPhotos) {
+  if(slider) {
     const dots = card.querySelectorAll('.carousel-dot');
     slider.onscroll = () => {
       const slideWidth = slider.clientWidth;
@@ -1053,12 +1036,15 @@ function renderFeed(filteredList){
     verticalMenu.classList.toggle('open');
   };
   
-  card.querySelector('.mute').onclick=e=>{
-    e.stopPropagation();
-    muted=!muted;
-    document.querySelectorAll('.reel-video').forEach(x=>x.muted=muted);
-    document.querySelectorAll('.mute').forEach(b=>b.textContent=muted?'🔇':'🔊');
-  };
+  const muteBtnEl = card.querySelector('.mute');
+  if(muteBtnEl) {
+    muteBtnEl.onclick=e=>{
+      e.stopPropagation();
+      muted=!muted;
+      document.querySelectorAll('.reel-video').forEach(x=>x.muted=muted);
+      document.querySelectorAll('.mute').forEach(b=>b.textContent=muted?'🔇':'🔊');
+    };
+  }
   
   likeBtn.onclick=e=>{
    e.stopPropagation();
@@ -1085,7 +1071,7 @@ function renderFeed(filteredList){
 
   shareBtn.onclick = async e => {
    e.stopPropagation();
-   const shareData = { title: 'VIBE Video', text: item.caption, url: window.location.href };
+   const shareData = { title: 'VIBE Post', text: item.caption, url: window.location.href };
    if (navigator.share) {
     try { await navigator.share(shareData); item.shares += 1; shareBtn.querySelector('.count').textContent = formatCount(item.shares); return; } catch (err) {}
    }
@@ -1198,12 +1184,10 @@ function setupSwipeAutoplayFallback() {
     let touchEndY = e.changedTouches[0].screenY;
     let swipeDistance = touchStartY - touchEndY;
 
-    // Detect deliberate vertical swipe threshold
     if (Math.abs(swipeDistance) > 40) {
       setTimeout(() => {
         document.querySelectorAll('.reel').forEach(card => {
           const rect = card.getBoundingClientRect();
-          // Check if video card occupies the viewport cleanly
           const isCentered = rect.top >= -20 && rect.top <= 20;
           const v = card.querySelector('video');
 
@@ -1532,42 +1516,29 @@ function openEditor(mediaList){
    container.classList.remove('multi-item');
  }
 
- const allPhotos = selectedMediaList.length > 1 && selectedMediaList.every(i => i.type === 'image');
-
- if (allPhotos) {
-   const gridEl = document.createElement('div');
-   gridEl.className = 'reel-media-slide has-side-by-side-photos';
-   selectedMediaList.forEach(item => {
-     const imgEl = document.createElement('img');
-     imgEl.src = item.url;
-     gridEl.appendChild(imgEl);
-   });
-   container.insertBefore(gridEl, container.firstChild);
- } else {
-   selectedMediaList.forEach(item => {
-     const slideEl = document.createElement('div');
-     slideEl.className = selectedMediaList.length > 1 ? 'reel-media-slide' : '';
-     slideEl.style.width = '100%';
-     slideEl.style.height = '100%';
-     slideEl.style.display = 'flex';
-     slideEl.style.alignItems = 'center';
-     slideEl.style.justifyContent = 'center';
-     
-     const el = document.createElement(item.type==='video'?'video':'img');
-     el.src = item.url;
-     if(item.type==='video'){
-       el.controls = false;
-       el.playsInline = true;
-       el.muted = true;
-       el.loop = true;
-       el.preload = 'auto';
-       el.currentTime = 0.001; 
-       el.play().catch(()=>{});
-     }
-     slideEl.appendChild(el);
-     container.insertBefore(slideEl, container.firstChild);
-   });
- }
+ selectedMediaList.forEach(item => {
+   const slideEl = document.createElement('div');
+   slideEl.className = selectedMediaList.length > 1 ? 'reel-media-slide' : '';
+   slideEl.style.width = '100%';
+   slideEl.style.height = '100%';
+   slideEl.style.display = 'flex';
+   slideEl.style.alignItems = 'center';
+   slideEl.style.justifyContent = 'center';
+   
+   const el = document.createElement(item.type==='video'?'video':'img');
+   el.src = item.url;
+   if(item.type==='video'){
+     el.controls = false;
+     el.playsInline = true;
+     el.muted = true;
+     el.loop = true;
+     el.preload = 'auto';
+     el.currentTime = 0.001; 
+     el.play().catch(()=>{});
+   }
+   slideEl.appendChild(el);
+   container.insertBefore(slideEl, container.firstChild);
+ });
 
  const hasVideo = selectedMediaList.some(i => i.type === 'video');
  const muteBtn = document.getElementById('editorMuteBtn');
