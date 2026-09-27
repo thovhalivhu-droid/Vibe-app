@@ -76,6 +76,24 @@ button{font:inherit}
 
 .mute{position:absolute;top:68px;right:16px;z-index:7;width:40px;height:40px;border:0;border-radius:50%;background:#0008;color:#fff;font-size:19px;cursor:pointer;}
 
+/* Double-tap Floating Heart Animation */
+.double-tap-heart {
+  position: absolute;
+  font-size: 80px;
+  color: var(--pink);
+  z-index: 15;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0);
+  animation: heartPopup 0.8s ease-out forwards;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+}
+@keyframes heartPopup {
+  0% { transform: translate(-50%, -50%) scale(0) rotate(-20deg); opacity: 0; }
+  30% { transform: translate(-50%, -50%) scale(1.3) rotate(10deg); opacity: 1; }
+  60% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1.2) translateY(-60px); opacity: 0; }
+}
+
 /* Custom Control Overlay (Pause/Resume Button) */
 .video-control-overlay {
   position: absolute;
@@ -781,7 +799,7 @@ input:checked+.slider:before{transform:translateX(20px)}
 <div class="screenHead">
   <span>My Profile</span>
   <div style="display: flex; align-items: center; gap: 8px;">
-    <!-- Added Privacy & Security and Privacy Policy buttons clickable on the right side of the Me/Profile header -->
+    <!-- Privacy & Security and Privacy Policy buttons placed on the right side of the Me/Profile header -->
     <button onclick="openSecuritySettings()" style="background: none; border: none; color: #fff; font-size: 16px; cursor: pointer; padding: 4px 6px;" title="Privacy & Security">🔒</button>
     <button onclick="openPrivacyPolicy()" style="background: none; border: none; color: #fff; font-size: 16px; cursor: pointer; padding: 4px 6px;" title="Privacy Policy">📄</button>
     <button class="close" data-close="profile" style="position: static; font-size: 24px;">×</button>
@@ -1163,6 +1181,44 @@ function renderFeed(filteredList){
   </div></div>`;
   feed.appendChild(card);
   
+  // Double-tap Like Functionality implementation
+  let lastTapTime = 0;
+  card.addEventListener('click', (e) => {
+    if (e.target.closest('.overlay') || e.target.closest('.mute') || e.target.closest('.video-control-overlay')) return;
+    
+    const currentTime = new Date().getTime();
+    const tapLength = currentTime - lastTapTime;
+    if (tapLength < 300 && tapLength > 0) {
+      // Double tap detected!
+      if (!item.isLiked) {
+        item.isLiked = true;
+        item.likes += 1;
+        const likeBtnEl = card.querySelector('.like');
+        if(likeBtnEl) {
+          likeBtnEl.classList.add('liked');
+          likeBtnEl.querySelector('.circle').textContent = '♥';
+          likeBtnEl.querySelector('.count').textContent = formatCount(item.likes);
+        }
+      }
+      
+      // Spawn floating heart animation
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      const heart = document.createElement('div');
+      heart.className = 'double-tap-heart';
+      heart.textContent = '❤';
+      heart.style.left = `${x}px`;
+      heart.style.top = `${y}px`;
+      card.appendChild(heart);
+      setTimeout(() => heart.remove(), 800);
+      
+      e.preventDefault();
+    }
+    lastTapTime = currentTime;
+  });
+
   card.querySelectorAll('.reel-video').forEach(v => {
     v.currentTime = 0.001;
 
@@ -2049,159 +2105,96 @@ function startStoryTimer(){
  storyStartTime = Date.now();
  isStoryPaused = false;
  
+ const activeStories = getValidStories();
  const fill = document.querySelectorAll('.storyBarFill')[currentStoryIndex];
- if(!fill) return;
-
- fill.style.transition = `width ${storyTimeRemaining}ms linear`;
- fill.classList.add('running');
- fill.classList.remove('paused');
- void fill.offsetWidth;
- fill.style.width = '100%';
-
- if(currentStoryVideoEl && currentStoryVideoEl.paused){
-  currentStoryVideoEl.play().catch(()=>{});
+ if(fill){
+  fill.classList.remove('paused');
+  fill.classList.add('running');
+  fill.style.transitionDuration = `${storyTimeRemaining}ms`;
+  fill.style.width = '100%';
  }
 
- storyTimeout = setTimeout(() => {
+ storyTimeout = setTimeout(()=>{
   playStory(currentStoryIndex + 1);
  }, storyTimeRemaining);
 }
 
-function pauseStoryTimer(){
- if(isStoryPaused) return;
+function clearTimeouts(){
+ if(storyTimeout) clearTimeout(storyTimeout);
+}
+
+document.getElementById('storyContentArea').onmousedown = document.getElementById('storyContentArea').ontouchstart = () => {
  isStoryPaused = true;
+ clearTimeouts();
  const elapsed = Date.now() - storyStartTime;
  storyTimeRemaining = Math.max(0, storyTimeRemaining - elapsed);
- clearTimeouts();
-
  const fill = document.querySelectorAll('.storyBarFill')[currentStoryIndex];
  if(fill){
-  const computedWidth = window.getComputedStyle(fill).width;
+  const currentWidthPct = (elapsed / storyDuration) * 100;
   fill.classList.remove('running');
   fill.classList.add('paused');
-  fill.style.width = computedWidth;
+  fill.style.width = `${Math.min(100, currentWidthPct)}%`;
  }
-
- if(currentStoryVideoEl && !currentStoryVideoEl.paused){
-  currentStoryVideoEl.pause();
- }
-}
-
-function clearTimeouts(){
- clearTimeout(storyTimeout);
- storyTimeout = null;
-}
-
-const storyModalEl = document.getElementById('storyModal');
-storyModalEl.onmousedown = storyModalEl.ontouchstart = (e) => {
- if(e.target.closest('#storyFooterViewsBtn') || e.target.closest('#closeStoryModal')) return;
- pauseStoryTimer();
+ if(currentStoryVideoEl) currentStoryVideoEl.pause();
 };
 
-storyModalEl.onmouseup = storyModalEl.ontouchend = (e) => {
- if(e.target.closest('#storyFooterViewsBtn') || e.target.closest('#closeStoryModal')) return;
- if(isStoryPaused){
-  startStoryTimer();
- }
-};
-
-document.getElementById('storyFooterViewsBtn').onclick=()=>{
- pauseStoryTimer();
- document.getElementById('storyViewersModal').classList.add('open');
-};
-
-document.getElementById('closeStoryViewersModal').onclick=()=>{
- document.getElementById('storyViewersModal').classList.remove('open');
+document.getElementById('storyContentArea').onmouseup = document.getElementById('storyContentArea').ontouchend = () => {
+ if(!isStoryPaused) return;
+ if(currentStoryVideoEl) currentStoryVideoEl.play().catch(()=>{});
  startStoryTimer();
 };
 
-document.getElementById('closeStoryModal').onclick=()=>{
+document.getElementById('closeStoryModal').onclick = () => {
  clearTimeouts();
  document.getElementById('storyModal').classList.remove('open');
 };
 
-async function flipCamera(){
- facing=facing==='user'?'environment':'user';
- stopCamera();
- await startCamera();
-}
+document.getElementById('storyFooterViewsBtn').onclick = () => {
+ clearTimeouts();
+ document.getElementById('storyViewersModal').classList.add('open');
+};
 
-document.getElementById('flipBtn').onclick=flipCamera;
-document.querySelectorAll('.filter').forEach(b=>b.onclick=()=>{document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));b.classList.add('active');camera.style.filter=b.dataset.filter});
+document.getElementById('closeStoryViewersModal').onclick = () => {
+ document.getElementById('storyViewersModal').classList.remove('open');
+ startStoryTimer();
+};
 
-document.querySelectorAll('.soundItem').forEach(item=>{
- item.onclick=()=>{
-  selectedSound = item.dataset.sound;
-  document.getElementById('currentSoundLabel').textContent = selectedSound;
-  document.getElementById('soundModal').classList.remove('open');
-  showToast('Sound selected: '+selectedSound);
- };
-});
-
-document.querySelectorAll('.nav button').forEach(btn=>{
- btn.onclick=(e)=>{
-  const tab=btn.dataset.tab;
-  
-  if(tab === 'create') {
-    if(e) {
-      e.stopPropagation();
-      e.preventDefault();
-    }
-    updateNavActiveState('create');
-    discover.classList.remove('open');
-    inbox.classList.remove('open');
-    profile.classList.remove('open');
-    studio.classList.add('open');
-    startCamera();
-    appContainer.classList.add('hide-nav-for-create');
-    return;
-  }
-
+// Navigation tab buttons actions
+document.querySelectorAll('.nav button').forEach(btn => {
+ btn.onclick = () => {
+  const tab = btn.dataset.tab;
   updateNavActiveState(tab);
-  if(tab==='home'){
-   discover.classList.remove('open');
-   inbox.classList.remove('open');
-   profile.classList.remove('open');
-   studio.classList.remove('open');
-   stopCamera();
-   appContainer.classList.remove('hide-nav-for-create');
-  } else if(tab==='discover'){
-   discover.classList.add('open');
-   inbox.classList.remove('open');
-   profile.classList.remove('open');
-   studio.classList.remove('open');
-   stopCamera();
-   appContainer.classList.remove('hide-nav-for-create');
-  } else if(tab==='inbox'){
-   inbox.classList.add('open');
-   discover.classList.remove('open');
-   profile.classList.remove('open');
-   studio.classList.remove('open');
-   stopCamera();
-   appContainer.classList.remove('hide-nav-for-create');
-  } else if(tab==='profile'){
-   profile.classList.add('open');
-   discover.classList.remove('open');
-   inbox.classList.remove('open');
-   studio.classList.remove('open');
-   stopCamera();
-   appContainer.classList.remove('hide-nav-for-create');
+  
+  discover.classList.remove('open');
+  inbox.classList.remove('open');
+  profile.classList.remove('open');
+  studio.classList.remove('open');
+  stopCamera();
+
+  if(tab === 'discover') discover.classList.add('open');
+  else if(tab === 'inbox') inbox.classList.add('open');
+  else if(tab === 'profile') profile.classList.add('open');
+  else if(tab === 'create'){
+    studio.classList.add('open');
+    appContainer.classList.add('hide-nav-for-create');
+    startCamera();
   }
  };
 });
 
-document.querySelectorAll('.screenHead .close').forEach(btn=>{
- btn.onclick=()=>{
-  const screen=btn.closest('.screen');
-  if(screen){
-   screen.classList.remove('open');
-   if(screen.id==='studio') stopCamera();
-   appContainer.classList.remove('hide-nav-for-create');
-   updateNavActiveState('home');
+document.querySelectorAll('.close').forEach(btn => {
+ btn.onclick = (e) => {
+  const targetScreen = btn.closest('.screen');
+  if(targetScreen) {
+    targetScreen.classList.remove('open');
+    if(targetScreen.id === 'studio') stopCamera();
   }
+  appContainer.classList.remove('hide-nav-for-create');
+  updateNavActiveState('home');
  };
 });
 
+// Initial Setup execution
 renderFeed();
 updateNavActiveState('home');
 </script>
