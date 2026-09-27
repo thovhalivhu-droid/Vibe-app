@@ -131,7 +131,7 @@ button{font:inherit}
 
 .mute{position:absolute;top:68px;right:16px;z-index:7;width:40px;height:40px;border:0;border-radius:50%;background:#0008;color:#fff;font-size:19px;cursor:pointer;}
 
-/* Custom Control Overlay (Pause Button Only) */
+/* Custom Control Overlay (Pause/Resume Button) */
 .video-control-overlay {
   position: absolute;
   top: 50%;
@@ -139,6 +139,11 @@ button{font:inherit}
   transform: translate(-50%, -50%);
   z-index: 8;
   pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.video-control-overlay.show {
+  opacity: 1;
 }
 .custom-pause-btn {
   background: rgba(0, 0, 0, 0.5);
@@ -154,18 +159,12 @@ button{font:inherit}
   cursor: pointer;
   pointer-events: auto;
   backdrop-filter: blur(6px);
-  transition: transform 0.2s, background 0.2s, opacity 0.2s;
+  transition: transform 0.2s, background 0.2s;
   box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-  opacity: 0.85;
 }
 .custom-pause-btn:hover {
   transform: scale(1.08);
   background: rgba(0, 0, 0, 0.7);
-  opacity: 1;
-}
-/* Completely hide Resume/Play button visually/interactively while keeping underlying logic functional */
-.custom-pause-btn.is-paused {
-  display: none !important;
 }
 
 .nav{position:absolute;bottom:0;left:0;right:0;height:var(--nav);z-index:100;display:flex;justify-around;align-items:center;background:#171820ee;backdrop-filter:blur(16px);border-top:1px solid #ffffff12;pointer-events:auto;transition:transform .3s ease}
@@ -859,8 +858,10 @@ function pauseAllFeedVideos() {
     v.pause(); 
     const card = v.closest('.reel');
     if(card) {
+      const controlOverlay = card.querySelector('.video-control-overlay');
       const pauseBtn = card.querySelector('.custom-pause-btn');
-      if(pauseBtn) pauseBtn.classList.add('is-paused');
+      if(controlOverlay) controlOverlay.classList.remove('show');
+      if(pauseBtn) pauseBtn.textContent = '▶';
     }
   });
 }
@@ -913,7 +914,7 @@ function renderFeed(filteredList){
             <div class="reel-media-slide" style="position:relative;">
               <video class="reel-video" src="${m.url}" loop playsinline preload="auto" ${muted?'muted':''}></video>
               <div class="video-control-overlay">
-                <button class="custom-pause-btn" title="Pause">⏸</button>
+                <button class="custom-pause-btn" title="Toggle Play/Pause">⏸</button>
               </div>
             </div>`;
         } else {
@@ -936,7 +937,7 @@ function renderFeed(filteredList){
       mediaHtml = `
         <video class="reel-video" src="${m.url}" loop playsinline preload="auto" ${muted?'muted':''}></video>
         <div class="video-control-overlay">
-          <button class="custom-pause-btn" title="Pause">⏸</button>
+          <button class="custom-pause-btn" title="Toggle Play/Pause">⏸</button>
         </div>`;
     } else {
       mediaHtml = `<img class="reel-image" style="display:block" src="${m.url}" alt="">`;
@@ -970,30 +971,48 @@ function renderFeed(filteredList){
   card.querySelectorAll('.reel-video').forEach(v => {
     v.currentTime = 0.001;
 
+    const controlOverlay = v.parentElement.querySelector('.video-control-overlay');
     const pauseBtn = v.parentElement.querySelector('.custom-pause-btn');
+    let hideControlsTimer = null;
+
+    // Function to show controls for 2 seconds and auto-hide
+    const showAndAutoHideControls = () => {
+      if(!controlOverlay) return;
+      controlOverlay.classList.add('show');
+      clearTimeout(hideControlsTimer);
+      hideControlsTimer = setTimeout(() => {
+        controlOverlay.classList.remove('show');
+      }, 2000);
+    };
+
     if(pauseBtn) {
       pauseBtn.onclick = (e) => {
         e.stopPropagation();
-        if(!v.paused) {
+        if(v.paused) {
+          v.play().catch(()=>{});
+          pauseBtn.textContent = '⏸';
+        } else {
           v.pause();
-          pauseBtn.classList.add('is-paused');
+          pauseBtn.textContent = '▶';
         }
+        showAndAutoHideControls();
       };
     }
 
-    // Single click / tap on video area to resume if paused via hidden control, or toggle state
+    // Tap video to show controls & toggle play/pause state
     let tapTimeout = null;
     v.parentElement.addEventListener('click', (e) => {
       if (e.target.closest('.overlay') || e.target.closest('.mute') || e.target.closest('.vertical-edit-menu')) return;
       
       clearTimeout(tapTimeout);
       tapTimeout = setTimeout(() => {
+        showAndAutoHideControls();
         if (v.paused) {
           v.play().catch(()=>{});
-          if(pauseBtn) pauseBtn.classList.remove('is-paused');
+          if(pauseBtn) pauseBtn.textContent = '⏸';
         } else {
           v.pause();
-          if(pauseBtn) pauseBtn.classList.add('is-paused');
+          if(pauseBtn) pauseBtn.textContent = '▶';
         }
       }, 150);
     });
@@ -1010,24 +1029,28 @@ function renderFeed(filteredList){
       });
 
       card.querySelectorAll('.reel-video').forEach((vSlide, sIdx) => {
+        const slideControlOverlay = vSlide.parentElement.querySelector('.video-control-overlay');
         const slidePauseBtn = vSlide.parentElement.querySelector('.custom-pause-btn');
         if(sIdx === activeIdx && isCardFullyInViewport(card)) {
           if(activeVideo && activeVideo !== vSlide) {
             activeVideo.pause();
             const prevCard = activeVideo.closest('.reel');
             if(prevCard) {
+              const prevControlOverlay = prevCard.querySelector('.video-control-overlay');
               const prevPauseBtn = prevCard.querySelector('.custom-pause-btn');
-              if(prevPauseBtn) prevPauseBtn.classList.add('is-paused');
+              if(prevControlOverlay) prevControlOverlay.classList.remove('show');
+              if(prevPauseBtn) prevPauseBtn.textContent = '▶';
             }
           }
           activeVideo = vSlide;
           vSlide.muted = muted;
           vSlide.play().then(() => {
-            if(slidePauseBtn) slidePauseBtn.classList.remove('is-paused');
+            if(slidePauseBtn) slidePauseBtn.textContent = '⏸';
           }).catch(()=>{});
         } else {
           vSlide.pause();
-          if(slidePauseBtn) slidePauseBtn.classList.add('is-paused');
+          if(slideControlOverlay) slideControlOverlay.classList.remove('show');
+          if(slidePauseBtn) slidePauseBtn.textContent = '▶';
         }
       });
     };
@@ -1136,7 +1159,7 @@ function setupObserver(){
         activeSlideVid.muted = muted;
         activeSlideVid.play().then(() => {
           const pauseBtn = activeSlideVid.parentElement.querySelector('.custom-pause-btn');
-          if(pauseBtn) pauseBtn.classList.remove('is-paused');
+          if(pauseBtn) pauseBtn.textContent = '⏸';
         }).catch(() => {});
       }
     } else {
@@ -1146,7 +1169,7 @@ function setupObserver(){
         v.muted = muted;
         v.play().then(() => {
           const pauseBtn = v.parentElement.querySelector('.custom-pause-btn');
-          if(pauseBtn) pauseBtn.classList.remove('is-paused');
+          if(pauseBtn) pauseBtn.textContent = '⏸';
         }).catch(() => {});
       }
     }
@@ -1165,7 +1188,7 @@ function setupObserver(){
        firstVideo.muted = muted;
        firstVideo.play().then(() => {
          const pauseBtn = firstVideo.parentElement.querySelector('.custom-pause-btn');
-         if(pauseBtn) pauseBtn.classList.remove('is-paused');
+         if(pauseBtn) pauseBtn.textContent = '⏸';
        }).catch(() => {});
      }
    }
