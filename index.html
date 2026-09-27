@@ -819,19 +819,6 @@ let undoStack = [];
 let redoStack = [];
 let activeLiveTextElement = null;
 
-// Global interaction unlocker to enable audio autoplay smoothly on initial user swipe/gesture
-let hasInteracted = false;
-['pointerdown', 'touchstart', 'scroll'].forEach(evtType => {
-  window.addEventListener(evtType, () => {
-    if (!hasInteracted) {
-      hasInteracted = true;
-      if (activeVideo && activeVideo.paused) {
-        activeVideo.play().catch(() => {});
-      }
-    }
-  }, { passive: true });
-});
-
 function saveEditorState() {
   const overlaysHtml = document.getElementById('editorOverlaysLayer').innerHTML;
   const canvasDataUrl = drawCanvas.toDataURL();
@@ -975,7 +962,6 @@ function renderFeed(filteredList){
     const pauseBtn = v.parentElement.querySelector('.custom-pause-btn');
     let hideControlsTimer = null;
 
-    // Function to show controls for 2 seconds and auto-hide
     const showAndAutoHideControls = () => {
       if(!controlOverlay) return;
       controlOverlay.classList.add('show');
@@ -999,7 +985,6 @@ function renderFeed(filteredList){
       };
     }
 
-    // Tap anywhere on the video area to show controls & toggle play/pause state
     let tapTimeout = null;
     v.parentElement.addEventListener('click', (e) => {
       if (e.target.closest('.overlay') || e.target.closest('.mute') || e.target.closest('.vertical-edit-menu')) return;
@@ -1175,10 +1160,11 @@ function setupObserver(){
     }
    }
   });
- }, { root: feed, threshold: 0.51 });
+ }, { root: feed, threshold: 0.6 });
 
  document.querySelectorAll('.reel').forEach(x => feedObserver.observe(x));
 
+ // Immediate playback for the first card on load
  setTimeout(() => {
    const firstCard = feed.querySelector('.reel');
    if (firstCard) {
@@ -1192,7 +1178,7 @@ function setupObserver(){
        }).catch(() => {});
      }
    }
- }, 150);
+ }, 100);
 }
 
 function triggerEditAction(actionType, itemId) {
