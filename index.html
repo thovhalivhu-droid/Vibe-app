@@ -1549,8 +1549,15 @@ document.getElementById('closeEditorBtn').onclick = () => {
 };
 
 document.getElementById('proceedToPostBtn').onclick = () => {
- editorScreen.classList.remove('open');
- openPostScreenFromEditor();
+  // Pause the current video element immediately before moving to the next screen
+  const container = document.getElementById('editorCanvasContainer');
+  const activeVideo = container.querySelector('video');
+  if (activeVideo) {
+    activeVideo.pause();
+  }
+
+  editorScreen.classList.remove('open');
+  openPostScreenFromEditor();
 };
 
 function openPostScreenFromEditor(){
@@ -1965,138 +1972,128 @@ function toggleLiveMic() {
   }
 }
 
-function openLiveSettingsModal() {
-  document.getElementById('liveSettingsModal').classList.add('open');
-}
-
-document.getElementById('closeLiveSettingsModal').onclick = () => {
-  document.getElementById('liveSettingsModal').classList.remove('open');
-};
-
-function toggleGuestRequestsSetting(element) {
-  allowGuestRequestsEnabled = element.checked;
-  const guestBtn = document.getElementById('openGuestRequestsBtn');
-  if(guestBtn) {
-    guestBtn.style.opacity = allowGuestRequestsEnabled ? '1' : '0.5';
-  }
-  showToast(allowGuestRequestsEnabled ? 'Guest requests enabled' : 'Guest requests disabled');
-}
-
 function openGuestRequestsModal() {
-  if (!allowGuestRequestsEnabled) {
-    showToast('Guest requests are currently disabled in settings');
-    return;
-  }
-  renderGuestRequests();
-  document.getElementById('guestRequestsModal').classList.add('open');
-}
-
-document.getElementById('closeGuestRequestsModal').onclick = () => {
-  document.getElementById('guestRequestsModal').classList.remove('open');
-};
-
-function renderGuestRequests() {
   const container = document.getElementById('guestRequestsListContainer');
   container.innerHTML = '';
   
-  const badgeCount = document.getElementById('guestBadgeCount');
-  if(badgeCount) badgeCount.textContent = guestRequestsData.length;
+  const badge = document.getElementById('guestBadgeCount');
+  if(badge) {
+    badge.textContent = guestRequestsData.length;
+    badge.style.display = guestRequestsData.length > 0 ? 'inline-block' : 'none';
+  }
 
   if(guestRequestsData.length === 0) {
     container.innerHTML = `<div style="text-align:center;color:var(--muted);padding-top:40px;font-size:13px;">No pending guest requests.</div>`;
-    return;
-  }
-
-  guestRequestsData.forEach(guest => {
-    container.innerHTML += `
-      <div class="messageItem" style="justify-content:space-between;" id="guest-req-${guest.id}">
-        <div style="display:flex; align-items:center; gap:12px; flex:1; min-width:0;">
-          <img class="messageAvatar" src="${guest.avatar}">
-          <div class="messageContent" style="min-width:0;">
-            <div class="messageName">${guest.name}</div>
-            <div class="messageSnippet">${guest.username}</div>
+  } else {
+    guestRequestsData.forEach(g => {
+      container.innerHTML += `
+        <div class="messageItem" style="justify-content:space-between;" id="guest-req-row-${g.id}">
+          <div style="display:flex; align-items:center; gap:12px; flex:1; min-width:0;">
+            <img class="messageAvatar" src="${g.avatar}">
+            <div class="messageContent" style="min-width:0;">
+              <div class="messageName">${g.name}</div>
+              <div class="messageSnippet">${g.username}</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:6px; margin-left:8px;">
+            <button onclick="acceptGuestRequest(${g.id})" style="background:var(--cyan); border:0; color:#000; padding:6px 12px; border-radius:14px; font-weight:700; font-size:11px; cursor:pointer;">Accept</button>
+            <button onclick="declineGuestRequest(${g.id})" style="background:#2a2a2a; border:0; color:#fff; padding:6px 12px; border-radius:14px; font-weight:700; font-size:11px; cursor:pointer;">Decline</button>
           </div>
         </div>
-        <div style="display:flex; gap:6px; margin-left:8px;">
-          <button onclick="acceptGuestRequest(${guest.id})" style="background:var(--pink); border:0; color:#fff; padding:6px 12px; border-radius:14px; font-weight:700; font-size:11px; cursor:pointer;">Accept</button>
-          <button onclick="declineGuestRequest(${guest.id})" style="background:#2a2a2a; border:0; color:#fff; padding:6px 12px; border-radius:14px; font-weight:700; font-size:11px; cursor:pointer;">Decline</button>
-        </div>
-      </div>
-    `;
-  });
+      `;
+    });
+  }
+  document.getElementById('guestRequestsModal').classList.add('open');
 }
 
+function closeGuestRequestsModal() {
+  document.getElementById('guestRequestsModal').classList.remove('open');
+}
+document.getElementById('closeGuestRequestsModal').onclick = closeGuestRequestsModal;
+
 function acceptGuestRequest(id) {
-  const guest = guestRequestsData.find(g => g.id === id);
-  if(guest) {
-    if(activeGuests.length >= 4) {
-      showToast('Maximum 4 guests allowed in live stream');
-      return;
+  const guestIndex = guestRequestsData.findIndex(g => g.id === id);
+  if(guestIndex !== -1) {
+    const guest = guestRequestsData.splice(guestIndex, 1)[0];
+    if(activeGuests.length < 4) {
+      activeGuests.push(guest);
+      renderActiveGuestsGrid();
+      showToast(`${guest.name} joined your live stream!`);
+    } else {
+      showToast('Maximum guest limit (4) reached');
     }
-    guestRequestsData = guestRequestsData.filter(g => g.id !== id);
-    activeGuests.push(guest);
-    renderGuestRequests();
-    updateActiveGuestsGrid();
-    document.getElementById('guestRequestsModal').classList.remove('open');
-    showToast(`${guest.name} joined your live stream! 🎉`);
+    openGuestRequestsModal();
   }
 }
 
 function declineGuestRequest(id) {
   guestRequestsData = guestRequestsData.filter(g => g.id !== id);
-  renderGuestRequests();
+  openGuestRequestsModal();
   showToast('Guest request declined');
 }
 
-function updateActiveGuestsGrid() {
+function renderActiveGuestsGrid() {
   const grid = document.getElementById('activeGuestsGrid');
   if(!grid) return;
-  grid.innerHTML = '';
   if(activeGuests.length === 0) {
     grid.classList.add('hidden');
+    grid.innerHTML = '';
     return;
   }
   grid.classList.remove('hidden');
-  activeGuests.forEach(guest => {
+  grid.innerHTML = '';
+  activeGuests.forEach(g => {
     grid.innerHTML += `
       <div class="guest-slot">
-        <img src="${guest.avatar}" alt="">
-        <div class="guest-slot-name">${guest.name}</div>
+        <img src="${g.avatar}" alt="">
+        <div class="guest-slot-name">${g.name}</div>
       </div>
     `;
   });
 }
 
+function openLiveSettingsModal() {
+  document.getElementById('liveSettingsModal').classList.add('open');
+}
+function closeLiveSettingsModal() {
+  document.getElementById('liveSettingsModal').classList.remove('open');
+}
+document.getElementById('closeLiveSettingsModal').onclick = closeLiveSettingsModal;
+
+function toggleGuestRequestsSetting(checkbox) {
+  allowGuestRequestsEnabled = checkbox.checked;
+  showToast(allowGuestRequestsEnabled ? 'Guest requests enabled' : 'Guest requests disabled');
+}
+
 function openSecuritySettings() {
   document.getElementById('security-settings-screen').classList.add('open');
 }
-
 function closeSecuritySettings() {
   document.getElementById('security-settings-screen').classList.remove('open');
 }
 
-function togglePrivateAccount(el) {
-  showToast(el.checked ? 'Account is now Private 🔒' : 'Account is now Public 🌍');
+function togglePrivateAccount(checkbox) {
+  showToast(checkbox.checked ? 'Account set to Private' : 'Account set to Public');
 }
 
-function updateDMPermissions(val) {
-  showToast(`Direct messages updated to: ${val}`);
-}
-
-function toggleTFA(el) {
-  showToast(el.checked ? 'Two-Factor Authentication enabled 🛡️' : 'Two-Factor Authentication disabled');
+function updateDMPermissions(value) {
+  showToast(`Direct messages updated to: ${value}`);
 }
 
 function openPasswordModal() {
   showToast('Password change prompt opened');
 }
 
+function toggleTFA(checkbox) {
+  showToast(checkbox.checked ? 'Two-Factor Authentication Enabled' : 'Two-Factor Authentication Disabled');
+}
+
 function openBlockedAccounts() {
-  showToast('Blocked accounts manager opened');
+  showToast('Blocked accounts management opened');
 }
 
 function downloadUserData() {
-  showToast('Your VIBE data export request has been submitted 📦');
+  showToast('Your data download has been requested');
 }
 
 function openPrivacyPolicy() {
@@ -2111,62 +2108,55 @@ function openCookiePolicy() {
   showToast('Opening Cookie Policy...');
 }
 
-document.querySelectorAll('.tab').forEach(tab=>{
- tab.onclick=()=>{
-  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-  tab.classList.add('active');
-  const feedTabType = tab.dataset.feedTab;
-  if(feedTabType === 'following'){
-   const filtered = feedData.filter(i => i.author !== 'You');
-   renderFeed(filtered);
-  } else {
-   renderFeed(feedData);
-  }
- };
-});
-
-document.querySelectorAll('.nav button').forEach(btn=>{
- btn.onclick=()=>{
-  const tab=btn.dataset.tab;
+document.querySelectorAll('.nav button').forEach(b=>{
+ b.onclick=()=>{
+  const tab=b.dataset.tab;
   updateNavActiveState(tab);
-  if(tab==='home'){discover.classList.remove('open');inbox.classList.remove('open');profile.classList.remove('open');studio.classList.remove('open');}
-  else if(tab==='discover'){discover.classList.add('open');inbox.classList.remove('open');profile.classList.remove('open');studio.classList.remove('open');}
-  else if(tab==='create'){
-   appContainer.classList.add('hide-nav-for-create');
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('open'));
+  appContainer.classList.remove('hide-nav-for-create');
+  stopCamera();
+  if(tab==='home'){
+   window.scrollTo(0,0);
+  }else if(tab==='discover'){
+   discover.classList.add('open');
+   renderDiscoverGrid();
+  }else if(tab==='create'){
    studio.classList.add('open');
-   switchStudioMode('video');
+   appContainer.classList.add('hide-nav-for-create');
    startCamera();
-  }
-  else if(tab==='inbox'){inbox.classList.add('open');discover.classList.remove('open');profile.classList.remove('open');studio.classList.remove('open');}
-  else if(tab==='profile'){profile.classList.add('open');discover.classList.remove('open');inbox.classList.remove('open');studio.classList.remove('open');renderProfileGrid();}
- };
-});
-
-document.querySelectorAll('.close').forEach(btn=>{
- btn.onclick=(e)=>{
-  const parentScreen = btn.closest('.screen');
-  if(parentScreen){
-   parentScreen.classList.remove('open');
-   if(parentScreen.id === 'studio'){stopCamera();appContainer.classList.remove('hide-nav-for-create');}
-   if(parentScreen.id === 'editorScreen'){appContainer.classList.remove('hide-nav-for-create');}
-   if(parentScreen.id === 'postScreen'){appContainer.classList.remove('hide-nav-for-create');}
-  }
-  const closeTarget=btn.dataset.close;
-  if(closeTarget){
-   document.getElementById(closeTarget).classList.remove('open');
+  }else if(tab==='inbox'){
+   inbox.classList.add('open');
+   document.querySelector('.inboxSubTab[data-inbox-tab="messages"]').click();
+  }else if(tab==='profile'){
+   profile.classList.add('open');
+   renderProfileGrid();
   }
  };
 });
 
-document.getElementById('closeStudio').onclick=()=>{
- studio.classList.remove('open');
- stopCamera();
- appContainer.classList.remove('hide-nav-for-create');
- updateNavActiveState('home');
-};
+document.querySelectorAll('.close').forEach(b=>{
+ b.onclick=()=>{
+  b.closest('.screen').classList.remove('open');
+  appContainer.classList.remove('hide-nav-for-create');
+  stopCamera();
+  updateNavActiveState('home');
+ };
+});
 
-document.getElementById('soundSelectBtn').onclick=()=>document.getElementById('soundModal').classList.add('open');
-document.getElementById('closeSoundModal').onclick=()=>document.getElementById('soundModal').classList.remove('open');
+document.querySelectorAll('.tabs .tab').forEach(tab=>{
+ tab.onclick=()=>{
+  document.querySelectorAll('.tabs .tab').forEach(t=>t.classList.remove('active'));
+  tab.classList.add('active');
+  const type=tab.dataset.feedTab;
+  if(type==='following'){
+   renderFeed(feedData.slice(0,2));
+   showToast('Showing Following feed');
+  }else{
+   renderFeed(feedData);
+   showToast('Showing For You feed');
+  }
+ };
+});
 
 renderFeed();
 </script>
