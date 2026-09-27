@@ -415,9 +415,25 @@ button{font:inherit}
 .profileSubTab{padding:10px 0;font-weight:700;color:var(--muted);cursor:pointer;flex:1;text-align:center;font-size:13px}
 .profileSubTab.active{color:#fff;border-bottom:2px solid var(--pink)}
 
-.userPostsGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
-.userPostThumb{aspect-ratio:9/16;background:#222;position:relative;cursor:pointer}
+.userPostsGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.userPostThumb{aspect-ratio:9/16;background:#222;position:relative;cursor:pointer;border-radius:8px;overflow:hidden}
 .userPostThumb img, .userPostThumb video{width:100%;height:100%;object-fit:cover}
+.profile-view-badge {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(4px);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  z-index: 2;
+}
 
 /* Sound Modal */
 .modalScreen{position:absolute;inset:0;z-index:90;background:#0f1015;display:none;flex-direction:column}
@@ -1636,8 +1652,19 @@ function renderProfileGrid(){
   const cell = document.createElement('div');
   cell.className = 'userPostThumb';
   const firstMedia = item.mediaList && item.mediaList.length > 0 ? item.mediaList[0] : {type: item.video?'video':'image', url: item.video||item.image||''};
-  if(firstMedia.type === 'image') { cell.innerHTML = `<img style="display:block" src="${firstMedia.url}" alt="">`; }
-  else { cell.innerHTML = `<video src="${firstMedia.url}" muted playsinline></video>`; }
+  
+  let mediaInnerHtml = '';
+  if(firstMedia.type === 'image') { 
+    mediaInnerHtml = `<img style="display:block" src="${firstMedia.url}" alt="">`; 
+  } else { 
+    mediaInnerHtml = `<video src="${firstMedia.url}" muted playsinline></video>`; 
+  }
+
+  // View counts shown ONLY on profile
+  const viewCountHtml = `<div class="profile-view-badge">👁 ${item.views || '1'}</div>`;
+
+  cell.innerHTML = mediaInnerHtml + viewCountHtml;
+
   cell.onclick = () => {
    profile.classList.remove('open');
    updateNavActiveState('home');
@@ -2084,24 +2111,39 @@ document.querySelectorAll('.nav button[data-tab]').forEach(btn => {
     } else if (tabKey === 'profile') {
       document.querySelectorAll('.screen').forEach(s => { if(s.id !== 'profile') s.classList.remove('open'); });
       profile.classList.add('open');
+      renderProfileGrid();
     }
   };
 });
 
-document.querySelectorAll('.close').forEach(btn => {
-  btn.onclick = (e) => {
-    const screen = e.target.closest('.screen');
-    if (screen) {
-      screen.classList.remove('open');
-      if (screen.id === 'studio') {
-        stopCamera();
-      }
-      appContainer.classList.remove('hide-nav-for-create');
-      updateNavActiveState('home');
-    }
+document.querySelectorAll('.close[data-close], #closeStudio, #closePost, #closeSoundModal').forEach(btn => {
+  btn.onclick = () => {
+    studio.classList.remove('open');
+    postScreen.classList.remove('open');
+    discover.classList.remove('open');
+    inbox.classList.remove('open');
+    profile.classList.remove('open');
+    document.getElementById('soundModal').classList.remove('open');
+    appContainer.classList.remove('hide-nav-for-create');
+    stopCamera();
+    updateNavActiveState('home');
   };
 });
 
+document.getElementById('soundSelectBtn').onclick = () => {
+  document.getElementById('soundModal').classList.add('open');
+};
+
+document.querySelectorAll('#soundListContainer .soundItem').forEach(item => {
+  item.onclick = () => {
+    selectedSound = item.dataset.sound;
+    document.getElementById('currentSoundLabel').textContent = selectedSound;
+    document.getElementById('soundModal').classList.remove('open');
+    showToast(`Sound selected: ${selectedSound}`);
+  };
+});
+
+// Initialize Feed
 renderFeed();
 </script>
 </body>
