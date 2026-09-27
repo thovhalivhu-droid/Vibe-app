@@ -131,6 +131,43 @@ button{font:inherit}
 
 .mute{position:absolute;top:68px;right:16px;z-index:7;width:40px;height:40px;border:0;border-radius:50%;background:#0008;color:#fff;font-size:19px;cursor:pointer;}
 
+/* Custom Control Overlay (Pause Button Only) */
+.video-control-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 8;
+  pointer-events: none;
+}
+.custom-pause-btn {
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  pointer-events: auto;
+  backdrop-filter: blur(6px);
+  transition: transform 0.2s, background 0.2s, opacity 0.2s;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  opacity: 0.85;
+}
+.custom-pause-btn:hover {
+  transform: scale(1.08);
+  background: rgba(0, 0, 0, 0.7);
+  opacity: 1;
+}
+/* Completely hide Resume/Play button visually/interactively while keeping underlying logic functional */
+.custom-pause-btn.is-paused {
+  display: none !important;
+}
+
 .nav{position:absolute;bottom:0;left:0;right:0;height:var(--nav);z-index:100;display:flex;justify-around;align-items:center;background:#171820ee;backdrop-filter:blur(16px);border-top:1px solid #ffffff12;pointer-events:auto;transition:transform .3s ease}
 .nav button{background:none;border:0;color:#9a9dac;font-size:10px;display:flex;flex-direction:column;align-items:center;gap:4px;width:20%;cursor:pointer;pointer-events:auto}.nav button.active{color:#fff}.nav .plus{width:42px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--pink),var(--cyan));color:#fff;font-size:22px;line-height:1}
 
@@ -139,7 +176,6 @@ button{font:inherit}
 
 .screen{position:absolute;top:0;left:0;right:0;bottom:0;z-index:40;background:var(--bg);transform:translateY(100%);transition:.3s;display:flex;flex-direction:column}
 .screen.open{transform:translateY(0)}
-.screenHead{height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid #ffffff10;font-weight:800}.close{border:0;background:none;color:#fff;font-size:24px;cursor:pointer}
 #studio{background:#000;bottom:0;z-index:60}
 .camera{position:relative;flex:1;background:#111;overflow:hidden}
 .camera video{width:100%;height:100%;object-fit:cover}
@@ -289,24 +325,6 @@ button{font:inherit}
 .soundTitle{font-weight:700;font-size:14px}.soundAuthor{font-size:12px;color:var(--muted)}
 .useSoundBtn{padding:5px 12px;background:var(--pink);border:0;border-radius:14px;color:#fff;font-size:12px;font-weight:700}
 
-/* Double Tap Heart Animation */
-.double-tap-heart {
-  position: absolute;
-  font-size: 80px;
-  color: var(--pink);
-  transform: translate(-50%, -50%) scale(0);
-  animation: popHeart 0.8s ease-out forwards;
-  pointer-events: none;
-  z-index: 10;
-  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
-}
-@keyframes popHeart {
-  0% { transform: translate(-50%, -50%) scale(0) rotate(-20deg); opacity: 0; }
-  25% { transform: translate(-50%, -50%) scale(1.2) rotate(10deg); opacity: 1; }
-  60% { transform: translate(-50%, -60%) scale(1) rotate(0deg); opacity: 1; }
-  100% { transform: translate(-50%, -90%) scale(0.9) rotate(0deg); opacity: 0; }
-}
-
 /* Comment Screen Drawer */
 .commentModal{position:absolute;bottom:0;left:0;right:0;height:65%;background:#14151c;z-index:105;border-top-left-radius:20px;border-top-right-radius:20px;display:none;flex-direction:column;transform:translateY(100%);transition:transform .3s ease}
 .commentModal.open{display:flex;transform:translateY(0)}
@@ -425,30 +443,6 @@ input:checked+.slider:before{transform:translateX(20px)}
 .liveInputField { flex: 1; background: #1a1b22; border: 1px solid #ffffff15; border-radius: 20px; padding: 10px 14px; color: #fff; font-size: 13px; outline: none; }
 .liveSendBtn { background: var(--pink); border: 0; color: #fff; font-weight: 700; padding: 10px 16px; border-radius: 20px; cursor: pointer; }
 .liveHeartBtn { background: rgba(255,255,255,0.15); border: 0; font-size: 20px; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-
-/* Video play/pause indicator overlay */
-.play-pause-indicator {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0.8);
-  font-size: 50px;
-  background: rgba(0,0,0,0.5);
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease, transform 0.2s ease;
-  z-index: 6;
-}
-.play-pause-indicator.show {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
-}
 </style>
 </head>
 <body>
@@ -863,6 +857,11 @@ function updateNavActiveState(tabKey) {
 function pauseAllFeedVideos() {
   document.querySelectorAll('video').forEach(v => { 
     v.pause(); 
+    const card = v.closest('.reel');
+    if(card) {
+      const pauseBtn = card.querySelector('.custom-pause-btn');
+      if(pauseBtn) pauseBtn.classList.add('is-paused');
+    }
   });
 }
 
@@ -913,7 +912,9 @@ function renderFeed(filteredList){
           mediaHtml += `
             <div class="reel-media-slide" style="position:relative;">
               <video class="reel-video" src="${m.url}" loop playsinline preload="auto" ${muted?'muted':''}></video>
-              <div class="play-pause-indicator">▶</div>
+              <div class="video-control-overlay">
+                <button class="custom-pause-btn" title="Pause">⏸</button>
+              </div>
             </div>`;
         } else {
           mediaHtml += `<div class="reel-media-slide"><img class="reel-image" style="display:block" src="${m.url}" alt=""></div>`;
@@ -934,7 +935,9 @@ function renderFeed(filteredList){
     if(m.type === 'video') {
       mediaHtml = `
         <video class="reel-video" src="${m.url}" loop playsinline preload="auto" ${muted?'muted':''}></video>
-        <div class="play-pause-indicator">▶</div>`;
+        <div class="video-control-overlay">
+          <button class="custom-pause-btn" title="Pause">⏸</button>
+        </div>`;
     } else {
       mediaHtml = `<img class="reel-image" style="display:block" src="${m.url}" alt="">`;
     }
@@ -967,28 +970,30 @@ function renderFeed(filteredList){
   card.querySelectorAll('.reel-video').forEach(v => {
     v.currentTime = 0.001;
 
-    // Tap once to toggle play/pause functionality
+    const pauseBtn = v.parentElement.querySelector('.custom-pause-btn');
+    if(pauseBtn) {
+      pauseBtn.onclick = (e) => {
+        e.stopPropagation();
+        if(!v.paused) {
+          v.pause();
+          pauseBtn.classList.add('is-paused');
+        }
+      };
+    }
+
+    // Single click / tap on video area to resume if paused via hidden control, or toggle state
     let tapTimeout = null;
     v.parentElement.addEventListener('click', (e) => {
       if (e.target.closest('.overlay') || e.target.closest('.mute') || e.target.closest('.vertical-edit-menu')) return;
       
       clearTimeout(tapTimeout);
       tapTimeout = setTimeout(() => {
-        const indicator = v.parentElement.querySelector('.play-pause-indicator');
         if (v.paused) {
           v.play().catch(()=>{});
-          if(indicator) {
-            indicator.textContent = '▶';
-            indicator.classList.add('show');
-            setTimeout(() => indicator.classList.remove('show'), 600);
-          }
+          if(pauseBtn) pauseBtn.classList.remove('is-paused');
         } else {
           v.pause();
-          if(indicator) {
-            indicator.textContent = '⏸';
-            indicator.classList.add('show');
-            setTimeout(() => indicator.classList.remove('show'), 600);
-          }
+          if(pauseBtn) pauseBtn.classList.add('is-paused');
         }
       }, 150);
     });
@@ -1005,15 +1010,24 @@ function renderFeed(filteredList){
       });
 
       card.querySelectorAll('.reel-video').forEach((vSlide, sIdx) => {
+        const slidePauseBtn = vSlide.parentElement.querySelector('.custom-pause-btn');
         if(sIdx === activeIdx && isCardFullyInViewport(card)) {
           if(activeVideo && activeVideo !== vSlide) {
             activeVideo.pause();
+            const prevCard = activeVideo.closest('.reel');
+            if(prevCard) {
+              const prevPauseBtn = prevCard.querySelector('.custom-pause-btn');
+              if(prevPauseBtn) prevPauseBtn.classList.add('is-paused');
+            }
           }
           activeVideo = vSlide;
           vSlide.muted = muted;
-          vSlide.play().catch(()=>{});
+          vSlide.play().then(() => {
+            if(slidePauseBtn) slidePauseBtn.classList.remove('is-paused');
+          }).catch(()=>{});
         } else {
           vSlide.pause();
+          if(slidePauseBtn) slidePauseBtn.classList.add('is-paused');
         }
       });
     };
@@ -1120,14 +1134,20 @@ function setupObserver(){
       if (activeSlideVid) {
         activeVideo = activeSlideVid;
         activeSlideVid.muted = muted;
-        activeSlideVid.play().catch(() => {});
+        activeSlideVid.play().then(() => {
+          const pauseBtn = activeSlideVid.parentElement.querySelector('.custom-pause-btn');
+          if(pauseBtn) pauseBtn.classList.remove('is-paused');
+        }).catch(() => {});
       }
     } else {
       const v = card.querySelector('video');
       if (v) {
         activeVideo = v;
         v.muted = muted;
-        v.play().catch(() => {});
+        v.play().then(() => {
+          const pauseBtn = v.parentElement.querySelector('.custom-pause-btn');
+          if(pauseBtn) pauseBtn.classList.remove('is-paused');
+        }).catch(() => {});
       }
     }
    }
@@ -1143,7 +1163,10 @@ function setupObserver(){
      if (firstVideo) {
        activeVideo = firstVideo;
        firstVideo.muted = muted;
-       firstVideo.play().catch(() => {});
+       firstVideo.play().then(() => {
+         const pauseBtn = firstVideo.parentElement.querySelector('.custom-pause-btn');
+         if(pauseBtn) pauseBtn.classList.remove('is-paused');
+       }).catch(() => {});
      }
    }
  }, 150);
