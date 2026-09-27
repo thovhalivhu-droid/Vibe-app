@@ -425,6 +425,30 @@ input:checked+.slider:before{transform:translateX(20px)}
 .liveInputField { flex: 1; background: #1a1b22; border: 1px solid #ffffff15; border-radius: 20px; padding: 10px 14px; color: #fff; font-size: 13px; outline: none; }
 .liveSendBtn { background: var(--pink); border: 0; color: #fff; font-weight: 700; padding: 10px 16px; border-radius: 20px; cursor: pointer; }
 .liveHeartBtn { background: rgba(255,255,255,0.15); border: 0; font-size: 20px; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+/* Video play/pause indicator overlay */
+.play-pause-indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  font-size: 50px;
+  background: rgba(0,0,0,0.5);
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 6;
+}
+.play-pause-indicator.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
 </style>
 </head>
 <body>
@@ -886,7 +910,11 @@ function renderFeed(filteredList){
     } else {
       mediaList.forEach((m) => {
         if(m.type === 'video') {
-          mediaHtml += `<div class="reel-media-slide"><video class="reel-video" src="${m.url}" loop playsinline preload="auto" ${muted?'muted':''}></video></div>`;
+          mediaHtml += `
+            <div class="reel-media-slide" style="position:relative;">
+              <video class="reel-video" src="${m.url}" loop playsinline preload="auto" ${muted?'muted':''}></video>
+              <div class="play-pause-indicator">▶</div>
+            </div>`;
         } else {
           mediaHtml += `<div class="reel-media-slide"><img class="reel-image" style="display:block" src="${m.url}" alt=""></div>`;
         }
@@ -904,7 +932,9 @@ function renderFeed(filteredList){
   } else {
     const m = mediaList[0];
     if(m.type === 'video') {
-      mediaHtml = `<video class="reel-video" src="${m.url}" loop playsinline preload="auto" ${muted?'muted':''}></video>`;
+      mediaHtml = `
+        <video class="reel-video" src="${m.url}" loop playsinline preload="auto" ${muted?'muted':''}></video>
+        <div class="play-pause-indicator">▶</div>`;
     } else {
       mediaHtml = `<img class="reel-image" style="display:block" src="${m.url}" alt="">`;
     }
@@ -936,6 +966,32 @@ function renderFeed(filteredList){
   
   card.querySelectorAll('.reel-video').forEach(v => {
     v.currentTime = 0.001;
+
+    // Tap once to toggle play/pause functionality
+    let tapTimeout = null;
+    v.parentElement.addEventListener('click', (e) => {
+      if (e.target.closest('.overlay') || e.target.closest('.mute') || e.target.closest('.vertical-edit-menu')) return;
+      
+      clearTimeout(tapTimeout);
+      tapTimeout = setTimeout(() => {
+        const indicator = v.parentElement.querySelector('.play-pause-indicator');
+        if (v.paused) {
+          v.play().catch(()=>{});
+          if(indicator) {
+            indicator.textContent = '▶';
+            indicator.classList.add('show');
+            setTimeout(() => indicator.classList.remove('show'), 600);
+          }
+        } else {
+          v.pause();
+          if(indicator) {
+            indicator.textContent = '⏸';
+            indicator.classList.add('show');
+            setTimeout(() => indicator.classList.remove('show'), 600);
+          }
+        }
+      }, 150);
+    });
   });
 
   const slider = card.querySelector('.reel-media-slider');
@@ -1055,7 +1111,6 @@ function setupObserver(){
    const slider = card.querySelector('.reel-media-slider');
    
    if (en.isIntersecting && activeTabKey === 'home') {
-    // Pause all videos across the feed first
     pauseAllFeedVideos();
 
     if (slider) {
@@ -1081,7 +1136,6 @@ function setupObserver(){
 
  document.querySelectorAll('.reel').forEach(x => feedObserver.observe(x));
 
- // Autoplay the first video on initial open
  setTimeout(() => {
    const firstCard = feed.querySelector('.reel');
    if (firstCard) {
