@@ -1356,15 +1356,19 @@ function openEditor(mediaList){
      if(item.type==='video'){
        el.controls = false;
        el.playsInline = true;
-       el.muted = false; 
+       el.muted = true; // Start muted to ensure reliable autoplay on load
        el.loop = true;
+       el.currentTime = 0; // Display first frame immediately
        el.play().catch(()=>{});
      }
      container.insertBefore(el, container.firstChild);
    });
  }
 
- document.getElementById('editorMuteBtn').style.display = selectedMediaList.some(i => i.type === 'video') ? 'block' : 'none';
+ const hasVideo = selectedMediaList.some(i => i.type === 'video');
+ const muteBtn = document.getElementById('editorMuteBtn');
+ muteBtn.style.display = hasVideo ? 'block' : 'none';
+ muteBtn.textContent = '🔇';
 
  drawCanvas = document.getElementById('editorDrawingCanvas');
  drawCtx = drawCanvas.getContext('2d');
