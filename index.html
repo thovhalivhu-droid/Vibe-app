@@ -780,8 +780,10 @@ input:checked+.slider:before{transform:translateX(20px)}
 <section id="profile" class="screen">
 <div class="screenHead">
   <span>My Profile</span>
-  <div style="display: flex; align-items: center; gap: 12px;">
-    <button onclick="openSecuritySettings()" style="background: none; border: none; color: #fff; font-size: 20px; cursor: pointer;" title="Security & Privacy">⚙</button>
+  <div style="display: flex; align-items: center; gap: 8px;">
+    <!-- Added Privacy & Security and Privacy Policy buttons clickable on the right side of the Me/Profile header -->
+    <button onclick="openSecuritySettings()" style="background: none; border: none; color: #fff; font-size: 16px; cursor: pointer; padding: 4px 6px;" title="Privacy & Security">🔒</button>
+    <button onclick="openPrivacyPolicy()" style="background: none; border: none; color: #fff; font-size: 16px; cursor: pointer; padding: 4px 6px;" title="Privacy Policy">📄</button>
     <button class="close" data-close="profile" style="position: static; font-size: 24px;">×</button>
   </div>
 </div>
@@ -804,18 +806,6 @@ input:checked+.slider:before{transform:translateX(20px)}
     </div>
   </div>
 
-  <!-- NEW MENU LINKS ADDED TO ME/PROFILE SECTION -->
-  <div style="background:var(--surface); border-radius:14px; border:1px solid #ffffff10; margin-bottom:16px; overflow:hidden;">
-    <div onclick="openSecuritySettings()" style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid #ffffff0a; cursor:pointer; font-size:14px; font-weight:700;">
-      <span>🔒 Privacy & Security</span>
-      <span style="color:var(--muted)">›</span>
-    </div>
-    <div onclick="openPrivacyPolicy()" style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; cursor:pointer; font-size:14px; font-weight:700;">
-      <span>📄 Privacy Policy</span>
-      <span style="color:var(--muted)">›</span>
-    </div>
-  </div>
-  
   <div class="profileSubTabs">
     <span class="profileSubTab active" data-profile-tab="posts">My Posts</span>
     <span class="profileSubTab" data-profile-tab="saved">Saved Videos</span>
@@ -2175,35 +2165,33 @@ document.querySelectorAll('.nav button').forEach(btn=>{
    studio.classList.remove('open');
    stopCamera();
    appContainer.classList.remove('hide-nav-for-create');
-  }else if(tab==='discover'){
+  } else if(tab==='discover'){
    discover.classList.add('open');
    inbox.classList.remove('open');
    profile.classList.remove('open');
    studio.classList.remove('open');
    stopCamera();
-   renderDiscoverGrid();
    appContainer.classList.remove('hide-nav-for-create');
-  }else if(tab==='inbox'){
+  } else if(tab==='inbox'){
    inbox.classList.add('open');
    discover.classList.remove('open');
    profile.classList.remove('open');
    studio.classList.remove('open');
    stopCamera();
    appContainer.classList.remove('hide-nav-for-create');
-  }else if(tab==='profile'){
+  } else if(tab==='profile'){
    profile.classList.add('open');
    discover.classList.remove('open');
    inbox.classList.remove('open');
    studio.classList.remove('open');
    stopCamera();
-   renderProfileGrid();
    appContainer.classList.remove('hide-nav-for-create');
   }
  };
 });
 
-document.querySelectorAll('.close').forEach(btn=>{
- btn.onclick=(e)=>{
+document.querySelectorAll('.screenHead .close').forEach(btn=>{
+ btn.onclick=()=>{
   const screen=btn.closest('.screen');
   if(screen){
    screen.classList.remove('open');
