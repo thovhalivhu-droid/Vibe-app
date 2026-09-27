@@ -903,6 +903,13 @@ function updateNavActiveState(tabKey) {
  if(activeBtn) activeBtn.classList.add('active');
 }
 
+// Pause all feed videos when leaving Home screen
+function pauseAllFeedVideos() {
+  document.querySelectorAll('.reel video').forEach(v => {
+    v.pause();
+  });
+}
+
 function showToast(msg){toast.textContent=msg;toast.classList.add('show');clearTimeout(showToast.t);showToast.t=setTimeout(()=>toast.classList.remove('show'),2200)}
 
 function parseCaptions(text){
@@ -1057,6 +1064,7 @@ function renderFeed(filteredList){
 
 function triggerEditAction(actionType, itemId) {
   if (actionType === 'text') {
+    pauseAllFeedVideos();
     postScreen.classList.add('open');
     const bar = document.getElementById('topTextEditorBar');
     bar.classList.add('open');
@@ -1119,8 +1127,15 @@ function setupObserver(){
  const ob=new IntersectionObserver(entries=>entries.forEach(en=>{
   const v=en.target.querySelector('video');
   if(!v) return;
-  if(en.isIntersecting){if(activeVideo&&activeVideo!==v){activeVideo.pause()}activeVideo=v;v.muted=muted;v.play().catch(()=>{})}
-  else v.pause();
+  // Play only if intersecting AND on home tab
+  if(en.isIntersecting && activeTabKey === 'home'){
+   if(activeVideo&&activeVideo!==v){activeVideo.pause()}
+   activeVideo=v;
+   v.muted=muted;
+   v.play().catch(()=>{})
+  } else {
+   v.pause();
+  }
  }),{root:feed,threshold:.7});
  document.querySelectorAll('.reel').forEach(x=>ob.observe(x));
 }
@@ -1140,6 +1155,7 @@ function renderDiscoverGrid(filterText=""){
   cell.onclick = () => {
    discover.classList.remove('open');
    updateNavActiveState('home');
+   pauseAllFeedVideos();
    const idx = feedData.findIndex(f => f.id === item.id);
    if(idx !== -1) { feed.children[idx].scrollIntoView({behavior:'smooth'}); }
   };
@@ -1195,6 +1211,7 @@ function renderProfileGrid(){
   cell.onclick = () => {
    profile.classList.remove('open');
    updateNavActiveState('home');
+   pauseAllFeedVideos();
    const idx = feedData.findIndex(f => f.id === item.id);
    if(idx !== -1) { feed.children[idx].scrollIntoView({behavior:'smooth'}); }
   };
@@ -1967,196 +1984,195 @@ function toggleLiveMic() {
   const audioTrack = mediaStream.getAudioTracks()[0];
   if(audioTrack) {
     audioTrack.enabled = !audioTrack.enabled;
-    document.getElementById('liveMuteMicBtn').textContent = audioTrack.enabled ? 'Mute' : 'Unmute';
-    showToast(audioTrack.enabled ? 'Microphone unmuted' : 'Microphone muted');
+    const btn = document.getElementById('liveMuteMicBtn');
+    btn.textContent = audioTrack.enabled ? 'Mute' : 'Unmute';
+    showToast(audioTrack.enabled ? 'Mic unmuted' : 'Mic muted');
   }
 }
 
-function openGuestRequestsModal() {
-  const container = document.getElementById('guestRequestsListContainer');
-  container.innerHTML = '';
-  
-  const badge = document.getElementById('guestBadgeCount');
-  if(badge) {
-    badge.textContent = guestRequestsData.length;
-    badge.style.display = guestRequestsData.length > 0 ? 'inline-block' : 'none';
-  }
-
-  if(guestRequestsData.length === 0) {
-    container.innerHTML = `<div style="text-align:center;color:var(--muted);padding-top:40px;font-size:13px;">No pending guest requests.</div>`;
-  } else {
-    guestRequestsData.forEach(g => {
-      container.innerHTML += `
-        <div class="messageItem" style="justify-content:space-between;" id="guest-req-row-${g.id}">
-          <div style="display:flex; align-items:center; gap:12px; flex:1; min-width:0;">
-            <img class="messageAvatar" src="${g.avatar}">
-            <div class="messageContent" style="min-width:0;">
-              <div class="messageName">${g.name}</div>
-              <div class="messageSnippet">${g.username}</div>
-            </div>
-          </div>
-          <div style="display:flex; gap:6px; margin-left:8px;">
-            <button onclick="acceptGuestRequest(${g.id})" style="background:var(--cyan); border:0; color:#000; padding:6px 12px; border-radius:14px; font-weight:700; font-size:11px; cursor:pointer;">Accept</button>
-            <button onclick="declineGuestRequest(${g.id})" style="background:#2a2a2a; border:0; color:#fff; padding:6px 12px; border-radius:14px; font-weight:700; font-size:11px; cursor:pointer;">Decline</button>
-          </div>
-        </div>
-      `;
-    });
-  }
-  document.getElementById('guestRequestsModal').classList.add('open');
-}
-
-function closeGuestRequestsModal() {
-  document.getElementById('guestRequestsModal').classList.remove('open');
-}
-document.getElementById('closeGuestRequestsModal').onclick = closeGuestRequestsModal;
-
-function acceptGuestRequest(id) {
-  const guestIndex = guestRequestsData.findIndex(g => g.id === id);
-  if(guestIndex !== -1) {
-    const guest = guestRequestsData.splice(guestIndex, 1)[0];
-    if(activeGuests.length < 4) {
-      activeGuests.push(guest);
-      renderActiveGuestsGrid();
-      showToast(`${guest.name} joined your live stream!`);
-    } else {
-      showToast('Maximum guest limit (4) reached');
-    }
-    openGuestRequestsModal();
-  }
-}
-
-function declineGuestRequest(id) {
-  guestRequestsData = guestRequestsData.filter(g => g.id !== id);
-  openGuestRequestsModal();
-  showToast('Guest request declined');
-}
-
-function renderActiveGuestsGrid() {
-  const grid = document.getElementById('activeGuestsGrid');
-  if(!grid) return;
-  if(activeGuests.length === 0) {
-    grid.classList.add('hidden');
-    grid.innerHTML = '';
-    return;
-  }
-  grid.classList.remove('hidden');
-  grid.innerHTML = '';
-  activeGuests.forEach(g => {
-    grid.innerHTML += `
-      <div class="guest-slot">
-        <img src="${g.avatar}" alt="">
-        <div class="guest-slot-name">${g.name}</div>
-      </div>
-    `;
-  });
-}
-
-function openLiveSettingsModal() {
-  document.getElementById('liveSettingsModal').classList.add('open');
-}
-function closeLiveSettingsModal() {
-  document.getElementById('liveSettingsModal').classList.remove('open');
-}
-document.getElementById('closeLiveSettingsModal').onclick = closeLiveSettingsModal;
+function openLiveSettingsModal() { document.getElementById('liveSettingsModal').classList.add('open'); }
+document.getElementById('closeLiveSettingsModal').onclick = () => { document.getElementById('liveSettingsModal').classList.remove('open'); };
 
 function toggleGuestRequestsSetting(checkbox) {
   allowGuestRequestsEnabled = checkbox.checked;
   showToast(allowGuestRequestsEnabled ? 'Guest requests enabled' : 'Guest requests disabled');
 }
 
+function openGuestRequestsModal() {
+  renderGuestRequestsList();
+  document.getElementById('guestRequestsModal').classList.add('open');
+}
+document.getElementById('closeGuestRequestsModal').onclick = () => { document.getElementById('guestRequestsModal').classList.remove('open'); };
+
+function renderGuestRequestsList() {
+  const container = document.getElementById('guestRequestsListContainer');
+  container.innerHTML = '';
+  document.getElementById('guestBadgeCount').textContent = guestRequestsData.length;
+
+  if(guestRequestsData.length === 0) {
+    container.innerHTML = `<div style="text-align:center;color:var(--muted);padding-top:40px;font-size:13px;">No pending guest requests.</div>`;
+    return;
+  }
+
+  guestRequestsData.forEach(g => {
+    container.innerHTML += `
+      <div class="messageItem" style="justify-content:space-between;" id="guest-req-${g.id}">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <img class="messageAvatar" src="${g.avatar}">
+          <div class="messageContent">
+            <div class="messageName">${g.name}</div>
+            <div class="messageSnippet">${g.username}</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <button onclick="acceptGuestRequest(${g.id})" style="background:var(--pink); border:0; color:#fff; padding:6px 12px; border-radius:14px; font-weight:700; font-size:11px; cursor:pointer;">Accept</button>
+          <button onclick="declineGuestRequest(${g.id})" style="background:#2a2a2a; border:0; color:#fff; padding:6px 12px; border-radius:14px; font-weight:700; font-size:11px; cursor:pointer;">Decline</button>
+        </div>
+      </div>
+    `;
+  });
+}
+
+function acceptGuestRequest(id) {
+  const reqIdx = guestRequestsData.findIndex(g => g.id === id);
+  if(reqIdx !== -1) {
+    const guest = guestRequestsData.splice(reqIdx, 1)[0];
+    if(activeGuests.length < 4) {
+      activeGuests.push(guest);
+      updateActiveGuestsGrid();
+      showToast(`${guest.name} joined as co-host! 🎥`);
+    } else {
+      showToast('Maximum 4 guests reached');
+    }
+  }
+  renderGuestRequestsList();
+}
+
+function declineGuestRequest(id) {
+  guestRequestsData = guestRequestsData.filter(g => g.id !== id);
+  renderGuestRequestsList();
+  showToast('Guest request declined');
+}
+
+function updateActiveGuestsGrid() {
+  const grid = document.getElementById('activeGuestsGrid');
+  if(!grid) return;
+  grid.innerHTML = '';
+  if(activeGuests.length === 0) {
+    grid.classList.add('hidden');
+    return;
+  }
+  grid.classList.remove('hidden');
+  activeGuests.forEach(g => {
+    grid.innerHTML += `
+      <div class="guest-slot">
+        <img src="${g.avatar}" alt="${g.name}">
+        <div class="guest-slot-name">${g.name}</div>
+      </div>
+    `;
+  });
+}
+
 function openSecuritySettings() {
+  pauseAllFeedVideos();
   document.getElementById('security-settings-screen').classList.add('open');
 }
 function closeSecuritySettings() {
   document.getElementById('security-settings-screen').classList.remove('open');
 }
+function togglePrivateAccount(el) { showToast(el.checked ? 'Account set to Private' : 'Account set to Public'); }
+function updateDMPermissions(val) { showToast(`DM permissions updated: ${val}`); }
+function openPasswordModal() { showToast('Password change prompt'); }
+function toggleTFA(el) { showToast(el.checked ? '2FA Enabled' : '2FA Disabled'); }
+function openBlockedAccounts() { showToast('Blocked accounts manager'); }
+function downloadUserData() { showToast('Preparing data download package...'); }
+function openPrivacyPolicy() { showToast('Opening Privacy Policy'); }
+function openTermsOfService() { showToast('Opening Terms of Service'); }
+function openCookiePolicy() { showToast('Opening Cookie Policy'); }
 
-function togglePrivateAccount(checkbox) {
-  showToast(checkbox.checked ? 'Account set to Private' : 'Account set to Public');
-}
-
-function updateDMPermissions(value) {
-  showToast(`Direct messages updated to: ${value}`);
-}
-
-function openPasswordModal() {
-  showToast('Password change prompt opened');
-}
-
-function toggleTFA(checkbox) {
-  showToast(checkbox.checked ? 'Two-Factor Authentication Enabled' : 'Two-Factor Authentication Disabled');
-}
-
-function openBlockedAccounts() {
-  showToast('Blocked accounts management opened');
-}
-
-function downloadUserData() {
-  showToast('Your data download has been requested');
-}
-
-function openPrivacyPolicy() {
-  showToast('Opening Privacy Policy...');
-}
-
-function openTermsOfService() {
-  showToast('Opening Terms of Service...');
-}
-
-function openCookiePolicy() {
-  showToast('Opening Cookie Policy...');
-}
-
-document.querySelectorAll('.nav button').forEach(b=>{
- b.onclick=()=>{
-  const tab=b.dataset.tab;
-  updateNavActiveState(tab);
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('open'));
-  appContainer.classList.remove('hide-nav-for-create');
-  stopCamera();
-  if(tab==='home'){
-   window.scrollTo(0,0);
-  }else if(tab==='discover'){
-   discover.classList.add('open');
-   renderDiscoverGrid();
-  }else if(tab==='create'){
-   studio.classList.add('open');
-   appContainer.classList.add('hide-nav-for-create');
-   startCamera();
-  }else if(tab==='inbox'){
-   inbox.classList.add('open');
-   document.querySelector('.inboxSubTab[data-inbox-tab="messages"]').click();
-  }else if(tab==='profile'){
-   profile.classList.add('open');
-   renderProfileGrid();
-  }
- };
-});
-
-document.querySelectorAll('.close').forEach(b=>{
- b.onclick=()=>{
-  b.closest('.screen').classList.remove('open');
-  appContainer.classList.remove('hide-nav-for-create');
-  stopCamera();
+// Bottom Navigation event listeners with video pause integration
+document.getElementById('navHomeBtn').onclick = () => {
   updateNavActiveState('home');
- };
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('open'));
+  appContainer.classList.remove('hide-nav-for-create');
+  // Resume video playback on active reel if any
+  const currentReel = feed.querySelector('.reel');
+  if(currentReel){
+    const v = currentReel.querySelector('video');
+    if(v) v.play().catch(()=>{});
+  }
+};
+
+document.getElementById('navDiscoverBtn').onclick = () => {
+  updateNavActiveState('discover');
+  pauseAllFeedVideos();
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('open'));
+  discover.classList.add('open');
+  appContainer.classList.remove('hide-nav-for-create');
+};
+
+document.getElementById('navCreateBtn').onclick = () => {
+  updateNavActiveState('create');
+  pauseAllFeedVideos();
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('open'));
+  studio.classList.add('open');
+  appContainer.classList.add('hide-nav-for-create');
+  startCamera();
+};
+
+document.getElementById('navInboxBtn').onclick = () => {
+  updateNavActiveState('inbox');
+  pauseAllFeedVideos();
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('open'));
+  inbox.classList.add('open');
+  appContainer.classList.remove('hide-nav-for-create');
+};
+
+document.getElementById('navProfileBtn').onclick = () => {
+  updateNavActiveState('profile');
+  pauseAllFeedVideos();
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('open'));
+  profile.classList.add('open');
+  appContainer.classList.remove('hide-nav-for-create');
+  renderProfileGrid();
+};
+
+document.querySelectorAll('[data-close]').forEach(btn => {
+  btn.onclick = () => {
+    const targetId = btn.getAttribute('data-close');
+    document.getElementById(targetId).classList.remove('open');
+    updateNavActiveState('home');
+    const currentReel = feed.querySelector('.reel');
+    if(currentReel){
+      const v = currentReel.querySelector('video');
+      if(v) v.play().catch(()=>{});
+    }
+  };
 });
 
-document.querySelectorAll('.tabs .tab').forEach(tab=>{
- tab.onclick=()=>{
-  document.querySelectorAll('.tabs .tab').forEach(t=>t.classList.remove('active'));
-  tab.classList.add('active');
-  const type=tab.dataset.feedTab;
-  if(type==='following'){
-   renderFeed(feedData.slice(0,2));
-   showToast('Showing Following feed');
-  }else{
-   renderFeed(feedData);
-   showToast('Showing For You feed');
+document.getElementById('closeStudio').onclick = () => {
+  studio.classList.remove('open');
+  stopCamera();
+  if(isLiveActive) toggleLiveStream();
+  appContainer.classList.remove('hide-nav-for-create');
+  updateNavActiveState('home');
+  const currentReel = feed.querySelector('.reel');
+  if(currentReel){
+    const v = currentReel.querySelector('video');
+    if(v) v.play().catch(()=>{});
   }
- };
-});
+};
+
+document.getElementById('closePost').onclick = () => {
+  postScreen.classList.remove('open');
+  appContainer.classList.remove('hide-nav-for-create');
+  updateNavActiveState('home');
+  const currentReel = feed.querySelector('.reel');
+  if(currentReel){
+    const v = currentReel.querySelector('video');
+    if(v) v.play().catch(()=>{});
+  }
+};
 
 renderFeed();
 </script>
