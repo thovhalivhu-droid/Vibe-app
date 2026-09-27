@@ -856,7 +856,7 @@ function renderFeed(filteredList){
   
   let mediaHtml = '';
   let dotsHtml = '';
-  const mediaList = item.mediaList || [{type: item.video ? 'video' : 'image', url: item.video || item.image}];
+  const mediaList = item.mediaList && item.mediaList.length > 0 ? item.mediaList : [{type: item.video ? 'video' : 'image', url: item.video || item.image || ''}];
   
   const allPhotos = mediaList.length > 1 && mediaList.every(m => m.type === 'image');
 
@@ -871,7 +871,7 @@ function renderFeed(filteredList){
     } else {
       mediaList.forEach((m) => {
         if(m.type === 'video') {
-          mediaHtml += `<div class="reel-media-slide"><video class="reel-video" src="${m.url}" loop playsinline preload="metadata" ${muted?'muted':''}></video></div>`;
+          mediaHtml += `<div class="reel-media-slide"><video class="reel-video" src="${m.url}" loop playsinline preload="auto" ${muted?'muted':''}></video></div>`;
         } else {
           mediaHtml += `<div class="reel-media-slide"><img class="reel-image" style="display:block" src="${m.url}" alt=""></div>`;
         }
@@ -889,7 +889,7 @@ function renderFeed(filteredList){
   } else {
     const m = mediaList[0];
     if(m.type === 'video') {
-      mediaHtml = `<video class="reel-video" src="${m.url}" loop playsinline preload="metadata" ${muted?'muted':''}></video>`;
+      mediaHtml = `<video class="reel-video" src="${m.url}" loop playsinline preload="auto" ${muted?'muted':''}></video>`;
     } else {
       mediaHtml = `<img class="reel-image" style="display:block" src="${m.url}" alt="">`;
     }
@@ -919,6 +919,11 @@ function renderFeed(filteredList){
   </div></div>`;
   feed.appendChild(card);
   
+  // Ensure initial frame loading for feed videos
+  card.querySelectorAll('.reel-video').forEach(v => {
+    v.currentTime = 0.001;
+  });
+
   const slider = card.querySelector('.reel-media-slider');
   if(slider && !allPhotos) {
     const dots = card.querySelectorAll('.carousel-dot');
@@ -930,7 +935,7 @@ function renderFeed(filteredList){
       });
 
       card.querySelectorAll('.reel-video').forEach((vSlide, sIdx) => {
-        if(sIdx === activeIdx && card.matches(':hover') || isCardInViewport(card)) {
+        if(sIdx === activeIdx && (card.matches(':hover') || isCardInViewport(card))) {
           if(activeVideo && activeVideo !== vSlide) activeVideo.pause();
           activeVideo = vSlide;
           vSlide.muted = muted;
@@ -1123,7 +1128,7 @@ function renderDiscoverGrid(filterText=""){
  matches.forEach(item => {
   const cell = document.createElement('div');
   cell.className = 'discoverGridItem';
-  const firstMedia = item.mediaList ? item.mediaList[0] : {type: item.video?'video':'image', url: item.video||item.image};
+  const firstMedia = item.mediaList && item.mediaList.length > 0 ? item.mediaList[0] : {type: item.video?'video':'image', url: item.video||item.image||''};
   if(firstMedia.type === 'image') { cell.innerHTML = `<img style="display:block" src="${firstMedia.url}" alt="">`; }
   else { cell.innerHTML = `<video src="${firstMedia.url}" muted playsinline></video>`; }
   cell.onclick = () => {
@@ -1180,7 +1185,7 @@ function renderProfileGrid(){
  listToDisplay.forEach(item => {
   const cell = document.createElement('div');
   cell.className = 'userPostThumb';
-  const firstMedia = item.mediaList ? item.mediaList[0] : {type: item.video?'video':'image', url: item.video||item.image};
+  const firstMedia = item.mediaList && item.mediaList.length > 0 ? item.mediaList[0] : {type: item.video?'video':'image', url: item.video||item.image||''};
   if(firstMedia.type === 'image') { cell.innerHTML = `<img style="display:block" src="${firstMedia.url}" alt="">`; }
   else { cell.innerHTML = `<video src="${firstMedia.url}" muted playsinline></video>`; }
   cell.onclick = () => {
@@ -1295,6 +1300,7 @@ function handleFileInputFiles(files, defaultType) {
         }
       };
       vid.onerror = () => {
+        // Fallback in case metadata event fails on some mobile browsers
         mediaList.push({ file, type, url });
         processedCount++;
         if(processedCount === incomingFiles.length) {
@@ -1356,9 +1362,10 @@ function openEditor(mediaList){
      if(item.type==='video'){
        el.controls = false;
        el.playsInline = true;
-       el.muted = true; // Start muted to ensure reliable autoplay on load
+       el.muted = true;
        el.loop = true;
-       el.currentTime = 0; // Display first frame immediately
+       el.preload = 'auto';
+       el.currentTime = 0.001; // Force render first frame immediately
        el.play().catch(()=>{});
      }
      container.insertBefore(el, container.firstChild);
@@ -1623,6 +1630,9 @@ function openPostScreenFromEditor(){
  container.querySelectorAll('video, img').forEach(mediaEl => {
    const clone = mediaEl.cloneNode(true);
    clone.style.filter = mediaEl.style.filter;
+   if(clone.tagName === 'VIDEO') {
+     clone.currentTime = 0.001;
+   }
    box.appendChild(clone);
  });
 }
@@ -1711,6 +1721,7 @@ function playStory(index){
   el.autoplay = true; 
   el.playsInline = true; 
   el.muted = false; 
+  el.currentTime = 0.001;
   currentStoryVideoEl = el;
  } else {
   currentStoryVideoEl = null;
