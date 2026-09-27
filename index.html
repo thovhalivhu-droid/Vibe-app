@@ -802,6 +802,17 @@ let undoStack = [];
 let redoStack = [];
 let activeLiveTextElement = null;
 
+// Global interaction unlocker for initial autoplay blockarounds & video taps
+let hasInteracted = false;
+document.addEventListener('pointerdown', () => {
+  if (!hasInteracted) {
+    hasInteracted = true;
+    if (activeVideo && activeVideo.paused) {
+      activeVideo.play().catch(() => {});
+    }
+  }
+}, { once: true });
+
 function saveEditorState() {
   const overlaysHtml = document.getElementById('editorOverlaysLayer').innerHTML;
   const canvasDataUrl = drawCanvas.toDataURL();
@@ -921,6 +932,14 @@ function renderFeed(filteredList){
   
   card.querySelectorAll('.reel-video').forEach(v => {
     v.currentTime = 0.001;
+    // Tap anywhere on the video component to instantly play/pause
+    v.parentElement.addEventListener('click', () => {
+      if (v.paused) {
+        v.play().catch(() => {});
+      } else {
+        v.pause();
+      }
+    });
   });
 
   const slider = card.querySelector('.reel-media-slider');
