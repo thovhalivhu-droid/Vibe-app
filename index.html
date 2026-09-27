@@ -484,60 +484,70 @@ button{font:inherit}
   left: 0;
   right: 0;
   background: #14151c;
-  z-index: 130;
+  z-index: 150;
   border-top-left-radius: 24px;
   border-top-right-radius: 24px;
-  padding: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  padding: 20px;
   transform: translateY(100%);
   transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
-  box-shadow: 0 -10px 30px rgba(0,0,0,0.6);
-  border-top: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.8);
 }
 .report-modal.open {
   transform: translateY(0);
 }
-.report-header {
+.report-title {
   font-size: 16px;
   font-weight: 800;
   text-align: center;
-  position: relative;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 4px;
+  color: var(--text);
+}
+.report-subtitle {
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  margin-bottom: 16px;
 }
 .report-reasons-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 220px;
+  max-height: 240px;
   overflow-y: auto;
+  margin-bottom: 16px;
+  scrollbar-width: none;
 }
+.report-reasons-list::-webkit-scrollbar { display: none; }
 .report-reason-item {
-  background: #1a1b22;
-  border: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   padding: 12px 16px;
   border-radius: 14px;
+  cursor: pointer;
   font-size: 14px;
   font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
+  transition: border-color 0.2s, background 0.2s;
 }
-.report-reason-item:hover {
-  background: rgba(255,255,255,0.05);
+.report-reason-item input[type="radio"] {
+  accent-color: var(--pink);
+  transform: scale(1.2);
+  cursor: pointer;
 }
 .report-reason-item.selected {
-  background: var(--pink);
   border-color: var(--pink);
-  color: #fff;
+  background: rgba(255, 42, 95, 0.08);
 }
 .report-actions {
   display: flex;
   gap: 10px;
-  margin-top: 4px;
 }
-.report-btn-submit {
+.report-submit-btn {
   flex: 1;
   background: linear-gradient(135deg, var(--pink), var(--cyan));
   border: none;
@@ -548,11 +558,11 @@ button{font:inherit}
   cursor: pointer;
   font-size: 14px;
 }
-.report-btn-cancel {
+.report-cancel-btn {
   flex: 1;
-  background: #1a1b22;
-  border: 1px solid rgba(255,255,255,0.15);
-  color: #fff;
+  background: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text);
   font-weight: 700;
   padding: 12px;
   border-radius: 14px;
@@ -771,6 +781,7 @@ input:checked+.slider:before{transform:translateX(20px)}
   <button id="editorMuteBtn" class="mute" title="Mute/Unmute Video">🔊</button>
 </div>
 
+<!-- Added Editor Caption Box -->
 <div class="editor-caption-wrapper">
   <textarea id="editorCaptionInput" class="editor-caption-input" placeholder="Write a caption with #hashtags before posting..."></textarea>
 </div>
@@ -836,6 +847,7 @@ input:checked+.slider:before{transform:translateX(20px)}
   </div>
 </div>
 
+<!-- Custom Bottom Editing Toolbar -->
 <div class="bottom-edit-toolbar">
   <button class="edit-tool-btn" id="toolMusicBtn" onclick="toggleEditorDrawer('editorMusicDrawer')">
     <span class="tool-icon">🎵</span>
@@ -982,6 +994,7 @@ input:checked+.slider:before{transform:translateX(20px)}
     </div>
     <div style="display:flex; gap:8px; justify-content:center; margin-top:12px;">
       <button class="editProfileBtn" id="editProfileBtn" style="margin-top:0;">Edit Profile</button>
+      <button class="editProfileBtn" onclick="openReportModal()" style="margin-top:0; border-color:var(--pink); color:var(--pink);">Report User</button>
     </div>
   </div>
 
@@ -994,7 +1007,41 @@ input:checked+.slider:before{transform:translateX(20px)}
 </div>
 </section>
 
-<!-- Privacy & Security Settings Screen -->
+<!-- REPORT USER POPUP BOTTOM SHEET -->
+<div id="reportUserModal" class="report-modal">
+  <div class="report-title">Report User</div>
+  <div class="report-subtitle">Please select a reason for reporting this account. Your report is anonymous.</div>
+  
+  <div class="report-reasons-list">
+    <label class="report-reason-item">
+      <span>Inappropriate content or behavior</span>
+      <input type="radio" name="reportReason" value="inappropriate" checked>
+    </label>
+    <label class="report-reason-item">
+      <span>Harassment or bullying</span>
+      <input type="radio" name="reportReason" value="harassment">
+    </label>
+    <label class="report-reason-item">
+      <span>Spam or commercial scams</span>
+      <input type="radio" name="reportReason" value="spam">
+    </label>
+    <label class="report-reason-item">
+      <span>Fake account or impersonation</span>
+      <input type="radio" name="reportReason" value="fake">
+    </label>
+    <label class="report-reason-item">
+      <span>Underage user</span>
+      <input type="radio" name="reportReason" value="underage">
+    </label>
+  </div>
+
+  <div class="report-actions">
+    <button class="report-cancel-btn" onclick="closeReportModal()">Cancel</button>
+    <button class="report-submit-btn" onclick="submitReportUser()">Submit Report</button>
+  </div>
+</div>
+
+<!-- NEW SCREEN: Privacy & Security Settings -->
 <section id="securitySettingsScreen" class="screen" style="z-index: 150;">
   <div class="screenHead">
     <button class="close" onclick="closeSecuritySettings()">×</button>
@@ -1052,7 +1099,7 @@ input:checked+.slider:before{transform:translateX(20px)}
   </div>
 </section>
 
-<!-- Privacy Policy -->
+<!-- NEW SCREEN: Privacy Policy -->
 <section id="privacyPolicyScreen" class="screen" style="z-index: 150;">
   <div class="screenHead">
     <button class="close" onclick="closePrivacyPolicy()">×</button>
@@ -1076,26 +1123,6 @@ input:checked+.slider:before{transform:translateX(20px)}
   <div class="commentInputArea">
     <input type="text" id="commentInputField" class="commentInputField" placeholder="Add a comment...">
     <button id="commentSendBtn" class="commentSendBtn">Post</button>
-  </div>
-</div>
-
-<!-- REPORT USER BOTTOM-SHEET POPUP -->
-<div id="reportUserModal" class="report-modal">
-  <div class="report-header">
-    <span>Report User</span>
-    <button class="close" id="closeReportModal" style="position:absolute;right:0;top:0;background:none;border:none;color:#fff;font-size:22px;cursor:pointer;">×</button>
-  </div>
-  <div style="font-size: 13px; color: var(--muted);">Please select a reason for reporting this user. Your report is confidential.</div>
-  <div class="report-reasons-list" id="reportReasonsList">
-    <div class="report-reason-item" data-reason="Harassment or bullying">Harassment or bullying</div>
-    <div class="report-reason-item" data-reason="Inappropriate content or nudity">Inappropriate content or nudity</div>
-    <div class="report-reason-item" data-reason="Spam or fake account">Spam or fake account</div>
-    <div class="report-reason-item" data-reason="Hate speech or symbols">Hate speech or symbols</div>
-    <div class="report-reason-item" data-reason="Intellectual property violation">Intellectual property violation</div>
-  </div>
-  <div class="report-actions">
-    <button class="report-btn-cancel" id="cancelReportBtn">Cancel</button>
-    <button class="report-btn-submit" id="submitReportBtn">Submit Report</button>
   </div>
 </div>
 
@@ -1199,38 +1226,31 @@ let undoStack = [];
 let redoStack = [];
 let activeLiveTextElement = null;
 
-// Report User Popup State and Control Logic
-let selectedReportReason = null;
-
-function openReportUserModal() {
-  selectedReportReason = null;
-  document.querySelectorAll('.report-reason-item').forEach(el => el.classList.remove('selected'));
+function openReportModal() {
   document.getElementById('reportUserModal').classList.add('open');
 }
 
-function closeReportUserModal() {
+function closeReportModal() {
   document.getElementById('reportUserModal').classList.remove('open');
 }
 
+function submitReportUser() {
+  const selectedReason = document.querySelector('input[name="reportReason"]:checked');
+  const reasonText = selectedReason ? selectedReason.parentElement.querySelector('span').textContent : 'Inappropriate content';
+  
+  closeReportModal();
+  showToast('Report submitted successfully. Thank you! 🛡️');
+}
+
+// Highlight selected report card styling
 document.querySelectorAll('.report-reason-item').forEach(item => {
   item.onclick = () => {
-    document.querySelectorAll('.report-reason-item').forEach(el => el.classList.remove('selected'));
+    document.querySelectorAll('.report-reason-item').forEach(i => i.classList.remove('selected'));
     item.classList.add('selected');
-    selectedReportReason = item.dataset.reason;
+    const radio = item.querySelector('input[type="radio"]');
+    if(radio) radio.checked = true;
   };
 });
-
-document.getElementById('closeReportModal').onclick = closeReportUserModal;
-document.getElementById('cancelReportBtn').onclick = closeReportUserModal;
-
-document.getElementById('submitReportBtn').onclick = () => {
-  if (!selectedReportReason) {
-    showToast('Please select a reason to report');
-    return;
-  }
-  showToast('Report submitted successfully. Thank you!');
-  closeReportUserModal();
-};
 
 function openSecuritySettings() {
   document.getElementById('setting-private-account').checked = userPrivacySettings.privateAccount;
@@ -1382,7 +1402,6 @@ function renderFeed(filteredList){
     <button class="action commentBtn"><div class="circle">💬</div><div class="count">${item.commentsList.length}</div></button>
     <button class="action saveBtn ${item.isSaved ? 'saved' : ''}"><div class="circle">${item.isSaved ? '★' : '☆'}</div><div class="count">Save</div></button>
     <button class="action shareBtn"><div class="circle">↗</div><div class="count">${formatCount(item.shares)}</div></button>
-    <button class="action reportBtn" onclick="openReportUserModal()" title="Report User"><div class="circle" style="font-size:16px;">⚠️</div><div class="count">Report</div></button>
   </div></div>`;
   feed.appendChild(card);
   
@@ -1589,6 +1608,7 @@ function renderFeed(filteredList){
  });
 
  setupObserver();
+ setupSwipeAutoplayFallback();
  renderDiscoverGrid();
  renderProfileGrid();
 }
@@ -1656,6 +1676,65 @@ function setupObserver(){
      }
    }
  }, 100);
+}
+
+function setupSwipeAutoplayFallback() {
+  let touchStartY = 0;
+
+  window.addEventListener('touchstart', (e) => {
+    if(e.changedTouches && e.changedTouches.length > 0) {
+      touchStartY = e.changedTouches[0].screenY;
+    }
+  }, { passive: true });
+
+  window.addEventListener('touchend', (e) => {
+    if(activeTabKey !== 'home') return;
+    if(!e.changedTouches || e.changedTouches.length === 0) return;
+    
+    let touchEndY = e.changedTouches[0].screenY;
+    let swipeDistance = touchStartY - touchEndY;
+
+    if (Math.abs(swipeDistance) > 40) {
+      setTimeout(() => {
+        document.querySelectorAll('.reel').forEach(card => {
+          const rect = card.getBoundingClientRect();
+          const isCentered = rect.top >= -20 && rect.top <= 20;
+          const v = card.querySelector('video');
+
+          if (v) {
+            const pauseBtn = card.querySelector('.custom-pause-btn');
+            const controlOverlay = card.querySelector('.video-control-overlay');
+            const durationIndicator = card.querySelector('.video-duration-indicator');
+
+            if (isCentered) {
+              if (activeVideo && activeVideo !== v) {
+                activeVideo.pause();
+                const prevCard = activeVideo.closest('.reel');
+                if (prevCard) {
+                  const prevControl = prevCard.querySelector('.video-control-overlay');
+                  const prevDuration = prevCard.querySelector('.video-duration-indicator');
+                  const prevBtn = prevCard.querySelector('.custom-pause-btn');
+                  if (prevControl) prevControl.classList.remove('show');
+                  if (prevDuration) prevDuration.classList.remove('show');
+                  if (prevBtn) prevBtn.textContent = '▶';
+                }
+              }
+              activeVideo = v;
+              v.muted = muted;
+              v.play().then(() => {
+                if (pauseBtn) pauseBtn.textContent = '⏸';
+              }).catch(() => {});
+            } else {
+              v.pause();
+              if (controlOverlay) controlOverlay.classList.remove('show');
+              if (durationIndicator) durationIndicator.classList.remove('show');
+              if (pauseBtn) pauseBtn.textContent = '▶';
+            }
+          }
+        });
+      }, 150);
+    }
+  }, { passive: true });
 }
 
 function openCommentsModal(item){
@@ -1795,7 +1874,24 @@ function renderProfileGrid(){
  });
 }
 
-// Initialize feed render on load
+// Navigation & Screen Control Bindings
+document.getElementById('navHomeBtn').onclick=()=>{ updateNavActiveState('home'); feed.style.display='block'; discover.classList.remove('open'); inbox.classList.remove('open'); profile.classList.remove('open'); studio.classList.remove('open'); stopCamera(); };
+document.getElementById('navDiscoverBtn').onclick=()=>{ updateNavActiveState('discover'); discover.classList.add('open'); inbox.classList.remove('open'); profile.classList.remove('open'); studio.classList.remove('open'); pauseAllFeedVideos(); stopCamera(); renderDiscoverGrid(); };
+document.getElementById('navCreateBtn').onclick=()=>{ updateNavActiveState('create'); studio.classList.add('open'); discover.classList.remove('open'); inbox.classList.remove('open'); profile.classList.remove('open'); pauseAllFeedVideos(); startCamera(); };
+document.getElementById('navInboxBtn').onclick=()=>{ updateNavActiveState('inbox'); inbox.classList.add('open'); discover.classList.remove('open'); profile.classList.remove('open'); studio.classList.remove('open'); pauseAllFeedVideos(); stopCamera(); };
+document.getElementById('navProfileBtn').onclick=()=>{ updateNavActiveState('profile'); profile.classList.add('open'); discover.classList.remove('open'); inbox.classList.remove('open'); studio.classList.remove('open'); pauseAllFeedVideos(); stopCamera(); renderProfileGrid(); };
+
+document.querySelectorAll('.screenHead .close[data-close]').forEach(btn=>{
+ btn.onclick=()=>{
+  const screenKey = btn.dataset.close;
+  document.getElementById(screenKey).classList.remove('open');
+  updateNavActiveState('home');
+ };
+});
+
+document.getElementById('closeStudio').onclick=()=>{ studio.classList.remove('open'); stopCamera(); updateNavActiveState('home'); };
+document.getElementById('closeEditorBtn').onclick=()=>{ editorScreen.classList.remove('open'); studio.classList.add('open'); startCamera(); };
+
 renderFeed();
 </script>
 </body>
