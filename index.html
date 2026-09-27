@@ -131,7 +131,7 @@ button{font:inherit}
 
 .mute{position:absolute;top:68px;right:16px;z-index:7;width:40px;height:40px;border:0;border-radius:50%;background:#0008;color:#fff;font-size:19px;cursor:pointer;}
 
-.nav{position:absolute;bottom:0;left:0;right:0;height:var(--nav);z-index:100;display:flex;justify-content:space-around;align-items:center;background:#171820ee;backdrop-filter:blur(16px);border-top:1px solid #ffffff12;pointer-events:auto;transition:transform .3s ease}
+.nav{position:absolute;bottom:0;left:0;right:0;height:var(--nav);z-index:100;display:flex;justify-around;align-items:center;background:#171820ee;backdrop-filter:blur(16px);border-top:1px solid #ffffff12;pointer-events:auto;transition:transform .3s ease}
 .nav button{background:none;border:0;color:#9a9dac;font-size:10px;display:flex;flex-direction:column;align-items:center;gap:4px;width:20%;cursor:pointer;pointer-events:auto}.nav button.active{color:#fff}.nav .plus{width:42px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--pink),var(--cyan));color:#fff;font-size:22px;line-height:1}
 
 #app.hide-nav-for-create .nav { transform: translateY(100%); pointer-events: none; }
@@ -802,16 +802,18 @@ let undoStack = [];
 let redoStack = [];
 let activeLiveTextElement = null;
 
-// Global interaction unlocker for initial autoplay blockarounds & video taps
+// Global interaction unlocker to enable audio autoplay smoothly on initial user swipe/gesture
 let hasInteracted = false;
-document.addEventListener('pointerdown', () => {
-  if (!hasInteracted) {
-    hasInteracted = true;
-    if (activeVideo && activeVideo.paused) {
-      activeVideo.play().catch(() => {});
+['pointerdown', 'touchstart', 'scroll'].forEach(evtType => {
+  window.addEventListener(evtType, () => {
+    if (!hasInteracted) {
+      hasInteracted = true;
+      if (activeVideo && activeVideo.paused) {
+        activeVideo.play().catch(() => {});
+      }
     }
-  }
-}, { once: true });
+  }, { passive: true });
+});
 
 function saveEditorState() {
   const overlaysHtml = document.getElementById('editorOverlaysLayer').innerHTML;
@@ -835,7 +837,9 @@ function updateNavActiveState(tabKey) {
 }
 
 function pauseAllFeedVideos() {
-  document.querySelectorAll('video').forEach(v => { v.pause(); });
+  document.querySelectorAll('video').forEach(v => { 
+    v.pause(); 
+  });
 }
 
 function showToast(msg){toast.textContent=msg;toast.classList.add('show');clearTimeout(showToast.t);showToast.t=setTimeout(()=>toast.classList.remove('show'),2200)}
@@ -932,13 +936,6 @@ function renderFeed(filteredList){
   
   card.querySelectorAll('.reel-video').forEach(v => {
     v.currentTime = 0.001;
-    v.parentElement.addEventListener('click', () => {
-      if (v.paused) {
-        v.play().catch(() => {});
-      } else {
-        v.pause();
-      }
-    });
   });
 
   const slider = card.querySelector('.reel-media-slider');
@@ -953,7 +950,9 @@ function renderFeed(filteredList){
 
       card.querySelectorAll('.reel-video').forEach((vSlide, sIdx) => {
         if(sIdx === activeIdx && isCardInViewport(card)) {
-          if(activeVideo && activeVideo !== vSlide) activeVideo.pause();
+          if(activeVideo && activeVideo !== vSlide) {
+            activeVideo.pause();
+          }
           activeVideo = vSlide;
           vSlide.muted = muted;
           vSlide.play().catch(()=>{});
@@ -1032,27 +1031,15 @@ function renderFeed(filteredList){
    };
   });
  });
+
  setupObserver();
  renderDiscoverGrid();
  renderProfileGrid();
-
- // Auto-play the first video immediately on load
- setTimeout(() => {
-   const firstCard = feed.querySelector('.reel');
-   if (firstCard) {
-     const firstVid = firstCard.querySelector('video');
-     if (firstVid) {
-       activeVideo = firstVid;
-       firstVid.muted = muted;
-       firstVid.play().catch(() => {});
-     }
-   }
- }, 100);
 }
 
 function isCardInViewport(card) {
   const rect = card.getBoundingClientRect();
-  return rect.top >= 0 && rect.top <= window.innerHeight / 2;
+  return rect.top >= -50 && rect.top <= window.innerHeight / 2;
 }
 
 function triggerEditAction(actionType, itemId) {
@@ -1116,36 +1103,49 @@ document.getElementById('commentSendBtn').onclick=()=>{
  }
 };
 
+let feedObserver = null;
+
 function setupObserver(){
- const ob=new IntersectionObserver(entries=>entries.forEach(en=>{
-  const card = en.target;
-  const slider = card.querySelector('.reel-media-slider');
-  
-  if(en.isIntersecting && activeTabKey === 'home'){
-   if(slider) {
-     const slideWidth = slider.clientWidth;
-     const activeIdx = Math.round(slider.scrollLeft / slideWidth);
-     const activeSlideVid = slider.querySelectorAll('.reel-media-slide video')[activeIdx];
-     if(activeSlideVid) {
-       if(activeVideo && activeVideo !== activeSlideVid) activeVideo.pause();
-       activeVideo = activeSlideVid;
-       activeSlideVid.muted = muted;
-       activeSlideVid.play().catch(()=>{});
-     }
+ if (feedObserver) {
+   feedObserver.disconnect();
+ }
+
+ feedObserver = new IntersectionObserver(entries => {
+  entries.forEach(en => {
+   const card = en.target;
+   const slider = card.querySelector('.reel-media-slider');
+   
+   if (en.isIntersecting && activeTabKey === 'home') {
+    // Pause any previously playing video across all reels
+    pauseAllFeedVideos();
+
+    if (slider) {
+      const slideWidth = slider.clientWidth || 1;
+      const activeIdx = Math.round(slider.scrollLeft / slideWidth);
+      const activeSlideVid = slider.querySelectorAll('.reel-media-slide video')[activeIdx];
+      if (activeSlideVid) {
+        activeVideo = activeSlideVid;
+        activeSlideVid.muted = muted;
+        activeSlideVid.play().catch(() => {});
+      }
+    } else {
+      const v = card.querySelector('video');
+      if (v) {
+        activeVideo = v;
+        v.muted = muted;
+        v.play().catch(() => {});
+      }
+    }
    } else {
-     const v = card.querySelector('video');
-     if(v) {
-       if(activeVideo && activeVideo !== v) activeVideo.pause();
-       activeVideo = v;
-       v.muted = muted;
-       v.play().catch(()=>{});
-     }
+    // Pause videos inside cards that are no longer active/visible
+    card.querySelectorAll('video').forEach(v => {
+      v.pause();
+    });
    }
-  } else {
-   card.querySelectorAll('video').forEach(v => v.pause());
-  }
- }),{root:feed,threshold:.5});
- document.querySelectorAll('.reel').forEach(x=>ob.observe(x));
+  });
+ }, { root: feed, threshold: 0.6 });
+
+ document.querySelectorAll('.reel').forEach(x => feedObserver.observe(x));
 }
 
 function renderDiscoverGrid(filterText=""){
