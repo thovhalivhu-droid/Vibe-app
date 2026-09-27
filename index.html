@@ -199,7 +199,54 @@ button{font:inherit}
   font-size: 13px;
 }
 
-/* Edit Toolbar completely hidden and removed from layout flow */
+/* Custom Bottom Editing Toolbar */
+.bottom-edit-toolbar {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(20, 21, 28, 0.85);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 8px 12px;
+  gap: 12px;
+  z-index: 20;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+.edit-tool-btn {
+  background: transparent;
+  border: none;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 16px;
+  transition: background 0.2s, transform 0.2s;
+}
+.edit-tool-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+.edit-tool-btn .tool-icon {
+  font-size: 18px;
+}
+.edit-tool-btn .tool-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.edit-tool-btn.active .tool-label, .edit-tool-btn:hover .tool-label {
+  color: #fff;
+}
+
+/* Edit Toolbar legacy completely hidden */
 .edit-toolbar, .editorToolbar { display: none !important; }
 .editorToolsRow{display:flex;justify-content:space-around;align-items:center}
 .editorToolBtn{background:#1a1b22;border:1px solid #ffffff15;color:#fff;padding:8px 14px;border-radius:12px;font-weight:700;font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer}
@@ -495,35 +542,28 @@ input:checked+.slider:before{transform:translateX(20px)}
   <button id="editorMuteBtn" class="mute" title="Mute/Unmute Video">🔊</button>
 </div>
 
-<div class="edit-toolbar editorToolbar">
-  <div id="emojiPickerTray" class="emojiPickerRow hidden">
-    <span class="emojiOption" onclick="addEmojiToCanvas('✨')">✨</span>
-    <span class="emojiOption" onclick="addEmojiToCanvas('🔥')">🔥</span>
-    <span class="emojiOption" onclick="addEmojiToCanvas('❤️')">❤️</span>
-    <span class="emojiOption" onclick="addEmojiToCanvas('😂')">😂</span>
-    <span class="emojiOption" onclick="addEmojiToCanvas('😎')">😎</span>
-    <span class="emojiOption" onclick="addEmojiToCanvas('🚀')">🚀</span>
-    <span class="emojiOption" onclick="addEmojiToCanvas('💯')">💯</span>
-    <span class="emojiOption" onclick="addEmojiToCanvas('🎨')">🎨</span>
-  </div>
-
-  <div id="filterPickerTray" class="filterPickerRow hidden">
-    <div class="editorFilterChip active" onclick="applyEditorFilter('', this)">Normal</div>
-    <div class="editorFilterChip" onclick="applyEditorFilter('sepia(.6) contrast(1.1)', this)">Vintage</div>
-    <div class="editorFilterChip" onclick="applyEditorFilter('grayscale(1)', this)">B&W</div>
-    <div class="editorFilterChip" onclick="applyEditorFilter('hue-rotate(90deg) saturate(1.5)', this)">Neon</div>
-    <div class="editorFilterChip" onclick="applyEditorFilter('brightness(1.2) contrast(1.3)', this)">Vivid</div>
-  </div>
-
-  <div class="editorToolsRow">
-    <button class="editorToolBtn" id="toolUndoBtn" title="Undo">↩ Undo</button>
-    <button class="editorToolBtn" id="toolRedoBtn" title="Redo">↪ Redo</button>
-    <button class="editorToolBtn" id="toolEmojiBtn">😀 Emoji</button>
-    <button class="editorToolBtn" id="toolTextBtn">✍️ Text</button>
-    <button class="editorToolBtn" id="toolDrawBtn">🖌️ Draw</button>
-    <button class="editorToolBtn" id="toolFilterBtn">✨ Filters</button>
-    <button class="editorToolBtn" id="toolNextBtn" onclick="proceedToPostScreen()" style="background:var(--cyan); color:#000;">Next →</button>
-  </div>
+<!-- Custom Bottom Editing Toolbar -->
+<div class="bottom-edit-toolbar">
+  <button class="edit-tool-btn" id="toolMusicBtn" onclick="showToast('Music editor selected')">
+    <span class="tool-icon">🎵</span>
+    <span class="tool-label">Music</span>
+  </button>
+  <button class="edit-tool-btn" id="toolStickersBtn" onclick="showToast('Stickers selector opened')">
+    <span class="tool-icon">⭐</span>
+    <span class="tool-label">Stickers</span>
+  </button>
+  <button class="edit-tool-btn" id="toolCustomTextBtn" onclick="proceedToPostScreen(); document.getElementById('topTextEditorBar').classList.add('open'); document.getElementById('topTextEditorInput').focus();">
+    <span class="tool-icon">✍️</span>
+    <span class="tool-label">Text</span>
+  </button>
+  <button class="edit-tool-btn" id="toolEffectsBtn" onclick="showToast('Effects palette opened')">
+    <span class="tool-icon">✨</span>
+    <span class="tool-label">Effects</span>
+  </button>
+  <button class="edit-tool-btn" id="toolMentionBtn" onclick="showToast('Mention tag opened')">
+    <span class="tool-icon">@</span>
+    <span class="tool-label">Mention</span>
+  </button>
 </div>
 </section>
 
@@ -1480,7 +1520,6 @@ function openEditor(mediaList){
  undoStack = [];
  redoStack = [];
  saveEditorState();
- hideAllEditorTrays();
 }
 
 document.getElementById('editorMuteBtn').onclick = (e) => {
@@ -1495,41 +1534,10 @@ document.getElementById('editorMuteBtn').onclick = (e) => {
   showToast(isMuted ? 'Muted' : 'Sound On');
 };
 
-function hideAllEditorTrays(){
- document.getElementById('emojiPickerTray').classList.add('hidden');
- document.getElementById('filterPickerTray').classList.add('hidden');
- document.querySelectorAll('.editorToolBtn').forEach(b=>b.classList.remove('active'));
-}
-
-document.getElementById('toolEmojiBtn').onclick = () => {
- const tray = document.getElementById('emojiPickerTray');
- const isHidden = tray.classList.contains('hidden');
- hideAllEditorTrays();
- closeTopTextEditor();
- if(isHidden){
-  tray.classList.remove('hidden');
-  document.getElementById('toolEmojiBtn').classList.add('active');
- }
-};
-
-document.getElementById('toolFilterBtn').onclick = () => {
- const tray = document.getElementById('filterPickerTray');
- const isHidden = tray.classList.contains('hidden');
- hideAllEditorTrays();
- closeTopTextEditor();
- if(isHidden){
-  tray.classList.remove('hidden');
-  document.getElementById('toolFilterBtn').classList.add('active');
- }
-};
-
-document.getElementById('toolTextBtn').onclick = () => {
-  editorScreen.classList.remove('open');
-  openPostScreenFromEditor();
+function closeTopTextEditor() {
   const bar = document.getElementById('topTextEditorBar');
-  bar.classList.add('open');
-  document.getElementById('topTextEditorInput').focus();
-};
+  bar.classList.remove('open');
+}
 
 document.getElementById('topTextEditorInput').oninput = (e) => {
   if(activeLiveTextElement){
@@ -1541,159 +1549,6 @@ document.getElementById('topTextEditorDoneBtn').onclick = () => {
   closeTopTextEditor();
   showToast('Text added!');
 };
-
-function closeTopTextEditor() {
-  const bar = document.getElementById('topTextEditorBar');
-  bar.classList.remove('open');
-}
-
-document.getElementById('toolDrawBtn').onclick = () => {
- const btn = document.getElementById('toolDrawBtn');
- hideAllEditorTrays();
- closeTopTextEditor();
- if(editorMode === 'draw'){
-  editorMode = null;
-  btn.classList.remove('active');
-  showToast('Drawing mode disabled');
- } else {
-  editorMode = 'draw';
-  btn.classList.add('active');
-  showToast('Draw on media with your finger/mouse');
- }
-};
-
-document.getElementById('toolUndoBtn').onclick = () => {
-  if (undoStack.length <= 1) {
-    showToast('Nothing more to undo');
-    return;
-  }
-  const currentState = undoStack.pop();
-  redoStack.push(currentState);
-  const prevState = undoStack[undoStack.length - 1];
-  restoreEditorState(prevState);
-  showToast('Undo');
-};
-
-document.getElementById('toolRedoBtn').onclick = () => {
-  if (redoStack.length === 0) {
-    showToast('Nothing to redo');
-    return;
-  }
-  const nextState = redoStack.pop();
-  undoStack.push(nextState);
-  restoreEditorState(nextState);
-  showToast('Redo');
-};
-
-function restoreEditorState(state) {
-  document.getElementById('editorOverlaysLayer').innerHTML = state.overlaysHtml;
-  document.querySelectorAll('.editorOverlayElement').forEach(el => makeDraggable(el));
-  
-  const img = new Image();
-  img.onload = () => {
-    drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-    drawCtx.drawImage(img, 0, 0);
-  };
-  img.src = state.canvasDataUrl;
-
-  const container = document.getElementById('editorCanvasContainer');
-  container.querySelectorAll('video, img').forEach(mediaEl => {
-    mediaEl.style.filter = state.filter;
-  });
-}
-
-function addEmojiToCanvas(emoji){
- const layer = document.getElementById('editorOverlaysLayer');
- const div = document.createElement('div');
- div.className = 'editorOverlayElement';
- div.textContent = emoji;
- div.style.left = '40%';
- div.style.top = '40%';
- makeDraggable(div);
- layer.appendChild(div);
- saveEditorState();
- showToast('Added emoji!');
-}
-
-function applyEditorFilter(filterCss, chipEl){
- document.querySelectorAll('.editorFilterChip').forEach(c=>c.classList.remove('active'));
- chipEl.classList.add('active');
- const container = document.getElementById('editorCanvasContainer');
- container.querySelectorAll('video, img').forEach(mediaEl => {
-   mediaEl.style.filter = filterCss;
- });
- saveEditorState();
- showToast('Filter applied!');
-}
-
-let drawingActive = false;
-drawCanvas = document.getElementById('editorDrawingCanvas');
-drawCanvas.onmousedown = drawCanvas.ontouchstart = (e) => {
- if(editorMode !== 'draw') return;
- drawingActive = true;
- const rect = drawCanvas.getBoundingClientRect();
- const clientX = e.touches ? e.touches[0].clientX : e.clientX;
- const clientY = e.touches ? e.touches[0].clientY : e.clientY;
- drawCtx.beginPath();
- drawCtx.moveTo(clientX - rect.left, clientY - rect.top);
- drawCtx.strokeStyle = 'var(--cyan)';
- drawCtx.lineWidth = 6;
- drawCtx.lineCap = 'round';
-};
-
-drawCanvas.onmousemove = drawCanvas.ontouchmove = (e) => {
- if(!drawingActive || editorMode !== 'draw') return;
- e.preventDefault();
- const rect = drawCanvas.getBoundingClientRect();
- const clientX = e.touches ? e.touches[0].clientX : e.clientX;
- const clientY = e.touches ? e.touches[0].clientY : e.clientY;
- drawCtx.lineTo(clientX - rect.left, clientY - rect.top);
- drawCtx.stroke();
-};
-
-drawCanvas.onmouseup = drawCanvas.ontouchend = () => {
- if(drawingActive){
-  drawingActive = false;
-  saveEditorState();
- }
-};
-
-function makeDraggable(elm){
- let posX = 0, posY = 0, mouseX = 0, mouseY = 0;
- elm.onmousedown = elm.ontouchstart = dragMouseDown;
-
- function dragMouseDown(e) {
-  e.preventDefault();
-  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-  mouseX = clientX;
-  mouseY = clientY;
-  document.onmouseup = document.ontouchend = closeDragElement;
-  document.onmousemove = document.ontouchmove = elementDrag;
- }
-
- function elementDrag(e) {
-  e.preventDefault();
-  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-  posX = mouseX - clientX;
-  posY = mouseY - clientY;
-  mouseX = clientX;
-  mouseY = clientY;
-  elm.style.top = (elm.offsetTop - posY) + "px";
-  elm.style.left = (elm.offsetLeft - posX) + "px";
- }
-
- function closeDragElement() {
-  if (document.onmousemove || document.ontouchmove) {
-    saveEditorState();
-  }
-  document.onmouseup = null;
-  document.onmousemove = null;
-  document.ontouchend = null;
-  document.ontouchmove = null;
- }
-}
 
 document.getElementById('closeEditorBtn').onclick = () => {
  editorScreen.classList.remove('open');
