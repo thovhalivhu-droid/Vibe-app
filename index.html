@@ -1282,7 +1282,6 @@ function handleFileInputFiles(files, defaultType) {
     const isImg = file.type.startsWith('image/') || defaultType === 'image';
     const type = isVid ? 'video' : (isImg ? 'image' : defaultType);
     
-    // Create a valid Object/Blob URL from the selected File safely
     const url = URL.createObjectURL(file);
 
     if (type === 'video') {
@@ -1344,13 +1343,14 @@ function openEditor(mediaList){
  const container = document.getElementById('editorCanvasContainer');
  container.querySelectorAll('video, img').forEach(el => el.remove());
 
- const allPhotos = selectedMediaList.length > 1 && selectedMediaList.every(i => i.type === 'image');
-
+ // Use identical multi-item and single-item slide container logic for ALL counts (1 or more)
  if(selectedMediaList.length > 1) {
    container.classList.add('multi-item');
  } else {
    container.classList.remove('multi-item');
  }
+
+ const allPhotos = selectedMediaList.length > 1 && selectedMediaList.every(i => i.type === 'image');
 
  if (allPhotos) {
    const gridEl = document.createElement('div');
@@ -1363,6 +1363,14 @@ function openEditor(mediaList){
    container.insertBefore(gridEl, container.firstChild);
  } else {
    selectedMediaList.forEach(item => {
+     const slideEl = document.createElement('div');
+     slideEl.className = selectedMediaList.length > 1 ? 'reel-media-slide' : '';
+     slideEl.style.width = '100%';
+     slideEl.style.height = '100%';
+     slideEl.style.display = 'flex';
+     slideEl.style.alignItems = 'center';
+     slideEl.style.justifyContent = 'center';
+     
      const el = document.createElement(item.type==='video'?'video':'img');
      el.src = item.url;
      if(item.type==='video'){
@@ -1374,7 +1382,8 @@ function openEditor(mediaList){
        el.currentTime = 0.001; 
        el.play().catch(()=>{});
      }
-     container.insertBefore(el, container.firstChild);
+     slideEl.appendChild(el);
+     container.insertBefore(slideEl, container.firstChild);
    });
  }
 
