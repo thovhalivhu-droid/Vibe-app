@@ -919,7 +919,6 @@ function renderFeed(filteredList){
   </div></div>`;
   feed.appendChild(card);
   
-  // Ensure initial frame loading for feed videos
   card.querySelectorAll('.reel-video').forEach(v => {
     v.currentTime = 0.001;
   });
@@ -1279,29 +1278,34 @@ function handleFileInputFiles(files, defaultType) {
   let processedCount = 0;
 
   incomingFiles.forEach(file => {
-    const isVid = file.type.startsWith('video/');
-    const isImg = file.type.startsWith('image/');
+    const isVid = file.type.startsWith('video/') || defaultType === 'video';
+    const isImg = file.type.startsWith('image/') || defaultType === 'image';
     const type = isVid ? 'video' : (isImg ? 'image' : defaultType);
+    
+    // Create a valid Object/Blob URL from the selected File safely
     const url = URL.createObjectURL(file);
 
     if (type === 'video') {
       const vid = document.createElement('video');
       vid.preload = 'metadata';
       vid.onloadedmetadata = () => {
-        URL.revokeObjectURL(vid.src);
         if(vid.duration > 600){
           showToast('Videos must be 10 minutes or less');
+          URL.revokeObjectURL(url);
           return;
         }
-        mediaList.push({ file, type, url });
+        if (url) {
+          mediaList.push({ file, type: 'video', url });
+        }
         processedCount++;
         if(processedCount === incomingFiles.length) {
           openEditor(mediaList);
         }
       };
       vid.onerror = () => {
-        // Fallback in case metadata event fails on some mobile browsers
-        mediaList.push({ file, type, url });
+        if (url) {
+          mediaList.push({ file, type: 'video', url });
+        }
         processedCount++;
         if(processedCount === incomingFiles.length) {
           openEditor(mediaList);
@@ -1309,7 +1313,9 @@ function handleFileInputFiles(files, defaultType) {
       };
       vid.src = url;
     } else {
-      mediaList.push({ file, type, url });
+      if (url) {
+        mediaList.push({ file, type: 'image', url });
+      }
       processedCount++;
       if(processedCount === incomingFiles.length) {
         openEditor(mediaList);
@@ -1365,7 +1371,7 @@ function openEditor(mediaList){
        el.muted = true;
        el.loop = true;
        el.preload = 'auto';
-       el.currentTime = 0.001; // Force render first frame immediately
+       el.currentTime = 0.001; 
        el.play().catch(()=>{});
      }
      container.insertBefore(el, container.firstChild);
