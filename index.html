@@ -2016,8 +2016,25 @@ document.querySelectorAll('.soundItem').forEach(item=>{
 });
 
 document.querySelectorAll('.nav button').forEach(btn=>{
- btn.onclick=()=>{
+ btn.onclick=(e)=>{
   const tab=btn.dataset.tab;
+  
+  // FIX: Specifically handle the Create button to prevent bubbling, default actions, and redirects
+  if(tab === 'create') {
+    if(e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    updateNavActiveState('create');
+    discover.classList.remove('open');
+    inbox.classList.remove('open');
+    profile.classList.remove('open');
+    studio.classList.add('open');
+    startCamera();
+    appContainer.classList.add('hide-nav-for-create');
+    return;
+  }
+
   updateNavActiveState(tab);
   if(tab==='home'){
    discover.classList.remove('open');
@@ -2034,13 +2051,6 @@ document.querySelectorAll('.nav button').forEach(btn=>{
    stopCamera();
    renderDiscoverGrid();
    appContainer.classList.remove('hide-nav-for-create');
-  }else if(tab==='create'){
-   discover.classList.remove('open');
-   inbox.classList.remove('open');
-   profile.classList.remove('open');
-   studio.classList.add('open');
-   startCamera();
-   appContainer.classList.add('hide-nav-for-create');
   }else if(tab==='inbox'){
    inbox.classList.add('open');
    discover.classList.remove('open');
