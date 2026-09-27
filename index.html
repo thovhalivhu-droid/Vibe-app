@@ -150,7 +150,8 @@ button{font:inherit}
 #editorOverlaysLayer{position:absolute;inset:0;pointer-events:none;z-index:6}
 .editorOverlayElement{position:absolute;cursor:move;user-select:none;padding:6px 10px;font-size:22px;border:1px dashed transparent;transition:border .2s;pointer-events:auto}
 .editorOverlayElement:hover{border-color:rgba(255,255,255,0.4)}
-.editorOverlayElement.text-element{font-size:20px;font-weight:700;color:#fff;background:rgba(0,0,0,0.5);border-radius:8px;backdrop-filter:blur(4px);padding:8px 12px;text-shadow:0 2px 4px rgba(0,0,0,0.5)}
+.editorOverlayElement.text-element{font-size:20px;font-weight:700;color:#fff;background:rgba(0,0,0,0.5);border-radius:8px;backdrop-filter:blur(4px);padding:8px 12px;text-shadow:0 2px 4px rgba(0,0,0,0.5);cursor:grab;}
+.editorOverlayElement.text-element:active {cursor:grabbing;}
 
 /* Styled Text Editor Bar inside Post Screen */
 .topTextEditorBar {
@@ -296,6 +297,58 @@ button{font:inherit}
 .sticker-item:hover {
   transform: scale(1.1);
   background: rgba(255,255,255,0.15);
+}
+
+/* Text Customization Styles inside Drawer */
+.text-custom-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.color-picker-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.color-swatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+.color-swatch.active {
+  border-color: #fff;
+  transform: scale(1.1);
+}
+.style-buttons-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.style-toggle-btn {
+  background: #1a1b22;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.style-toggle-btn.active {
+  background: var(--pink);
+  border-color: var(--pink);
+}
+.font-family-select {
+  background: #1a1b22;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  outline: none;
 }
 
 /* Edit Toolbar legacy completely hidden */
@@ -619,12 +672,41 @@ input:checked+.slider:before{transform:translateX(20px)}
   </div>
 </div>
 
-<!-- Text Input Drawer -->
+<!-- Text Input Drawer with Color Picker & Styles -->
 <div id="editorTextDrawer" class="editor-tool-drawer">
   <div class="drawer-header"><span>Add Custom Text</span><button class="close" onclick="closeEditorDrawers()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">×</button></div>
   <div style="display:flex; gap:8px;">
     <input type="text" id="editorTextInputField" class="topTextEditorInput" placeholder="Type text overlay..." autocomplete="off">
     <button class="topTextEditorDoneBtn" onclick="commitEditorText()">Add</button>
+  </div>
+  
+  <div class="text-custom-controls">
+    <div style="font-size: 12px; color: var(--muted); font-weight: 700; margin-top: 4px;">Text Color:</div>
+    <div class="color-picker-row" id="textColorPickerRow">
+      <div class="color-swatch active" style="background:#ffffff;" onclick="setEditorTextColor('#ffffff', this)"></div>
+      <div class="color-swatch" style="background:#ff2a5f;" onclick="setEditorTextColor('#ff2a5f', this)"></div>
+      <div class="color-swatch" style="background:#00f2fe;" onclick="setEditorTextColor('#00f2fe', this)"></div>
+      <div class="color-swatch" style="background:#ffe600;" onclick="setEditorTextColor('#ffe600', this)"></div>
+      <div class="color-swatch" style="background:#00ff66;" onclick="setEditorTextColor('#00ff66', this)"></div>
+      <div class="color-swatch" style="background:#9b51e0;" onclick="setEditorTextColor('#9b51e0', this)"></div>
+      <div class="color-swatch" style="background:#000000;" onclick="setEditorTextColor('#000000', this)"></div>
+      <input type="color" id="customColorPickerInput" value="#ffffff" style="width:26px; height:26px; border:none; background:none; cursor:pointer; padding:0;" oninput="setEditorTextColor(this.value, null)">
+    </div>
+
+    <div style="font-size: 12px; color: var(--muted); font-weight: 700; margin-top: 4px;">Font & Styles:</div>
+    <div class="style-buttons-row">
+      <select id="editorFontFamilySelect" class="font-family-select" onchange="updateActiveTextStyle()">
+        <option value="Arial, Helvetica, sans-serif">Arial</option>
+        <option value="'Courier New', Courier, monospace">Courier</option>
+        <option value="Georgia, serif">Georgia</option>
+        <option value="'Impact', Charcoal, sans-serif">Impact</option>
+        <option value="'Verdana', Geneva, sans-serif">Verdana</option>
+      </select>
+      <button class="style-toggle-btn" id="styleBoldBtn" onclick="toggleEditorStyle('bold')">Bold</button>
+      <button class="style-toggle-btn" id="styleItalicBtn" onclick="toggleEditorStyle('italic')">Italic</button>
+      <button class="style-toggle-btn" id="styleOutlineBtn" onclick="toggleEditorStyle('outline')">Outline</button>
+      <button class="style-toggle-btn" id="styleShadowBtn" onclick="toggleEditorStyle('shadow')">Shadow</button>
+    </div>
   </div>
 </div>
 
@@ -917,7 +999,15 @@ let editorMode = null;
 let drawCanvas, drawCtx;
 let undoStack = [];
 let redoStack = [];
-let activeLiveTextElement = null;
+
+// Text Editor Customization State
+let currentEditorTextColor = '#ffffff';
+let currentEditorStyles = {
+  bold: false,
+  italic: false,
+  outline: false,
+  shadow: true
+};
 
 function saveEditorState() {
   const overlaysHtml = document.getElementById('editorOverlaysLayer').innerHTML;
@@ -1680,6 +1770,53 @@ function addStickerToCanvas(emoji) {
   showToast('Sticker added! Drag to position');
 }
 
+// Text Customization Handlers
+let activeSelectedTextEl = null;
+
+function setEditorTextColor(color, swatchEl) {
+  currentEditorTextColor = color;
+  if(swatchEl) {
+    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+    swatchEl.classList.add('active');
+  }
+  if(activeSelectedTextEl) {
+    activeSelectedTextEl.style.color = color;
+  }
+}
+
+function toggleEditorStyle(styleKey) {
+  currentEditorStyles[styleKey] = !currentEditorStyles[styleKey];
+  const btn = document.getElementById(`style${styleKey.charAt(0).toUpperCase() + styleKey.slice(1)}Btn`);
+  if(btn) {
+    btn.classList.toggle('active', currentEditorStyles[styleKey]);
+  }
+  if(activeSelectedTextEl) {
+    applyStylesToTextElement(activeSelectedTextEl);
+  }
+}
+
+function applyStylesToTextElement(el) {
+  el.style.color = currentEditorTextColor;
+  el.style.fontFamily = document.getElementById('editorFontFamilySelect').value;
+  el.style.fontWeight = currentEditorStyles.bold ? '900' : '700';
+  el.style.fontStyle = currentEditorStyles.italic ? 'italic' : 'normal';
+  
+  let textShadows = [];
+  if(currentEditorStyles.shadow) {
+    textShadows.push('0 2px 4px rgba(0,0,0,0.8)');
+  }
+  if(currentEditorStyles.outline) {
+    textShadows.push('-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000');
+  }
+  el.style.textShadow = textShadows.length > 0 ? textShadows.join(', ') : 'none';
+}
+
+function updateActiveTextStyle() {
+  if(activeSelectedTextEl) {
+    applyStylesToTextElement(activeSelectedTextEl);
+  }
+}
+
 function commitEditorText() {
   const input = document.getElementById('editorTextInputField');
   const val = input.value.trim();
@@ -1690,11 +1827,23 @@ function commitEditorText() {
   el.textContent = val;
   el.style.top = '50%';
   el.style.left = '30%';
+  
+  applyStylesToTextElement(el);
+
+  el.onclick = (e) => {
+    e.stopPropagation();
+    document.querySelectorAll('.editorOverlayElement').forEach(x => x.style.borderColor = 'transparent');
+    el.style.borderColor = 'rgba(255,255,255,0.8)';
+    activeSelectedTextEl = el;
+  };
+
   makeElementDraggable(el);
   layer.appendChild(el);
+  
+  activeSelectedTextEl = el;
   input.value = '';
   closeEditorDrawers();
-  showToast('Text added!');
+  showToast('Text added! Select to edit or drag');
 }
 
 function applyEditorFilter(filterStyle, btnEl) {
@@ -2019,7 +2168,6 @@ document.querySelectorAll('.nav button').forEach(btn=>{
  btn.onclick=(e)=>{
   const tab=btn.dataset.tab;
   
-  // FIX: Specifically handle the Create button to prevent bubbling, default actions, and redirects
   if(tab === 'create') {
     if(e) {
       e.stopPropagation();
