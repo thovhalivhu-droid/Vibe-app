@@ -433,7 +433,7 @@ button{font:inherit}
 .editProfileBtn{margin-top:12px;padding:6px 20px;border-radius:16px;border:1px solid #ffffff30;background:transparent;color:#fff;font-weight:700;cursor:pointer;font-size:12px}
 
 .profileSubTabs{display:flex;justify-content:space-around;border-bottom:1px solid #ffffff10;margin-bottom:4px}
-.profileSubTab{padding:10px 0;font-weight:700;color:var(--muted);cursor:pointer;flex:1;text-align:center;font-size:13px}
+.profileSubTab{padding:10px 0;font-weight:700;color:var(--muted);cursor:pointer;flex:1;text-align:center;font-size:12px}
 .profileSubTab.active{color:#fff;border-bottom:2px solid var(--pink)}
 
 .userPostsGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
@@ -1001,6 +1001,7 @@ input:checked+.slider:before{transform:translateX(20px)}
   <div class="profileSubTabs">
     <span class="profileSubTab active" data-profile-tab="posts">My Posts</span>
     <span class="profileSubTab" data-profile-tab="saved">Saved Videos</span>
+    <span class="profileSubTab" data-profile-tab="tagged">Tagged Posts</span>
   </div>
 
   <div class="userPostsGrid" id="userPostsGrid"></div>
@@ -1187,6 +1188,7 @@ let feedData=[
 {
  id:1, author:"Elena Rostova", caption:"Golden hour tones hitting different today ✨ #goldenhour #VIBE", audio:"Original Audio - Elena", likes:24500, commentsCount:2, shares:1200, views:"112K", avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150", 
  mediaList:[{type:"video", url:"https://assets.mixkit.co/videos/preview/mixkit-woman-filming-herself-with-a-smartphone-41270-large.mp4"}],
+ isTagged: true,
  commentsList:[
   {user:"Liam Chen", text:"Absolute cinematic shots!", avatar:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150"},
   {user:"Sophia Taylor", text:"Where is this spot?? ✨", avatar:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"}
@@ -1195,6 +1197,7 @@ let feedData=[
 {
  id:2, author:"Liam Chen", caption:"Late night coding session 💻⚡ #coding #tech #VIBE", audio:"Lofi Chill Beats", likes:58100, commentsCount:1, shares:4500, views:"340K", avatar:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150", 
  mediaList:[{type:"video", url:"https://assets.mixkit.co/videos/preview/mixkit-hands-typing-on-a-laptop-keyboard-close-up-42861-large.mp4"}],
+ isTagged: false,
  commentsList:[
   {user:"Elena Rostova", text:"Relatable haha ☕", avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150"}
  ]
@@ -1838,12 +1841,20 @@ function renderProfileGrid(){
   badge.textContent = '+';
  }
 
- const listToDisplay = profileActiveTab === 'posts' 
-  ? feedData.filter(i => i.author === 'You')
-  : feedData.filter(i => i.isSaved);
+ let listToDisplay = [];
+ if (profileActiveTab === 'posts') {
+   listToDisplay = feedData.filter(i => i.author === 'You');
+ } else if (profileActiveTab === 'saved') {
+   listToDisplay = feedData.filter(i => i.isSaved);
+ } else if (profileActiveTab === 'tagged') {
+   listToDisplay = feedData.filter(i => i.isTagged);
+ }
 
  if(listToDisplay.length === 0){
-  grid.innerHTML = `<div style="grid-column:span 3;text-align:center;color:var(--muted);padding-top:40px;font-size:13px;">${profileActiveTab === 'posts' ? 'No posts yet.' : 'No saved videos yet. Tap the star icon on any video to save it here!'}</div>`;
+  let emptyMsg = 'No posts yet.';
+  if (profileActiveTab === 'saved') emptyMsg = 'No saved videos yet. Tap the star icon on any video to save it here!';
+  if (profileActiveTab === 'tagged') emptyMsg = 'No tagged posts yet.';
+  grid.innerHTML = `<div style="grid-column:span 3;text-align:center;color:var(--muted);padding-top:40px;font-size:13px;">${emptyMsg}</div>`;
   return;
  }
 
