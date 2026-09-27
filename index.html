@@ -19,7 +19,7 @@ button{font:inherit}
 .reel img{display:none}
 .reel.image video{display:none}.reel.image img{display:block}
 
-/* Carousel container support inside feed reels */
+/* Carousel / Side-by-Side support: Photos side-by-side, Videos strictly sequential/stacked */
 .reel-media-slider {
   display: flex;
   width: 100%;
@@ -29,6 +29,20 @@ button{font:inherit}
   scrollbar-width: none;
 }
 .reel-media-slider::-webkit-scrollbar { display: none; }
+
+/* Multi-photo side-by-side grid view inside slider slide if multiple photos are grouped */
+.reel-media-slide.has-side-by-side-photos {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px;
+  background: #000;
+}
+.reel-media-slide.has-side-by-side-photos img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .reel-media-slide {
   flex: 0 0 100%;
   width: 100%;
@@ -846,22 +860,37 @@ function renderFeed(filteredList){
   let dotsHtml = '';
   const mediaList = item.mediaList || [{type: item.video ? 'video' : 'image', url: item.video || item.image}];
   
+  // Check if multiple items contain all photos so we can render them side-by-side
+  const allPhotos = mediaList.length > 1 && mediaList.every(m => m.type === 'image');
+
   if(mediaList.length > 1) {
     mediaHtml = `<div class="reel-media-slider">`;
-    mediaList.forEach((m) => {
-      if(m.type === 'video') {
-        mediaHtml += `<div class="reel-media-slide"><video class="reel-video" src="${m.url}" loop playsinline preload="metadata" ${muted?'muted':''}></video></div>`;
-      } else {
-        mediaHtml += `<div class="reel-media-slide"><img class="reel-image" style="display:block" src="${m.url}" alt=""></div>`;
-      }
-    });
+    if (allPhotos) {
+      // Group all photos side-by-side in a single grid slide
+      mediaHtml += `<div class="reel-media-slide has-side-by-side-photos">`;
+      mediaList.forEach(m => {
+        mediaHtml += `<img src="${m.url}" alt="">`;
+      });
+      mediaHtml += `</div>`;
+    } else {
+      // Mixed or video content: play/display sequentially one at a time
+      mediaList.forEach((m) => {
+        if(m.type === 'video') {
+          mediaHtml += `<div class="reel-media-slide"><video class="reel-video" src="${m.url}" loop playsinline preload="metadata" ${muted?'muted':''}></video></div>`;
+        } else {
+          mediaHtml += `<div class="reel-media-slide"><img class="reel-image" style="display:block" src="${m.url}" alt=""></div>`;
+        }
+      });
+    }
     mediaHtml += `</div>`;
 
-    dotsHtml = `<div class="carousel-dots">`;
-    mediaList.forEach((_, idx) => {
-      dotsHtml += `<div class="carousel-dot ${idx === 0 ? 'active' : ''}"></div>`;
-    });
-    dotsHtml += `</div>`;
+    if (!allPhotos) {
+      dotsHtml = `<div class="carousel-dots">`;
+      mediaList.forEach((_, idx) => {
+        dotsHtml += `<div class="carousel-dot ${idx === 0 ? 'active' : ''}"></div>`;
+      });
+      dotsHtml += `</div>`;
+    }
   } else {
     const m = mediaList[0];
     if(m.type === 'video') {
@@ -896,7 +925,7 @@ function renderFeed(filteredList){
   feed.appendChild(card);
   
   const slider = card.querySelector('.reel-media-slider');
-  if(slider) {
+  if(slider && !allPhotos) {
     const dots = card.querySelectorAll('.carousel-dot');
     slider.onscroll = () => {
       const slideWidth = slider.clientWidth;
@@ -1302,24 +1331,37 @@ function openEditor(mediaList){
  const container = document.getElementById('editorCanvasContainer');
  container.querySelectorAll('video, img').forEach(el => el.remove());
 
+ const allPhotos = selectedMediaList.length > 1 && selectedMediaList.every(i => i.type === 'image');
+
  if(selectedMediaList.length > 1) {
    container.classList.add('multi-item');
  } else {
    container.classList.remove('multi-item');
  }
 
- selectedMediaList.forEach(item => {
-   const el = document.createElement(item.type==='video'?'video':'img');
-   el.src = item.url;
-   if(item.type==='video'){
-     el.controls=false;
-     el.playsInline=true;
-     el.muted=false; 
-     el.loop=true;
-     el.play().catch(()=>{});
-   }
-   container.insertBefore(el, container.firstChild);
- });
+ if (allPhotos) {
+   const gridEl = document.createElement('div');
+   gridEl.className = 'reel-media-slide has-side-by-side-photos';
+   selectedMediaList.forEach(item => {
+     const imgEl = document.createElement('img');
+     imgEl.src = item.url;
+     gridEl.appendChild(imgEl);
+   });
+   container.insertBefore(gridEl, container.firstChild);
+ } else {
+   selectedMediaList.forEach(item => {
+     const el = document.createElement(item.type==='video'?'video':'img');
+     el.src = item.url;
+     if(item.type==='video'){
+       el.controls=false;
+       el.playsInline=true;
+       el.muted=false; 
+       el.loop=true;
+       el.play().catch(()=>{});
+     }
+     container.insertBefore(el, container.firstChild);
+   });
+ }
 
  document.getElementById('editorMuteBtn').style.display = selectedMediaList.some(i => i.type === 'video') ? 'block' : 'none';
 
