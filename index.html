@@ -19,7 +19,7 @@ button{font:inherit}
 .reel img{display:none}
 .reel.image video{display:none}.reel.image img{display:block}
 
-/* Carousel / Side-by-Side support: Photos side-by-side, Videos strictly sequential/stacked */
+/* Carousel / Side-by-Side support */
 .reel-media-slider {
   display: flex;
   width: 100%;
@@ -29,8 +29,6 @@ button{font:inherit}
   scrollbar-width: none;
 }
 .reel-media-slider::-webkit-scrollbar { display: none; }
-
-/* Multi-photo side-by-side grid view inside slider slide if multiple photos are grouped */
 .reel-media-slide.has-side-by-side-photos {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -42,7 +40,6 @@ button{font:inherit}
   height: 100%;
   object-fit: cover;
 }
-
 .reel-media-slide {
   flex: 0 0 100%;
   width: 100%;
@@ -132,7 +129,7 @@ button{font:inherit}
   border-color: var(--pink);
 }
 
-.mute{position:absolute;top:68px;right:16px;z-index:7;width:40px;height:40px;border:0;border-radius:50%;background:#0008;color:#fff;font-size:19px}
+.mute{position:absolute;top:68px;right:16px;z-index:7;width:40px;height:40px;border:0;border-radius:50%;background:#0008;color:#fff;font-size:19px;cursor:pointer;}
 
 .nav{position:absolute;bottom:0;left:0;right:0;height:var(--nav);z-index:100;display:flex;justify-content:space-around;align-items:center;background:#171820ee;backdrop-filter:blur(16px);border-top:1px solid #ffffff12;pointer-events:auto;transition:transform .3s ease}
 .nav button{background:none;border:0;color:#9a9dac;font-size:10px;display:flex;flex-direction:column;align-items:center;gap:4px;width:20%;cursor:pointer;pointer-events:auto}.nav button.active{color:#fff}.nav .plus{width:42px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--pink),var(--cyan));color:#fff;font-size:22px;line-height:1}
@@ -163,14 +160,15 @@ button{font:inherit}
 .inner{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--cyan));transition:.2s}
 .shutter.recording .inner{width:34px;height:34px;border-radius:9px;background:#f33}
 
-/* Editor Screen Styles */
+/* Editor Screen Styles with Enhanced Video & Sound Preview Support */
 #editorScreen{background:#0b0c10;z-index:70}
 .editorCanvasContainer{flex:1;position:relative;background:#000;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:4px}
 .editorCanvasContainer video, .editorCanvasContainer img{width:100%;height:100%;object-fit:contain}
 .editorCanvasContainer.multi-item {display:flex; overflow-x:auto; scroll-snap-type: x mandatory;}
-.editorCanvasContainer.multi-item video, .editorCanvasContainer.multi-item img {flex: 0 0 100%; scroll-snap-align: start;}
-#editorDrawingCanvas{position:absolute;inset:0;pointer-events:auto;cursor:crosshair}
-.editorOverlayElement{position:absolute;cursor:move;user-select:none;padding:6px 10px;font-size:22px;border:1px dashed transparent;transition:border .2s}
+.editorCanvasContainer.multi-item video, .editorCanvasContainer.multi-item img {flex: 0 0 100%; scroll-snap-align: start; width:100%; height:100%; object-fit:contain;}
+#editorDrawingCanvas{position:absolute;inset:0;pointer-events:auto;cursor:crosshair;z-index:5}
+#editorOverlaysLayer{position:absolute;inset:0;pointer-events:none;z-index:6}
+.editorOverlayElement{position:absolute;cursor:move;user-select:none;padding:6px 10px;font-size:22px;border:1px dashed transparent;transition:border .2s;pointer-events:auto}
 .editorOverlayElement:hover{border-color:rgba(255,255,255,0.4)}
 .editorOverlayElement.text-element{font-size:20px;font-weight:700;color:#fff;background:rgba(0,0,0,0.5);border-radius:8px;backdrop-filter:blur(4px);padding:8px 12px;text-shadow:0 2px 4px rgba(0,0,0,0.5)}
 
@@ -221,7 +219,7 @@ button{font:inherit}
   font-size: 13px;
 }
 
-.editorToolbar{background:#14151c;padding:12px 16px;display:flex;flex-direction:column;gap:12px;border-top:1px solid #ffffff10}
+.editorToolbar{background:#14151c;padding:12px 16px;display:flex;flex-direction:column;gap:12px;border-top:1px solid #ffffff10;z-index:20;position:relative}
 .editorToolsRow{display:flex;justify-content:space-around;align-items:center}
 .editorToolBtn{background:#1a1b22;border:1px solid #ffffff15;color:#fff;padding:8px 14px;border-radius:12px;font-weight:700;font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer}
 .editorToolBtn.active{background:var(--pink);border-color:var(--pink)}
@@ -530,8 +528,8 @@ input:checked+.slider:before{transform:translateX(20px)}
 
 <div class="editorCanvasContainer" id="editorCanvasContainer">
   <canvas id="editorDrawingCanvas"></canvas>
-  <div id="editorOverlaysLayer" style="position:absolute; inset:0; pointer-events:none;"></div>
-  <button id="editorMuteBtn" class="mute">🔊</button>
+  <div id="editorOverlaysLayer"></div>
+  <button id="editorMuteBtn" class="mute" title="Mute/Unmute Video">🔊</button>
 </div>
 
 <div class="editorToolbar">
@@ -860,20 +858,17 @@ function renderFeed(filteredList){
   let dotsHtml = '';
   const mediaList = item.mediaList || [{type: item.video ? 'video' : 'image', url: item.video || item.image}];
   
-  // Check if multiple items contain all photos so we can render them side-by-side
   const allPhotos = mediaList.length > 1 && mediaList.every(m => m.type === 'image');
 
   if(mediaList.length > 1) {
     mediaHtml = `<div class="reel-media-slider">`;
     if (allPhotos) {
-      // Group all photos side-by-side in a single grid slide
       mediaHtml += `<div class="reel-media-slide has-side-by-side-photos">`;
       mediaList.forEach(m => {
         mediaHtml += `<img src="${m.url}" alt="">`;
       });
       mediaHtml += `</div>`;
     } else {
-      // Mixed or video content: play/display sequentially one at a time
       mediaList.forEach((m) => {
         if(m.type === 'video') {
           mediaHtml += `<div class="reel-media-slide"><video class="reel-video" src="${m.url}" loop playsinline preload="metadata" ${muted?'muted':''}></video></div>`;
@@ -947,7 +942,6 @@ function renderFeed(filteredList){
     };
   }
 
-  const v=card.querySelector('video');
   const likeBtn=card.querySelector('.like');
   const commentActionBtn=card.querySelector('.commentBtn');
   const saveBtn=card.querySelector('.saveBtn');
@@ -1300,6 +1294,13 @@ function handleFileInputFiles(files, defaultType) {
           openEditor(mediaList);
         }
       };
+      vid.onerror = () => {
+        mediaList.push({ file, type, url });
+        processedCount++;
+        if(processedCount === incomingFiles.length) {
+          openEditor(mediaList);
+        }
+      };
       vid.src = url;
     } else {
       mediaList.push({ file, type, url });
@@ -1353,10 +1354,10 @@ function openEditor(mediaList){
      const el = document.createElement(item.type==='video'?'video':'img');
      el.src = item.url;
      if(item.type==='video'){
-       el.controls=false;
-       el.playsInline=true;
-       el.muted=false; 
-       el.loop=true;
+       el.controls = false;
+       el.playsInline = true;
+       el.muted = false; 
+       el.loop = true;
        el.play().catch(()=>{});
      }
      container.insertBefore(el, container.firstChild);
@@ -1381,10 +1382,13 @@ function openEditor(mediaList){
 document.getElementById('editorMuteBtn').onclick = (e) => {
   e.stopPropagation();
   const container = document.getElementById('editorCanvasContainer');
+  let isMuted = false;
   container.querySelectorAll('video').forEach(vid => {
     vid.muted = !vid.muted;
+    isMuted = vid.muted;
   });
-  document.getElementById('editorMuteBtn').textContent = document.getElementById('editorMuteBtn').textContent === '🔊' ? '🔇' : '🔊';
+  document.getElementById('editorMuteBtn').textContent = isMuted ? '🔇' : '🔊';
+  showToast(isMuted ? 'Muted' : 'Sound On');
 };
 
 function hideAllEditorTrays(){
