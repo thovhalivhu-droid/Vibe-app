@@ -150,8 +150,7 @@ button{font:inherit}
 #editorOverlaysLayer{position:absolute;inset:0;pointer-events:none;z-index:6}
 .editorOverlayElement{position:absolute;cursor:move;user-select:none;padding:6px 10px;font-size:22px;border:1px dashed transparent;transition:border .2s;pointer-events:auto}
 .editorOverlayElement:hover{border-color:rgba(255,255,255,0.4)}
-.editorOverlayElement.text-element{font-size:20px;font-weight:700;color:#fff;background:rgba(0,0,0,0.5);border-radius:8px;backdrop-filter:blur(4px);padding:8px 12px;text-shadow:0 2px 4px rgba(0,0,0,0.5);cursor:grab;}
-.editorOverlayElement.text-element:active {cursor:grabbing;}
+.editorOverlayElement.text-element{font-size:20px;font-weight:700;color:#fff;background:rgba(0,0,0,0.5);border-radius:8px;backdrop-filter:blur(4px);padding:8px 12px;text-shadow:0 2px 4px rgba(0,0,0,0.5)}
 
 /* Styled Text Editor Bar inside Post Screen */
 .topTextEditorBar {
@@ -297,58 +296,6 @@ button{font:inherit}
 .sticker-item:hover {
   transform: scale(1.1);
   background: rgba(255,255,255,0.15);
-}
-
-/* Text Customization Styles inside Drawer */
-.text-custom-controls {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.color-picker-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-.color-swatch {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  cursor: pointer;
-  border: 2px solid transparent;
-}
-.color-swatch.active {
-  border-color: #fff;
-  transform: scale(1.1);
-}
-.style-buttons-row {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.style-toggle-btn {
-  background: #1a1b22;
-  border: 1px solid rgba(255,255,255,0.2);
-  color: #fff;
-  padding: 6px 12px;
-  border-radius: 10px;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-}
-.style-toggle-btn.active {
-  background: var(--pink);
-  border-color: var(--pink);
-}
-.font-family-select {
-  background: #1a1b22;
-  border: 1px solid rgba(255,255,255,0.2);
-  color: #fff;
-  padding: 6px 10px;
-  border-radius: 10px;
-  font-size: 12px;
-  outline: none;
 }
 
 /* Edit Toolbar legacy completely hidden */
@@ -638,7 +585,7 @@ input:checked+.slider:before{transform:translateX(20px)}
 <div class="screenHead">
   <button class="close" id="closeEditorBtn">×</button>
   <span>Edit Media</span>
-  <button class="textBtn" onclick="proceedToPostScreen()" style="color:var(--cyan); font-weight:800;">Next →</button>
+  <span style="width:24px"></span>
 </div>
 
 <div class="editorCanvasContainer" id="editorCanvasContainer">
@@ -672,41 +619,12 @@ input:checked+.slider:before{transform:translateX(20px)}
   </div>
 </div>
 
-<!-- Text Input Drawer with Live Instant Typing & Customization -->
+<!-- Text Input Drawer -->
 <div id="editorTextDrawer" class="editor-tool-drawer">
   <div class="drawer-header"><span>Add Custom Text</span><button class="close" onclick="closeEditorDrawers()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">×</button></div>
   <div style="display:flex; gap:8px;">
-    <input type="text" id="editorTextInputField" class="topTextEditorInput" placeholder="Type text overlay..." autocomplete="off" oninput="handleLiveTextTyping(this.value)">
-    <button class="topTextEditorDoneBtn" onclick="commitEditorText()">Done</button>
-  </div>
-  
-  <div class="text-custom-controls">
-    <div style="font-size: 12px; color: var(--muted); font-weight: 700; margin-top: 4px;">Text Color:</div>
-    <div class="color-picker-row" id="textColorPickerRow">
-      <div class="color-swatch active" style="background:#ffffff;" onclick="setEditorTextColor('#ffffff', this)"></div>
-      <div class="color-swatch" style="background:#ff2a5f;" onclick="setEditorTextColor('#ff2a5f', this)"></div>
-      <div class="color-swatch" style="background:#00f2fe;" onclick="setEditorTextColor('#00f2fe', this)"></div>
-      <div class="color-swatch" style="background:#ffe600;" onclick="setEditorTextColor('#ffe600', this)"></div>
-      <div class="color-swatch" style="background:#00ff66;" onclick="setEditorTextColor('#00ff66', this)"></div>
-      <div class="color-swatch" style="background:#9b51e0;" onclick="setEditorTextColor('#9b51e0', this)"></div>
-      <div class="color-swatch" style="background:#000000;" onclick="setEditorTextColor('#000000', this)"></div>
-      <input type="color" id="customColorPickerInput" value="#ffffff" style="width:26px; height:26px; border:none; background:none; cursor:pointer; padding:0;" oninput="setEditorTextColor(this.value, null)">
-    </div>
-
-    <div style="font-size: 12px; color: var(--muted); font-weight: 700; margin-top: 4px;">Font & Styles:</div>
-    <div class="style-buttons-row">
-      <select id="editorFontFamilySelect" class="font-family-select" onchange="updateActiveTextStyle()">
-        <option value="Arial, Helvetica, sans-serif">Arial</option>
-        <option value="'Courier New', Courier, monospace">Courier</option>
-        <option value="Georgia, serif">Georgia</option>
-        <option value="'Impact', Charcoal, sans-serif">Impact</option>
-        <option value="'Verdana', Geneva, sans-serif">Verdana</option>
-      </select>
-      <button class="style-toggle-btn" id="styleBoldBtn" onclick="toggleEditorStyle('bold')">Bold</button>
-      <button class="style-toggle-btn" id="styleItalicBtn" onclick="toggleEditorStyle('italic')">Italic</button>
-      <button class="style-toggle-btn" id="styleOutlineBtn" onclick="toggleEditorStyle('outline')">Outline</button>
-      <button class="style-toggle-btn" id="styleShadowBtn" onclick="toggleEditorStyle('shadow')">Shadow</button>
-    </div>
+    <input type="text" id="editorTextInputField" class="topTextEditorInput" placeholder="Type text overlay..." autocomplete="off">
+    <button class="topTextEditorDoneBtn" onclick="commitEditorText()">Add</button>
   </div>
 </div>
 
@@ -747,7 +665,7 @@ input:checked+.slider:before{transform:translateX(20px)}
     <span class="tool-icon">⭐</span>
     <span class="tool-label">Stickers</span>
   </button>
-  <button class="edit-tool-btn" id="toolCustomTextBtn" onclick="openTextEditorDrawer()">
+  <button class="edit-tool-btn" id="toolCustomTextBtn" onclick="toggleEditorDrawer('editorTextDrawer')">
     <span class="tool-icon">✍️</span>
     <span class="tool-label">Text</span>
   </button>
@@ -999,15 +917,7 @@ let editorMode = null;
 let drawCanvas, drawCtx;
 let undoStack = [];
 let redoStack = [];
-
-// Text Editor Customization State
-let currentEditorTextColor = '#ffffff';
-let currentEditorStyles = {
-  bold: false,
-  italic: false,
-  outline: false,
-  shadow: true
-};
+let activeLiveTextElement = null;
 
 function saveEditorState() {
   const overlaysHtml = document.getElementById('editorOverlaysLayer').innerHTML;
@@ -1770,106 +1680,21 @@ function addStickerToCanvas(emoji) {
   showToast('Sticker added! Drag to position');
 }
 
-// Live Text Customization & Real-time Typing Handlers
-let activeSelectedTextEl = null;
-
-function openTextEditorDrawer() {
-  toggleEditorDrawer('editorTextDrawer');
-  // If there's no active text element being edited, create a new live one instantly on preview
-  if (!activeSelectedTextEl || !document.body.contains(activeSelectedTextEl)) {
-    const layer = document.getElementById('editorOverlaysLayer');
-    const el = document.createElement('div');
-    el.className = 'editorOverlayElement text-element';
-    el.textContent = '';
-    el.style.top = '45%';
-    el.style.left = '30%';
-    applyStylesToTextElement(el);
-
-    el.onclick = (e) => {
-      e.stopPropagation();
-      document.querySelectorAll('.editorOverlayElement').forEach(x => x.style.borderColor = 'transparent');
-      el.style.borderColor = 'rgba(255,255,255,0.8)';
-      activeSelectedTextEl = el;
-      document.getElementById('editorTextInputField').value = el.textContent;
-    };
-
-    makeElementDraggable(el);
-    layer.appendChild(el);
-    activeSelectedTextEl = el;
-  }
-  document.getElementById('editorTextInputField').focus();
-}
-
-function handleLiveTextTyping(val) {
-  if (!activeSelectedTextEl || !document.body.contains(activeSelectedTextEl)) {
-    // If element was somehow removed, recreate it on the fly
-    const layer = document.getElementById('editorOverlaysLayer');
-    const el = document.createElement('div');
-    el.className = 'editorOverlayElement text-element';
-    el.style.top = '45%';
-    el.style.left = '30%';
-    applyStylesToTextElement(el);
-    makeElementDraggable(el);
-    layer.appendChild(el);
-    activeSelectedTextEl = el;
-  }
-  activeSelectedTextEl.textContent = val;
-}
-
-function setEditorTextColor(color, swatchEl) {
-  currentEditorTextColor = color;
-  if(swatchEl) {
-    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
-    swatchEl.classList.add('active');
-  }
-  if(activeSelectedTextEl) {
-    activeSelectedTextEl.style.color = color;
-  }
-}
-
-function toggleEditorStyle(styleKey) {
-  currentEditorStyles[styleKey] = !currentEditorStyles[styleKey];
-  const btn = document.getElementById(`style${styleKey.charAt(0).toUpperCase() + styleKey.slice(1)}Btn`);
-  if(btn) {
-    btn.classList.toggle('active', currentEditorStyles[styleKey]);
-  }
-  if(activeSelectedTextEl) {
-    applyStylesToTextElement(activeSelectedTextEl);
-  }
-}
-
-function applyStylesToTextElement(el) {
-  el.style.color = currentEditorTextColor;
-  el.style.fontFamily = document.getElementById('editorFontFamilySelect').value;
-  el.style.fontWeight = currentEditorStyles.bold ? '900' : '700';
-  el.style.fontStyle = currentEditorStyles.italic ? 'italic' : 'normal';
-  
-  let textShadows = [];
-  if(currentEditorStyles.shadow) {
-    textShadows.push('0 2px 4px rgba(0,0,0,0.8)');
-  }
-  if(currentEditorStyles.outline) {
-    textShadows.push('-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000');
-  }
-  el.style.textShadow = textShadows.length > 0 ? textShadows.join(', ') : 'none';
-}
-
-function updateActiveTextStyle() {
-  if(activeSelectedTextEl) {
-    applyStylesToTextElement(activeSelectedTextEl);
-  }
-}
-
 function commitEditorText() {
   const input = document.getElementById('editorTextInputField');
   const val = input.value.trim();
-  if(!val && activeSelectedTextEl) {
-    activeSelectedTextEl.remove();
-  }
-  activeSelectedTextEl = null;
+  if(!val) return;
+  const layer = document.getElementById('editorOverlaysLayer');
+  const el = document.createElement('div');
+  el.className = 'editorOverlayElement text-element';
+  el.textContent = val;
+  el.style.top = '50%';
+  el.style.left = '30%';
+  makeElementDraggable(el);
+  layer.appendChild(el);
   input.value = '';
   closeEditorDrawers();
-  showToast('Text applied! Drag or tap to re-edit');
+  showToast('Text added!');
 }
 
 function applyEditorFilter(filterStyle, btnEl) {
@@ -2112,214 +1937,153 @@ function startStoryTimer(){
 
  if(currentStoryVideoEl && currentStoryVideoEl.paused){
   currentStoryVideoEl.play().catch(()=>{});
-}
+ }
 
  storyTimeout = setTimeout(() => {
   playStory(currentStoryIndex + 1);
  }, storyTimeRemaining);
 }
 
-function clearTimeouts(){
- if(storyTimeout) clearTimeout(storyTimeout);
-}
-
-document.getElementById('closeStoryModal').onclick = () => {
- clearTimeouts();
- document.getElementById('storyModal').classList.remove('open');
-};
-
-const storyContentArea = document.getElementById('storyContentArea');
-storyContentArea.onmousedown = storyContentArea.onttouchstart = (e) => {
- if(e.target.closest('#closeStoryModal') || e.target.closest('.storyFooterViews')) return;
+function pauseStoryTimer(){
+ if(isStoryPaused) return;
  isStoryPaused = true;
- clearTimeouts();
  const elapsed = Date.now() - storyStartTime;
  storyTimeRemaining = Math.max(0, storyTimeRemaining - elapsed);
- 
+ clearTimeouts();
+
  const fill = document.querySelectorAll('.storyBarFill')[currentStoryIndex];
  if(fill){
   const computedWidth = window.getComputedStyle(fill).width;
-  fill.style.transition = 'none';
-  fill.style.width = computedWidth;
   fill.classList.remove('running');
   fill.classList.add('paused');
+  fill.style.width = computedWidth;
  }
- if(currentStoryVideoEl) currentStoryVideoEl.pause();
+
+ if(currentStoryVideoEl && !currentStoryVideoEl.paused){
+  currentStoryVideoEl.pause();
+ }
+}
+
+function clearTimeouts(){
+ clearTimeout(storyTimeout);
+ storyTimeout = null;
+}
+
+const storyModalEl = document.getElementById('storyModal');
+storyModalEl.onmousedown = storyModalEl.ontouchstart = (e) => {
+ if(e.target.closest('#storyFooterViewsBtn') || e.target.closest('#closeStoryModal')) return;
+ pauseStoryTimer();
 };
 
-storyContentArea.onmouseup = storyContentArea.ontouchend = (e) => {
- if(!isStoryPaused) return;
- startStoryTimer();
+storyModalEl.onmouseup = storyModalEl.ontouchend = (e) => {
+ if(e.target.closest('#storyFooterViewsBtn') || e.target.closest('#closeStoryModal')) return;
+ if(isStoryPaused){
+  startStoryTimer();
+ }
 };
 
-document.getElementById('storyFooterViewsBtn').onclick = () => {
- clearTimeouts();
+document.getElementById('storyFooterViewsBtn').onclick=()=>{
+ pauseStoryTimer();
  document.getElementById('storyViewersModal').classList.add('open');
 };
 
-document.getElementById('closeStoryViewersModal').onclick = () => {
+document.getElementById('closeStoryViewersModal').onclick=()=>{
  document.getElementById('storyViewersModal').classList.remove('open');
  startStoryTimer();
 };
 
-function switchStudioMode(mode) {
-  const modeVideoTab = document.getElementById('modeVideoTab');
-  const modeLiveTab = document.getElementById('modeLiveTab');
-  const videoModePanel = document.getElementById('videoModePanel');
-  const liveModePanel = document.getElementById('liveModePanel');
-  const liveOverlay = document.getElementById('liveStreamOverlayElements');
-
-  if(mode === 'video') {
-    modeVideoTab.classList.add('active');
-    modeLiveTab.classList.remove('active');
-    videoModePanel.classList.remove('hidden');
-    liveModePanel.classList.add('hidden');
-    liveOverlay.classList.add('hidden');
-  } else {
-    modeLiveTab.classList.add('active');
-    modeVideoTab.classList.remove('active');
-    liveModePanel.classList.remove('hidden');
-    videoModePanel.classList.add('hidden');
-    liveOverlay.classList.remove('hidden');
-  }
-}
-
-let isLiveActive = false;
-let liveHeartCount = 0;
-
-function toggleLiveStream() {
-  isLiveActive = !isLiveActive;
-  const btn = document.getElementById('startLiveBtn');
-  if(isLiveActive) {
-    btn.textContent = 'End LIVE';
-    btn.style.background = '#f33';
-    showToast('You are now LIVE! 🔴');
-  } else {
-    btn.textContent = 'Go LIVE Now';
-    btn.style.background = 'var(--pink)';
-    showToast('Live stream ended.');
-  }
-}
-
-document.getElementById('liveSendChatBtn').onclick = () => {
-  const input = document.getElementById('liveCommentInput');
-  const txt = input.value.trim();
-  if(!txt) return;
-  const list = document.getElementById('liveChatListContainer');
-  const msg = document.createElement('div');
-  msg.className = 'liveChatMsg';
-  msg.innerHTML = `<span class="liveChatUser">You:</span>${txt}`;
-  list.appendChild(msg);
-  list.scrollTop = list.scrollHeight;
-  input.value = '';
+document.getElementById('closeStoryModal').onclick=()=>{
+ clearTimeouts();
+ document.getElementById('storyModal').classList.remove('open');
 };
 
-document.getElementById('liveTapLikeBtn').onclick = () => {
-  liveHeartCount++;
-  document.getElementById('liveHeartCountBadge').textContent = `❤️ ${liveHeartCount}`;
-  const container = document.getElementById('liveLikesContainer');
-  const heart = document.createElement('div');
-  heart.className = 'floating-like';
-  heart.textContent = ['❤️', '💖', '✨', '🔥'][Math.floor(Math.random() * 4)];
-  container.appendChild(heart);
-  setTimeout(() => heart.remove(), 2000);
-};
-
-function openLiveSettingsModal() {
-  document.getElementById('liveSettingsModal').classList.add('open');
-}
-document.getElementById('closeLiveSettingsModal').onclick = () => {
-  document.getElementById('liveSettingsModal').classList.remove('open');
-};
-
-function openGuestRequestsModal() {
-  const container = document.getElementById('guestRequestsListContainer');
-  container.innerHTML = `
-    <div class="messageItem" style="display:flex; justify-content:space-between; align-items:center;">
-      <div style="display:flex; gap:10px; align-items:center;">
-        <img class="messageAvatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" style="width:36px;height:36px;">
-        <div><div class="messageName">Elena Rostova</div><div class="messageSnippet">Wants to join your live</div></div>
-      </div>
-      <button class="useSoundBtn" onclick="acceptGuest('Elena Rostova', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150')">Accept</button>
-    </div>
-  `;
-  document.getElementById('guestRequestsModal').classList.add('open');
-}
-document.getElementById('closeGuestRequestsModal').onclick = () => {
-  document.getElementById('guestRequestsModal').classList.remove('open');
-};
-
-function acceptGuest(name, avatarUrl) {
-  document.getElementById('guestRequestsModal').classList.remove('open');
-  const grid = document.getElementById('activeGuestsGrid');
-  grid.classList.remove('hidden');
-  const slot = document.createElement('div');
-  slot.className = 'guest-slot';
-  slot.innerHTML = `<img src="${avatarUrl}"><span class="guest-slot-name">${name}</span>`;
-  grid.appendChild(slot);
-  showToast(`${name} joined your live stream! 👥`);
+async function flipCamera(){
+ facing=facing==='user'?'environment':'user';
+ stopCamera();
+ await startCamera();
 }
 
-function toggleGuestRequestsSetting(el) {
-  showToast(el.checked ? 'Guest requests enabled' : 'Guest requests disabled');
-}
+document.getElementById('flipBtn').onclick=flipCamera;
+document.querySelectorAll('.filter').forEach(b=>b.onclick=()=>{document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));b.classList.add('active');camera.style.filter=b.dataset.filter});
 
-function toggleLiveMic() {
-  showToast('Mic toggled');
-}
-
-function openSecuritySettings() {
-  showToast('Opening Security & Privacy Settings...');
-}
-
-document.getElementById('navHomeBtn').onclick = () => { updateNavActiveState('home'); pauseAllFeedVideos(); };
-document.getElementById('navDiscoverBtn').onclick = () => { updateNavActiveState('discover'); discover.classList.add('open'); pauseAllFeedVideos(); };
-document.getElementById('navCreateBtn').onclick = () => { 
-  updateNavActiveState('create'); 
-  pauseAllFeedVideos();
-  studio.classList.add('open'); 
-  appContainer.classList.add('hide-nav-for-create');
-  startCamera();
-};
-document.getElementById('navInboxBtn').onclick = () => { updateNavActiveState('inbox'); inbox.classList.add('open'); pauseAllFeedVideos(); };
-document.getElementById('navProfileBtn').onclick = () => { updateNavActiveState('profile'); profile.classList.add('open'); pauseAllFeedVideos(); renderProfileGrid(); };
-
-document.querySelectorAll('.screenHead .close, [data-close]').forEach(btn => {
- btn.onclick = (e) => {
-  const target = btn.closest('.screen');
-  if(target) target.classList.remove('open');
-  appContainer.classList.remove('hide-nav-for-create');
-  updateNavActiveState('home');
+document.querySelectorAll('.soundItem').forEach(item=>{
+ item.onclick=()=>{
+  selectedSound = item.dataset.sound;
+  document.getElementById('currentSoundLabel').textContent = selectedSound;
+  document.getElementById('soundModal').classList.remove('open');
+  showToast('Sound selected: '+selectedSound);
  };
 });
 
-document.getElementById('closeStudio').onclick = () => {
- studio.classList.remove('open');
- stopCamera();
- appContainer.classList.remove('hide-nav-for-create');
- updateNavActiveState('home');
-};
+document.querySelectorAll('.nav button').forEach(btn=>{
+ btn.onclick=(e)=>{
+  const tab=btn.dataset.tab;
+  
+  // FIX: Specifically handle the Create button to prevent bubbling, default actions, and redirects
+  if(tab === 'create') {
+    if(e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    updateNavActiveState('create');
+    discover.classList.remove('open');
+    inbox.classList.remove('open');
+    profile.classList.remove('open');
+    studio.classList.add('open');
+    startCamera();
+    appContainer.classList.add('hide-nav-for-create');
+    return;
+  }
 
-document.getElementById('closePost').onclick = () => {
- postScreen.classList.remove('open');
- appContainer.classList.remove('hide-nav-for-create');
- updateNavActiveState('home');
-};
+  updateNavActiveState(tab);
+  if(tab==='home'){
+   discover.classList.remove('open');
+   inbox.classList.remove('open');
+   profile.classList.remove('open');
+   studio.classList.remove('open');
+   stopCamera();
+   appContainer.classList.remove('hide-nav-for-create');
+  }else if(tab==='discover'){
+   discover.classList.add('open');
+   inbox.classList.remove('open');
+   profile.classList.remove('open');
+   studio.classList.remove('open');
+   stopCamera();
+   renderDiscoverGrid();
+   appContainer.classList.remove('hide-nav-for-create');
+  }else if(tab==='inbox'){
+   inbox.classList.add('open');
+   discover.classList.remove('open');
+   profile.classList.remove('open');
+   studio.classList.remove('open');
+   stopCamera();
+   appContainer.classList.remove('hide-nav-for-create');
+  }else if(tab==='profile'){
+   profile.classList.add('open');
+   discover.classList.remove('open');
+   inbox.classList.remove('open');
+   studio.classList.remove('open');
+   stopCamera();
+   renderProfileGrid();
+   appContainer.classList.remove('hide-nav-for-create');
+  }
+ };
+});
 
-document.querySelectorAll('.tabs .tab').forEach(t => {
- t.onclick = () => {
-  document.querySelectorAll('.tabs .tab').forEach(x => x.classList.remove('active'));
-  t.classList.add('active');
-  const tabName = t.dataset.feedTab;
-  if(tabName === 'following') {
-    renderFeed(feedData.slice(0, 1));
-  } else {
-    renderFeed(feedData);
+document.querySelectorAll('.close').forEach(btn=>{
+ btn.onclick=(e)=>{
+  const screen=btn.closest('.screen');
+  if(screen){
+   screen.classList.remove('open');
+   if(screen.id==='studio') stopCamera();
+   appContainer.classList.remove('hide-nav-for-create');
+   updateNavActiveState('home');
   }
  };
 });
 
 renderFeed();
+updateNavActiveState('home');
 </script>
 </body>
 </html>
