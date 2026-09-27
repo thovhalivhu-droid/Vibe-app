@@ -13,19 +13,6 @@ button{font:inherit}
 .header{position:absolute;top:0;left:0;right:0;height:58px;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:linear-gradient(#0f1015dd,transparent);transition:transform .3s ease}
 .logo{font-size:23px;font-weight:900;background:linear-gradient(45deg,var(--pink),var(--cyan));-webkit-background-clip:text;color:transparent}
 .tabs{display:flex;gap:22px;font-weight:700}.tab{color:#8d8f9b;position:relative;cursor:pointer}.tab.active{color:#fff}.tab.active:after{content:"";position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);width:18px;height:3px;border-radius:5px;background:var(--pink)}
-
-/* Top-Right Header Post Button Style */
-.header-post-btn {
-  background: linear-gradient(135deg, var(--pink), var(--cyan));
-  border: none;
-  color: #fff;
-  font-weight: 800;
-  padding: 6px 14px;
-  border-radius: 16px;
-  cursor: pointer;
-  font-size: 12px;
-}
-
 .feed{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none}.feed::-webkit-scrollbar{display:none}
 .reel{height:100%;min-height:100%;position:relative;background:#000;scroll-snap-align:start;scroll-snap-stop:always;display:flex;align-items:center;justify-content:center;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 .reel video,.reel img{width:100%;height:100%;object-fit:cover;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;pointer-events:none}
@@ -183,8 +170,12 @@ button{font:inherit}
 .editorOverlayElement:hover{border-color:rgba(255,255,255,0.4)}
 .editorOverlayElement.text-element{font-size:20px;font-weight:700;color:#fff;background:rgba(0,0,0,0.5);border-radius:8px;backdrop-filter:blur(4px);padding:8px 12px;text-shadow:0 2px 4px rgba(0,0,0,0.5)}
 
-/* Direct Quick Post Button on Editor Top Header */
+/* Direct Quick Post Button Hidden Globally, Shown Only on Edit Media Screen */
 .editor-quick-post-btn {
+  display: none;
+}
+#editorScreen.open .editor-quick-post-btn {
+  display: inline-block;
   background: linear-gradient(135deg, var(--pink), var(--cyan));
   border: none;
   color: #fff;
@@ -565,8 +556,7 @@ input:checked+.slider:before{transform:translateX(20px)}
     <span class="tab active" data-feed-tab="following">Following</span>
     <span class="tab" data-feed-tab="foryou">For You</span>
   </div>
-  <!-- Header Post Button placed at top-right -->
-  <button class="header-post-btn" id="headerPostBtn">Post</button>
+  <div style="width:35px"></div>
 </header>
 
 <main id="feed" class="feed"></main>
@@ -1070,13 +1060,6 @@ let drawCanvas, drawCtx;
 let undoStack = [];
 let redoStack = [];
 let activeLiveTextElement = null;
-
-// Hook up Header Post button to open Studio/Create screen
-document.getElementById('headerPostBtn').onclick = () => {
-  studio.classList.add('open');
-  appContainer.classList.add('hide-nav-for-create');
-  startCamera();
-};
 
 function openSecuritySettings() {
   document.getElementById('setting-private-account').checked = userPrivacySettings.privateAccount;
@@ -2007,6 +1990,7 @@ document.getElementById('closeEditorBtn').onclick = () => {
  updateNavActiveState('home');
 };
 
+// Quick Post functionality reading caption input directly from the editor
 document.getElementById('editorQuickPostBtn').onclick = () => {
   if (!selectedMediaList || selectedMediaList.length === 0) {
     showToast('Choose video(s) or picture(s) first');
@@ -2070,9 +2054,54 @@ document.getElementById('publishStoryBtn').onclick=()=>{
  if(selectedMediaList.length === 0){showToast('Choose video(s) or picture(s) first');return}
  const primaryMedia = selectedMediaList[0];
  const storyItem={id:Date.now(), url:primaryMedia.url, type:primaryMedia.type, timestamp:Date.now(), viewsCount: 34};
+ storiesData.unshift(storyItem);
+ postScreen.classList.remove('open');
+ appContainer.classList.remove('hide-nav-for-create');
+ selectedMediaList=[];
+ document.getElementById('captionInput').value='';
+ renderProfileGrid();
+ showToast('Story added! It will vanish in 24 hours ⏳');
 };
 
-// Initial Feed Load
+document.querySelectorAll('.nav button[data-tab]').forEach(btn => {
+  btn.onclick = () => {
+    const tabKey = btn.dataset.tab;
+    updateNavActiveState(tabKey);
+    
+    if (tabKey === 'home') {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('open'));
+    } else if (tabKey === 'discover') {
+      document.querySelectorAll('.screen').forEach(s => { if(s.id !== 'discover') s.classList.remove('open'); });
+      discover.classList.add('open');
+    } else if (tabKey === 'create') {
+      document.querySelectorAll('.screen').forEach(s => { if(s.id !== 'studio') s.classList.remove('open'); });
+      studio.classList.add('open');
+      appContainer.classList.add('hide-nav-for-create');
+      startCamera();
+    } else if (tabKey === 'inbox') {
+      document.querySelectorAll('.screen').forEach(s => { if(s.id !== 'inbox') s.classList.remove('open'); });
+      inbox.classList.add('open');
+    } else if (tabKey === 'profile') {
+      document.querySelectorAll('.screen').forEach(s => { if(s.id !== 'profile') s.classList.remove('open'); });
+      profile.classList.add('open');
+    }
+  };
+});
+
+document.querySelectorAll('.close').forEach(btn => {
+  btn.onclick = (e) => {
+    const screen = e.target.closest('.screen');
+    if (screen) {
+      screen.classList.remove('open');
+      if (screen.id === 'studio') {
+        stopCamera();
+      }
+      appContainer.classList.remove('hide-nav-for-create');
+      updateNavActiveState('home');
+    }
+  };
+});
+
 renderFeed();
 </script>
 </body>
