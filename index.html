@@ -966,7 +966,7 @@ function updateNavActiveState(tabKey) {
 }
 
 function pauseAllFeedVideos() {
-  document.querySelectorAll('.reel video').forEach(v => {
+  document.querySelectorAll('video').forEach(v => {
     v.pause();
   });
 }
@@ -1004,11 +1004,11 @@ function renderFeed(filteredList){
   
   if(mediaList.length > 1) {
     mediaHtml = `<div class="reel-media-slider">`;
-    mediaList.forEach((m, idx) => {
+    mediaList.forEach((m) => {
       if(m.type === 'video') {
         mediaHtml += `<div class="reel-media-slide"><video class="reel-video" src="${m.url}" loop playsinline preload="metadata" ${muted?'muted':''}></video></div>`;
       } else {
-        mediaHtml += `<div class="reel-media-slide"><img class="reel-image" src="${m.url}" alt=""></div>`;
+        mediaHtml += `<div class="reel-media-slide"><img class="reel-image" style="display:block" src="${m.url}" alt=""></div>`;
       }
     });
     mediaHtml += `</div>`;
@@ -1061,6 +1061,18 @@ function renderFeed(filteredList){
       const activeIdx = Math.round(slider.scrollLeft / slideWidth);
       dots.forEach((d, idx) => {
         d.classList.toggle('active', idx === activeIdx);
+      });
+
+      // Manage playback for carousel slides
+      card.querySelectorAll('.reel-video').forEach((vSlide, sIdx) => {
+        if(sIdx === activeIdx && card.matches(':hover') || isCardInViewport(card)) {
+          if(activeVideo && activeVideo !== vSlide) activeVideo.pause();
+          activeVideo = vSlide;
+          vSlide.muted = muted;
+          vSlide.play().catch(()=>{});
+        } else {
+          vSlide.pause();
+        }
       });
     };
   }
@@ -1159,7 +1171,9 @@ function renderFeed(filteredList){
     card.appendChild(heart);
     setTimeout(() => heart.remove(), 800);
    } else {
-    if(v){if(v.paused)v.play();else v.pause()}
+    // Toggle active video play/pause
+    const activeVidSlide = slider ? slider.querySelector('.reel-media-slide:nth-child(' + (Math.round(slider.scrollLeft / slider.clientWidth) + 1) + ') video') : v;
+    if(activeVidSlide){if(activeVidSlide.paused)activeVidSlide.play();else activeVidSlide.pause()}
    }
    lastTap = currentTime;
   };
@@ -1167,6 +1181,11 @@ function renderFeed(filteredList){
  setupObserver();
  renderDiscoverGrid();
  renderProfileGrid();
+}
+
+function isCardInViewport(card) {
+  const rect = card.getBoundingClientRect();
+  return rect.top >= 0 && rect.top <= window.innerHeight / 2;
 }
 
 function triggerEditAction(actionType, itemId) {
@@ -1232,15 +1251,31 @@ document.getElementById('commentSendBtn').onclick=()=>{
 
 function setupObserver(){
  const ob=new IntersectionObserver(entries=>entries.forEach(en=>{
-  const v=en.target.querySelector('video');
-  if(!v) return;
+  const card = en.target;
+  const slider = card.querySelector('.reel-media-slider');
+  
   if(en.isIntersecting && activeTabKey === 'home'){
-   if(activeVideo&&activeVideo!==v){activeVideo.pause()}
-   activeVideo=v;
-   v.muted=muted;
-   v.play().catch(()=>{})
+   if(slider) {
+     const slideWidth = slider.clientWidth;
+     const activeIdx = Math.round(slider.scrollLeft / slideWidth);
+     const activeSlideVid = slider.querySelectorAll('.reel-media-slide video')[activeIdx];
+     if(activeSlideVid) {
+       if(activeVideo && activeVideo !== activeSlideVid) activeVideo.pause();
+       activeVideo = activeSlideVid;
+       activeSlideVid.muted = muted;
+       activeSlideVid.play().catch(()=>{});
+     }
+   } else {
+     const v = card.querySelector('video');
+     if(v) {
+       if(activeVideo && activeVideo !== v) activeVideo.pause();
+       activeVideo = v;
+       v.muted = muted;
+       v.play().catch(()=>{});
+     }
+   }
   } else {
-   v.pause();
+   card.querySelectorAll('video').forEach(v => v.pause());
   }
  }),{root:feed,threshold:.7});
  document.querySelectorAll('.reel').forEach(x=>ob.observe(x));
@@ -1257,7 +1292,7 @@ function renderDiscoverGrid(filterText=""){
   const cell = document.createElement('div');
   cell.className = 'discoverGridItem';
   const firstMedia = item.mediaList ? item.mediaList[0] : {type: item.video?'video':'image', url: item.video||item.image};
-  if(firstMedia.type === 'image') { cell.innerHTML = `<img src="${firstMedia.url}" alt="">`; }
+  if(firstMedia.type === 'image') { cell.innerHTML = `<img style="display:block" src="${firstMedia.url}" alt="">`; }
   else { cell.innerHTML = `<video src="${firstMedia.url}" muted playsinline></video>`; }
   cell.onclick = () => {
    discover.classList.remove('open');
@@ -1314,7 +1349,7 @@ function renderProfileGrid(){
   const cell = document.createElement('div');
   cell.className = 'userPostThumb';
   const firstMedia = item.mediaList ? item.mediaList[0] : {type: item.video?'video':'image', url: item.video||item.image};
-  if(firstMedia.type === 'image') { cell.innerHTML = `<img src="${firstMedia.url}" alt="">`; }
+  if(firstMedia.type === 'image') { cell.innerHTML = `<img style="display:block" src="${firstMedia.url}" alt="">`; }
   else { cell.innerHTML = `<video src="${firstMedia.url}" muted playsinline></video>`; }
   cell.onclick = () => {
    profile.classList.remove('open');
@@ -1848,7 +1883,6 @@ function startStoryTimer(){
  storyStartTime = Date.now();
  isStoryPaused = false;
  
- const activeStories = getValidStories();
  const fill = document.querySelectorAll('.storyBarFill')[currentStoryIndex];
  if(!fill) return;
 
@@ -1998,81 +2032,18 @@ document.querySelectorAll('.inboxSubTab').forEach(tab=>{
     <div class="messageItem"><img class="messageAvatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150"><div class="messageContent"><div class="messageName">Elena Rostova</div><div class="messageSnippet">Loved your recent vibe post! ✨</div></div></div>
     <div class="messageItem"><img class="messageAvatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150"><div class="messageContent"><div class="messageName">Liam Chen</div><div class="messageSnippet">Let's collaborate on a clip soon.</div></div></div>`;
   } else if(subTabType === 'requests'){
-   renderInboxRequests();
-  } else {
-   notificationsData.forEach(n=>{
-    container.innerHTML += `<div class="messageItem"><img class="messageAvatar" src="${n.avatar}"><div class="messageContent"><div class="messageName">${n.user}</div><div class="messageSnippet">${n.text}</div></div><div style="font-size:11px;color:var(--muted)">${n.time}</div></div>`;
-   });
-  }
- };
-});
-
-document.getElementById('editProfileBtn').onclick=()=>{
- document.getElementById('editUsernameInput').value = myProfile.username;
- document.getElementById('editBioInput').value = myProfile.bio;
- document.getElementById('editProfileModal').classList.add('open');
-};
-document.getElementById('closeEditProfile').onclick=()=>document.getElementById('editProfileModal').classList.remove('open');
-document.getElementById('saveProfileBtn').onclick=()=>{
- myProfile.username = document.getElementById('editUsernameInput').value.trim() || myProfile.username;
- myProfile.bio = document.getElementById('editBioInput').value.trim() || myProfile.bio;
- document.getElementById('editProfileModal').classList.remove('open');
- renderProfileGrid();
- showToast('Profile updated successfully!');
-};
-
-document.getElementById('profileAvatarImg').onclick=(e)=>{
- e.stopPropagation();
- const activeStories = getValidStories();
- if(activeStories.length === 0){
-  document.getElementById('avatarFileInput').click();
- }
-};
-document.getElementById('avatarFileInput').onchange=e=>{
- const file = e.target.files[0];
- if(file && file.type.startsWith('image/')){
-  myProfile.avatar = URL.createObjectURL(file);
-  renderProfileGrid();
-  renderFeed();
-  showToast('Profile picture updated!');
- }
-};
-
-function switchStudioMode(mode) {
-  if(isLiveActive) {
-    showToast('Please end your live stream first');
-    return;
-  }
-  const videoTab = document.getElementById('modeVideoTab');
-  const liveTab = document.getElementById('modeLiveTab');
-  const videoPanel = document.getElementById('videoModePanel');
-  const livePanel = document.getElementById('liveModePanel');
-
-  if(mode === 'video') {
-    videoTab.classList.add('active');
-    liveTab.classList.remove('active');
-    videoPanel.classList.remove('hidden');
-    livePanel.classList.add('hidden');
-  } else {
-    liveTab.classList.add('active');
-    videoTab.classList.remove('active');
-    livePanel.classList.remove('hidden');
-    videoPanel.classList.add('hidden');
-  }
-}
-
-document.querySelectorAll('.tab').forEach(t=>{
- t.onclick=()=>{
-  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-  t.classList.add('active');
-  const feedTab = t.dataset.feedTab;
-  if(feedTab === 'following'){
-   renderFeed(feedData);
-   showToast('Showing Following feed');
-  } else {
-   const shuffled = [...feedData].reverse();
-   renderFeed(shuffled);
-   showToast('Showing For You feed');
+    renderInboxRequests();
+  } else if(subTabType === 'notifications'){
+    notificationsData.forEach(n => {
+      container.innerHTML += `
+        <div class="messageItem">
+          <img class="messageAvatar" src="${n.avatar}">
+          <div class="messageContent">
+            <div class="messageName">${n.user}</div>
+            <div class="messageSnippet">${n.text} • <span style="color:var(--muted);">${n.time}</span></div>
+          </div>
+        </div>`;
+    });
   }
  };
 });
@@ -2082,44 +2053,33 @@ document.querySelectorAll('.nav button').forEach(btn=>{
   const tab=btn.dataset.tab;
   updateNavActiveState(tab);
   
-  discover.classList.remove('open');
-  inbox.classList.remove('open');
-  profile.classList.remove('open');
-  studio.classList.remove('open');
-  editorScreen.classList.remove('open');
-  postScreen.classList.remove('open');
+  [discover, inbox, profile, studio, editorScreen, postScreen].forEach(s => s.classList.remove('open'));
   appContainer.classList.remove('hide-nav-for-create');
-  stopCamera();
 
   if(tab==='home'){
-   // Home feed
-  }else if(tab==='discover'){
+   pauseAllFeedVideos();
+   setTimeout(setupObserver, 50);
+  } else if(tab==='discover'){
    discover.classList.add('open');
    renderDiscoverGrid();
-  }else if(tab==='create'){
-   appContainer.classList.add('hide-nav-for-create');
+  } else if(tab==='create'){
    studio.classList.add('open');
+   appContainer.classList.add('hide-nav-for-create');
    startCamera();
-  }else if(tab==='inbox'){
+  } else if(tab==='inbox'){
    inbox.classList.add('open');
-  }else if(tab==='profile'){
+  } else if(tab==='profile'){
    profile.classList.add('open');
+   renderProfileGrid();
   }
  };
 });
 
-document.querySelectorAll('.close').forEach(b=>{
- b.onclick=()=>{
-  const targetId = b.dataset.close;
-  if(targetId){
-   document.getElementById(targetId).classList.remove('open');
-  } else {
-   studio.classList.remove('open');
-   editorScreen.classList.remove('open');
-   postScreen.classList.remove('open');
-  }
+document.querySelectorAll('[data-close]').forEach(btn=>{
+ btn.onclick=()=>{
+  const targetId=btn.dataset.close;
+  document.getElementById(targetId).classList.remove('open');
   appContainer.classList.remove('hide-nav-for-create');
-  stopCamera();
   updateNavActiveState('home');
  };
 });
@@ -2137,224 +2097,183 @@ document.getElementById('closePost').onclick=()=>{
  updateNavActiveState('home');
 };
 
-function openSecuritySettings() {
-  document.getElementById('security-settings-screen').classList.add('open');
+document.getElementById('closeSoundModal').onclick=()=>document.getElementById('soundModal').classList.remove('open');
+document.getElementById('soundSelectBtn').onclick=()=>document.getElementById('soundModal').classList.add('open');
+
+function switchStudioMode(mode){
+ document.querySelectorAll('.studioModeTab').forEach(t=>t.classList.remove('active'));
+ const overlayElements = document.getElementById('liveStreamOverlayElements');
+ if(mode==='video'){
+  document.getElementById('modeVideoTab').classList.add('active');
+  document.getElementById('videoModePanel').classList.remove('hidden');
+  document.getElementById('liveModePanel').classList.add('hidden');
+  overlayElements.classList.add('hidden');
+  stopLiveStreamSimulation();
+ } else {
+  document.getElementById('modeLiveTab').classList.add('active');
+  document.getElementById('videoModePanel').classList.add('hidden');
+  document.getElementById('liveModePanel').classList.remove('hidden');
+  overlayElements.classList.remove('hidden');
+  startLiveStreamSimulation();
+ }
 }
 
-function closeSecuritySettings() {
-  document.getElementById('security-settings-screen').classList.remove('open');
+function startLiveStreamSimulation(){
+ isLiveActive = true;
+ liveSimInterval = setInterval(()=>{
+  liveViewersCountNum += Math.floor(Math.random() * 5) - 2;
+  document.getElementById('liveViewersCount').textContent = `👁 ${formatCount(liveViewersCountNum)}`;
+ }, 3000);
 }
 
-function togglePrivateAccount(el) {
-  showToast(el.checked ? 'Account set to Private' : 'Account set to Public');
+function stopLiveStreamSimulation(){
+ isLiveActive = false;
+ clearInterval(liveSimInterval);
 }
 
-function updateDMPermissions(val) {
-  showToast(`Direct message permissions updated to: ${val}`);
+function toggleLiveStream(){
+ const btn = document.getElementById('startLiveBtn');
+ if(btn.textContent.includes('Now')){
+  btn.textContent = 'End LIVE';
+  btn.style.background = '#f33';
+  showToast('You are now LIVE! 🔴');
+ } else {
+  btn.textContent = 'Go LIVE Now';
+  btn.style.background = 'var(--pink)';
+  showToast('Live stream ended.');
+ }
 }
 
-function openPasswordModal() {
-  showToast('Password change prompt opened');
+function toggleLiveMic(){
+ const btn = document.getElementById('liveMuteMicBtn');
+ if(btn.textContent === 'Mute'){
+  btn.textContent = 'Unmute';
+  showToast('Microphone muted');
+ } else {
+  btn.textContent = 'Mute';
+  showToast('Microphone active');
+ }
 }
-
-function toggleTFA(el) {
-  showToast(el.checked ? 'Two-Factor Authentication enabled' : 'Two-Factor Authentication disabled');
-}
-
-function openBlockedAccounts() {
-  showToast('Blocked accounts manager opened');
-}
-
-function downloadUserData() {
-  showToast('Preparing your data download package...');
-}
-
-function openPrivacyPolicy() {
-  showToast('Opening Privacy Policy...');
-}
-
-function openTermsOfService() {
-  showToast('Opening Terms of Service...');
-}
-
-function openCookiePolicy() {
-  showToast('Opening Cookie Policy...');
-}
-
-function toggleGuestRequestsSetting(el) {
-  allowGuestRequestsEnabled = el.checked;
-  showToast(allowGuestRequestsEnabled ? 'Guest requests enabled' : 'Guest requests disabled');
-}
-
-function openLiveSettingsModal() {
-  document.getElementById('liveSettingsModal').classList.add('open');
-}
-document.getElementById('closeLiveSettingsModal').onclick = () => {
-  document.getElementById('liveSettingsModal').classList.remove('open');
-};
-
-function openGuestRequestsModal() {
-  renderGuestRequestsList();
-  document.getElementById('guestRequestsModal').classList.add('open');
-}
-document.getElementById('closeGuestRequestsModal').onclick = () => {
-  document.getElementById('guestRequestsModal').classList.remove('open');
-};
-
-function renderGuestRequestsList() {
-  const container = document.getElementById('guestRequestsListContainer');
-  container.innerHTML = '';
-  
-  const badgeCount = document.getElementById('guestBadgeCount');
-  if(badgeCount) {
-    badgeCount.textContent = guestRequestsData.length;
-    badgeCount.style.display = guestRequestsData.length > 0 ? 'inline-block' : 'none';
-  }
-
-  if(guestRequestsData.length === 0) {
-    container.innerHTML = `<div style="text-align:center;color:var(--muted);padding-top:40px;font-size:13px;">No incoming guest requests.</div>`;
-    return;
-  }
-
-  guestRequestsData.forEach(g => {
-    container.innerHTML += `
-      <div class="messageItem" style="justify-content:space-between;">
-        <div style="display:flex; align-items:center; gap:12px; flex:1; min-width:0;">
-          <img class="messageAvatar" src="${g.avatar}">
-          <div class="messageContent" style="min-width:0;">
-            <div class="messageName">${g.name}</div>
-            <div class="messageSnippet">${g.username} wants to join your live</div>
-          </div>
-        </div>
-        <div style="display:flex; gap:6px; margin-left:8px;">
-          <button onclick="acceptGuestRequest(${g.id})" style="background:var(--pink); border:0; color:#fff; padding:6px 12px; border-radius:14px; font-weight:700; font-size:11px; cursor:pointer;">Accept</button>
-          <button onclick="declineGuestRequest(${g.id})" style="background:#2a2a2a; border:0; color:#fff; padding:6px 12px; border-radius:14px; font-weight:700; font-size:11px; cursor:pointer;">Decline</button>
-        </div>
-      </div>
-    `;
-  });
-}
-
-function acceptGuestRequest(id) {
-  const req = guestRequestsData.find(g => g.id === id);
-  if(req) {
-    if(activeGuests.length >= 4) {
-      showToast('Maximum 4 guests allowed!');
-      return;
-    }
-    guestRequestsData = guestRequestsData.filter(g => g.id !== id);
-    activeGuests.push(req);
-    renderActiveGuestsGrid();
-    renderGuestRequestsList();
-    showToast(`${req.name} joined your live stream!`);
-  }
-}
-
-function declineGuestRequest(id) {
-  guestRequestsData = guestRequestsData.filter(g => g.id !== id);
-  renderGuestRequestsList();
-  showToast('Guest request declined');
-}
-
-function renderActiveGuestsGrid() {
-  const grid = document.getElementById('activeGuestsGrid');
-  if(!grid) return;
-  if(activeGuests.length === 0) {
-    grid.classList.add('hidden');
-    grid.innerHTML = '';
-    return;
-  }
-  grid.classList.remove('hidden');
-  grid.innerHTML = '';
-  activeGuests.forEach(g => {
-    grid.innerHTML += `
-      <div class="guest-slot">
-        <img src="${g.avatar}" alt="">
-        <span class="guest-slot-name">${g.name}</span>
-      </div>
-    `;
-  });
-}
-
-function toggleLiveStream() {
-  isLiveActive = !isLiveActive;
-  const btn = document.getElementById('startLiveBtn');
-  const overlayElements = document.getElementById('liveStreamOverlayElements');
-  
-  if(isLiveActive) {
-    btn.textContent = 'End LIVE';
-    btn.style.background = '#333';
-    overlayElements.classList.remove('hidden');
-    showToast('You are now LIVE! 🔴');
-    startLiveSimulation();
-  } else {
-    btn.textContent = 'Go LIVE Now';
-    btn.style.background = 'var(--pink)';
-    overlayElements.classList.add('hidden');
-    activeGuests = [];
-    renderActiveGuestsGrid();
-    clearInterval(liveSimInterval);
-    showToast('Live stream ended.');
-  }
-}
-
-function startLiveSimulation() {
-  clearInterval(liveSimInterval);
-  liveSimInterval = setInterval(() => {
-    liveViewersCountNum += Math.floor(Math.random() * 7) - 3;
-    document.getElementById('liveViewersCount').textContent = `👁 ${formatCount(liveViewersCountNum)}`;
-    
-    if(Math.random() > 0.4) {
-      triggerFloatingHeartLive();
-    }
-  }, 1200);
-}
-
-function triggerFloatingHeartLive() {
-  liveHeartCountNum++;
-  const badge = document.getElementById('liveHeartCountBadge');
-  if(badge) badge.textContent = `❤️ ${formatCount(liveHeartCountNum)}`;
-
-  const container = document.getElementById('liveLikesContainer');
-  if(!container) return;
-  const heart = document.createElement('div');
-  heart.className = 'floating-like';
-  const heartsPool = ['❤️', '💖', '✨', '🔥', '💗'];
-  heart.textContent = heartsPool[Math.floor(Math.random() * heartsPool.length)];
-  heart.style.right = (Math.random() * 25) + 'px';
-  container.appendChild(heart);
-  setTimeout(() => heart.remove(), 2000);
-}
-
-document.getElementById('liveTapLikeBtn').onclick = () => {
-  triggerFloatingHeartLive();
-};
 
 document.getElementById('liveSendChatBtn').onclick = () => {
   const input = document.getElementById('liveCommentInput');
-  const text = input.value.trim();
-  if(!text) return;
-  
+  const txt = input.value.trim();
+  if(!txt) return;
   const list = document.getElementById('liveChatListContainer');
-  const msg = document.createElement('div');
-  msg.className = 'liveChatMsg';
-  msg.innerHTML = `<span class="liveChatUser">${myProfile.username}:</span>${text}`;
-  list.appendChild(msg);
-  list.scrollTop = list.scrollHeight;
+  list.innerHTML += `<div class="liveChatMsg"><span class="liveChatUser">You:</span>${txt}</div>`;
   input.value = '';
+  list.scrollTop = list.scrollHeight;
 };
 
-function toggleLiveMic() {
-  if(mediaStream) {
-    const audioTrack = mediaStream.getAudioTracks()[0];
-    if(audioTrack) {
-      audioTrack.enabled = !audioTrack.enabled;
-      showToast(audioTrack.enabled ? 'Microphone unmuted' : 'Microphone muted');
-    }
-  }
+document.getElementById('liveTapLikeBtn').onclick = () => {
+  liveHeartCountNum += 1;
+  document.getElementById('liveHeartCountBadge').textContent = `❤️ ${liveHeartCountNum}`;
+  const container = document.getElementById('liveLikesContainer');
+  const heart = document.createElement('div');
+  heart.className = 'floating-like';
+  heart.textContent = ['❤️', '✨', '🔥', '💖'][Math.floor(Math.random()*4)];
+  container.appendChild(heart);
+  setTimeout(() => heart.remove(), 2000);
+};
+
+function openLiveSettingsModal(){ document.getElementById('liveSettingsModal').classList.add('open'); }
+document.getElementById('closeLiveSettingsModal').onclick = () => document.getElementById('liveSettingsModal').classList.remove('open');
+
+function toggleGuestRequestsSetting(el){
+ allowGuestRequestsEnabled = el.checked;
+ showToast(allowGuestRequestsEnabled ? 'Guest requests enabled' : 'Guest requests disabled');
 }
 
+function openGuestRequestsModal(){
+ const container = document.getElementById('guestRequestsListContainer');
+ container.innerHTML = '';
+ if(guestRequestsData.length === 0){
+  container.innerHTML = `<div style="text-align:center;color:var(--muted);padding-top:40px;font-size:13px;">No pending guest requests.</div>`;
+ } else {
+  guestRequestsData.forEach(g => {
+    container.innerHTML += `
+      <div class="messageItem" style="justify-content:space-between;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <img class="messageAvatar" src="${g.avatar}">
+          <div class="messageContent">
+            <div class="messageName">${g.name}</div>
+            <div class="messageSnippet">${g.username}</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <button onclick="acceptGuestRequest(${g.id})" style="background:var(--pink); border:0; color:#fff; padding:6px 12px; border-radius:14px; font-weight:700; font-size:11px; cursor:pointer;">Accept</button>
+        </div>
+      </div>`;
+  });
+ }
+ document.getElementById('guestRequestsModal').classList.add('open');
+}
+
+document.getElementById('closeGuestRequestsModal').onclick = () => document.getElementById('guestRequestsModal').classList.remove('open');
+
+function acceptGuestRequest(id){
+ const guest = guestRequestsData.find(g => g.id === id);
+ if(guest){
+  guestRequestsData = guestRequestsData.filter(g => g.id !== id);
+  document.getElementById('guestBadgeCount').textContent = guestRequestsData.length;
+  activeGuests.push(guest);
+  renderActiveGuestsGrid();
+  document.getElementById('guestRequestsModal').classList.remove('open');
+  showToast(`${guest.name} joined your live! 👥`);
+ }
+}
+
+function renderActiveGuestsGrid(){
+ const grid = document.getElementById('activeGuestsGrid');
+ if(activeGuests.length > 0) {
+  grid.classList.remove('hidden');
+ } else {
+  grid.classList.add('hidden');
+  return;
+ }
+ grid.innerHTML = '';
+ activeGuests.forEach(g => {
+  grid.innerHTML += `
+    <div class="guest-slot">
+      <img src="${g.avatar}">
+      <span class="guest-slot-name">${g.name}</span>
+    </div>`;
+ });
+}
+
+function openSecuritySettings(){ document.getElementById('security-settings-screen').classList.add('open'); }
+function closeSecuritySettings(){ document.getElementById('security-settings-screen').classList.remove('open'); }
+
+function togglePrivateAccount(el){ showToast(el.checked ? 'Account set to Private' : 'Account set to Public'); }
+function updateDMPermissions(val){ showToast(`Direct message settings updated: ${val}`); }
+function openPasswordModal(){ showToast('Password change prompt opened'); }
+function toggleTFA(el){ showToast(el.checked ? 'Two-Factor Authentication enabled 🔒' : 'Two-Factor Authentication disabled'); }
+function openBlockedAccounts(){ showToast('Blocked accounts manager opened'); }
+function downloadUserData(){ showToast('Data export requested. We will email you shortly.'); }
+function openPrivacyPolicy(){ showToast('Opening Privacy Policy...'); }
+function openTermsOfService(){ showToast('Opening Terms of Service...'); }
+function openCookiePolicy(){ showToast('Opening Cookie Policy...'); }
+
+document.getElementById('editProfileBtn').onclick = () => {
+  document.getElementById('editUsernameInput').value = myProfile.username;
+  document.getElementById('editBioInput').value = myProfile.bio;
+  document.getElementById('editProfileModal').classList.add('open');
+};
+
+document.getElementById('closeEditProfile').onclick = () => {
+  document.getElementById('editProfileModal').classList.remove('open');
+};
+
+document.getElementById('saveProfileBtn').onclick = () => {
+  myProfile.username = document.getElementById('editUsernameInput').value.trim() || myProfile.username;
+  myProfile.bio = document.getElementById('editBioInput').value.trim() || myProfile.bio;
+  document.getElementById('editProfileModal').classList.remove('open');
+  renderProfileGrid();
+  showToast('Profile updated successfully! ✨');
+};
+
 renderFeed();
+updateNavActiveState('home');
 </script>
 </body>
 </html>
