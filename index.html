@@ -962,6 +962,7 @@ let feedData=[
 {
  id:1, author:"Elena Rostova", caption:"Golden hour tones hitting different today ✨ #goldenhour #VIBE", audio:"Original Audio - Elena", likes:24500, commentsCount:2, shares:1200, views:"112K", avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150", 
  mediaList:[{type:"video", url:"https://assets.mixkit.co/videos/preview/mixkit-woman-filming-herself-with-a-smartphone-41270-large.mp4"}],
+ overlaysHtml: '',
  commentsList:[
   {user:"Liam Chen", text:"Absolute cinematic shots!", avatar:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150"},
   {user:"Sophia Taylor", text:"Where is this spot?? ✨", avatar:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"}
@@ -970,6 +971,7 @@ let feedData=[
 {
  id:2, author:"Liam Chen", caption:"Late night coding session 💻⚡ #coding #tech #VIBE", audio:"Lofi Chill Beats", likes:58100, commentsCount:1, shares:4500, views:"340K", avatar:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150", 
  mediaList:[{type:"video", url:"https://assets.mixkit.co/videos/preview/mixkit-hands-typing-on-a-laptop-keyboard-close-up-42861-large.mp4"}],
+ overlaysHtml: '',
  commentsList:[
   {user:"Elena Rostova", text:"Relatable haha ☕", avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150"}
  ]
@@ -1000,7 +1002,7 @@ let drawCanvas, drawCtx;
 let undoStack = [];
 let redoStack = [];
 
-// Text Editor Customization State
+// Text Editor Customization State & Saved Overlays for Transition
 let currentEditorTextColor = '#ffffff';
 let currentEditorStyles = {
   bold: false,
@@ -1008,6 +1010,7 @@ let currentEditorStyles = {
   outline: false,
   shadow: true
 };
+let savedEditorOverlaysHtml = '';
 
 function saveEditorState() {
   const overlaysHtml = document.getElementById('editorOverlaysLayer').innerHTML;
@@ -1118,6 +1121,7 @@ function renderFeed(filteredList){
   card.innerHTML=`
   ${mediaHtml}
   ${dotsHtml}
+  <div style="position:absolute; inset:0; pointer-events:none; z-index:4;">${item.overlaysHtml || ''}</div>
   <button class="mute" style="${isSinglePhoto ? 'display:none;' : ''}">${muted?'🔇':'🔊'}</button>
   <div class="overlay"><div class="info"><div class="author"><img class="avatar" src="${item.avatar}"><span class="name">${item.author}</span><button class="follow">Follow</button></div><div class="caption">${parseCaptions(item.caption)}</div><div class="audio">♫ ${item.audio}</div></div>
   <div class="actions">
@@ -1962,6 +1966,10 @@ document.getElementById('closeEditorBtn').onclick = () => {
 function proceedToPostScreen(){
   const container = document.getElementById('editorCanvasContainer');
   container.querySelectorAll('video').forEach(vid => vid.pause());
+  
+  // Save all text overlays and custom overlays exactly as they appear
+  savedEditorOverlaysHtml = document.getElementById('editorOverlaysLayer').innerHTML;
+
   editorScreen.classList.remove('open');
   openPostScreenFromEditor();
 }
@@ -1986,6 +1994,18 @@ function openPostScreenFromEditor(){
    }
    box.appendChild(clone);
  });
+
+ // Append the saved overlays layer onto the post preview screen so text remains visible
+ const overlayClone = document.createElement('div');
+ overlayClone.style.cssText = 'position:absolute; inset:0; pointer-events:none; z-index:6;';
+ overlayClone.innerHTML = savedEditorOverlaysHtml;
+ // Remove interactive handles/borders for preview display
+ overlayClone.querySelectorAll('.editorOverlayElement').forEach(el => {
+   el.style.border = 'none';
+   el.style.cursor = 'default';
+   el.style.pointerEvents = 'none';
+ });
+ box.appendChild(overlayClone);
 }
 
 document.getElementById('previewBox').onclick = () => {
@@ -2006,6 +2026,7 @@ document.getElementById('publishBtn').onclick=()=> {
    views:'1',
    avatar:myProfile.avatar,
    mediaList: [...selectedMediaList],
+   overlaysHtml: savedEditorOverlaysHtml,
    commentsList:[]
  };
  feedData.unshift(item);
@@ -2013,6 +2034,7 @@ document.getElementById('publishBtn').onclick=()=> {
  postScreen.classList.remove('open');
  appContainer.classList.remove('hide-nav-for-create');
  selectedMediaList=[];
+ savedEditorOverlaysHtml='';
  document.getElementById('captionInput').value='';
  showToast('Posted to VIBE 🎉');
 };
@@ -2020,11 +2042,12 @@ document.getElementById('publishBtn').onclick=()=> {
 document.getElementById('publishStoryBtn').onclick=()=>{
  if(selectedMediaList.length === 0){showToast('Choose video(s) or picture(s) first');return}
  const primaryMedia = selectedMediaList[0];
- const storyItem={id:Date.now(), url:primaryMedia.url, type:primaryMedia.type, timestamp:Date.now(), viewsCount: 34};
+ const storyItem={id:Date.now(), url:primaryMedia.url, type:primaryMedia.type, timestamp:Date.now(), viewsCount: 34, overlaysHtml: savedEditorOverlaysHtml};
  storiesData.unshift(storyItem);
  postScreen.classList.remove('open');
  appContainer.classList.remove('hide-nav-for-create');
  selectedMediaList=[];
+ savedEditorOverlaysHtml='';
  document.getElementById('captionInput').value='';
  renderProfileGrid();
  showToast('Story added! It will vanish in 24 hours ⏳');
@@ -2079,247 +2102,22 @@ function playStory(index){
  }
  contentArea.appendChild(el);
 
- const barContainer = document.getElementById('storyBarContainer');
- barContainer.innerHTML = '';
- activeStories.forEach((_, i)=>{
-  const seg = document.createElement('div');
-  seg.className = 'storyBarSegment';
-  const fill = document.createElement('div');
-  fill.className = 'storyBarFill';
-  if(i < index) fill.style.width = '100%';
-  seg.appendChild(fill);
-  barContainer.appendChild(seg);
- });
-
- storyDuration = 5000;
- storyTimeRemaining = storyDuration;
- startStoryTimer();
-}
-
-function startStoryTimer(){
- clearTimeouts();
- storyStartTime = Date.now();
- isStoryPaused = false;
- 
- const fill = document.querySelectorAll('.storyBarFill')[currentStoryIndex];
- if(!fill) return;
-
- fill.style.transition = `width ${storyTimeRemaining}ms linear`;
- fill.classList.add('running');
- fill.classList.remove('paused');
- void fill.offsetWidth;
- fill.style.width = '100%';
-
- if(currentStoryVideoEl && currentStoryVideoEl.paused){
-  currentStoryVideoEl.play().catch(()=>{});
-}
-
- storyTimeout = setTimeout(() => {
-  playStory(currentStoryIndex + 1);
- }, storyTimeRemaining);
-}
-
-function clearTimeouts(){
- if(storyTimeout) clearTimeout(storyTimeout);
+ if(story.overlaysHtml) {
+  const storyOverlay = document.createElement('div');
+  storyOverlay.style.cssText = 'position:absolute; inset:0; pointer-events:none; z-index:5;';
+  storyOverlay.innerHTML = story.overlaysHtml;
+  storyOverlay.querySelectorAll('.editorOverlayElement').forEach(node => {
+    node.style.border = 'none';
+    node.style.cursor = 'default';
+  });
+  contentArea.appendChild(storyOverlay);
+ }
 }
 
 document.getElementById('closeStoryModal').onclick = () => {
- clearTimeouts();
- document.getElementById('storyModal').classList.remove('open');
+  document.getElementById('storyModal').classList.remove('open');
+  if(currentStoryVideoEl) currentStoryVideoEl.pause();
 };
-
-const storyContentArea = document.getElementById('storyContentArea');
-storyContentArea.onmousedown = storyContentArea.onttouchstart = (e) => {
- if(e.target.closest('#closeStoryModal') || e.target.closest('.storyFooterViews')) return;
- isStoryPaused = true;
- clearTimeouts();
- const elapsed = Date.now() - storyStartTime;
- storyTimeRemaining = Math.max(0, storyTimeRemaining - elapsed);
- 
- const fill = document.querySelectorAll('.storyBarFill')[currentStoryIndex];
- if(fill){
-  const computedWidth = window.getComputedStyle(fill).width;
-  fill.style.transition = 'none';
-  fill.style.width = computedWidth;
-  fill.classList.remove('running');
-  fill.classList.add('paused');
- }
- if(currentStoryVideoEl) currentStoryVideoEl.pause();
-};
-
-storyContentArea.onmouseup = storyContentArea.ontouchend = (e) => {
- if(!isStoryPaused) return;
- startStoryTimer();
-};
-
-document.getElementById('storyFooterViewsBtn').onclick = () => {
- clearTimeouts();
- document.getElementById('storyViewersModal').classList.add('open');
-};
-
-document.getElementById('closeStoryViewersModal').onclick = () => {
- document.getElementById('storyViewersModal').classList.remove('open');
- startStoryTimer();
-};
-
-function switchStudioMode(mode) {
-  const modeVideoTab = document.getElementById('modeVideoTab');
-  const modeLiveTab = document.getElementById('modeLiveTab');
-  const videoModePanel = document.getElementById('videoModePanel');
-  const liveModePanel = document.getElementById('liveModePanel');
-  const liveOverlay = document.getElementById('liveStreamOverlayElements');
-
-  if(mode === 'video') {
-    modeVideoTab.classList.add('active');
-    modeLiveTab.classList.remove('active');
-    videoModePanel.classList.remove('hidden');
-    liveModePanel.classList.add('hidden');
-    liveOverlay.classList.add('hidden');
-  } else {
-    modeLiveTab.classList.add('active');
-    modeVideoTab.classList.remove('active');
-    liveModePanel.classList.remove('hidden');
-    videoModePanel.classList.add('hidden');
-    liveOverlay.classList.remove('hidden');
-  }
-}
-
-let isLiveActive = false;
-let liveHeartCount = 0;
-
-function toggleLiveStream() {
-  isLiveActive = !isLiveActive;
-  const btn = document.getElementById('startLiveBtn');
-  if(isLiveActive) {
-    btn.textContent = 'End LIVE';
-    btn.style.background = '#f33';
-    showToast('You are now LIVE! 🔴');
-  } else {
-    btn.textContent = 'Go LIVE Now';
-    btn.style.background = 'var(--pink)';
-    showToast('Live stream ended.');
-  }
-}
-
-document.getElementById('liveSendChatBtn').onclick = () => {
-  const input = document.getElementById('liveCommentInput');
-  const txt = input.value.trim();
-  if(!txt) return;
-  const list = document.getElementById('liveChatListContainer');
-  const msg = document.createElement('div');
-  msg.className = 'liveChatMsg';
-  msg.innerHTML = `<span class="liveChatUser">You:</span>${txt}`;
-  list.appendChild(msg);
-  list.scrollTop = list.scrollHeight;
-  input.value = '';
-};
-
-document.getElementById('liveTapLikeBtn').onclick = () => {
-  liveHeartCount++;
-  document.getElementById('liveHeartCountBadge').textContent = `❤️ ${liveHeartCount}`;
-  const container = document.getElementById('liveLikesContainer');
-  const heart = document.createElement('div');
-  heart.className = 'floating-like';
-  heart.textContent = ['❤️', '💖', '✨', '🔥'][Math.floor(Math.random() * 4)];
-  container.appendChild(heart);
-  setTimeout(() => heart.remove(), 2000);
-};
-
-function openLiveSettingsModal() {
-  document.getElementById('liveSettingsModal').classList.add('open');
-}
-document.getElementById('closeLiveSettingsModal').onclick = () => {
-  document.getElementById('liveSettingsModal').classList.remove('open');
-};
-
-function openGuestRequestsModal() {
-  const container = document.getElementById('guestRequestsListContainer');
-  container.innerHTML = `
-    <div class="messageItem" style="display:flex; justify-content:space-between; align-items:center;">
-      <div style="display:flex; gap:10px; align-items:center;">
-        <img class="messageAvatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" style="width:36px;height:36px;">
-        <div><div class="messageName">Elena Rostova</div><div class="messageSnippet">Wants to join your live</div></div>
-      </div>
-      <button class="useSoundBtn" onclick="acceptGuest('Elena Rostova', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150')">Accept</button>
-    </div>
-  `;
-  document.getElementById('guestRequestsModal').classList.add('open');
-}
-document.getElementById('closeGuestRequestsModal').onclick = () => {
-  document.getElementById('guestRequestsModal').classList.remove('open');
-};
-
-function acceptGuest(name, avatarUrl) {
-  document.getElementById('guestRequestsModal').classList.remove('open');
-  const grid = document.getElementById('activeGuestsGrid');
-  grid.classList.remove('hidden');
-  const slot = document.createElement('div');
-  slot.className = 'guest-slot';
-  slot.innerHTML = `<img src="${avatarUrl}"><span class="guest-slot-name">${name}</span>`;
-  grid.appendChild(slot);
-  showToast(`${name} joined your live stream! 👥`);
-}
-
-function toggleGuestRequestsSetting(el) {
-  showToast(el.checked ? 'Guest requests enabled' : 'Guest requests disabled');
-}
-
-function toggleLiveMic() {
-  showToast('Mic toggled');
-}
-
-function openSecuritySettings() {
-  showToast('Opening Security & Privacy Settings...');
-}
-
-document.getElementById('navHomeBtn').onclick = () => { updateNavActiveState('home'); pauseAllFeedVideos(); };
-document.getElementById('navDiscoverBtn').onclick = () => { updateNavActiveState('discover'); discover.classList.add('open'); pauseAllFeedVideos(); };
-document.getElementById('navCreateBtn').onclick = () => { 
-  updateNavActiveState('create'); 
-  pauseAllFeedVideos();
-  studio.classList.add('open'); 
-  appContainer.classList.add('hide-nav-for-create');
-  startCamera();
-};
-document.getElementById('navInboxBtn').onclick = () => { updateNavActiveState('inbox'); inbox.classList.add('open'); pauseAllFeedVideos(); };
-document.getElementById('navProfileBtn').onclick = () => { updateNavActiveState('profile'); profile.classList.add('open'); pauseAllFeedVideos(); renderProfileGrid(); };
-
-document.querySelectorAll('.screenHead .close, [data-close]').forEach(btn => {
- btn.onclick = (e) => {
-  const target = btn.closest('.screen');
-  if(target) target.classList.remove('open');
-  appContainer.classList.remove('hide-nav-for-create');
-  updateNavActiveState('home');
- };
-});
-
-document.getElementById('closeStudio').onclick = () => {
- studio.classList.remove('open');
- stopCamera();
- appContainer.classList.remove('hide-nav-for-create');
- updateNavActiveState('home');
-};
-
-document.getElementById('closePost').onclick = () => {
- postScreen.classList.remove('open');
- appContainer.classList.remove('hide-nav-for-create');
- updateNavActiveState('home');
-};
-
-document.querySelectorAll('.tabs .tab').forEach(t => {
- t.onclick = () => {
-  document.querySelectorAll('.tabs .tab').forEach(x => x.classList.remove('active'));
-  t.classList.add('active');
-  const tabName = t.dataset.feedTab;
-  if(tabName === 'following') {
-    renderFeed(feedData.slice(0, 1));
-  } else {
-    renderFeed(feedData);
-  }
- };
-});
-
-renderFeed();
 </script>
 </body>
 </html>
