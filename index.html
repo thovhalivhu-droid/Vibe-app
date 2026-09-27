@@ -1113,7 +1113,7 @@ function setupObserver(){
   } else {
    card.querySelectorAll('video').forEach(v => v.pause());
   }
- }),{root:feed,threshold:.7});
+ }),{root:feed,threshold:.5});
  document.querySelectorAll('.reel').forEach(x=>ob.observe(x));
 }
 
@@ -1343,7 +1343,6 @@ function openEditor(mediaList){
  const container = document.getElementById('editorCanvasContainer');
  container.querySelectorAll('video, img').forEach(el => el.remove());
 
- // Use identical multi-item and single-item slide container logic for ALL counts (1 or more)
  if(selectedMediaList.length > 1) {
    container.classList.add('multi-item');
  } else {
