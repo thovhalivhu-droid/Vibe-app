@@ -74,20 +74,6 @@ button{font:inherit}
 .actions{display:flex;flex-direction:column;align-items:center;gap:15px;position:relative}
 .action{background:none;border:0;color:#fff;text-align:center}.circle{width:45px;height:45px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#ffffff22;backdrop-filter:blur(8px);font-size:23px}.count{font-size:11px;font-weight:700;margin-top:3px}.liked .circle{color:var(--pink)}.saved .circle{color:var(--cyan)}
 
-/* Header Edit Action Button Style for Edit Media Section */
-.header-edit-action-btn {
-  background: transparent;
-  border: none;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 10px;
-}
-
 .mute{position:absolute;top:68px;right:16px;z-index:7;width:40px;height:40px;border:0;border-radius:50%;background:#0008;color:#fff;font-size:19px;cursor:pointer;}
 
 /* Custom Control Overlay (Pause/Resume Button) */
@@ -500,7 +486,7 @@ input:checked+.slider:before{transform:translateX(20px)}
 <div class="screenHead">
   <button class="close" id="closeEditorBtn">×</button>
   <span>Edit Media</span>
-  <button class="header-edit-action-btn" id="headerEditActionBtn" onclick="showToast('Edit Action Clicked')">Edit Action</button>
+  <span style="width:24px"></span>
 </div>
 
 <div class="editorCanvasContainer" id="editorCanvasContainer">
