@@ -861,7 +861,7 @@ function getValidStories(){
 function renderFeed(filteredList){
  const list = filteredList || feedData;
  feed.innerHTML='';
- list.forEach(item=>{
+ list.forEach((item, index)=>{
   const card=document.createElement('article'); 
   card.className='reel';
   
@@ -932,7 +932,6 @@ function renderFeed(filteredList){
   
   card.querySelectorAll('.reel-video').forEach(v => {
     v.currentTime = 0.001;
-    // Tap anywhere on the video component to instantly play/pause
     v.parentElement.addEventListener('click', () => {
       if (v.paused) {
         v.play().catch(() => {});
@@ -953,7 +952,7 @@ function renderFeed(filteredList){
       });
 
       card.querySelectorAll('.reel-video').forEach((vSlide, sIdx) => {
-        if(sIdx === activeIdx && (card.matches(':hover') || isCardInViewport(card))) {
+        if(sIdx === activeIdx && isCardInViewport(card)) {
           if(activeVideo && activeVideo !== vSlide) activeVideo.pause();
           activeVideo = vSlide;
           vSlide.muted = muted;
@@ -1036,6 +1035,19 @@ function renderFeed(filteredList){
  setupObserver();
  renderDiscoverGrid();
  renderProfileGrid();
+
+ // Auto-play the first video immediately on load
+ setTimeout(() => {
+   const firstCard = feed.querySelector('.reel');
+   if (firstCard) {
+     const firstVid = firstCard.querySelector('video');
+     if (firstVid) {
+       activeVideo = firstVid;
+       firstVid.muted = muted;
+       firstVid.play().catch(() => {});
+     }
+   }
+ }, 100);
 }
 
 function isCardInViewport(card) {
