@@ -638,7 +638,7 @@ input:checked+.slider:before{transform:translateX(20px)}
 <div class="screenHead">
   <button class="close" id="closeEditorBtn">×</button>
   <span>Edit Media</span>
-  <span style="width:24px"></span>
+  <button class="textBtn" onclick="proceedToPostScreen()" style="color:var(--cyan); font-weight:800;">Next →</button>
 </div>
 
 <div class="editorCanvasContainer" id="editorCanvasContainer">
@@ -672,12 +672,12 @@ input:checked+.slider:before{transform:translateX(20px)}
   </div>
 </div>
 
-<!-- Text Input Drawer with Color Picker & Styles -->
+<!-- Text Input Drawer with Live Instant Typing & Customization -->
 <div id="editorTextDrawer" class="editor-tool-drawer">
   <div class="drawer-header"><span>Add Custom Text</span><button class="close" onclick="closeEditorDrawers()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">×</button></div>
   <div style="display:flex; gap:8px;">
-    <input type="text" id="editorTextInputField" class="topTextEditorInput" placeholder="Type text overlay..." autocomplete="off">
-    <button class="topTextEditorDoneBtn" onclick="commitEditorText()">Add</button>
+    <input type="text" id="editorTextInputField" class="topTextEditorInput" placeholder="Type text overlay..." autocomplete="off" oninput="handleLiveTextTyping(this.value)">
+    <button class="topTextEditorDoneBtn" onclick="commitEditorText()">Done</button>
   </div>
   
   <div class="text-custom-controls">
@@ -747,7 +747,7 @@ input:checked+.slider:before{transform:translateX(20px)}
     <span class="tool-icon">⭐</span>
     <span class="tool-label">Stickers</span>
   </button>
-  <button class="edit-tool-btn" id="toolCustomTextBtn" onclick="toggleEditorDrawer('editorTextDrawer')">
+  <button class="edit-tool-btn" id="toolCustomTextBtn" onclick="openTextEditorDrawer()">
     <span class="tool-icon">✍️</span>
     <span class="tool-label">Text</span>
   </button>
@@ -1770,8 +1770,51 @@ function addStickerToCanvas(emoji) {
   showToast('Sticker added! Drag to position');
 }
 
-// Text Customization Handlers
+// Live Text Customization & Real-time Typing Handlers
 let activeSelectedTextEl = null;
+
+function openTextEditorDrawer() {
+  toggleEditorDrawer('editorTextDrawer');
+  // If there's no active text element being edited, create a new live one instantly on preview
+  if (!activeSelectedTextEl || !document.body.contains(activeSelectedTextEl)) {
+    const layer = document.getElementById('editorOverlaysLayer');
+    const el = document.createElement('div');
+    el.className = 'editorOverlayElement text-element';
+    el.textContent = '';
+    el.style.top = '45%';
+    el.style.left = '30%';
+    applyStylesToTextElement(el);
+
+    el.onclick = (e) => {
+      e.stopPropagation();
+      document.querySelectorAll('.editorOverlayElement').forEach(x => x.style.borderColor = 'transparent');
+      el.style.borderColor = 'rgba(255,255,255,0.8)';
+      activeSelectedTextEl = el;
+      document.getElementById('editorTextInputField').value = el.textContent;
+    };
+
+    makeElementDraggable(el);
+    layer.appendChild(el);
+    activeSelectedTextEl = el;
+  }
+  document.getElementById('editorTextInputField').focus();
+}
+
+function handleLiveTextTyping(val) {
+  if (!activeSelectedTextEl || !document.body.contains(activeSelectedTextEl)) {
+    // If element was somehow removed, recreate it on the fly
+    const layer = document.getElementById('editorOverlaysLayer');
+    const el = document.createElement('div');
+    el.className = 'editorOverlayElement text-element';
+    el.style.top = '45%';
+    el.style.left = '30%';
+    applyStylesToTextElement(el);
+    makeElementDraggable(el);
+    layer.appendChild(el);
+    activeSelectedTextEl = el;
+  }
+  activeSelectedTextEl.textContent = val;
+}
 
 function setEditorTextColor(color, swatchEl) {
   currentEditorTextColor = color;
@@ -1820,30 +1863,13 @@ function updateActiveTextStyle() {
 function commitEditorText() {
   const input = document.getElementById('editorTextInputField');
   const val = input.value.trim();
-  if(!val) return;
-  const layer = document.getElementById('editorOverlaysLayer');
-  const el = document.createElement('div');
-  el.className = 'editorOverlayElement text-element';
-  el.textContent = val;
-  el.style.top = '50%';
-  el.style.left = '30%';
-  
-  applyStylesToTextElement(el);
-
-  el.onclick = (e) => {
-    e.stopPropagation();
-    document.querySelectorAll('.editorOverlayElement').forEach(x => x.style.borderColor = 'transparent');
-    el.style.borderColor = 'rgba(255,255,255,0.8)';
-    activeSelectedTextEl = el;
-  };
-
-  makeElementDraggable(el);
-  layer.appendChild(el);
-  
-  activeSelectedTextEl = el;
+  if(!val && activeSelectedTextEl) {
+    activeSelectedTextEl.remove();
+  }
+  activeSelectedTextEl = null;
   input.value = '';
   closeEditorDrawers();
-  showToast('Text added! Select to edit or drag');
+  showToast('Text applied! Drag or tap to re-edit');
 }
 
 function applyEditorFilter(filterStyle, btnEl) {
@@ -2086,152 +2112,214 @@ function startStoryTimer(){
 
  if(currentStoryVideoEl && currentStoryVideoEl.paused){
   currentStoryVideoEl.play().catch(()=>{});
- }
+}
 
  storyTimeout = setTimeout(() => {
   playStory(currentStoryIndex + 1);
  }, storyTimeRemaining);
 }
 
-function pauseStoryTimer(){
- if(isStoryPaused) return;
- isStoryPaused = true;
- const elapsed = Date.now() - storyStartTime;
- storyTimeRemaining = Math.max(0, storyTimeRemaining - elapsed);
- clearTimeouts();
-
- const fill = document.querySelectorAll('.storyBarFill')[currentStoryIndex];
- if(fill){
-  const computedWidth = window.getComputedStyle(fill).width;
-  fill.classList.remove('running');
-  fill.classList.add('paused');
-  fill.style.width = computedWidth;
- }
-
- if(currentStoryVideoEl && !currentStoryVideoEl.paused){
-  currentStoryVideoEl.pause();
- }
-}
-
 function clearTimeouts(){
- clearTimeout(storyTimeout);
- storyTimeout = null;
+ if(storyTimeout) clearTimeout(storyTimeout);
 }
 
-const storyModalEl = document.getElementById('storyModal');
-storyModalEl.onmousedown = storyModalEl.ontouchstart = (e) => {
- if(e.target.closest('#storyFooterViewsBtn') || e.target.closest('#closeStoryModal')) return;
- pauseStoryTimer();
-};
-
-storyModalEl.onmouseup = storyModalEl.ontouchend = (e) => {
- if(e.target.closest('#storyFooterViewsBtn') || e.target.closest('#closeStoryModal')) return;
- if(isStoryPaused){
-  startStoryTimer();
- }
-};
-
-document.getElementById('storyFooterViewsBtn').onclick=()=>{
- pauseStoryTimer();
- document.getElementById('storyViewersModal').classList.add('open');
-};
-
-document.getElementById('closeStoryViewersModal').onclick=()=>{
- document.getElementById('storyViewersModal').classList.remove('open');
- startStoryTimer();
-};
-
-document.getElementById('closeStoryModal').onclick=()=>{
+document.getElementById('closeStoryModal').onclick = () => {
  clearTimeouts();
  document.getElementById('storyModal').classList.remove('open');
 };
 
-async function flipCamera(){
- facing=facing==='user'?'environment':'user';
- stopCamera();
- await startCamera();
+const storyContentArea = document.getElementById('storyContentArea');
+storyContentArea.onmousedown = storyContentArea.onttouchstart = (e) => {
+ if(e.target.closest('#closeStoryModal') || e.target.closest('.storyFooterViews')) return;
+ isStoryPaused = true;
+ clearTimeouts();
+ const elapsed = Date.now() - storyStartTime;
+ storyTimeRemaining = Math.max(0, storyTimeRemaining - elapsed);
+ 
+ const fill = document.querySelectorAll('.storyBarFill')[currentStoryIndex];
+ if(fill){
+  const computedWidth = window.getComputedStyle(fill).width;
+  fill.style.transition = 'none';
+  fill.style.width = computedWidth;
+  fill.classList.remove('running');
+  fill.classList.add('paused');
+ }
+ if(currentStoryVideoEl) currentStoryVideoEl.pause();
+};
+
+storyContentArea.onmouseup = storyContentArea.ontouchend = (e) => {
+ if(!isStoryPaused) return;
+ startStoryTimer();
+};
+
+document.getElementById('storyFooterViewsBtn').onclick = () => {
+ clearTimeouts();
+ document.getElementById('storyViewersModal').classList.add('open');
+};
+
+document.getElementById('closeStoryViewersModal').onclick = () => {
+ document.getElementById('storyViewersModal').classList.remove('open');
+ startStoryTimer();
+};
+
+function switchStudioMode(mode) {
+  const modeVideoTab = document.getElementById('modeVideoTab');
+  const modeLiveTab = document.getElementById('modeLiveTab');
+  const videoModePanel = document.getElementById('videoModePanel');
+  const liveModePanel = document.getElementById('liveModePanel');
+  const liveOverlay = document.getElementById('liveStreamOverlayElements');
+
+  if(mode === 'video') {
+    modeVideoTab.classList.add('active');
+    modeLiveTab.classList.remove('active');
+    videoModePanel.classList.remove('hidden');
+    liveModePanel.classList.add('hidden');
+    liveOverlay.classList.add('hidden');
+  } else {
+    modeLiveTab.classList.add('active');
+    modeVideoTab.classList.remove('active');
+    liveModePanel.classList.remove('hidden');
+    videoModePanel.classList.add('hidden');
+    liveOverlay.classList.remove('hidden');
+  }
 }
 
-document.getElementById('flipBtn').onclick=flipCamera;
-document.querySelectorAll('.filter').forEach(b=>b.onclick=()=>{document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));b.classList.add('active');camera.style.filter=b.dataset.filter});
+let isLiveActive = false;
+let liveHeartCount = 0;
 
-document.querySelectorAll('.soundItem').forEach(item=>{
- item.onclick=()=>{
-  selectedSound = item.dataset.sound;
-  document.getElementById('currentSoundLabel').textContent = selectedSound;
-  document.getElementById('soundModal').classList.remove('open');
-  showToast('Sound selected: '+selectedSound);
+function toggleLiveStream() {
+  isLiveActive = !isLiveActive;
+  const btn = document.getElementById('startLiveBtn');
+  if(isLiveActive) {
+    btn.textContent = 'End LIVE';
+    btn.style.background = '#f33';
+    showToast('You are now LIVE! 🔴');
+  } else {
+    btn.textContent = 'Go LIVE Now';
+    btn.style.background = 'var(--pink)';
+    showToast('Live stream ended.');
+  }
+}
+
+document.getElementById('liveSendChatBtn').onclick = () => {
+  const input = document.getElementById('liveCommentInput');
+  const txt = input.value.trim();
+  if(!txt) return;
+  const list = document.getElementById('liveChatListContainer');
+  const msg = document.createElement('div');
+  msg.className = 'liveChatMsg';
+  msg.innerHTML = `<span class="liveChatUser">You:</span>${txt}`;
+  list.appendChild(msg);
+  list.scrollTop = list.scrollHeight;
+  input.value = '';
+};
+
+document.getElementById('liveTapLikeBtn').onclick = () => {
+  liveHeartCount++;
+  document.getElementById('liveHeartCountBadge').textContent = `❤️ ${liveHeartCount}`;
+  const container = document.getElementById('liveLikesContainer');
+  const heart = document.createElement('div');
+  heart.className = 'floating-like';
+  heart.textContent = ['❤️', '💖', '✨', '🔥'][Math.floor(Math.random() * 4)];
+  container.appendChild(heart);
+  setTimeout(() => heart.remove(), 2000);
+};
+
+function openLiveSettingsModal() {
+  document.getElementById('liveSettingsModal').classList.add('open');
+}
+document.getElementById('closeLiveSettingsModal').onclick = () => {
+  document.getElementById('liveSettingsModal').classList.remove('open');
+};
+
+function openGuestRequestsModal() {
+  const container = document.getElementById('guestRequestsListContainer');
+  container.innerHTML = `
+    <div class="messageItem" style="display:flex; justify-content:space-between; align-items:center;">
+      <div style="display:flex; gap:10px; align-items:center;">
+        <img class="messageAvatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" style="width:36px;height:36px;">
+        <div><div class="messageName">Elena Rostova</div><div class="messageSnippet">Wants to join your live</div></div>
+      </div>
+      <button class="useSoundBtn" onclick="acceptGuest('Elena Rostova', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150')">Accept</button>
+    </div>
+  `;
+  document.getElementById('guestRequestsModal').classList.add('open');
+}
+document.getElementById('closeGuestRequestsModal').onclick = () => {
+  document.getElementById('guestRequestsModal').classList.remove('open');
+};
+
+function acceptGuest(name, avatarUrl) {
+  document.getElementById('guestRequestsModal').classList.remove('open');
+  const grid = document.getElementById('activeGuestsGrid');
+  grid.classList.remove('hidden');
+  const slot = document.createElement('div');
+  slot.className = 'guest-slot';
+  slot.innerHTML = `<img src="${avatarUrl}"><span class="guest-slot-name">${name}</span>`;
+  grid.appendChild(slot);
+  showToast(`${name} joined your live stream! 👥`);
+}
+
+function toggleGuestRequestsSetting(el) {
+  showToast(el.checked ? 'Guest requests enabled' : 'Guest requests disabled');
+}
+
+function toggleLiveMic() {
+  showToast('Mic toggled');
+}
+
+function openSecuritySettings() {
+  showToast('Opening Security & Privacy Settings...');
+}
+
+document.getElementById('navHomeBtn').onclick = () => { updateNavActiveState('home'); pauseAllFeedVideos(); };
+document.getElementById('navDiscoverBtn').onclick = () => { updateNavActiveState('discover'); discover.classList.add('open'); pauseAllFeedVideos(); };
+document.getElementById('navCreateBtn').onclick = () => { 
+  updateNavActiveState('create'); 
+  pauseAllFeedVideos();
+  studio.classList.add('open'); 
+  appContainer.classList.add('hide-nav-for-create');
+  startCamera();
+};
+document.getElementById('navInboxBtn').onclick = () => { updateNavActiveState('inbox'); inbox.classList.add('open'); pauseAllFeedVideos(); };
+document.getElementById('navProfileBtn').onclick = () => { updateNavActiveState('profile'); profile.classList.add('open'); pauseAllFeedVideos(); renderProfileGrid(); };
+
+document.querySelectorAll('.screenHead .close, [data-close]').forEach(btn => {
+ btn.onclick = (e) => {
+  const target = btn.closest('.screen');
+  if(target) target.classList.remove('open');
+  appContainer.classList.remove('hide-nav-for-create');
+  updateNavActiveState('home');
  };
 });
 
-document.querySelectorAll('.nav button').forEach(btn=>{
- btn.onclick=(e)=>{
-  const tab=btn.dataset.tab;
-  
-  if(tab === 'create') {
-    if(e) {
-      e.stopPropagation();
-      e.preventDefault();
-    }
-    updateNavActiveState('create');
-    discover.classList.remove('open');
-    inbox.classList.remove('open');
-    profile.classList.remove('open');
-    studio.classList.add('open');
-    startCamera();
-    appContainer.classList.add('hide-nav-for-create');
-    return;
-  }
+document.getElementById('closeStudio').onclick = () => {
+ studio.classList.remove('open');
+ stopCamera();
+ appContainer.classList.remove('hide-nav-for-create');
+ updateNavActiveState('home');
+};
 
-  updateNavActiveState(tab);
-  if(tab==='home'){
-   discover.classList.remove('open');
-   inbox.classList.remove('open');
-   profile.classList.remove('open');
-   studio.classList.remove('open');
-   stopCamera();
-   appContainer.classList.remove('hide-nav-for-create');
-  }else if(tab==='discover'){
-   discover.classList.add('open');
-   inbox.classList.remove('open');
-   profile.classList.remove('open');
-   studio.classList.remove('open');
-   stopCamera();
-   renderDiscoverGrid();
-   appContainer.classList.remove('hide-nav-for-create');
-  }else if(tab==='inbox'){
-   inbox.classList.add('open');
-   discover.classList.remove('open');
-   profile.classList.remove('open');
-   studio.classList.remove('open');
-   stopCamera();
-   appContainer.classList.remove('hide-nav-for-create');
-  }else if(tab==='profile'){
-   profile.classList.add('open');
-   discover.classList.remove('open');
-   inbox.classList.remove('open');
-   studio.classList.remove('open');
-   stopCamera();
-   renderProfileGrid();
-   appContainer.classList.remove('hide-nav-for-create');
-  }
- };
-});
+document.getElementById('closePost').onclick = () => {
+ postScreen.classList.remove('open');
+ appContainer.classList.remove('hide-nav-for-create');
+ updateNavActiveState('home');
+};
 
-document.querySelectorAll('.close').forEach(btn=>{
- btn.onclick=(e)=>{
-  const screen=btn.closest('.screen');
-  if(screen){
-   screen.classList.remove('open');
-   if(screen.id==='studio') stopCamera();
-   appContainer.classList.remove('hide-nav-for-create');
-   updateNavActiveState('home');
+document.querySelectorAll('.tabs .tab').forEach(t => {
+ t.onclick = () => {
+  document.querySelectorAll('.tabs .tab').forEach(x => x.classList.remove('active'));
+  t.classList.add('active');
+  const tabName = t.dataset.feedTab;
+  if(tabName === 'following') {
+    renderFeed(feedData.slice(0, 1));
+  } else {
+    renderFeed(feedData);
   }
  };
 });
 
 renderFeed();
-updateNavActiveState('home');
 </script>
 </body>
 </html>
