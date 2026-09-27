@@ -160,7 +160,7 @@ button{font:inherit}
 
 /* Editor Screen Styles with Enhanced Video & Sound Preview Support */
 #editorScreen{background:#0b0c10;z-index:70}
-.editorCanvasContainer{flex:1;position:relative;background:#000;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:4px}
+.editorCanvasContainer{flex:1;position:relative;background:#000;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:4px;max-height: 52vh;}
 .editorCanvasContainer video, .editorCanvasContainer img{width:100%;height:100%;object-fit:contain}
 .editorCanvasContainer.multi-item {display:flex; overflow-x:auto; scroll-snap-type: x mandatory;}
 .editorCanvasContainer.multi-item video, .editorCanvasContainer.multi-item img {flex: 0 0 100%; scroll-snap-align: start; width:100%; height:100%; object-fit:contain;}
@@ -354,6 +354,29 @@ button{font:inherit}
 .postPanel textarea{width:100%;height:75px;background:#1a1b22;color:#fff;border:1px solid #ffffff15;border-radius:14px;padding:12px;resize:none;font-size:14px;outline:none}
 .postBottomActionSheet{display:flex;flex-direction:column;gap:8px;background:#14151c;padding:12px;border-radius:16px;border:1px solid #ffffff10}
 .postBtn{width:100%;padding:13px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--pink),var(--cyan));color:#fff;font-weight:800;cursor:pointer;font-size:14px}
+
+/* Editor Caption Box Styles */
+.editor-caption-wrapper {
+  padding: 10px 16px;
+  background: rgba(20, 21, 28, 0.9);
+  border-top: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 70px;
+}
+.editor-caption-input {
+  width: 100%;
+  height: 60px;
+  background: #1a1b22;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 12px;
+  padding: 10px 12px;
+  resize: none;
+  font-size: 13px;
+  outline: none;
+}
+.editor-caption-input::placeholder {
+  color: var(--muted);
+}
 
 .hidden{display:none!important}
 .toast{position:absolute;z-index:110;top:70px;left:50%;transform:translateX(-50%) translateY(-15px);opacity:0;background:#000e;padding:9px 16px;border-radius:20px;font-size:13px;transition:.2s;pointer-events:none}
@@ -615,7 +638,6 @@ input:checked+.slider:before{transform:translateX(20px)}
 <div class="screenHead">
   <button class="close" id="closeEditorBtn">×</button>
   <span>Edit Media</span>
-  <!-- Added Direct Post Button -->
   <button class="editor-quick-post-btn" id="editorQuickPostBtn">Post</button>
 </div>
 
@@ -623,6 +645,11 @@ input:checked+.slider:before{transform:translateX(20px)}
   <canvas id="editorDrawingCanvas"></canvas>
   <div id="editorOverlaysLayer"></div>
   <button id="editorMuteBtn" class="mute" title="Mute/Unmute Video">🔊</button>
+</div>
+
+<!-- Added Editor Caption Box -->
+<div class="editor-caption-wrapper">
+  <textarea id="editorCaptionInput" class="editor-caption-input" placeholder="Write a caption with #hashtags before posting..."></textarea>
 </div>
 
 <!-- Music Drawer -->
@@ -812,7 +839,6 @@ input:checked+.slider:before{transform:translateX(20px)}
 <div class="screenHead">
   <span>My Profile</span>
   <div style="display: flex; align-items: center; gap: 8px;">
-    <!-- Privacy & Security and Privacy Policy buttons placed on the right side of the Me/Profile header -->
     <button onclick="openSecuritySettings()" style="background: none; border: none; color: #fff; font-size: 16px; cursor: pointer; padding: 4px 6px;" title="Privacy & Security">🔒</button>
     <button onclick="openPrivacyPolicy()" style="background: none; border: none; color: #fff; font-size: 16px; cursor: pointer; padding: 4px 6px;" title="Privacy Policy">📄</button>
     <button class="close" data-close="profile" style="position: static; font-size: 24px;">×</button>
@@ -914,19 +940,7 @@ input:checked+.slider:before{transform:translateX(20px)}
   <div style="flex:1; overflow-y:auto; padding:20px; font-size:14px; line-height:1.6; color:var(--muted); display:flex; flex-direction:column; gap:14px;">
     <h3 style="color:#fff; font-size:16px;">VIBE Platform Privacy Policy</h3>
     <p>Last updated: September 2026</p>
-    <p>Welcome to VIBE. We respect your privacy and are committed to protecting your personal data. This privacy policy will inform you as to how we look after your personal data when you visit our app and tell you about your privacy rights and how the law protects you.</p>
-    
-    <h4 style="color:#fff; font-size:15px; margin-top:8px;">1. Information We Collect</h4>
-    <p>We collect information you provide directly to us when creating an account, publishing short videos or stories, sending direct messages, or interacting with other creators on the platform.</p>
-
-    <h4 style="color:#fff; font-size:15px; margin-top:8px;">2. How We Use Your Information</h4>
-    <p>Your information is used to provide, maintain, and improve our services, personalize your video feeds, process interactions, and secure the VIBE platform against unauthorized access.</p>
-
-    <h4 style="color:#fff; font-size:15px; margin-top:8px;">3. Data Security</h4>
-    <p>We implement robust technical and organizational security measures to protect your personal data from accidental loss, unauthorized access, alteration, or disclosure.</p>
-
-    <h4 style="color:#fff; font-size:15px; margin-top:8px;">4. Contact Us</h4>
-    <p>If you have any questions about this privacy policy, please reach out to our support team through the inbox activity tab.</p>
+    <p>Welcome to VIBE. We respect your privacy and are committed to protecting your personal data...</p>
   </div>
 </section>
 
@@ -1772,6 +1786,7 @@ function openEditor(mediaList){
  editorScreen.classList.add('open');
 
  closeEditorDrawers();
+ document.getElementById('editorCaptionInput').value = '';
 
  const container = document.getElementById('editorCanvasContainer');
  container.querySelectorAll('video, img').forEach(el => el.remove());
@@ -1971,17 +1986,20 @@ document.getElementById('closeEditorBtn').onclick = () => {
  updateNavActiveState('home');
 };
 
-// Direct "Post" button functionality added to immediately publish selected media to the Home feed
+// Quick Post functionality reading caption input directly from the editor
 document.getElementById('editorQuickPostBtn').onclick = () => {
   if (!selectedMediaList || selectedMediaList.length === 0) {
     showToast('Choose video(s) or picture(s) first');
     return;
   }
   
+  const customCaption = document.getElementById('editorCaptionInput').value.trim();
+  const caption = customCaption !== '' ? customCaption : 'My New VIBE Post ✨ #VIBE';
+
   const newItem = {
     id: Date.now(),
     author: 'You',
-    caption: 'My New VIBE Post ✨ #VIBE',
+    caption: caption,
     audio: selectedSound,
     likes: 0,
     commentsCount: 0,
@@ -1999,6 +2017,7 @@ document.getElementById('editorQuickPostBtn').onclick = () => {
   appContainer.classList.remove('hide-nav-for-create');
   updateNavActiveState('home');
   selectedMediaList = [];
+  document.getElementById('editorCaptionInput').value = '';
   showToast('Published to Home feed successfully! 🎉');
 };
 
@@ -2040,40 +2059,43 @@ document.getElementById('publishStoryBtn').onclick=()=>{
  showToast('Story added! It will vanish in 24 hours ⏳');
 };
 
-// Additional navigation setup listeners
 document.querySelectorAll('.nav button[data-tab]').forEach(btn => {
   btn.onclick = () => {
     const tab = btn.dataset.tab;
     updateNavActiveState(tab);
-    if(tab === 'home') {
-      studio.classList.remove('open');
-      discover.classList.remove('open');
-      inbox.classList.remove('open');
-      profile.classList.remove('open');
+    
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('open'));
+    
+    if(tab === 'create') {
+      studio.classList.add('open');
+      appContainer.classList.add('hide-nav-for-create');
+      startCamera();
     } else if(tab === 'discover') {
       discover.classList.add('open');
-    } else if(tab === 'create') {
-      appContainer.classList.add('hide-nav-for-create');
-      studio.classList.add('open');
-      startCamera();
     } else if(tab === 'inbox') {
       inbox.classList.add('open');
     } else if(tab === 'profile') {
       profile.classList.add('open');
-      renderProfileGrid();
     }
   };
 });
 
-document.querySelectorAll('.screenHead .close').forEach(closeBtn => {
-  if(!closeBtn.id && !closeBtn.getAttribute('onclick')) {
-    closeBtn.onclick = () => {
-      closeBtn.closest('.screen').classList.remove('open');
-      appContainer.classList.remove('hide-nav-for-create');
-      updateNavActiveState('home');
-    };
-  }
+document.querySelectorAll('.close').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.screen').forEach(s => {
+      if(s.id !== 'studio' && s.id !== 'editorScreen') s.classList.remove('open');
+    });
+    appContainer.classList.remove('hide-nav-for-create');
+    updateNavActiveState('home');
+  };
 });
+
+document.getElementById('closeStudio').onclick = () => {
+  studio.classList.remove('open');
+  stopCamera();
+  appContainer.classList.remove('hide-nav-for-create');
+  updateNavActiveState('home');
+};
 
 renderFeed();
 </script>
