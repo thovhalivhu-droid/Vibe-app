@@ -74,48 +74,18 @@ button{font:inherit}
 .actions{display:flex;flex-direction:column;align-items:center;gap:15px;position:relative}
 .action{background:none;border:0;color:#fff;text-align:center}.circle{width:45px;height:45px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#ffffff22;backdrop-filter:blur(8px);font-size:23px}.count{font-size:11px;font-weight:700;margin-top:3px}.liked .circle{color:var(--pink)}.saved .circle{color:var(--cyan)}
 
-/* Vertical Edit Menu Styles on the Right Side */
-.vertical-edit-menu {
-  position: fixed;
-  right: 15px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  max-height: 0;
-  opacity: 0;
-  overflow: hidden;
-  transition: all 0.3s ease-in-out;
-  background: rgba(15, 16, 21, 0.85);
-  backdrop-filter: blur(10px);
-  padding: 0 8px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  z-index: 20;
-}
-.vertical-edit-menu.open {
-  max-height: 400px;
-  opacity: 1;
-  padding: 8px;
-}
-.sub-edit-btn {
-  background: rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+/* Header Edit Action Button Style for Edit Media Section */
+.header-edit-action-btn {
+  background: transparent;
+  border: none;
   color: #fff;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 700;
-  padding: 6px 12px;
-  border-radius: 12px;
   cursor: pointer;
-  backdrop-filter: blur(6px);
-  white-space: nowrap;
-  transition: background 0.2s;
-  text-align: center;
-}
-.sub-edit-btn:hover {
-  background: var(--pink);
-  border-color: var(--pink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
 }
 
 .mute{position:absolute;top:68px;right:16px;z-index:7;width:40px;height:40px;border:0;border-radius:50%;background:#0008;color:#fff;font-size:19px;cursor:pointer;}
@@ -529,7 +499,7 @@ input:checked+.slider:before{transform:translateX(20px)}
 <div class="screenHead">
   <button class="close" id="closeEditorBtn">×</button>
   <span>Edit Media</span>
-  <button class="textBtn" id="proceedToPostBtn" style="color:var(--cyan); font-size:15px;">Next →</button>
+  <button class="header-edit-action-btn" id="headerEditActionBtn" onclick="showToast('Edit Action Clicked')">Edit Action</button>
 </div>
 
 <div class="editorCanvasContainer" id="editorCanvasContainer">
@@ -565,6 +535,7 @@ input:checked+.slider:before{transform:translateX(20px)}
     <button class="editorToolBtn" id="toolTextBtn">✍️ Text</button>
     <button class="editorToolBtn" id="toolDrawBtn">🖌️ Draw</button>
     <button class="editorToolBtn" id="toolFilterBtn">✨ Filters</button>
+    <button class="editorToolBtn" id="toolNextBtn" onclick="proceedToPostScreen()" style="background:var(--cyan); color:#000;">Next →</button>
   </div>
 </div>
 </section>
@@ -924,17 +895,6 @@ function renderFeed(filteredList){
     <button class="action commentBtn"><div class="circle">💬</div><div class="count">${item.commentsList.length}</div></button>
     <button class="action saveBtn ${item.isSaved ? 'saved' : ''}"><div class="circle">${item.isSaved ? '★' : '☆'}</div><div class="count">Save</div></button>
     <button class="action shareBtn"><div class="circle">↗</div><div class="count">${formatCount(item.shares)}</div></button>
-    
-    <button class="action editMenuToggleBtn"><div class="circle">✏️</div><div class="count">Edit</div></button>
-    <div class="vertical-edit-menu">
-      <button class="sub-edit-btn" onclick="triggerEditAction('undo', ${item.id})">Undo</button>
-      <button class="sub-edit-btn" onclick="triggerEditAction('redo', ${item.id})">Redo</button>
-      <button class="sub-edit-btn" onclick="triggerEditAction('emoji', ${item.id})">Emoji</button>
-      <button class="sub-edit-btn" onclick="triggerEditAction('text', ${item.id})">Text</button>
-      <button class="sub-edit-btn" onclick="triggerEditAction('draw', ${item.id})">Draw</button>
-      <button class="sub-edit-btn" onclick="triggerEditAction('filter', ${item.id})">Filter</button>
-      <button class="sub-edit-btn" onclick="triggerEditAction('sound', ${item.id})">Sound</button>
-    </div>
   </div></div>`;
   feed.appendChild(card);
   
@@ -970,7 +930,7 @@ function renderFeed(filteredList){
 
     let tapTimeout = null;
     v.parentElement.addEventListener('click', (e) => {
-      if (e.target.closest('.overlay') || e.target.closest('.mute') || e.target.closest('.vertical-edit-menu')) return;
+      if (e.target.closest('.overlay') || e.target.closest('.mute')) return;
       
       clearTimeout(tapTimeout);
       tapTimeout = setTimeout(() => {
@@ -1028,13 +988,6 @@ function renderFeed(filteredList){
   const commentActionBtn=card.querySelector('.commentBtn');
   const saveBtn=card.querySelector('.saveBtn');
   const shareBtn=card.querySelector('.shareBtn');
-  const editToggleBtn = card.querySelector('.editMenuToggleBtn');
-  const verticalMenu = card.querySelector('.vertical-edit-menu');
-
-  editToggleBtn.onclick = e => {
-    e.stopPropagation();
-    verticalMenu.classList.toggle('open');
-  };
   
   const muteBtnEl = card.querySelector('.mute');
   if(muteBtnEl) {
@@ -1221,21 +1174,6 @@ function setupSwipeAutoplayFallback() {
       }, 150);
     }
   }, { passive: true });
-}
-
-function triggerEditAction(actionType, itemId) {
-  if (actionType === 'text') {
-    pauseAllFeedVideos();
-    postScreen.classList.add('open');
-    const bar = document.getElementById('topTextEditorBar');
-    bar.classList.add('open');
-    document.getElementById('topTextEditorInput').focus();
-    showToast('Text editor opened');
-  } else if (actionType === 'sound') {
-    document.getElementById('soundModal').classList.add('open');
-  } else {
-    showToast(`Action selected: ${actionType.toUpperCase()} for item #${itemId}`);
-  }
 }
 
 function openCommentsModal(item){
@@ -1776,12 +1714,12 @@ document.getElementById('closeEditorBtn').onclick = () => {
  updateNavActiveState('home');
 };
 
-document.getElementById('proceedToPostBtn').onclick = () => {
+function proceedToPostScreen(){
   const container = document.getElementById('editorCanvasContainer');
   container.querySelectorAll('video').forEach(vid => vid.pause());
   editorScreen.classList.remove('open');
   openPostScreenFromEditor();
-};
+}
 
 function openPostScreenFromEditor(){
  postScreen.classList.add('open');
