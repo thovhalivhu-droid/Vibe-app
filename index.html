@@ -18,6 +18,55 @@ button{font:inherit}
 .reel video,.reel img{width:100%;height:100%;object-fit:cover;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;pointer-events:none}
 .reel img{display:none}
 .reel.image video{display:none}.reel.image img{display:block}
+
+/* Carousel container support inside feed reels */
+.reel-media-slider {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.reel-media-slider::-webkit-scrollbar { display: none; }
+.reel-media-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  scroll-snap-align: start;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+.reel-media-slide video, .reel-media-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.carousel-dots {
+  position: absolute;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 12;
+  pointer-events: none;
+}
+.carousel-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.4);
+  transition: background 0.2s, transform 0.2s;
+}
+.carousel-dot.active {
+  background: var(--pink);
+  transform: scale(1.3);
+}
+
 .overlay{position:absolute;left:0;right:0;bottom:var(--nav);padding:22px 18px 16px;display:flex;justify-content:space-between;align-items:flex-end;background:linear-gradient(transparent,rgba(0,0,0,.82));z-index:5;pointer-events:auto}
 .info{max-width:73%}.author{display:flex;align-items:center;gap:9px;margin-bottom:8px}.avatar{width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid var(--pink)}
 .name{font-weight:800;font-size:15px}.follow{border:0;border-radius:18px;padding:5px 11px;background:var(--pink);color:#fff;font-size:12px;font-weight:700}
@@ -104,7 +153,8 @@ button{font:inherit}
 #editorScreen{background:#0b0c10;z-index:70}
 .editorCanvasContainer{flex:1;position:relative;background:#000;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:4px}
 .editorCanvasContainer video, .editorCanvasContainer img{width:100%;height:100%;object-fit:contain}
-.editorCanvasContainer.multi-item {display:grid;grid-template-columns:repeat(auto-fit, minmax(0, 1fr));}
+.editorCanvasContainer.multi-item {display:flex; overflow-x:auto; scroll-snap-type: x mandatory;}
+.editorCanvasContainer.multi-item video, .editorCanvasContainer.multi-item img {flex: 0 0 100%; scroll-snap-align: start;}
 #editorDrawingCanvas{position:absolute;inset:0;pointer-events:auto;cursor:crosshair}
 .editorOverlayElement{position:absolute;cursor:move;user-select:none;padding:6px 10px;font-size:22px;border:1px dashed transparent;transition:border .2s}
 .editorOverlayElement:hover{border-color:rgba(255,255,255,0.4)}
@@ -175,6 +225,8 @@ button{font:inherit}
 .postPanel{padding:16px;display:flex;flex-direction:column;flex:1;overflow:hidden;position:relative}
 .previewBox{width:100%;flex:1;background:#000;border-radius:16px;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;transition:all .3s ease;gap:4px}
 .previewBox.expanded{position:absolute;inset:0;border-radius:0;z-index:50}
+.previewBox.multi-item {display:flex; overflow-x:auto; scroll-snap-type: x mandatory;}
+.previewBox.multi-item video, .previewBox.multi-item img {flex: 0 0 100%; scroll-snap-align: start; width:100%; height:100%; object-fit:cover;}
 .previewBox video,.previewBox img{width:100%;height:100%;object-fit:cover}
 .captionBoxContainer{margin-top:12px;margin-bottom:12px}
 .postPanel textarea{width:100%;height:75px;background:#1a1b22;color:#fff;border:1px solid #ffffff15;border-radius:14px;padding:12px;resize:none;font-size:14px;outline:none}
@@ -815,20 +867,23 @@ const timerText=document.getElementById('timerText');
 
 let feedData=[
 {
- id:1, author:"Elena Rostova", caption:"Golden hour tones hitting different today ✨ #goldenhour #VIBE", audio:"Original Audio - Elena", likes:24500, commentsCount:2, shares:1200, views:"112K", avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150", video:"https://assets.mixkit.co/videos/preview/mixkit-woman-filming-herself-with-a-smartphone-41270-large.mp4",
+ id:1, author:"Elena Rostova", caption:"Golden hour tones hitting different today ✨ #goldenhour #VIBE", audio:"Original Audio - Elena", likes:24500, commentsCount:2, shares:1200, views:"112K", avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150", 
+ mediaList:[{type:"video", url:"https://assets.mixkit.co/videos/preview/mixkit-woman-filming-herself-with-a-smartphone-41270-large.mp4"}],
  commentsList:[
   {user:"Liam Chen", text:"Absolute cinematic shots!", avatar:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150"},
   {user:"Sophia Taylor", text:"Where is this spot?? ✨", avatar:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"}
  ]
 },
 {
- id:2, author:"Liam Chen", caption:"Late night coding session 💻⚡ #coding #tech #VIBE", audio:"Lofi Chill Beats", likes:58100, commentsCount:1, shares:4500, views:"340K", avatar:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150", video:"https://assets.mixkit.co/videos/preview/mixkit-hands-typing-on-a-laptop-keyboard-close-up-42861-large.mp4",
+ id:2, author:"Liam Chen", caption:"Late night coding session 💻⚡ #coding #tech #VIBE", audio:"Lofi Chill Beats", likes:58100, commentsCount:1, shares:4500, views:"340K", avatar:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150", 
+ mediaList:[{type:"video", url:"https://assets.mixkit.co/videos/preview/mixkit-hands-typing-on-a-laptop-keyboard-close-up-42861-large.mp4"}],
  commentsList:[
   {user:"Elena Rostova", text:"Relatable haha ☕", avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150"}
  ]
 },
 {
- id:3, author:"Sophia Taylor", caption:"Weekend aesthetic inspirations ✨ #aesthetic #lifestyle", audio:"Ambient Space", likes:12300, commentsCount:0, shares:890, views:"45K", avatar:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150", video:"https://assets.mixkit.co/videos/preview/mixkit-cozy-living-room-with-a-fireplace-41153-large.mp4",
+ id:3, author:"Sophia Taylor", caption:"Weekend aesthetic inspirations ✨ #aesthetic #lifestyle", audio:"Ambient Space", likes:12300, commentsCount:0, shares:890, views:"45K", avatar:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150", 
+ mediaList:[{type:"video", url:"https://assets.mixkit.co/videos/preview/mixkit-cozy-living-room-with-a-fireplace-41153-large.mp4"}],
  commentsList:[]
 }
 ];
@@ -941,10 +996,40 @@ function renderFeed(filteredList){
  feed.innerHTML='';
  list.forEach(item=>{
   const card=document.createElement('article'); 
-  card.className='reel' + (item.image ? ' image' : '');
+  card.className='reel';
   
-  card.innerHTML=`<video class="reel-video" src="${item.video || item.image || ''}" loop playsinline preload="metadata" ${muted?'muted':''}></video>
-  <img class="reel-image" src="${item.image || ''}" alt="">
+  let mediaHtml = '';
+  let dotsHtml = '';
+  const mediaList = item.mediaList || [{type: item.video ? 'video' : 'image', url: item.video || item.image}];
+  
+  if(mediaList.length > 1) {
+    mediaHtml = `<div class="reel-media-slider">`;
+    mediaList.forEach((m, idx) => {
+      if(m.type === 'video') {
+        mediaHtml += `<div class="reel-media-slide"><video class="reel-video" src="${m.url}" loop playsinline preload="metadata" ${muted?'muted':''}></video></div>`;
+      } else {
+        mediaHtml += `<div class="reel-media-slide"><img class="reel-image" src="${m.url}" alt=""></div>`;
+      }
+    });
+    mediaHtml += `</div>`;
+
+    dotsHtml = `<div class="carousel-dots">`;
+    mediaList.forEach((_, idx) => {
+      dotsHtml += `<div class="carousel-dot ${idx === 0 ? 'active' : ''}"></div>`;
+    });
+    dotsHtml += `</div>`;
+  } else {
+    const m = mediaList[0];
+    if(m.type === 'video') {
+      mediaHtml = `<video class="reel-video" src="${m.url}" loop playsinline preload="metadata" ${muted?'muted':''}></video>`;
+    } else {
+      mediaHtml = `<img class="reel-image" style="display:block" src="${m.url}" alt="">`;
+    }
+  }
+
+  card.innerHTML=`
+  ${mediaHtml}
+  ${dotsHtml}
   <button class="mute">${muted?'🔇':'🔊'}</button>
   <div class="overlay"><div class="info"><div class="author"><img class="avatar" src="${item.avatar}"><span class="name">${item.author}</span><button class="follow">Follow</button></div><div class="caption">${parseCaptions(item.caption)}</div><div class="audio">♫ ${item.audio}</div></div>
   <div class="actions">
@@ -968,6 +1053,18 @@ function renderFeed(filteredList){
   </div></div>`;
   feed.appendChild(card);
   
+  const slider = card.querySelector('.reel-media-slider');
+  if(slider) {
+    const dots = card.querySelectorAll('.carousel-dot');
+    slider.onscroll = () => {
+      const slideWidth = slider.clientWidth;
+      const activeIdx = Math.round(slider.scrollLeft / slideWidth);
+      dots.forEach((d, idx) => {
+        d.classList.toggle('active', idx === activeIdx);
+      });
+    };
+  }
+
   const v=card.querySelector('video');
   const likeBtn=card.querySelector('.like');
   const commentActionBtn=card.querySelector('.commentBtn');
@@ -1159,8 +1256,9 @@ function renderDiscoverGrid(filterText=""){
  matches.forEach(item => {
   const cell = document.createElement('div');
   cell.className = 'discoverGridItem';
-  if(item.image) { cell.innerHTML = `<img src="${item.image}" alt="">`; }
-  else { cell.innerHTML = `<video src="${item.video}" muted playsinline></video>`; }
+  const firstMedia = item.mediaList ? item.mediaList[0] : {type: item.video?'video':'image', url: item.video||item.image};
+  if(firstMedia.type === 'image') { cell.innerHTML = `<img src="${firstMedia.url}" alt="">`; }
+  else { cell.innerHTML = `<video src="${firstMedia.url}" muted playsinline></video>`; }
   cell.onclick = () => {
    discover.classList.remove('open');
    updateNavActiveState('home');
@@ -1215,8 +1313,9 @@ function renderProfileGrid(){
  listToDisplay.forEach(item => {
   const cell = document.createElement('div');
   cell.className = 'userPostThumb';
-  if(item.image) { cell.innerHTML = `<img src="${item.image}" alt="">`; }
-  else { cell.innerHTML = `<video src="${item.video}" muted playsinline></video>`; }
+  const firstMedia = item.mediaList ? item.mediaList[0] : {type: item.video?'video':'image', url: item.video||item.image};
+  if(firstMedia.type === 'image') { cell.innerHTML = `<img src="${firstMedia.url}" alt="">`; }
+  else { cell.innerHTML = `<video src="${firstMedia.url}" muted playsinline></video>`; }
   cell.onclick = () => {
    profile.classList.remove('open');
    updateNavActiveState('home');
@@ -1300,7 +1399,7 @@ function handleFileInputFiles(files, defaultType) {
   if(incomingFiles.length === 0) return;
 
   if(incomingFiles.length > 3) {
-    showToast('You can select a maximum of 3 items.');
+    showToast('You can select 1 to 3 items only.');
     return;
   }
 
@@ -1643,10 +1742,26 @@ document.getElementById('previewBox').onclick = () => {
 document.getElementById('publishBtn').onclick=()=> {
  if(selectedMediaList.length === 0){showToast('Choose video(s) or picture(s) first');return}
  const caption=document.getElementById('captionInput').value.trim()||'New VIBE ✨ #VIBE';
- const primaryMedia = selectedMediaList[0];
- const item={id:Date.now(),author:'You',caption,audio:selectedSound,likes:0,commentsCount:0,shares:0,views:'1',avatar:myProfile.avatar,commentsList:[]};
- if(primaryMedia.type==='video')item.video=primaryMedia.url;else item.image=primaryMedia.url;
- feedData.unshift(item);renderFeed();postScreen.classList.remove('open');appContainer.classList.remove('hide-nav-for-create');selectedMediaList=[];document.getElementById('captionInput').value='';showToast('Posted to VIBE 🎉');
+ const item={
+   id:Date.now(),
+   author:'You',
+   caption,
+   audio:selectedSound,
+   likes:0,
+   commentsCount:0,
+   shares:0,
+   views:'1',
+   avatar:myProfile.avatar,
+   mediaList: [...selectedMediaList],
+   commentsList:[]
+ };
+ feedData.unshift(item);
+ renderFeed();
+ postScreen.classList.remove('open');
+ appContainer.classList.remove('hide-nav-for-create');
+ selectedMediaList=[];
+ document.getElementById('captionInput').value='';
+ showToast('Posted to VIBE 🎉');
 };
 
 document.getElementById('publishStoryBtn').onclick=()=>{
@@ -2002,10 +2117,6 @@ document.querySelectorAll('.close').forEach(b=>{
    studio.classList.remove('open');
    editorScreen.classList.remove('open');
    postScreen.classList.remove('open');
-   discover.classList.remove('open');
-   inbox.classList.remove('open');
-   profile.classList.remove('open');
-   document.getElementById('security-settings-screen').classList.remove('open');
   }
   appContainer.classList.remove('hide-nav-for-create');
   stopCamera();
@@ -2020,24 +2131,228 @@ document.getElementById('closeStudio').onclick=()=>{
  updateNavActiveState('home');
 };
 
-document.getElementById('soundSelectBtn').onclick=()=>{
- document.getElementById('soundModal').classList.add('open');
-};
-document.getElementById('closeSoundModal').onclick=()=>{
- document.getElementById('soundModal').classList.remove('open');
+document.getElementById('closePost').onclick=()=>{
+ postScreen.classList.remove('open');
+ appContainer.classList.remove('hide-nav-for-create');
+ updateNavActiveState('home');
 };
 
-function openSecuritySettings(){ document.getElementById('security-settings-screen').classList.add('open'); }
-function closeSecuritySettings(){ document.getElementById('security-settings-screen').classList.remove('open'); }
-function togglePrivateAccount(el){ showToast(el.checked ? 'Account set to Private' : 'Account set to Public'); }
-function updateDMPermissions(val){ showToast(`Direct message permissions updated to: ${val}`); }
-function openPasswordModal(){ showToast('Password change prompt opened'); }
-function toggleTFA(el){ showToast(el.checked ? 'Two-Factor Authentication enabled' : 'Two-Factor Authentication disabled'); }
-function openBlockedAccounts(){ showToast('Blocked accounts list opened'); }
-function downloadUserData(){ showToast('Data export requested. We will email you shortly.'); }
-function openPrivacyPolicy(){ showToast('Opening Privacy Policy'); }
-function openTermsOfService(){ showToast('Opening Terms of Service'); }
-function openCookiePolicy(){ showToast('Opening Cookie Policy'); }
+function openSecuritySettings() {
+  document.getElementById('security-settings-screen').classList.add('open');
+}
+
+function closeSecuritySettings() {
+  document.getElementById('security-settings-screen').classList.remove('open');
+}
+
+function togglePrivateAccount(el) {
+  showToast(el.checked ? 'Account set to Private' : 'Account set to Public');
+}
+
+function updateDMPermissions(val) {
+  showToast(`Direct message permissions updated to: ${val}`);
+}
+
+function openPasswordModal() {
+  showToast('Password change prompt opened');
+}
+
+function toggleTFA(el) {
+  showToast(el.checked ? 'Two-Factor Authentication enabled' : 'Two-Factor Authentication disabled');
+}
+
+function openBlockedAccounts() {
+  showToast('Blocked accounts manager opened');
+}
+
+function downloadUserData() {
+  showToast('Preparing your data download package...');
+}
+
+function openPrivacyPolicy() {
+  showToast('Opening Privacy Policy...');
+}
+
+function openTermsOfService() {
+  showToast('Opening Terms of Service...');
+}
+
+function openCookiePolicy() {
+  showToast('Opening Cookie Policy...');
+}
+
+function toggleGuestRequestsSetting(el) {
+  allowGuestRequestsEnabled = el.checked;
+  showToast(allowGuestRequestsEnabled ? 'Guest requests enabled' : 'Guest requests disabled');
+}
+
+function openLiveSettingsModal() {
+  document.getElementById('liveSettingsModal').classList.add('open');
+}
+document.getElementById('closeLiveSettingsModal').onclick = () => {
+  document.getElementById('liveSettingsModal').classList.remove('open');
+};
+
+function openGuestRequestsModal() {
+  renderGuestRequestsList();
+  document.getElementById('guestRequestsModal').classList.add('open');
+}
+document.getElementById('closeGuestRequestsModal').onclick = () => {
+  document.getElementById('guestRequestsModal').classList.remove('open');
+};
+
+function renderGuestRequestsList() {
+  const container = document.getElementById('guestRequestsListContainer');
+  container.innerHTML = '';
+  
+  const badgeCount = document.getElementById('guestBadgeCount');
+  if(badgeCount) {
+    badgeCount.textContent = guestRequestsData.length;
+    badgeCount.style.display = guestRequestsData.length > 0 ? 'inline-block' : 'none';
+  }
+
+  if(guestRequestsData.length === 0) {
+    container.innerHTML = `<div style="text-align:center;color:var(--muted);padding-top:40px;font-size:13px;">No incoming guest requests.</div>`;
+    return;
+  }
+
+  guestRequestsData.forEach(g => {
+    container.innerHTML += `
+      <div class="messageItem" style="justify-content:space-between;">
+        <div style="display:flex; align-items:center; gap:12px; flex:1; min-width:0;">
+          <img class="messageAvatar" src="${g.avatar}">
+          <div class="messageContent" style="min-width:0;">
+            <div class="messageName">${g.name}</div>
+            <div class="messageSnippet">${g.username} wants to join your live</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:6px; margin-left:8px;">
+          <button onclick="acceptGuestRequest(${g.id})" style="background:var(--pink); border:0; color:#fff; padding:6px 12px; border-radius:14px; font-weight:700; font-size:11px; cursor:pointer;">Accept</button>
+          <button onclick="declineGuestRequest(${g.id})" style="background:#2a2a2a; border:0; color:#fff; padding:6px 12px; border-radius:14px; font-weight:700; font-size:11px; cursor:pointer;">Decline</button>
+        </div>
+      </div>
+    `;
+  });
+}
+
+function acceptGuestRequest(id) {
+  const req = guestRequestsData.find(g => g.id === id);
+  if(req) {
+    if(activeGuests.length >= 4) {
+      showToast('Maximum 4 guests allowed!');
+      return;
+    }
+    guestRequestsData = guestRequestsData.filter(g => g.id !== id);
+    activeGuests.push(req);
+    renderActiveGuestsGrid();
+    renderGuestRequestsList();
+    showToast(`${req.name} joined your live stream!`);
+  }
+}
+
+function declineGuestRequest(id) {
+  guestRequestsData = guestRequestsData.filter(g => g.id !== id);
+  renderGuestRequestsList();
+  showToast('Guest request declined');
+}
+
+function renderActiveGuestsGrid() {
+  const grid = document.getElementById('activeGuestsGrid');
+  if(!grid) return;
+  if(activeGuests.length === 0) {
+    grid.classList.add('hidden');
+    grid.innerHTML = '';
+    return;
+  }
+  grid.classList.remove('hidden');
+  grid.innerHTML = '';
+  activeGuests.forEach(g => {
+    grid.innerHTML += `
+      <div class="guest-slot">
+        <img src="${g.avatar}" alt="">
+        <span class="guest-slot-name">${g.name}</span>
+      </div>
+    `;
+  });
+}
+
+function toggleLiveStream() {
+  isLiveActive = !isLiveActive;
+  const btn = document.getElementById('startLiveBtn');
+  const overlayElements = document.getElementById('liveStreamOverlayElements');
+  
+  if(isLiveActive) {
+    btn.textContent = 'End LIVE';
+    btn.style.background = '#333';
+    overlayElements.classList.remove('hidden');
+    showToast('You are now LIVE! 🔴');
+    startLiveSimulation();
+  } else {
+    btn.textContent = 'Go LIVE Now';
+    btn.style.background = 'var(--pink)';
+    overlayElements.classList.add('hidden');
+    activeGuests = [];
+    renderActiveGuestsGrid();
+    clearInterval(liveSimInterval);
+    showToast('Live stream ended.');
+  }
+}
+
+function startLiveSimulation() {
+  clearInterval(liveSimInterval);
+  liveSimInterval = setInterval(() => {
+    liveViewersCountNum += Math.floor(Math.random() * 7) - 3;
+    document.getElementById('liveViewersCount').textContent = `👁 ${formatCount(liveViewersCountNum)}`;
+    
+    if(Math.random() > 0.4) {
+      triggerFloatingHeartLive();
+    }
+  }, 1200);
+}
+
+function triggerFloatingHeartLive() {
+  liveHeartCountNum++;
+  const badge = document.getElementById('liveHeartCountBadge');
+  if(badge) badge.textContent = `❤️ ${formatCount(liveHeartCountNum)}`;
+
+  const container = document.getElementById('liveLikesContainer');
+  if(!container) return;
+  const heart = document.createElement('div');
+  heart.className = 'floating-like';
+  const heartsPool = ['❤️', '💖', '✨', '🔥', '💗'];
+  heart.textContent = heartsPool[Math.floor(Math.random() * heartsPool.length)];
+  heart.style.right = (Math.random() * 25) + 'px';
+  container.appendChild(heart);
+  setTimeout(() => heart.remove(), 2000);
+}
+
+document.getElementById('liveTapLikeBtn').onclick = () => {
+  triggerFloatingHeartLive();
+};
+
+document.getElementById('liveSendChatBtn').onclick = () => {
+  const input = document.getElementById('liveCommentInput');
+  const text = input.value.trim();
+  if(!text) return;
+  
+  const list = document.getElementById('liveChatListContainer');
+  const msg = document.createElement('div');
+  msg.className = 'liveChatMsg';
+  msg.innerHTML = `<span class="liveChatUser">${myProfile.username}:</span>${text}`;
+  list.appendChild(msg);
+  list.scrollTop = list.scrollHeight;
+  input.value = '';
+};
+
+function toggleLiveMic() {
+  if(mediaStream) {
+    const audioTrack = mediaStream.getAudioTracks()[0];
+    if(audioTrack) {
+      audioTrack.enabled = !audioTrack.enabled;
+      showToast(audioTrack.enabled ? 'Microphone unmuted' : 'Microphone muted');
+    }
+  }
+}
 
 renderFeed();
 </script>
