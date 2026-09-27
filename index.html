@@ -949,7 +949,7 @@ function renderFeed(filteredList){
       });
 
       card.querySelectorAll('.reel-video').forEach((vSlide, sIdx) => {
-        if(sIdx === activeIdx && isCardInViewport(card)) {
+        if(sIdx === activeIdx && isCardFullyInViewport(card)) {
           if(activeVideo && activeVideo !== vSlide) {
             activeVideo.pause();
           }
@@ -1037,9 +1037,62 @@ function renderFeed(filteredList){
  renderProfileGrid();
 }
 
-function isCardInViewport(card) {
+function isCardFullyInViewport(card) {
   const rect = card.getBoundingClientRect();
-  return rect.top >= -50 && rect.top <= window.innerHeight / 2;
+  return rect.top >= -10 && rect.top <= 10;
+}
+
+let feedObserver = null;
+
+function setupObserver(){
+ if (feedObserver) {
+   feedObserver.disconnect();
+ }
+
+ feedObserver = new IntersectionObserver(entries => {
+  entries.forEach(en => {
+   const card = en.target;
+   const slider = card.querySelector('.reel-media-slider');
+   
+   if (en.isIntersecting && activeTabKey === 'home') {
+    // Pause all videos across the feed first
+    pauseAllFeedVideos();
+
+    if (slider) {
+      const slideWidth = slider.clientWidth || 1;
+      const activeIdx = Math.round(slider.scrollLeft / slideWidth);
+      const activeSlideVid = slider.querySelectorAll('.reel-media-slide video')[activeIdx];
+      if (activeSlideVid) {
+        activeVideo = activeSlideVid;
+        activeSlideVid.muted = muted;
+        activeSlideVid.play().catch(() => {});
+      }
+    } else {
+      const v = card.querySelector('video');
+      if (v) {
+        activeVideo = v;
+        v.muted = muted;
+        v.play().catch(() => {});
+      }
+    }
+   }
+  });
+ }, { root: feed, threshold: 0.51 });
+
+ document.querySelectorAll('.reel').forEach(x => feedObserver.observe(x));
+
+ // Autoplay the first video on initial open
+ setTimeout(() => {
+   const firstCard = feed.querySelector('.reel');
+   if (firstCard) {
+     const firstVideo = firstCard.querySelector('video');
+     if (firstVideo) {
+       activeVideo = firstVideo;
+       firstVideo.muted = muted;
+       firstVideo.play().catch(() => {});
+     }
+   }
+ }, 150);
 }
 
 function triggerEditAction(actionType, itemId) {
@@ -1102,51 +1155,6 @@ document.getElementById('commentSendBtn').onclick=()=>{
   showToast('Comment posted!');
  }
 };
-
-let feedObserver = null;
-
-function setupObserver(){
- if (feedObserver) {
-   feedObserver.disconnect();
- }
-
- feedObserver = new IntersectionObserver(entries => {
-  entries.forEach(en => {
-   const card = en.target;
-   const slider = card.querySelector('.reel-media-slider');
-   
-   if (en.isIntersecting && activeTabKey === 'home') {
-    // Pause any previously playing video across all reels
-    pauseAllFeedVideos();
-
-    if (slider) {
-      const slideWidth = slider.clientWidth || 1;
-      const activeIdx = Math.round(slider.scrollLeft / slideWidth);
-      const activeSlideVid = slider.querySelectorAll('.reel-media-slide video')[activeIdx];
-      if (activeSlideVid) {
-        activeVideo = activeSlideVid;
-        activeSlideVid.muted = muted;
-        activeSlideVid.play().catch(() => {});
-      }
-    } else {
-      const v = card.querySelector('video');
-      if (v) {
-        activeVideo = v;
-        v.muted = muted;
-        v.play().catch(() => {});
-      }
-    }
-   } else {
-    // Pause videos inside cards that are no longer active/visible
-    card.querySelectorAll('video').forEach(v => {
-      v.pause();
-    });
-   }
-  });
- }, { root: feed, threshold: 0.6 });
-
- document.querySelectorAll('.reel').forEach(x => feedObserver.observe(x));
-}
 
 function renderDiscoverGrid(filterText=""){
  const grid = document.getElementById('discoverGrid');
