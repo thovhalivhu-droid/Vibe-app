@@ -962,7 +962,6 @@ let feedData=[
 {
  id:1, author:"Elena Rostova", caption:"Golden hour tones hitting different today ✨ #goldenhour #VIBE", audio:"Original Audio - Elena", likes:24500, commentsCount:2, shares:1200, views:"112K", avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150", 
  mediaList:[{type:"video", url:"https://assets.mixkit.co/videos/preview/mixkit-woman-filming-herself-with-a-smartphone-41270-large.mp4"}],
- overlaysHtml: '',
  commentsList:[
   {user:"Liam Chen", text:"Absolute cinematic shots!", avatar:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150"},
   {user:"Sophia Taylor", text:"Where is this spot?? ✨", avatar:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"}
@@ -971,7 +970,6 @@ let feedData=[
 {
  id:2, author:"Liam Chen", caption:"Late night coding session 💻⚡ #coding #tech #VIBE", audio:"Lofi Chill Beats", likes:58100, commentsCount:1, shares:4500, views:"340K", avatar:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150", 
  mediaList:[{type:"video", url:"https://assets.mixkit.co/videos/preview/mixkit-hands-typing-on-a-laptop-keyboard-close-up-42861-large.mp4"}],
- overlaysHtml: '',
  commentsList:[
   {user:"Elena Rostova", text:"Relatable haha ☕", avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150"}
  ]
@@ -1002,7 +1000,7 @@ let drawCanvas, drawCtx;
 let undoStack = [];
 let redoStack = [];
 
-// Text Editor Customization State & Saved Overlays for Transition
+// Text Editor Customization State
 let currentEditorTextColor = '#ffffff';
 let currentEditorStyles = {
   bold: false,
@@ -1010,7 +1008,6 @@ let currentEditorStyles = {
   outline: false,
   shadow: true
 };
-let savedEditorOverlaysHtml = '';
 
 function saveEditorState() {
   const overlaysHtml = document.getElementById('editorOverlaysLayer').innerHTML;
@@ -1086,16 +1083,18 @@ function renderFeed(filteredList){
   if(mediaList.length > 1) {
     mediaHtml = `<div class="reel-media-slider">`;
     mediaList.forEach((m) => {
+      let overlayContent = m.overlaysHtml ? `<div style="position:absolute; inset:0; pointer-events:none; z-index:4;">${m.overlaysHtml}</div>` : '';
       if(m.type === 'video') {
         mediaHtml += `
           <div class="reel-media-slide" style="position:relative;">
             <video class="reel-video" src="${m.url}" loop playsinline preload="auto" ${muted?'muted':''}></video>
+            ${overlayContent}
             <div class="video-control-overlay">
               <button class="custom-pause-btn" title="Toggle Play/Pause">⏸</button>
             </div>
           </div>`;
       } else {
-        mediaHtml += `<div class="reel-media-slide"><img class="reel-image" style="display:block" src="${m.url}" alt=""></div>`;
+        mediaHtml += `<div class="reel-media-slide" style="position:relative;"><img class="reel-image" style="display:block" src="${m.url}" alt="">${overlayContent}</div>`;
       }
     });
     mediaHtml += `</div>`;
@@ -1107,21 +1106,22 @@ function renderFeed(filteredList){
     dotsHtml += `</div>`;
   } else {
     const m = mediaList[0];
+    let overlayContent = m.overlaysHtml ? `<div style="position:absolute; inset:0; pointer-events:none; z-index:4;">${m.overlaysHtml}</div>` : '';
     if(m.type === 'video') {
       mediaHtml = `
         <video class="reel-video" src="${m.url}" loop playsinline preload="auto" ${muted?'muted':''}></video>
+        ${overlayContent}
         <div class="video-control-overlay">
           <button class="custom-pause-btn" title="Toggle Play/Pause">⏸</button>
         </div>`;
     } else {
-      mediaHtml = `<img class="reel-image" style="display:block" src="${m.url}" alt="">`;
+      mediaHtml = `<img class="reel-image" style="display:block" src="${m.url}" alt="">${overlayContent}`;
     }
   }
 
   card.innerHTML=`
   ${mediaHtml}
   ${dotsHtml}
-  <div style="position:absolute; inset:0; pointer-events:none; z-index:4;">${item.overlaysHtml || ''}</div>
   <button class="mute" style="${isSinglePhoto ? 'display:none;' : ''}">${muted?'🔇':'🔊'}</button>
   <div class="overlay"><div class="info"><div class="author"><img class="avatar" src="${item.avatar}"><span class="name">${item.author}</span><button class="follow">Follow</button></div><div class="caption">${parseCaptions(item.caption)}</div><div class="audio">♫ ${item.audio}</div></div>
   <div class="actions">
@@ -1964,12 +1964,14 @@ document.getElementById('closeEditorBtn').onclick = () => {
 };
 
 function proceedToPostScreen(){
+  // Save current overlays HTML into the selected media items
+  const currentOverlaysHtml = document.getElementById('editorOverlaysLayer').innerHTML;
+  selectedMediaList.forEach(item => {
+    item.overlaysHtml = currentOverlaysHtml;
+  });
+
   const container = document.getElementById('editorCanvasContainer');
   container.querySelectorAll('video').forEach(vid => vid.pause());
-  
-  // Save all text overlays and custom overlays exactly as they appear
-  savedEditorOverlaysHtml = document.getElementById('editorOverlaysLayer').innerHTML;
-
   editorScreen.classList.remove('open');
   openPostScreenFromEditor();
 }
@@ -1986,26 +1988,38 @@ function openPostScreenFromEditor(){
    box.classList.remove('multi-item');
  }
 
- container.querySelectorAll('video, img').forEach(mediaEl => {
+ container.querySelectorAll('video, img').forEach((mediaEl, idx) => {
+   const wrapper = document.createElement('div');
+   wrapper.style.position = 'relative';
+   wrapper.style.width = '100%';
+   wrapper.style.height = '100%';
+   wrapper.style.display = 'flex';
+   wrapper.style.alignItems = 'center';
+   wrapper.style.justifyContent = 'center';
+   wrapper.style.flex = '0 0 100%';
+
    const clone = mediaEl.cloneNode(true);
    clone.style.filter = mediaEl.style.filter;
    if(clone.tagName === 'VIDEO') {
      clone.currentTime = 0.001;
    }
-   box.appendChild(clone);
- });
+   wrapper.appendChild(clone);
 
- // Append the saved overlays layer onto the post preview screen so text remains visible
- const overlayClone = document.createElement('div');
- overlayClone.style.cssText = 'position:absolute; inset:0; pointer-events:none; z-index:6;';
- overlayClone.innerHTML = savedEditorOverlaysHtml;
- // Remove interactive handles/borders for preview display
- overlayClone.querySelectorAll('.editorOverlayElement').forEach(el => {
-   el.style.border = 'none';
-   el.style.cursor = 'default';
-   el.style.pointerEvents = 'none';
+   // Append the saved text/sticker overlays to keep them visible on the media preview
+   const overlaysLayer = document.getElementById('editorOverlaysLayer');
+   if(overlaysLayer && overlaysLayer.innerHTML.trim() !== '') {
+     const overlayClone = document.createElement('div');
+     overlayClone.style.position = 'absolute';
+     overlayClone.style.inset = '0';
+     overlayClone.style.pointerEvents = 'none';
+     overlayClone.innerHTML = overlaysLayer.innerHTML;
+     // Remove editing active borders on preview clone
+     overlayClone.querySelectorAll('.editorOverlayElement').forEach(el => el.style.borderColor = 'transparent');
+     wrapper.appendChild(overlayClone);
+   }
+
+   box.appendChild(wrapper);
  });
- box.appendChild(overlayClone);
 }
 
 document.getElementById('previewBox').onclick = () => {
@@ -2026,7 +2040,6 @@ document.getElementById('publishBtn').onclick=()=> {
    views:'1',
    avatar:myProfile.avatar,
    mediaList: [...selectedMediaList],
-   overlaysHtml: savedEditorOverlaysHtml,
    commentsList:[]
  };
  feedData.unshift(item);
@@ -2034,7 +2047,6 @@ document.getElementById('publishBtn').onclick=()=> {
  postScreen.classList.remove('open');
  appContainer.classList.remove('hide-nav-for-create');
  selectedMediaList=[];
- savedEditorOverlaysHtml='';
  document.getElementById('captionInput').value='';
  showToast('Posted to VIBE 🎉');
 };
@@ -2042,12 +2054,11 @@ document.getElementById('publishBtn').onclick=()=> {
 document.getElementById('publishStoryBtn').onclick=()=>{
  if(selectedMediaList.length === 0){showToast('Choose video(s) or picture(s) first');return}
  const primaryMedia = selectedMediaList[0];
- const storyItem={id:Date.now(), url:primaryMedia.url, type:primaryMedia.type, timestamp:Date.now(), viewsCount: 34, overlaysHtml: savedEditorOverlaysHtml};
+ const storyItem={id:Date.now(), url:primaryMedia.url, type:primaryMedia.type, overlaysHtml: primaryMedia.overlaysHtml, timestamp:Date.now(), viewsCount: 34};
  storiesData.unshift(storyItem);
  postScreen.classList.remove('open');
  appContainer.classList.remove('hide-nav-for-create');
  selectedMediaList=[];
- savedEditorOverlaysHtml='';
  document.getElementById('captionInput').value='';
  renderProfileGrid();
  showToast('Story added! It will vanish in 24 hours ⏳');
@@ -2089,8 +2100,20 @@ function playStory(index){
 
  const contentArea = document.getElementById('storyContentArea');
  contentArea.innerHTML = '';
+ 
+ const wrapper = document.createElement('div');
+ wrapper.style.position = 'relative';
+ wrapper.style.width = '100%';
+ wrapper.style.height = '100%';
+ wrapper.style.display = 'flex';
+ wrapper.style.alignItems = 'center';
+ wrapper.style.justifyContent = 'center';
+
  const el = document.createElement(story.type === 'video' ? 'video' : 'img');
  el.src = story.url;
+ el.style.width = '100%';
+ el.style.height = '100%';
+ el.style.objectFit = 'contain';
  if(story.type === 'video'){ 
   el.autoplay = true; 
   el.playsInline = true; 
@@ -2100,24 +2123,24 @@ function playStory(index){
  } else {
   currentStoryVideoEl = null;
  }
- contentArea.appendChild(el);
+ wrapper.appendChild(el);
 
  if(story.overlaysHtml) {
-  const storyOverlay = document.createElement('div');
-  storyOverlay.style.cssText = 'position:absolute; inset:0; pointer-events:none; z-index:5;';
-  storyOverlay.innerHTML = story.overlaysHtml;
-  storyOverlay.querySelectorAll('.editorOverlayElement').forEach(node => {
-    node.style.border = 'none';
-    node.style.cursor = 'default';
-  });
-  contentArea.appendChild(storyOverlay);
+   const overlayClone = document.createElement('div');
+   overlayClone.style.position = 'absolute';
+   overlayClone.style.inset = '0';
+   overlayClone.style.pointerEvents = 'none';
+   overlayClone.innerHTML = story.overlaysHtml;
+   overlayClone.querySelectorAll('.editorOverlayElement').forEach(node => node.style.borderColor = 'transparent');
+   wrapper.appendChild(overlayClone);
  }
+
+ contentArea.appendChild(wrapper);
 }
 
-document.getElementById('closeStoryModal').onclick = () => {
-  document.getElementById('storyModal').classList.remove('open');
-  if(currentStoryVideoEl) currentStoryVideoEl.pause();
-};
+// Initializing feed
+renderFeed();
+startCamera();
 </script>
 </body>
 </html>
