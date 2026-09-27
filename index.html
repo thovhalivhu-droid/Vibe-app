@@ -76,6 +76,27 @@ button{font:inherit}
 
 .mute{position:absolute;top:68px;right:16px;z-index:7;width:40px;height:40px;border:0;border-radius:50%;background:#0008;color:#fff;font-size:19px;cursor:pointer;}
 
+/* Video Duration Indicator Style */
+.video-duration-indicator {
+  position: absolute;
+  top: 68px;
+  left: 16px;
+  z-index: 7;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 700;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.video-duration-indicator.show {
+  opacity: 1;
+}
+
 /* Double-tap Floating Heart Animation */
 .double-tap-heart {
   position: absolute;
@@ -1134,8 +1155,10 @@ function pauseAllFeedVideos() {
     const card = v.closest('.reel');
     if(card) {
       const controlOverlay = card.querySelector('.video-control-overlay');
+      const durationIndicator = card.querySelector('.video-duration-indicator');
       const pauseBtn = card.querySelector('.custom-pause-btn');
       if(controlOverlay) controlOverlay.classList.remove('show');
+      if(durationIndicator) durationIndicator.classList.remove('show');
       if(pauseBtn) pauseBtn.textContent = '▶';
     }
   });
@@ -1185,6 +1208,7 @@ function renderFeed(filteredList){
         mediaHtml += `
           <div class="reel-media-slide" style="position:relative;">
             <video class="reel-video" src="${m.url}" loop playsinline preload="auto" ${muted?'muted':''}></video>
+            <div class="video-duration-indicator">0:00</div>
             <div class="video-control-overlay">
               <button class="custom-pause-btn" title="Toggle Play/Pause">⏸</button>
             </div>
@@ -1205,6 +1229,7 @@ function renderFeed(filteredList){
     if(m.type === 'video') {
       mediaHtml = `
         <video class="reel-video" src="${m.url}" loop playsinline preload="auto" ${muted?'muted':''}></video>
+        <div class="video-duration-indicator">0:00</div>
         <div class="video-control-overlay">
           <button class="custom-pause-btn" title="Toggle Play/Pause">⏸</button>
         </div>`;
@@ -1265,15 +1290,28 @@ function renderFeed(filteredList){
     v.currentTime = 0.001;
 
     const controlOverlay = v.parentElement.querySelector('.video-control-overlay');
+    const durationIndicator = v.parentElement.querySelector('.video-duration-indicator');
     const pauseBtn = v.parentElement.querySelector('.custom-pause-btn');
     let hideControlsTimer = null;
 
+    // Set duration text when metadata is loaded
+    v.addEventListener('loadedmetadata', () => {
+      if (durationIndicator && !isNaN(v.duration)) {
+        durationIndicator.textContent = formatTime(Math.floor(v.duration));
+      }
+    });
+    if (!isNaN(v.duration) && durationIndicator) {
+      durationIndicator.textContent = formatTime(Math.floor(v.duration));
+    }
+
     const showAndAutoHideControls = () => {
-      if(!controlOverlay) return;
+      if(!controlOverlay || !durationIndicator) return;
       controlOverlay.classList.add('show');
+      durationIndicator.classList.add('show');
       clearTimeout(hideControlsTimer);
       hideControlsTimer = setTimeout(() => {
         controlOverlay.classList.remove('show');
+        durationIndicator.classList.remove('show');
       }, 2000);
     };
 
@@ -1321,6 +1359,7 @@ function renderFeed(filteredList){
 
       card.querySelectorAll('.reel-video').forEach((vSlide, sIdx) => {
         const slideControlOverlay = vSlide.parentElement.querySelector('.video-control-overlay');
+        const slideDurationIndicator = vSlide.parentElement.querySelector('.video-duration-indicator');
         const slidePauseBtn = vSlide.parentElement.querySelector('.custom-pause-btn');
         if(sIdx === activeIdx && isCardFullyInViewport(card)) {
           if(activeVideo && activeVideo !== vSlide) {
@@ -1328,8 +1367,10 @@ function renderFeed(filteredList){
             const prevCard = activeVideo.closest('.reel');
             if(prevCard) {
               const prevControlOverlay = prevCard.querySelector('.video-control-overlay');
+              const prevDurationIndicator = prevCard.querySelector('.video-duration-indicator');
               const prevPauseBtn = prevCard.querySelector('.custom-pause-btn');
               if(prevControlOverlay) prevControlOverlay.classList.remove('show');
+              if(prevDurationIndicator) prevDurationIndicator.classList.remove('show');
               if(prevPauseBtn) prevPauseBtn.textContent = '▶';
             }
           }
@@ -1341,6 +1382,7 @@ function renderFeed(filteredList){
         } else {
           vSlide.pause();
           if(slideControlOverlay) slideControlOverlay.classList.remove('show');
+          if(slideDurationIndicator) slideDurationIndicator.classList.remove('show');
           if(slidePauseBtn) slidePauseBtn.textContent = '▶';
         }
       });
@@ -1509,6 +1551,7 @@ function setupSwipeAutoplayFallback() {
           if (v) {
             const pauseBtn = card.querySelector('.custom-pause-btn');
             const controlOverlay = card.querySelector('.video-control-overlay');
+            const durationIndicator = card.querySelector('.video-duration-indicator');
 
             if (isCentered) {
               if (activeVideo && activeVideo !== v) {
@@ -1516,8 +1559,10 @@ function setupSwipeAutoplayFallback() {
                 const prevCard = activeVideo.closest('.reel');
                 if (prevCard) {
                   const prevControl = prevCard.querySelector('.video-control-overlay');
+                  const prevDuration = prevCard.querySelector('.video-duration-indicator');
                   const prevBtn = prevCard.querySelector('.custom-pause-btn');
                   if (prevControl) prevControl.classList.remove('show');
+                  if (prevDuration) prevDuration.classList.remove('show');
                   if (prevBtn) prevBtn.textContent = '▶';
                 }
               }
@@ -1529,6 +1574,7 @@ function setupSwipeAutoplayFallback() {
             } else {
               v.pause();
               if (controlOverlay) controlOverlay.classList.remove('show');
+              if (durationIndicator) durationIndicator.classList.remove('show');
               if (pauseBtn) pauseBtn.textContent = '▶';
             }
           }
@@ -1660,7 +1706,6 @@ function renderProfileGrid(){
     mediaInnerHtml = `<video src="${firstMedia.url}" muted playsinline></video>`; 
   }
 
-  // View counts shown ONLY on profile
   const viewCountHtml = `<div class="profile-view-badge">👁 ${item.views || '1'}</div>`;
 
   cell.innerHTML = mediaInnerHtml + viewCountHtml;
@@ -2017,7 +2062,6 @@ document.getElementById('closeEditorBtn').onclick = () => {
  updateNavActiveState('home');
 };
 
-// Quick Post functionality reading caption input directly from the editor
 document.getElementById('editorQuickPostBtn').onclick = () => {
   if (!selectedMediaList || selectedMediaList.length === 0) {
     showToast('Choose video(s) or picture(s) first');
@@ -2098,52 +2142,44 @@ document.querySelectorAll('.nav button[data-tab]').forEach(btn => {
     if (tabKey === 'home') {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('open'));
     } else if (tabKey === 'discover') {
-      document.querySelectorAll('.screen').forEach(s => { if(s.id !== 'discover') s.classList.remove('open'); });
       discover.classList.add('open');
+      renderDiscoverGrid();
     } else if (tabKey === 'create') {
-      document.querySelectorAll('.screen').forEach(s => { if(s.id !== 'studio') s.classList.remove('open'); });
-      studio.classList.add('open');
       appContainer.classList.add('hide-nav-for-create');
+      studio.classList.add('open');
       startCamera();
     } else if (tabKey === 'inbox') {
-      document.querySelectorAll('.screen').forEach(s => { if(s.id !== 'inbox') s.classList.remove('open'); });
       inbox.classList.add('open');
     } else if (tabKey === 'profile') {
-      document.querySelectorAll('.screen').forEach(s => { if(s.id !== 'profile') s.classList.remove('open'); });
       profile.classList.add('open');
       renderProfileGrid();
     }
   };
 });
 
-document.querySelectorAll('.close[data-close], #closeStudio, #closePost, #closeSoundModal').forEach(btn => {
+document.querySelectorAll('.close[data-close]').forEach(btn => {
   btn.onclick = () => {
-    studio.classList.remove('open');
-    postScreen.classList.remove('open');
-    discover.classList.remove('open');
-    inbox.classList.remove('open');
-    profile.classList.remove('open');
-    document.getElementById('soundModal').classList.remove('open');
-    appContainer.classList.remove('hide-nav-for-create');
-    stopCamera();
+    const target = btn.dataset.close;
+    if (target === 'discover') discover.classList.remove('open');
+    if (target === 'inbox') inbox.classList.remove('open');
+    if (target === 'profile') profile.classList.remove('open');
     updateNavActiveState('home');
   };
 });
 
-document.getElementById('soundSelectBtn').onclick = () => {
-  document.getElementById('soundModal').classList.add('open');
+document.getElementById('closeStudio').onclick = () => {
+  studio.classList.remove('open');
+  appContainer.classList.remove('hide-nav-for-create');
+  stopCamera();
+  updateNavActiveState('home');
 };
 
-document.querySelectorAll('#soundListContainer .soundItem').forEach(item => {
-  item.onclick = () => {
-    selectedSound = item.dataset.sound;
-    document.getElementById('currentSoundLabel').textContent = selectedSound;
-    document.getElementById('soundModal').classList.remove('open');
-    showToast(`Sound selected: ${selectedSound}`);
-  };
-});
+document.getElementById('closePost').onclick = () => {
+  postScreen.classList.remove('open');
+  appContainer.classList.remove('hide-nav-for-create');
+  updateNavActiveState('home');
+};
 
-// Initialize Feed
 renderFeed();
 </script>
 </body>
