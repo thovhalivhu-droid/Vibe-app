@@ -1245,7 +1245,6 @@ function submitReportUser() {
   showToast('Report submitted successfully. Thank you! 🛡️');
 }
 
-// Highlight selected report card styling
 document.querySelectorAll('.report-reason-item').forEach(item => {
   item.onclick = () => {
     document.querySelectorAll('.report-reason-item').forEach(i => i.classList.remove('selected'));
@@ -1332,6 +1331,12 @@ function formatCount(num) {
  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
  if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
  return num;
+}
+
+function formatTime(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s < 10 ? '0' : ''}${s}`;
 }
 
 function getValidStories(){
@@ -1885,7 +1890,6 @@ function renderProfileGrid(){
  });
 }
 
-// Navigation & Screen Control Bindings
 document.getElementById('navHomeBtn').onclick=()=>{ updateNavActiveState('home'); feed.style.display='block'; discover.classList.remove('open'); inbox.classList.remove('open'); profile.classList.remove('open'); studio.classList.remove('open'); stopCamera(); };
 document.getElementById('navDiscoverBtn').onclick=()=>{ updateNavActiveState('discover'); discover.classList.add('open'); inbox.classList.remove('open'); profile.classList.remove('open'); studio.classList.remove('open'); pauseAllFeedVideos(); stopCamera(); renderDiscoverGrid(); };
 document.getElementById('navCreateBtn').onclick=()=>{ updateNavActiveState('create'); studio.classList.add('open'); discover.classList.remove('open'); inbox.classList.remove('open'); profile.classList.remove('open'); pauseAllFeedVideos(); startCamera(); };
