@@ -1083,18 +1083,16 @@ function renderFeed(filteredList){
   if(mediaList.length > 1) {
     mediaHtml = `<div class="reel-media-slider">`;
     mediaList.forEach((m) => {
-      let overlayContent = m.overlaysHtml ? `<div style="position:absolute; inset:0; pointer-events:none; z-index:4;">${m.overlaysHtml}</div>` : '';
       if(m.type === 'video') {
         mediaHtml += `
           <div class="reel-media-slide" style="position:relative;">
             <video class="reel-video" src="${m.url}" loop playsinline preload="auto" ${muted?'muted':''}></video>
-            ${overlayContent}
             <div class="video-control-overlay">
               <button class="custom-pause-btn" title="Toggle Play/Pause">⏸</button>
             </div>
           </div>`;
       } else {
-        mediaHtml += `<div class="reel-media-slide" style="position:relative;"><img class="reel-image" style="display:block" src="${m.url}" alt="">${overlayContent}</div>`;
+        mediaHtml += `<div class="reel-media-slide"><img class="reel-image" style="display:block" src="${m.url}" alt=""></div>`;
       }
     });
     mediaHtml += `</div>`;
@@ -1106,16 +1104,14 @@ function renderFeed(filteredList){
     dotsHtml += `</div>`;
   } else {
     const m = mediaList[0];
-    let overlayContent = m.overlaysHtml ? `<div style="position:absolute; inset:0; pointer-events:none; z-index:4;">${m.overlaysHtml}</div>` : '';
     if(m.type === 'video') {
       mediaHtml = `
         <video class="reel-video" src="${m.url}" loop playsinline preload="auto" ${muted?'muted':''}></video>
-        ${overlayContent}
         <div class="video-control-overlay">
           <button class="custom-pause-btn" title="Toggle Play/Pause">⏸</button>
         </div>`;
     } else {
-      mediaHtml = `<img class="reel-image" style="display:block" src="${m.url}" alt="">${overlayContent}`;
+      mediaHtml = `<img class="reel-image" style="display:block" src="${m.url}" alt="">`;
     }
   }
 
@@ -1964,12 +1960,6 @@ document.getElementById('closeEditorBtn').onclick = () => {
 };
 
 function proceedToPostScreen(){
-  // Save current overlays HTML into the selected media items
-  const currentOverlaysHtml = document.getElementById('editorOverlaysLayer').innerHTML;
-  selectedMediaList.forEach(item => {
-    item.overlaysHtml = currentOverlaysHtml;
-  });
-
   const container = document.getElementById('editorCanvasContainer');
   container.querySelectorAll('video').forEach(vid => vid.pause());
   editorScreen.classList.remove('open');
@@ -1988,37 +1978,13 @@ function openPostScreenFromEditor(){
    box.classList.remove('multi-item');
  }
 
- container.querySelectorAll('video, img').forEach((mediaEl, idx) => {
-   const wrapper = document.createElement('div');
-   wrapper.style.position = 'relative';
-   wrapper.style.width = '100%';
-   wrapper.style.height = '100%';
-   wrapper.style.display = 'flex';
-   wrapper.style.alignItems = 'center';
-   wrapper.style.justifyContent = 'center';
-   wrapper.style.flex = '0 0 100%';
-
+ container.querySelectorAll('video, img').forEach(mediaEl => {
    const clone = mediaEl.cloneNode(true);
    clone.style.filter = mediaEl.style.filter;
    if(clone.tagName === 'VIDEO') {
      clone.currentTime = 0.001;
    }
-   wrapper.appendChild(clone);
-
-   // Append the saved text/sticker overlays to keep them visible on the media preview
-   const overlaysLayer = document.getElementById('editorOverlaysLayer');
-   if(overlaysLayer && overlaysLayer.innerHTML.trim() !== '') {
-     const overlayClone = document.createElement('div');
-     overlayClone.style.position = 'absolute';
-     overlayClone.style.inset = '0';
-     overlayClone.style.pointerEvents = 'none';
-     overlayClone.innerHTML = overlaysLayer.innerHTML;
-     // Remove editing active borders on preview clone
-     overlayClone.querySelectorAll('.editorOverlayElement').forEach(el => el.style.borderColor = 'transparent');
-     wrapper.appendChild(overlayClone);
-   }
-
-   box.appendChild(wrapper);
+   box.appendChild(clone);
  });
 }
 
@@ -2054,7 +2020,7 @@ document.getElementById('publishBtn').onclick=()=> {
 document.getElementById('publishStoryBtn').onclick=()=>{
  if(selectedMediaList.length === 0){showToast('Choose video(s) or picture(s) first');return}
  const primaryMedia = selectedMediaList[0];
- const storyItem={id:Date.now(), url:primaryMedia.url, type:primaryMedia.type, overlaysHtml: primaryMedia.overlaysHtml, timestamp:Date.now(), viewsCount: 34};
+ const storyItem={id:Date.now(), url:primaryMedia.url, type:primaryMedia.type, timestamp:Date.now(), viewsCount: 34};
  storiesData.unshift(storyItem);
  postScreen.classList.remove('open');
  appContainer.classList.remove('hide-nav-for-create');
@@ -2100,20 +2066,8 @@ function playStory(index){
 
  const contentArea = document.getElementById('storyContentArea');
  contentArea.innerHTML = '';
- 
- const wrapper = document.createElement('div');
- wrapper.style.position = 'relative';
- wrapper.style.width = '100%';
- wrapper.style.height = '100%';
- wrapper.style.display = 'flex';
- wrapper.style.alignItems = 'center';
- wrapper.style.justifyContent = 'center';
-
  const el = document.createElement(story.type === 'video' ? 'video' : 'img');
  el.src = story.url;
- el.style.width = '100%';
- el.style.height = '100%';
- el.style.objectFit = 'contain';
  if(story.type === 'video'){ 
   el.autoplay = true; 
   el.playsInline = true; 
@@ -2123,24 +2077,249 @@ function playStory(index){
  } else {
   currentStoryVideoEl = null;
  }
- wrapper.appendChild(el);
+ contentArea.appendChild(el);
 
- if(story.overlaysHtml) {
-   const overlayClone = document.createElement('div');
-   overlayClone.style.position = 'absolute';
-   overlayClone.style.inset = '0';
-   overlayClone.style.pointerEvents = 'none';
-   overlayClone.innerHTML = story.overlaysHtml;
-   overlayClone.querySelectorAll('.editorOverlayElement').forEach(node => node.style.borderColor = 'transparent');
-   wrapper.appendChild(overlayClone);
- }
+ const barContainer = document.getElementById('storyBarContainer');
+ barContainer.innerHTML = '';
+ activeStories.forEach((_, i)=>{
+  const seg = document.createElement('div');
+  seg.className = 'storyBarSegment';
+  const fill = document.createElement('div');
+  fill.className = 'storyBarFill';
+  if(i < index) fill.style.width = '100%';
+  seg.appendChild(fill);
+  barContainer.appendChild(seg);
+ });
 
- contentArea.appendChild(wrapper);
+ storyDuration = 5000;
+ storyTimeRemaining = storyDuration;
+ startStoryTimer();
 }
 
-// Initializing feed
+function startStoryTimer(){
+ clearTimeouts();
+ storyStartTime = Date.now();
+ isStoryPaused = false;
+ 
+ const fill = document.querySelectorAll('.storyBarFill')[currentStoryIndex];
+ if(!fill) return;
+
+ fill.style.transition = `width ${storyTimeRemaining}ms linear`;
+ fill.classList.add('running');
+ fill.classList.remove('paused');
+ void fill.offsetWidth;
+ fill.style.width = '100%';
+
+ if(currentStoryVideoEl && currentStoryVideoEl.paused){
+  currentStoryVideoEl.play().catch(()=>{});
+}
+
+ storyTimeout = setTimeout(() => {
+  playStory(currentStoryIndex + 1);
+ }, storyTimeRemaining);
+}
+
+function clearTimeouts(){
+ if(storyTimeout) clearTimeout(storyTimeout);
+}
+
+document.getElementById('closeStoryModal').onclick = () => {
+ clearTimeouts();
+ document.getElementById('storyModal').classList.remove('open');
+};
+
+const storyContentArea = document.getElementById('storyContentArea');
+storyContentArea.onmousedown = storyContentArea.onttouchstart = (e) => {
+ if(e.target.closest('#closeStoryModal') || e.target.closest('.storyFooterViews')) return;
+ isStoryPaused = true;
+ clearTimeouts();
+ const elapsed = Date.now() - storyStartTime;
+ storyTimeRemaining = Math.max(0, storyTimeRemaining - elapsed);
+ 
+ const fill = document.querySelectorAll('.storyBarFill')[currentStoryIndex];
+ if(fill){
+  const computedWidth = window.getComputedStyle(fill).width;
+  fill.style.transition = 'none';
+  fill.style.width = computedWidth;
+  fill.classList.remove('running');
+  fill.classList.add('paused');
+ }
+ if(currentStoryVideoEl) currentStoryVideoEl.pause();
+};
+
+storyContentArea.onmouseup = storyContentArea.ontouchend = (e) => {
+ if(!isStoryPaused) return;
+ startStoryTimer();
+};
+
+document.getElementById('storyFooterViewsBtn').onclick = () => {
+ clearTimeouts();
+ document.getElementById('storyViewersModal').classList.add('open');
+};
+
+document.getElementById('closeStoryViewersModal').onclick = () => {
+ document.getElementById('storyViewersModal').classList.remove('open');
+ startStoryTimer();
+};
+
+function switchStudioMode(mode) {
+  const modeVideoTab = document.getElementById('modeVideoTab');
+  const modeLiveTab = document.getElementById('modeLiveTab');
+  const videoModePanel = document.getElementById('videoModePanel');
+  const liveModePanel = document.getElementById('liveModePanel');
+  const liveOverlay = document.getElementById('liveStreamOverlayElements');
+
+  if(mode === 'video') {
+    modeVideoTab.classList.add('active');
+    modeLiveTab.classList.remove('active');
+    videoModePanel.classList.remove('hidden');
+    liveModePanel.classList.add('hidden');
+    liveOverlay.classList.add('hidden');
+  } else {
+    modeLiveTab.classList.add('active');
+    modeVideoTab.classList.remove('active');
+    liveModePanel.classList.remove('hidden');
+    videoModePanel.classList.add('hidden');
+    liveOverlay.classList.remove('hidden');
+  }
+}
+
+let isLiveActive = false;
+let liveHeartCount = 0;
+
+function toggleLiveStream() {
+  isLiveActive = !isLiveActive;
+  const btn = document.getElementById('startLiveBtn');
+  if(isLiveActive) {
+    btn.textContent = 'End LIVE';
+    btn.style.background = '#f33';
+    showToast('You are now LIVE! 🔴');
+  } else {
+    btn.textContent = 'Go LIVE Now';
+    btn.style.background = 'var(--pink)';
+    showToast('Live stream ended.');
+  }
+}
+
+document.getElementById('liveSendChatBtn').onclick = () => {
+  const input = document.getElementById('liveCommentInput');
+  const txt = input.value.trim();
+  if(!txt) return;
+  const list = document.getElementById('liveChatListContainer');
+  const msg = document.createElement('div');
+  msg.className = 'liveChatMsg';
+  msg.innerHTML = `<span class="liveChatUser">You:</span>${txt}`;
+  list.appendChild(msg);
+  list.scrollTop = list.scrollHeight;
+  input.value = '';
+};
+
+document.getElementById('liveTapLikeBtn').onclick = () => {
+  liveHeartCount++;
+  document.getElementById('liveHeartCountBadge').textContent = `❤️ ${liveHeartCount}`;
+  const container = document.getElementById('liveLikesContainer');
+  const heart = document.createElement('div');
+  heart.className = 'floating-like';
+  heart.textContent = ['❤️', '💖', '✨', '🔥'][Math.floor(Math.random() * 4)];
+  container.appendChild(heart);
+  setTimeout(() => heart.remove(), 2000);
+};
+
+function openLiveSettingsModal() {
+  document.getElementById('liveSettingsModal').classList.add('open');
+}
+document.getElementById('closeLiveSettingsModal').onclick = () => {
+  document.getElementById('liveSettingsModal').classList.remove('open');
+};
+
+function openGuestRequestsModal() {
+  const container = document.getElementById('guestRequestsListContainer');
+  container.innerHTML = `
+    <div class="messageItem" style="display:flex; justify-content:space-between; align-items:center;">
+      <div style="display:flex; gap:10px; align-items:center;">
+        <img class="messageAvatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" style="width:36px;height:36px;">
+        <div><div class="messageName">Elena Rostova</div><div class="messageSnippet">Wants to join your live</div></div>
+      </div>
+      <button class="useSoundBtn" onclick="acceptGuest('Elena Rostova', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150')">Accept</button>
+    </div>
+  `;
+  document.getElementById('guestRequestsModal').classList.add('open');
+}
+document.getElementById('closeGuestRequestsModal').onclick = () => {
+  document.getElementById('guestRequestsModal').classList.remove('open');
+};
+
+function acceptGuest(name, avatarUrl) {
+  document.getElementById('guestRequestsModal').classList.remove('open');
+  const grid = document.getElementById('activeGuestsGrid');
+  grid.classList.remove('hidden');
+  const slot = document.createElement('div');
+  slot.className = 'guest-slot';
+  slot.innerHTML = `<img src="${avatarUrl}"><span class="guest-slot-name">${name}</span>`;
+  grid.appendChild(slot);
+  showToast(`${name} joined your live stream! 👥`);
+}
+
+function toggleGuestRequestsSetting(el) {
+  showToast(el.checked ? 'Guest requests enabled' : 'Guest requests disabled');
+}
+
+function toggleLiveMic() {
+  showToast('Mic toggled');
+}
+
+function openSecuritySettings() {
+  showToast('Opening Security & Privacy Settings...');
+}
+
+document.getElementById('navHomeBtn').onclick = () => { updateNavActiveState('home'); pauseAllFeedVideos(); };
+document.getElementById('navDiscoverBtn').onclick = () => { updateNavActiveState('discover'); discover.classList.add('open'); pauseAllFeedVideos(); };
+document.getElementById('navCreateBtn').onclick = () => { 
+  updateNavActiveState('create'); 
+  pauseAllFeedVideos();
+  studio.classList.add('open'); 
+  appContainer.classList.add('hide-nav-for-create');
+  startCamera();
+};
+document.getElementById('navInboxBtn').onclick = () => { updateNavActiveState('inbox'); inbox.classList.add('open'); pauseAllFeedVideos(); };
+document.getElementById('navProfileBtn').onclick = () => { updateNavActiveState('profile'); profile.classList.add('open'); pauseAllFeedVideos(); renderProfileGrid(); };
+
+document.querySelectorAll('.screenHead .close, [data-close]').forEach(btn => {
+ btn.onclick = (e) => {
+  const target = btn.closest('.screen');
+  if(target) target.classList.remove('open');
+  appContainer.classList.remove('hide-nav-for-create');
+  updateNavActiveState('home');
+ };
+});
+
+document.getElementById('closeStudio').onclick = () => {
+ studio.classList.remove('open');
+ stopCamera();
+ appContainer.classList.remove('hide-nav-for-create');
+ updateNavActiveState('home');
+};
+
+document.getElementById('closePost').onclick = () => {
+ postScreen.classList.remove('open');
+ appContainer.classList.remove('hide-nav-for-create');
+ updateNavActiveState('home');
+};
+
+document.querySelectorAll('.tabs .tab').forEach(t => {
+ t.onclick = () => {
+  document.querySelectorAll('.tabs .tab').forEach(x => x.classList.remove('active'));
+  t.classList.add('active');
+  const tabName = t.dataset.feedTab;
+  if(tabName === 'following') {
+    renderFeed(feedData.slice(0, 1));
+  } else {
+    renderFeed(feedData);
+  }
+ };
+});
+
 renderFeed();
-startCamera();
 </script>
 </body>
 </html>
