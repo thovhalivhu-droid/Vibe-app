@@ -803,6 +803,18 @@ input:checked+.slider:before{transform:translateX(20px)}
       <button class="editProfileBtn" id="editProfileBtn" style="margin-top:0;">Edit Profile</button>
     </div>
   </div>
+
+  <!-- NEW MENU LINKS ADDED TO ME/PROFILE SECTION -->
+  <div style="background:var(--surface); border-radius:14px; border:1px solid #ffffff10; margin-bottom:16px; overflow:hidden;">
+    <div onclick="openSecuritySettings()" style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid #ffffff0a; cursor:pointer; font-size:14px; font-weight:700;">
+      <span>🔒 Privacy & Security</span>
+      <span style="color:var(--muted)">›</span>
+    </div>
+    <div onclick="openPrivacyPolicy()" style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; cursor:pointer; font-size:14px; font-weight:700;">
+      <span>📄 Privacy Policy</span>
+      <span style="color:var(--muted)">›</span>
+    </div>
+  </div>
   
   <div class="profileSubTabs">
     <span class="profileSubTab active" data-profile-tab="posts">My Posts</span>
@@ -811,6 +823,90 @@ input:checked+.slider:before{transform:translateX(20px)}
 
   <div class="userPostsGrid" id="userPostsGrid"></div>
 </div>
+</section>
+
+<!-- NEW SCREEN: Privacy & Security Settings -->
+<section id="securitySettingsScreen" class="screen" style="z-index: 150;">
+  <div class="screenHead">
+    <button class="close" onclick="closeSecuritySettings()">×</button>
+    <span>Privacy & Security</span>
+    <span style="width:24px"></span>
+  </div>
+  <div style="flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:16px;">
+    <div style="font-size: 13px; color: var(--muted); margin-bottom: 4px;">Manage who can see your content and interact with your account. All settings are fully savable.</div>
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 14px 16px; border-radius: 12px; border: 1px solid #ffffff10;">
+      <div>
+        <div style="font-size: 15px; font-weight: 700;">Private Account</div>
+        <div style="font-size: 12px; color: var(--muted); margin-top: 2px;">Only approved followers can view your videos and stories</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="setting-private-account">
+        <span class="slider round"></span>
+      </label>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 14px 16px; border-radius: 12px; border: 1px solid #ffffff10;">
+      <div>
+        <div style="font-size: 15px; font-weight: 700;">Allow Direct Messages</div>
+        <div style="font-size: 12px; color: var(--muted); margin-top: 2px;">Allow people to send you direct messages</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="setting-dm" checked>
+        <span class="slider round"></span>
+      </label>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 14px 16px; border-radius: 12px; border: 1px solid #ffffff10;">
+      <div>
+        <div style="font-size: 15px; font-weight: 700;">Filter Offensive Comments</div>
+        <div style="font-size: 12px; color: var(--muted); margin-top: 2px;">Automatically hide comments that may be inappropriate</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="setting-comments-filter" checked>
+        <span class="slider round"></span>
+      </label>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 14px 16px; border-radius: 12px; border: 1px solid #ffffff10;">
+      <div>
+        <div style="font-size: 15px; font-weight: 700;">Activity Status</div>
+        <div style="font-size: 12px; color: var(--muted); margin-top: 2px;">Allow followers to see when you are active</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="setting-activity-status" checked>
+        <span class="slider round"></span>
+      </label>
+    </div>
+
+    <button class="postBtn" onclick="saveSecuritySettings()" style="margin-top: 10px;">Save Settings</button>
+  </div>
+</section>
+
+<!-- NEW SCREEN: Privacy Policy -->
+<section id="privacyPolicyScreen" class="screen" style="z-index: 150;">
+  <div class="screenHead">
+    <button class="close" onclick="closePrivacyPolicy()">×</button>
+    <span>Privacy Policy</span>
+    <span style="width:24px"></span>
+  </div>
+  <div style="flex:1; overflow-y:auto; padding:20px; font-size:14px; line-height:1.6; color:var(--muted); display:flex; flex-direction:column; gap:14px;">
+    <h3 style="color:#fff; font-size:16px;">VIBE Platform Privacy Policy</h3>
+    <p>Last updated: September 2026</p>
+    <p>Welcome to VIBE. We respect your privacy and are committed to protecting your personal data. This privacy policy will inform you as to how we look after your personal data when you visit our app and tell you about your privacy rights and how the law protects you.</p>
+    
+    <h4 style="color:#fff; font-size:15px; margin-top:8px;">1. Information We Collect</h4>
+    <p>We collect information you provide directly to us when creating an account, publishing short videos or stories, sending direct messages, or interacting with other creators on the platform.</p>
+
+    <h4 style="color:#fff; font-size:15px; margin-top:8px;">2. How We Use Your Information</h4>
+    <p>Your information is used to provide, maintain, and improve our services, personalize your video feeds, process interactions, and secure the VIBE platform against unauthorized access.</p>
+
+    <h4 style="color:#fff; font-size:15px; margin-top:8px;">3. Data Security</h4>
+    <p>We implement robust technical and organizational security measures to protect your personal data from accidental loss, unauthorized access, alteration, or disclosure.</p>
+
+    <h4 style="color:#fff; font-size:15px; margin-top:8px;">4. Contact Us</h4>
+    <p>If you have any questions about this privacy policy, please reach out to our support team through the inbox activity tab.</p>
+  </div>
 </section>
 
 <!-- Comment Screen Drawer -->
@@ -876,6 +972,14 @@ const photoFileInput=document.getElementById('photoFileInput');
 const timer=document.getElementById('timer');
 const timerText=document.getElementById('timerText');
 
+// Privacy & Security settings persistent storage state object
+let userPrivacySettings = {
+  privateAccount: false,
+  allowDm: true,
+  commentsFilter: true,
+  activityStatus: true
+};
+
 let feedData=[
 {
  id:1, author:"Elena Rostova", caption:"Golden hour tones hitting different today ✨ #goldenhour #VIBE", audio:"Original Audio - Elena", likes:24500, commentsCount:2, shares:1200, views:"112K", avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150", 
@@ -918,6 +1022,37 @@ let drawCanvas, drawCtx;
 let undoStack = [];
 let redoStack = [];
 let activeLiveTextElement = null;
+
+// Functions to open and close Privacy & Security settings and Privacy Policy screens
+function openSecuritySettings() {
+  document.getElementById('setting-private-account').checked = userPrivacySettings.privateAccount;
+  document.getElementById('setting-dm').checked = userPrivacySettings.allowDm;
+  document.getElementById('setting-comments-filter').checked = userPrivacySettings.commentsFilter;
+  document.getElementById('setting-activity-status').checked = userPrivacySettings.activityStatus;
+  document.getElementById('securitySettingsScreen').classList.add('open');
+}
+
+function closeSecuritySettings() {
+  document.getElementById('securitySettingsScreen').classList.remove('open');
+}
+
+function saveSecuritySettings() {
+  userPrivacySettings.privateAccount = document.getElementById('setting-private-account').checked;
+  userPrivacySettings.allowDm = document.getElementById('setting-dm').checked;
+  userPrivacySettings.commentsFilter = document.getElementById('setting-comments-filter').checked;
+  userPrivacySettings.activityStatus = document.getElementById('setting-activity-status').checked;
+  
+  showToast('Privacy & Security settings saved successfully! 🔒');
+  closeSecuritySettings();
+}
+
+function openPrivacyPolicy() {
+  document.getElementById('privacyPolicyScreen').classList.add('open');
+}
+
+function closePrivacyPolicy() {
+  document.getElementById('privacyPolicyScreen').classList.remove('open');
+}
 
 function saveEditorState() {
   const overlaysHtml = document.getElementById('editorOverlaysLayer').innerHTML;
@@ -1260,7 +1395,6 @@ function setupObserver(){
  }, 100);
 }
 
-// ── SWIPE AUTOPLAY FALLBACK & TOUCH LISTENER ──
 function setupSwipeAutoplayFallback() {
   let touchStartY = 0;
 
@@ -1647,7 +1781,6 @@ document.getElementById('editorMuteBtn').onclick = (e) => {
   showToast(isMuted ? 'Muted' : 'Sound On');
 };
 
-/* Functional Bottom Toolbar Handlers */
 function closeEditorDrawers() {
   document.querySelectorAll('.editor-tool-drawer').forEach(d => d.classList.remove('open'));
 }
@@ -2019,7 +2152,6 @@ document.querySelectorAll('.nav button').forEach(btn=>{
  btn.onclick=(e)=>{
   const tab=btn.dataset.tab;
   
-  // FIX: Specifically handle the Create button to prevent bubbling, default actions, and redirects
   if(tab === 'create') {
     if(e) {
       e.stopPropagation();
