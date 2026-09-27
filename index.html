@@ -213,8 +213,8 @@ button{font:inherit}
   font-size: 13px;
 }
 
-/* Edit Toolbar completely hidden */
-.editorToolbar{display:none !important;}
+/* Edit Toolbar completely hidden and removed from layout flow */
+.edit-toolbar, .editorToolbar { display: none !important; }
 .editorToolsRow{display:flex;justify-content:space-around;align-items:center}
 .editorToolBtn{background:#1a1b22;border:1px solid #ffffff15;color:#fff;padding:8px 14px;border-radius:12px;font-weight:700;font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer}
 .editorToolBtn.active{background:var(--pink);border-color:var(--pink)}
@@ -509,7 +509,7 @@ input:checked+.slider:before{transform:translateX(20px)}
   <button id="editorMuteBtn" class="mute" title="Mute/Unmute Video">🔊</button>
 </div>
 
-<div class="editorToolbar">
+<div class="edit-toolbar editorToolbar">
   <div id="emojiPickerTray" class="emojiPickerRow hidden">
     <span class="emojiOption" onclick="addEmojiToCanvas('✨')">✨</span>
     <span class="emojiOption" onclick="addEmojiToCanvas('🔥')">🔥</span>
@@ -2008,4 +2008,3 @@ updateNavActiveState('home');
 </script>
 </body>
 </html>
- 
