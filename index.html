@@ -1063,6 +1063,16 @@ input:checked+.slider:before{transform:translateX(20px)}
   <div class="discoverBody">
     <div class="discoverSectionTitle">Account & Preferences</div>
     <div class="settings-list">
+      <!-- Added Account Button -->
+      <div class="settings-item" onclick="showToast('Account management opened')">
+        <div class="settings-item-left"><span>👤</span> Account</div>
+        <span style="color:var(--muted);">›</span>
+      </div>
+      <!-- Added Reference Work Button -->
+      <div class="settings-item" onclick="showToast('Reference Work management opened')">
+        <div class="settings-item-left"><span>💼</span> Reference Work</div>
+        <span style="color:var(--muted);">›</span>
+      </div>
       <div class="settings-item" onclick="showToast('Push Notifications settings')">
         <div class="settings-item-left"><span>🔔</span> Push Notifications</div>
         <span style="color:var(--muted);">›</span>
@@ -1925,158 +1935,6 @@ function formatCount(num) {
  if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
  return num;
 }
-
-function renderFeed(filteredList){
- const list = filteredList || feedData;
- feed.innerHTML='';
- list.forEach((item)=>{
-  const card=document.createElement('article'); 
-  card.className='reel';
-  
-  let mediaHtml = '';
-  let dotsHtml = '';
-  const mediaList = item.mediaList && item.mediaList.length > 0 ? item.mediaList : [{type: 'video', url: ''}];
-  const isSinglePhoto = mediaList.length === 1 && mediaList[0].type === 'image';
-
-  if(isSinglePhoto) {
-    card.classList.add('image');
-  }
-
-  if(mediaList.length > 1) {
-    mediaHtml = `<div class="reel-media-slider">`;
-    mediaList.forEach((m) => {
-      if(m.type === 'video') {
-        mediaHtml += `
-          <div class="reel-media-slide" style="position:relative;">
-            <video class="reel-video" src="${m.url}" playsinline preload="auto" ${muted?'muted':''}></video>
-            <div class="video-duration-indicator">0:00</div>
-            <div class="video-control-overlay">
-              <button class="custom-pause-btn" title="Toggle Play/Pause">⏸</button>
-            </div>
-          </div>`;
-      } else {
-        mediaHtml += `<div class="reel-media-slide"><img class="reel-image" style="display:block" src="${m.url}" alt=""></div>`;
-      }
-    });
-    mediaHtml += `</div>`;
-
-    dotsHtml = `<div class="carousel-dots">`;
-    mediaList.forEach((_, idx) => {
-      dotsHtml += `<div class="carousel-dot ${idx === 0 ? 'active' : ''}"></div>`;
-    });
-    dotsHtml += `</div>`;
-  } else {
-    const m = mediaList[0];
-    if(m.type === 'video') {
-      mediaHtml = `
-        <video class="reel-video" src="${m.url}" playsinline preload="auto" ${muted?'muted':''}></video>
-        <div class="video-duration-indicator">0:00</div>
-        <div class="video-control-overlay">
-          <button class="custom-pause-btn" title="Toggle Play/Pause">⏸</button>
-        </div>`;
-    } else {
-      mediaHtml = `<img class="reel-image" style="display:block" src="${m.url}" alt="">`;
-    }
-  }
-
-  const songTitleText = item.songName || 'Original Audio';
-  const songArtistText = item.artist || item.author;
-
-  card.innerHTML=`
-  ${mediaHtml}
-  ${dotsHtml}
-  <button class="mute" style="${isSinglePhoto ? 'display:none;' : ''}">${muted?'🔇':'🔊'}</button>
-  <div class="overlay"><div class="info">
-    <div class="author"><img class="avatar" src="${item.avatar}"><span class="name">${item.author}</span><button class="follow">Follow</button></div>
-    <div class="caption">${parseCaptions(item.caption)}</div>
-    <div class="audio" data-post-id="${item.id}">♫ <span class="song-title">${songTitleText}</span> - <span class="song-artist">${songArtistText}</span></div>
-  </div>
-  <div class="actions">
-    <button class="action like ${item.isLiked ? 'liked' : ''}"><div class="circle">${item.isLiked ? '♥' : '♡'}</div><div class="count">${formatCount(item.likes)}</div></button>
-    <button class="action commentBtn"><div class="circle">💬</div><div class="count">${item.commentsList.length}</div></button>
-    <button class="action saveBtn ${item.isSaved ? 'saved' : ''}"><div class="circle">${item.isSaved ? '★' : '☆'}</div><div class="count">Save</div></button>
-    <button class="action shareBtn"><div class="circle">↗</div><div class="count">${formatCount(item.shares)}</div></button>
-  </div></div>`;
-  feed.appendChild(card);
- });
-}
-
-function renderProfileGrid() {
-  const grid = document.getElementById('userPostsGrid');
-  grid.innerHTML = '';
-  
-  let targetPosts = [];
-  if (profileActiveTab === 'posts') {
-    targetPosts = feedData.filter(p => p.author === 'You' || p.handle === '@creator_vibe');
-  } else if (profileActiveTab === 'saved') {
-    targetPosts = feedData.filter(p => p.isSaved);
-  } else if (profileActiveTab === 'tagged') {
-    targetPosts = feedData.filter(p => p.isTagged);
-  }
-
-  if (targetPosts.length === 0) {
-    grid.innerHTML = `<div style="grid-column: span 3; text-align: center; color: var(--muted); padding: 40px 0; font-size: 13px;">No posts found</div>`;
-    return;
-  }
-
-  targetPosts.forEach(post => {
-    const thumb = document.createElement('div');
-    thumb.className = 'userPostThumb';
-    const media = post.mediaList && post.mediaList.length > 0 ? post.mediaList[0] : {type:'image', url:''};
-    if (media.type === 'video') {
-      thumb.innerHTML = `<video src="${media.url}" muted playsinline></video><div class="profile-view-badge">▶ ${post.views || '1'}</div>`;
-    } else {
-      thumb.innerHTML = `<img src="${media.url}" alt=""><div class="profile-view-badge">♥ ${formatCount(post.likes)}</div>`;
-    }
-    
-    thumb.onclick = () => {
-      profile.classList.remove('open');
-      updateNavActiveState('home');
-      pauseAllFeedVideos();
-      const idx = feedData.findIndex(f => f.id === post.id);
-      if (idx !== -1) { 
-        feed.children[idx].scrollIntoView({behavior:'smooth'}); 
-      }
-    };
-    grid.appendChild(thumb);
-  });
-}
-
-document.querySelectorAll('.profileSubTab').forEach(tab => {
-  tab.onclick = () => {
-    document.querySelectorAll('.profileSubTab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    profileActiveTab = tab.getAttribute('data-profile-tab');
-    renderProfileGrid();
-  };
-});
-
-document.querySelectorAll('.nav button').forEach(btn => {
-  btn.onclick = () => {
-    const tab = btn.getAttribute('data-tab');
-    updateNavActiveState(tab);
-    
-    studio.classList.remove('open');
-    discover.classList.remove('open');
-    inbox.classList.remove('open');
-    profile.classList.remove('open');
-    appContainer.classList.remove('hide-nav-for-create');
-
-    if(tab === 'discover') discover.classList.add('open');
-    else if(tab === 'create') {
-      studio.classList.add('open');
-      appContainer.classList.add('hide-nav-for-create');
-      startCamera();
-    }
-    else if(tab === 'inbox') inbox.classList.add('open');
-    else if(tab === 'profile') {
-      profile.classList.add('open');
-      renderProfileGrid();
-    }
-  };
-});
-
-renderFeed();
 </script>
 </body>
 </html>
