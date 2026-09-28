@@ -192,7 +192,7 @@ button{font:inherit}
 .editorCanvasContainer.multi-item video, .editorCanvasContainer.multi-item img {flex: 0 0 100%; scroll-snap-align: start; width:100%; height:100%; object-fit:contain;}
 #editorDrawingCanvas{position:absolute;inset:0;pointer-events:auto;cursor:crosshair;z-index:5}
 #editorOverlaysLayer{position:absolute;inset:0;pointer-events:none;z-index:6}
-.editorOverlayElement{position:absolute;cursor:move;user-select:none;padding:6px 10px;font-size:22px;border:1px dashed transparent;transition:border .2s;pointer-events:auto}
+.editorOverlayElement{position:absolute;cursor:move;user-select:none;padding:6px 10px;font-size:22px;border:1px dashed transparent;transition:border .2s;pointer-events:auto; touch-action: none;}
 .editorOverlayElement:hover{border-color:rgba(255,255,255,0.4)}
 .editorOverlayElement.text-element{font-size:20px;font-weight:700;color:#fff;background:rgba(0,0,0,0.5);border-radius:8px;backdrop-filter:blur(4px);padding:8px 12px;text-shadow:0 2px 4px rgba(0,0,0,0.5)}
 
@@ -1726,9 +1726,6 @@ function showConfirmPopup(title, desc, onConfirm) {
   document.getElementById('confirmPopupDesc').textContent = desc;
   
   const confirmBtn = document.getElementById('confirmPopupConfirmBtn');
-  const cancelBtn = document.getElementById('confirmPopupConfirmBtn'); // placeholder for cleanup
-  
-  // Clone buttons to clear existing listeners
   const newConfirmBtn = confirmBtn.cloneNode(true);
   confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
   
@@ -1748,7 +1745,6 @@ function showConfirmPopup(title, desc, onConfirm) {
   overlay.classList.add('open');
 }
 
-// Report and Block Action Helpers
 function promptReportCreator() {
   showConfirmPopup("Report User", "Are you sure you want to report this user for violating community guidelines?", () => {
     showToast("User reported. Thank you for keeping VIBE safe 🛡️");
@@ -1775,12 +1771,10 @@ function promptBlockActiveChat() {
   });
 }
 
-// Post Editor Extra State: Location, Cover, Drafts
 let selectedPostLocation = "";
 let selectedCoverMediaIndex = 0;
 let userDrafts = [];
 
-// App Settings & Preferences State
 let userSettings = {
   privateAccount: false,
   dmPreference: 'everyone',
@@ -1791,7 +1785,6 @@ let userSettings = {
   liveNotifs: true
 };
 
-// DM Conversations Data Store
 let dmConversations = [
   {
     id: 1,
@@ -1813,40 +1806,15 @@ let dmConversations = [
     messages: [
       { sender: "them", text: "Let's collaborate on a clip soon.", time: "Yesterday" }
     ]
-  },
-  {
-    id: 3,
-    name: "Marcus Vance",
-    handle: "@marcus_v",
-    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150",
-    isRequest: true,
-    messages: [
-      { sender: "them", text: "Hey! Saw your camera setup video, wanted to ask a quick question about lighting.", time: "2h ago" }
-    ]
-  },
-  {
-    id: 4,
-    name: "Chloe Bennett",
-    handle: "@chloe_b",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
-    isRequest: true,
-    messages: [
-      { sender: "them", text: "Hi there! Let's connect and review brand deals together.", time: "5h ago" }
-    ]
   }
 ];
 
 let activeInboxTab = 'messages';
 let activeDMConversation = null;
-
 let myProfile={username:"@creator_vibe",bio:"Short-form content creator & explorer ✨",avatar:"https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150"};
 let activeVideo=null, muted=true, mediaStream=null, recorder=null, chunks=[], recording=false, recordSeconds=0, timerInterval=null, facing="user", selectedMediaList=[];
-let pressTimer=null, isLongPress=false, selectedSound="Original Audio";
-let activeTabKey = 'home';
-let searchFilterType = 'all';
-let currentActiveCreator = null;
+let selectedSound="Original Audio";
 
-// Settings & Privacy Navigation & Management
 function openSettingsScreen() {
   document.getElementById('settingPrivateAccount').checked = userSettings.privateAccount;
   document.getElementById('settingDMPreference').value = userSettings.dmPreference;
@@ -1855,7 +1823,6 @@ function openSettingsScreen() {
   document.getElementById('settingPushNotifs').checked = userSettings.pushNotifs;
   document.getElementById('settingDMNotifs').checked = userSettings.dmNotifs;
   document.getElementById('settingLiveNotifs').checked = userSettings.liveNotifs;
-
   document.getElementById('settingsScreen').classList.add('open');
 }
 
@@ -1917,7 +1884,6 @@ function openPrivacyPolicy() {
   showToast('Opening VIBE Privacy Policy...');
 }
 
-// Location Selector Logic
 function openLocationSelector() { document.getElementById('locationModal').classList.add('open'); }
 function closeLocationSelector() { document.getElementById('locationModal').classList.remove('open'); }
 function selectLocation(loc) {
@@ -1933,7 +1899,6 @@ function selectLocation(loc) {
   closeLocationSelector();
 }
 
-// Cover/Thumbnail Selector Logic
 function openCoverSelector() {
   if(!selectedMediaList || selectedMediaList.length === 0) {
     showToast('No media selected for cover');
@@ -1963,7 +1928,6 @@ function openCoverSelector() {
 }
 function closeCoverSelector() { document.getElementById('coverModal').classList.remove('open'); }
 
-// Drafts Management Logic
 function openDraftsModal() {
   const container = document.getElementById('draftsListContainer');
   container.innerHTML = '';
@@ -2043,982 +2007,169 @@ function deleteDraft(e, index) {
   });
 }
 
-// Inbox & DM Renderer
-function renderInboxList() {
-  const container = document.getElementById('inboxContentContainer');
-  container.innerHTML = '';
+// ----------------------------------------------------
+// FIXED TEXT EDITOR & DRAGGABLE OVERLAY IMPLEMENTATION
+// ----------------------------------------------------
+function makeElementDraggable(elm) {
+  let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+  elm.onmousedown = dragMouseDown;
+  elm.ontouchstart = dragTouchStart;
 
-  const filtered = dmConversations.filter(c => activeInboxTab === 'requests' ? c.isRequest : !c.isRequest);
+  function dragMouseDown(e) {
+    e = e || window.event;
+    e.preventDefault();
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    document.onmouseup = closeDragElement;
+    document.onmousemove = elementDrag;
+  }
+
+  function elementDrag(e) {
+    e = e || window.event;
+    e.preventDefault();
+    pos1 = pos3 - e.clientX;
+    pos2 = pos4 - e.clientY;
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    elm.style.top = (elm.offsetTop - pos2) + "px";
+    elm.style.left = (elm.offsetLeft - pos1) + "px";
+  }
+
+  function dragTouchStart(e) {
+    if (e.touches.length === 1) {
+      pos3 = e.touches[0].clientX;
+      pos4 = e.touches[0].clientY;
+      document.ontouchend = closeDragElement;
+      document.ontouchmove = elementTouchDrag;
+    }
+  }
+
+  function elementTouchDrag(e) {
+    if (e.touches.length === 1) {
+      pos1 = pos3 - e.touches[0].clientX;
+      pos2 = pos4 - e.touches[0].clientY;
+      pos3 = e.touches[0].clientX;
+      pos4 = e.touches[0].clientY;
+      elm.style.top = (elm.offsetTop - pos2) + "px";
+      elm.style.left = (elm.offsetLeft - pos1) + "px";
+    }
+  }
+
+  function closeDragElement() {
+    document.onmouseup = null;
+    document.onmousemove = null;
+    document.ontouchend = null;
+    document.ontouchmove = null;
+  }
+}
+
+function commitEditorText() {
+  const input = document.getElementById('editorTextInputField');
+  const textVal = input.value.trim();
+  if(!textVal) return;
   
-  const reqCount = dmConversations.filter(c => c.isRequest).length;
-  const badge = document.getElementById('inboxRequestsBadge');
-  if(badge) badge.textContent = reqCount;
+  const layer = document.getElementById('editorOverlaysLayer');
+  const overlayEl = document.createElement('div');
+  overlayEl.className = 'editorOverlayElement text-element';
+  overlayEl.textContent = textVal;
+  overlayEl.style.top = '40%';
+  overlayEl.style.left = '30%';
+  
+  makeElementDraggable(overlayEl);
+  layer.appendChild(overlayEl);
+  
+  input.value = '';
+  closeEditorDrawers();
+  showToast('Text added to media ✨');
+}
 
-  if(filtered.length === 0) {
-    container.innerHTML = `<div style="text-align:center; color:var(--muted); padding:40px; font-size:13px;">No ${activeInboxTab} found</div>`;
+function addStickerToCanvas(stickerEmoji) {
+  const layer = document.getElementById('editorOverlaysLayer');
+  const overlayEl = document.createElement('div');
+  overlayEl.className = 'editorOverlayElement';
+  overlayEl.textContent = stickerEmoji;
+  overlayEl.style.top = '45%';
+  overlayEl.style.left = '40%';
+  
+  makeElementDraggable(overlayEl);
+  layer.appendChild(overlayEl);
+  closeEditorDrawers();
+  showToast('Sticker added ✨');
+}
+
+function addMentionToCanvas(mentionText) {
+  const layer = document.getElementById('editorOverlaysLayer');
+  const overlayEl = document.createElement('div');
+  overlayEl.className = 'editorOverlayElement text-element';
+  overlayEl.textContent = mentionText;
+  overlayEl.style.top = '50%';
+  overlayEl.style.left = '30%';
+  
+  makeElementDraggable(overlayEl);
+  layer.appendChild(overlayEl);
+  closeEditorDrawers();
+  showToast('Mention added ✨');
+}
+
+function applyEditorFilter(filterStyle, btn) {
+  document.querySelectorAll('.editorFilterChip').forEach(c => c.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  const container = document.getElementById('editorCanvasContainer');
+  const mediaElms = container.querySelectorAll('video, img');
+  mediaElms.forEach(m => m.style.filter = filterStyle);
+}
+// ----------------------------------------------------
+
+function setupPostPreview() {
+  const previewBox = document.getElementById('previewBox');
+  previewBox.innerHTML = '';
+  if(!selectedMediaList || selectedMediaList.length === 0) {
+    previewBox.innerHTML = `<div style="color:#777">Choose a video or picture</div>`;
     return;
   }
-
-  filtered.forEach(chat => {
-    const item = document.createElement('div');
-    item.className = 'messageItem';
-    const lastMsg = chat.messages[chat.messages.length - 1];
-    
-    let actionsHtml = '';
-    if (chat.isRequest) {
-      actionsHtml = `
-        <div class="dm-request-actions">
-          <button class="dm-accept-btn" onclick="acceptDMRequest(event, ${chat.id})">Accept</button>
-          <button class="dm-decline-btn" onclick="declineDMRequest(event, ${chat.id})">Decline</button>
-        </div>`;
-    }
-
-    item.innerHTML = `
-      <img class="messageAvatar" src="${chat.avatar}">
-      <div class="messageContent">
-        <div class="messageName">${chat.name}</div>
-        <div class="messageSnippet">${lastMsg ? lastMsg.text : ''}</div>
-        ${actionsHtml}
-      </div>
-      ${!chat.isRequest ? '<span style="color:var(--muted); font-size:14px;">›</span>' : ''}
-    `;
-
-    item.onclick = (e) => {
-      if(e.target.tagName === 'BUTTON') return;
-      openDMChat(chat.id);
-    };
-    container.appendChild(item);
-  });
-}
-
-document.querySelectorAll('.inboxSubTab').forEach(tab => {
-  tab.onclick = () => {
-    document.querySelectorAll('.inboxSubTab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    activeInboxTab = tab.getAttribute('data-inbox-tab');
-    renderInboxList();
-  };
-});
-
-function openDMChat(chatId) {
-  activeDMConversation = dmConversations.find(c => c.id === chatId);
-  if(!activeDMConversation) return;
-
-  document.getElementById('dmChatHeaderName').textContent = activeDMConversation.name;
-  document.getElementById('dmChatHeaderAvatar').src = activeDMConversation.avatar;
-  document.getElementById('dmChatHeaderStatus').textContent = activeDMConversation.isRequest ? 'Message Request' : 'Active now';
-
-  renderDMMessages();
-  document.getElementById('dmChatScreen').classList.add('open');
-}
-
-function closeDMChat() {
-  document.getElementById('dmChatScreen').classList.remove('open');
-  activeDMConversation = null;
-  renderInboxList();
-}
-
-function renderDMMessages() {
-  const container = document.getElementById('dmChatMessagesList');
-  container.innerHTML = '';
-
-  if(!activeDMConversation) return;
-
-  activeDMConversation.messages.forEach(msg => {
-    const row = document.createElement('div');
-    row.className = `chat-bubble-row ${msg.sender === 'me' ? 'outgoing' : 'incoming'}`;
-    row.innerHTML = `
-      <div class="chat-bubble">${msg.text}</div>
-      <div class="chat-timestamp">${msg.time}</div>
-    `;
-    container.appendChild(row);
-  });
-  container.scrollTop = container.scrollHeight;
-}
-
-document.getElementById('dmSendMsgBtn').onclick = () => {
-  const input = document.getElementById('dmMessageInputField');
-  const text = input.value.trim();
-  if(!text || !activeDMConversation) return;
-
-  const newMsg = {
-    sender: 'me',
-    text: text,
-    time: 'Just now'
-  };
-
-  activeDMConversation.messages.push(newMsg);
-  input.value = '';
-  renderDMMessages();
-};
-
-document.getElementById('dmMessageInputField').onkeypress = (e) => {
-  if(e.key === 'Enter') {
-    document.getElementById('dmSendMsgBtn').click();
-  }
-};
-
-function acceptDMRequest(e, chatId) {
-  e.stopPropagation();
-  const chat = dmConversations.find(c => c.id === chatId);
-  if(chat) {
-    chat.isRequest = false;
-    showToast(`Accepted message request from ${chat.name} ✨`);
-    renderInboxList();
-  }
-}
-
-function declineDMRequest(e, chatId) {
-  e.stopPropagation();
-  showConfirmPopup("Decline Request", "Are you sure you want to decline this message request?", () => {
-    dmConversations = dmConversations.filter(c => c.id !== chatId);
-    showToast('Message request declined');
-    renderInboxList();
-  });
-}
-
-// Discover & Search State & Execution
-const searchInput = document.getElementById('searchInput');
-const discoverResultsContainer = document.getElementById('discoverResultsContainer');
-
-document.querySelectorAll('.discoverTab').forEach(tab => {
-  tab.onclick = () => {
-    document.querySelectorAll('.discoverTab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    searchFilterType = tab.getAttribute('data-search-filter');
-    executeSearch(searchInput.value.trim());
-  };
-});
-
-searchInput.oninput = (e) => {
-  executeSearch(e.target.value.trim());
-};
-
-function executeSearch(query) {
-  const q = query.toLowerCase();
-  discoverResultsContainer.innerHTML = '';
-
-  const matchedPosts = feedData.filter(p => 
-    p.caption.toLowerCase().includes(q) || 
-    p.author.toLowerCase().includes(q) ||
-    (p.handle && p.handle.toLowerCase().includes(q)) ||
-    p.songName.toLowerCase().includes(q)
-  );
-
-  const matchedCreators = creatorsDirectory.filter(c =>
-    c.name.toLowerCase().includes(q) || c.handle.toLowerCase().includes(q) || c.bio.toLowerCase().includes(q)
-  );
-
-  const matchedHashtags = hashtagsDirectory.filter(h =>
-    h.name.toLowerCase().includes(q)
-  );
-
-  if (searchFilterType === 'all' || searchFilterType === 'posts') {
-    if (matchedPosts.length > 0) {
-      const sectionHeader = document.createElement('div');
-      sectionHeader.className = 'discoverSectionTitle';
-      sectionHeader.textContent = 'Posts (' + matchedPosts.length + ')';
-      discoverResultsContainer.appendChild(sectionHeader);
-
-      const grid = document.createElement('div');
-      grid.className = 'discoverGrid';
-      matchedPosts.forEach(post => {
-        const item = document.createElement('div');
-        item.className = 'discoverGridItem';
-        const media = post.mediaList && post.mediaList.length > 0 ? post.mediaList[0] : {type:'image', url:''};
-        if(media.type === 'video') {
-          item.innerHTML = `<video src="${media.url}" muted playsinline></video>`;
-        } else {
-          item.innerHTML = `<img src="${media.url}" alt="">`;
-        }
-        item.onclick = () => {
-          // Jump to feed or open preview
-          switchTab('home');
-        };
-        grid.appendChild(item);
-      });
-      discoverResultsContainer.appendChild(grid);
-    }
-  }
-
-  if (searchFilterType === 'all' || searchFilterType === 'creators') {
-    if (matchedCreators.length > 0) {
-      const sectionHeader = document.createElement('div');
-      sectionHeader.className = 'discoverSectionTitle';
-      sectionHeader.textContent = 'Creators (' + matchedCreators.length + ')';
-      discoverResultsContainer.appendChild(sectionHeader);
-
-      const list = document.createElement('div');
-      list.className = 'creatorsListContainer';
-      matchedCreators.forEach(creator => {
-        const row = document.createElement('div');
-        row.className = 'creatorSearchRow';
-        row.innerHTML = `
-          <div class="creatorSearchInfo">
-            <img class="creatorSearchAvatar" src="${creator.avatar}">
-            <div class="creatorSearchMeta">
-              <div class="name">${creator.name}</div>
-              <div class="handle">${creator.handle} • ${creator.followers} followers</div>
-            </div>
-          </div>
-          <button class="creatorFollowBtn ${creator.isFollowing ? 'following' : ''}">${creator.isFollowing ? 'Following' : 'Follow'}</button>
-        `;
-        row.onclick = (e) => {
-          if(e.target.tagName === 'BUTTON') {
-            creator.isFollowing = !creator.isFollowing;
-            e.target.textContent = creator.isFollowing ? 'Following' : 'Follow';
-            e.target.classList.toggle('following', creator.isFollowing);
-            showToast(creator.isFollowing ? `Following ${creator.name}` : `Unfollowed ${creator.name}`);
-            return;
-          }
-          openCreatorProfileModal(creator);
-        };
-        list.appendChild(row);
-      });
-      discoverResultsContainer.appendChild(list);
-    }
-  }
-
-  if (searchFilterType === 'all' || searchFilterType === 'hashtags') {
-    if (matchedHashtags.length > 0) {
-      const sectionHeader = document.createElement('div');
-      sectionHeader.className = 'discoverSectionTitle';
-      sectionHeader.textContent = 'Hashtags (' + matchedHashtags.length + ')';
-      discoverResultsContainer.appendChild(sectionHeader);
-
-      const list = document.createElement('div');
-      list.className = 'hashtagsListContainer';
-      matchedHashtags.forEach(hashtag => {
-        const row = document.createElement('div');
-        row.className = 'hashtagSearchRow';
-        row.innerHTML = `
-          <div style="display:flex; align-items:center;">
-            <div class="hashtagSymbol">#</div>
-            <div class="hashtagDetails">
-              <div class="hashtagName">${hashtag.name}</div>
-              <div class="hashtagCount">${hashtag.count} • ${hashtag.postsCount} posts</div>
-            </div>
-          </div>
-          <span style="color:var(--muted); font-size:14px;">›</span>
-        `;
-        row.onclick = () => {
-          openHashtagModal(hashtag);
-        };
-        list.appendChild(row);
-      });
-      discoverResultsContainer.appendChild(list);
-    }
-  }
-
-  if (discoverResultsContainer.innerHTML === '') {
-    discoverResultsContainer.innerHTML = `<div style="text-align:center; color:var(--muted); padding:40px; font-size:13px;">No results found for "${query}"</div>`;
-  }
-}
-
-function openCreatorProfileModal(creator) {
-  currentActiveCreator = creator;
-  document.getElementById('modalCreatorHeaderName').textContent = creator.name;
-  document.getElementById('modalCreatorAvatar').src = creator.avatar;
-  document.getElementById('modalCreatorName').textContent = creator.name;
-  document.getElementById('modalCreatorHandle').textContent = creator.handle;
-  document.getElementById('modalCreatorBio').textContent = creator.bio;
-  document.getElementById('modalCreatorFollowing').textContent = creator.following;
-  document.getElementById('modalCreatorFollowers').textContent = creator.followers;
-  document.getElementById('modalCreatorLikes').textContent = creator.likes;
-
-  const followBtn = document.getElementById('modalCreatorFollowBtn');
-  followBtn.textContent = creator.isFollowing ? 'Following' : 'Follow';
-  followBtn.style.background = creator.isFollowing ? 'transparent' : 'var(--pink)';
-  followBtn.style.color = creator.isFollowing ? 'var(--muted)' : '#fff';
-  followBtn.style.borderColor = creator.isFollowing ? 'rgba(255,255,255,0.2)' : 'var(--pink)';
-
-  const grid = document.getElementById('modalCreatorPostsGrid');
-  grid.innerHTML = '';
-  feedData.forEach((post, i) => {
-    if(post.author === creator.name) {
-      const thumb = document.createElement('div');
-      thumb.className = 'userPostThumb';
-      const media = post.mediaList[0] || {};
-      if(media.type === 'video') {
-        thumb.innerHTML = `<video src="${media.url}" muted playsinline></video>`;
-      } else {
-        thumb.innerHTML = `<img src="${media.url}" alt="">`;
-      }
-      grid.appendChild(thumb);
-    }
-  });
-
-  document.getElementById('creatorProfileModal').classList.add('open');
-}
-
-function closeCreatorProfileModal() {
-  document.getElementById('creatorProfileModal').classList.remove('open');
-  currentActiveCreator = null;
-}
-
-function toggleModalCreatorFollow() {
-  if(!currentActiveCreator) return;
-  currentActiveCreator.isFollowing = !currentActiveCreator.isFollowing;
-  const followBtn = document.getElementById('modalCreatorFollowBtn');
-  followBtn.textContent = currentActiveCreator.isFollowing ? 'Following' : 'Follow';
-  followBtn.style.background = currentActiveCreator.isFollowing ? 'transparent' : 'var(--pink)';
-  followBtn.style.color = currentActiveCreator.isFollowing ? 'var(--muted)' : '#fff';
-  followBtn.style.borderColor = currentActiveCreator.isFollowing ? 'rgba(255,255,255,0.2)' : 'var(--pink)';
-  showToast(currentActiveCreator.isFollowing ? `Following ${currentActiveCreator.name}` : `Unfollowed ${currentActiveCreator.name}`);
-  executeSearch(searchInput.value.trim());
-}
-
-function openHashtagModal(hashtag) {
-  document.getElementById('hashtagModalTitle').textContent = hashtag.name;
-  document.getElementById('hashtagModalName').textContent = hashtag.name;
-  document.getElementById('hashtagModalViews').textContent = `${hashtag.count} on platform`;
-
-  const grid = document.getElementById('hashtagModalPostsGrid');
-  grid.innerHTML = '';
-  feedData.forEach(post => {
-    if(post.caption.toLowerCase().includes(hashtag.name.toLowerCase())) {
-      const thumb = document.createElement('div');
-      thumb.className = 'discoverGridItem';
-      const media = post.mediaList[0] || {};
-      if(media.type === 'video') {
-        thumb.innerHTML = `<video src="${media.url}" muted playsinline></video>`;
-      } else {
-        thumb.innerHTML = `<img src="${media.url}" alt="">`;
-      }
-      grid.appendChild(thumb);
-    }
-  });
-
-  document.getElementById('hashtagModal').classList.add('open');
-}
-
-function closeHashtagModal() {
-  document.getElementById('hashtagModal').classList.remove('open');
-}
-
-// Initial Population of Discover & Search View
-executeSearch('');
-
-// Feed Rendering
-function renderFeed() {
-  feed.innerHTML = '';
-  feedData.forEach((post, index) => {
-    const reel = document.createElement('div');
-    reel.className = 'reel';
-    reel.setAttribute('data-index', index);
-
-    let mediaSliderHtml = `<div class="reel-media-slider" id="mediaSlider-${post.id}">`;
-    post.mediaList.forEach((media, mIdx) => {
-      if(media.type === 'video') {
-        mediaSliderHtml += `<div class="reel-media-slide"><video src="${media.url}" loop playsinline ${mIdx === 0 && index === 0 && !muted ? '' : 'muted'}></video></div>`;
-      } else {
-        mediaSliderHtml += `<div class="reel-media-slide"><img src="${media.url}" alt=""></div>`;
-      }
-    });
-    mediaSliderHtml += `</div>`;
-
-    let dotsHtml = '';
-    if(post.mediaList.length > 1) {
-      dotsHtml += `<div class="carousel-dots" id="carouselDots-${post.id}">`;
-      post.mediaList.forEach((_, dIdx) => {
-        dotsHtml += `<div class="carousel-dot ${dIdx === 0 ? 'active' : ''}"></div>`;
-      });
-      dotsHtml += `</div>`;
-    }
-
-    reel.innerHTML = `
-      ${mediaSliderHtml}
-      ${dotsHtml}
-      <button class="mute" id="muteBtn-${post.id}" onclick="toggleMute()">${muted ? '🔇' : '🔊'}</button>
-      <div class="video-duration-indicator" id="durationIndicator-${post.id}">0:00 / 0:00</div>
-      
-      <div class="video-control-overlay" id="controlOverlay-${post.id}">
-        <button class="custom-pause-btn" id="pauseBtn-${post.id}">▶</button>
-      </div>
-
-      <div class="overlay">
-        <div class="info">
-          <div class="author">
-            <img class="avatar" src="${post.avatar}" alt="">
-            <span class="name">${post.author}</span>
-            <button class="follow" onclick="toggleFollow(this)">Follow</button>
-          </div>
-          <div class="caption">${formatCaption(post.caption)}</div>
-          <div class="audio" onclick="openSoundModal('${post.songName}', '${post.artist}')">
-            <span>♫</span>
-            <span class="song-title">${post.songName}</span>
-            <span class="song-artist">- ${post.artist}</span>
-          </div>
-        </div>
-
-        <div class="actions">
-          <button class="action ${post.isLiked ? 'liked' : ''}" onclick="toggleLike(event, ${post.id})">
-            <div class="circle">♥</div>
-            <div class="count">${formatCount(post.likes)}</div>
-          </button>
-          <button class="action" onclick="openComments(${post.id})">
-            <div class="circle">💬</div>
-            <div class="count">${formatCount(post.commentsCount || (post.commentsList ? post.commentsList.length : 0))}</div>
-          </button>
-          <button class="action ${post.isSaved ? 'saved' : ''}" onclick="toggleSave(event, ${post.id})">
-            <div class="circle">⭐</div>
-            <div class="count">Save</div>
-          </button>
-          <button class="action" onclick="sharePost(${post.id})">
-            <div class="circle">↗</div>
-            <div class="count">Share</div>
-          </button>
-        </div>
-      </div>
-    `;
-
-    // Setup media slider scroll listener for dots synchronization
-    const slider = reel.querySelector(`#mediaSlider-${post.id}`);
-    if(slider && post.mediaList.length > 1) {
-      slider.onscroll = () => {
-        const slideWidth = slider.clientWidth;
-        const activeIdx = Math.round(slider.scrollLeft / slideWidth);
-        const dots = reel.querySelectorAll(`#carouselDots-${post.id} .carousel-dot`);
-        dots.forEach((dot, dIdx) => {
-          dot.classList.toggle('active', dIdx === activeIdx);
-        });
-      };
-    }
-
-    // Double tap & single tap controls on video container
-    let lastTapTime = 0;
-    slider.onclick = (e) => {
-      const currentTime = new Date().getTime();
-      const tapLength = currentTime - lastTapTime;
-      if (tapLength < 300 && tapLength > 0) {
-        // Double tap -> Like
-        triggerDoubleTapHeart(reel, e.clientX, e.clientY);
-        likePostById(post.id);
-        e.preventDefault();
-      } else {
-        // Single tap -> Toggle Play/Pause
-        const activeVideoEl = reel.querySelector('.reel-media-slide video');
-        if(activeVideoEl) {
-          const controlOverlay = reel.querySelector(`#controlOverlay-${post.id}`);
-          const pauseBtn = reel.querySelector(`#pauseBtn-${post.id}`);
-          if(activeVideoEl.paused) {
-            activeVideoEl.play();
-            controlOverlay.classList.remove('show');
-          } else {
-            activeVideoEl.pause();
-            pauseBtn.textContent = '▶';
-            controlOverlay.classList.add('show');
-            showDurationIndicator(reel, activeVideoEl);
-          }
-        }
-      }
-      lastTapTime = currentTime;
-    };
-
-    const pauseBtnEl = reel.querySelector(`#pauseBtn-${post.id}`);
-    if(pauseBtnEl) {
-      pauseBtnEl.onclick = (e) => {
-        e.stopPropagation();
-        const activeVideoEl = reel.querySelector('.reel-media-slide video');
-        const controlOverlay = reel.querySelector(`#controlOverlay-${post.id}`);
-        if(activeVideoEl) {
-          if(activeVideoEl.paused) {
-            activeVideoEl.play();
-            controlOverlay.classList.remove('show');
-          } else {
-            activeVideoEl.pause();
-            controlOverlay.classList.add('show');
-          }
-        }
-      };
-    }
-
-    feed.appendChild(reel);
-  });
-
-  setupObserver();
-}
-
-function showDurationIndicator(reel, videoEl) {
-  const indicator = reel.querySelector('.video-duration-indicator');
-  if(!indicator || isNaN(videoEl.duration)) return;
-  const curMin = Math.floor(videoEl.currentTime / 60);
-  const curSec = Math.floor(videoEl.currentTime % 60).toString().padStart(2, '0');
-  const durMin = Math.floor(videoEl.duration / 60);
-  const durSec = Math.floor(videoEl.duration % 60).toString().padStart(2, '0');
-  indicator.textContent = `${curMin}:${curSec} / ${durMin}:${durSec}`;
-  indicator.classList.add('show');
-  setTimeout(() => {
-    indicator.classList.remove('show');
-  }, 1800);
-}
-
-function triggerDoubleTapHeart(reel, x, y) {
-  const heart = document.createElement('div');
-  heart.className = 'double-tap-heart';
-  heart.textContent = '❤';
-  const rect = reel.getBoundingClientRect();
-  heart.style.left = `${x - rect.left}px`;
-  heart.style.top = `${y - rect.top}px`;
-  reel.appendChild(heart);
-  setTimeout(() => heart.remove(), 800);
-}
-
-function likePostById(id) {
-  const post = feedData.find(p => p.id === id);
-  if(post && !post.isLiked) {
-    post.isLiked = true;
-    post.likes += 1;
-    renderFeed();
-  }
-}
-
-function formatCaption(text) {
-  return text.replace(/(#\w+)/g, '<span>$1</span>');
-}
-
-function formatCount(num) {
-  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-  if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
-  return num;
-}
-
-function toggleLike(e, id) {
-  e.stopPropagation();
-  const post = feedData.find(p => p.id === id);
-  if(post) {
-    post.isLiked = !post.isLiked;
-    post.likes += post.isLiked ? 1 : -1;
-    renderFeed();
-  }
-}
-
-function toggleSave(e, id) {
-  e.stopPropagation();
-  const post = feedData.find(p => p.id === id);
-  if(post) {
-    post.isSaved = !post.isSaved;
-    showToast(post.isSaved ? 'Added to Saved Videos ⭐' : 'Removed from Saved Videos');
-    renderFeed();
-  }
-}
-
-function toggleFollow(btn) {
-  btn.textContent = btn.textContent === 'Follow' ? 'Following' : 'Follow';
-  btn.style.background = btn.textContent === 'Following' ? 'transparent' : 'var(--pink)';
-  btn.style.border = btn.textContent === 'Following' ? '1px solid rgba(255,255,255,0.3)' : '0';
-  showToast(btn.textContent === 'Following' ? 'Followed creator ✨' : 'Unfollowed creator');
-}
-
-function sharePost(id) {
-  if (navigator.share) {
-    navigator.share({ title: 'VIBE Video', url: window.location.href }).catch(() => {});
-  } else {
-    showToast('Link copied to clipboard! 🔗');
-  }
-}
-
-function toggleMute() {
-  muted = !muted;
-  document.querySelectorAll('.reel video').forEach(v => v.muted = muted);
-  document.querySelectorAll('.mute').forEach(btn => btn.textContent = muted ? '🔇' : '🔊');
-}
-
-// Intersection Observer for Feed Videos Auto Play/Pause
-function setupObserver() {
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      const video = entry.target.querySelector('video');
-      if (video) {
-        if (entry.isIntersecting) {
-          activeVideo = video;
-          video.muted = muted;
-          video.play().catch(() => {});
-        } else {
-          video.pause();
-          video.currentTime = 0;
-        }
-      }
-    });
-  }, { threshold: 0.6 });
-
-  document.querySelectorAll('.reel').forEach(reel => observer.observe(reel));
-}
-
-// Comments Drawer Logic
-function openComments(postId) {
-  const post = feedData.find(p => p.id === postId);
-  if(!post) return;
-
-  const container = document.getElementById('commentListContainer');
-  container.innerHTML = '';
-  document.getElementById('commentModalTitle').textContent = `Comments (${post.commentsList ? post.commentsList.length : 0})`;
-
-  if(post.commentsList && post.commentsList.length > 0) {
-    post.commentsList.forEach(c => {
-      const row = document.createElement('div');
-      row.className = 'commentRow';
-      row.innerHTML = `
-        <img class="commentAvatar" src="${c.avatar}" alt="">
-        <div class="commentBubble">
-          <div class="commentUser">${c.user}</div>
-          <div class="commentText">${c.text}</div>
-        </div>
-      `;
-      container.appendChild(row);
-    });
-  } else {
-    container.innerHTML = `<div style="text-align:center;color:var(--muted);padding:30px;font-size:13px;">No comments yet. Be the first!</div>`;
-  }
-
-  document.getElementById('commentSendBtn').onclick = () => {
-    const input = document.getElementById('commentInputField');
-    const txt = input.value.trim();
-    if(!txt) return;
-    if(!post.commentsList) post.commentsList = [];
-    post.commentsList.push({user: myProfile.username, text: txt, avatar: myProfile.avatar});
-    input.value = '';
-    openComments(postId);
-    renderFeed();
-  };
-
-  document.getElementById('commentModal').classList.add('open');
-}
-
-document.getElementById('closeCommentModal').onclick = () => {
-  document.getElementById('commentModal').classList.remove('open');
-};
-
-// Sound Modal Logic
-function openSoundModal(songName, artist) {
-  document.getElementById('audioModalSongTitle').textContent = songName;
-  document.getElementById('audioModalArtist').textContent = artist;
-  const grid = document.getElementById('audioModalVideosGrid');
-  grid.innerHTML = '';
-  feedData.forEach(p => {
-    const thumb = document.createElement('div');
-    thumb.style.aspectRatio = '9/16';
-    thumb.style.background = '#222';
-    thumb.style.borderRadius = '8px';
-    thumb.style.overflow = 'hidden';
-    const media = p.mediaList[0] || {};
-    if(media.type === 'video') {
-      thumb.innerHTML = `<video src="${media.url}" muted style="width:100%;height:100%;object-fit:cover;"></video>`;
-    } else {
-      thumb.innerHTML = `<img src="${media.url}" style="width:100%;height:100%;object-fit:cover;">`;
-    }
-    grid.appendChild(thumb);
-  });
-  document.getElementById('soundModal').classList.add('open');
-}
-
-document.getElementById('closeSoundModal').onclick = () => {
-  document.getElementById('soundModal').classList.remove('open');
-};
-
-// Navigation Tab Switches
-function switchTab(tabKey) {
-  activeTabKey = tabKey;
-  document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
-  
-  // Close all screens first
-  studio.classList.remove('open');
-  editorScreen.classList.remove('open');
-  postScreen.classList.remove('open');
-  discover.classList.remove('open');
-  inbox.classList.remove('open');
-  profile.classList.remove('open');
-  appContainer.classList.remove('hide-nav-for-create');
-
-  if(tabKey === 'home') {
-    document.getElementById('navHomeBtn').classList.add('active');
-  } else if(tabKey === 'discover') {
-    document.getElementById('navDiscoverBtn').classList.add('active');
-    discover.classList.add('open');
-  } else if(tabKey === 'create') {
-    document.getElementById('navCreateBtn').classList.add('active');
-    appContainer.classList.add('hide-nav-for-create');
-    studio.classList.add('open');
-    startCamera();
-  } else if(tabKey === 'inbox') {
-    document.getElementById('navInboxBtn').classList.add('active');
-    renderInboxList();
-    inbox.classList.add('open');
-  } else if(tabKey === 'profile') {
-    document.getElementById('navProfileBtn').classList.add('active');
-    renderProfilePosts();
-    profile.classList.add('open');
-  }
-}
-
-document.querySelectorAll('.nav button').forEach(btn => {
-  btn.onclick = () => {
-    const t = btn.getAttribute('data-tab');
-    switchTab(t);
-  };
-});
-
-document.querySelectorAll('.close[data-close]').forEach(btn => {
-  btn.onclick = () => {
-    switchTab('home');
-  };
-});
-
-// Studio & Camera Logic
-async function startCamera() {
-  try {
-    if(mediaStream) {
-      mediaStream.getTracks().forEach(t => t.stop());
-    }
-    mediaStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: facing, width: { ideal: 1080 }, height: { ideal: 1920 } },
-      audio: true
-    });
-    camera.srcObject = mediaStream;
-  } catch(e) {
-    showToast('Camera access unavailable. Uploading files supported.');
-  }
-}
-
-document.getElementById('closeStudio').onclick = () => {
-  if(mediaStream) mediaStream.getTracks().forEach(t => t.stop());
-  switchTab('home');
-};
-
-document.getElementById('flipBtn').onclick = () => {
-  facing = facing === 'user' ? 'environment' : 'user';
-  startCamera();
-};
-
-function switchStudioMode(mode) {
-  document.querySelectorAll('.studioModeTab').forEach(t => t.classList.remove('active'));
-  if(mode === 'video') {
-    document.getElementById('modeVideoTab').classList.add('active');
-    document.getElementById('videoModePanel').classList.remove('hidden');
-    document.getElementById('liveModePanel').classList.add('hidden');
-    document.getElementById('liveStreamOverlayElements').classList.add('hidden');
-  } else {
-    document.getElementById('modeLiveTab').classList.add('active');
-    document.getElementById('videoModePanel').classList.add('hidden');
-    document.getElementById('liveModePanel').classList.remove('hidden');
-    document.getElementById('liveStreamOverlayElements').classList.remove('hidden');
-    showToast('Switched to Live Broadcast Mode 🔴');
-  }
-}
-
-// Live Stream Simulation
-let isLiveStreaming = false;
-let liveLikesCount = 0;
-function toggleLiveStream() {
-  isLiveStreaming = !isLiveStreaming;
-  const btn = document.getElementById('startLiveBtn');
-  if(isLiveStreaming) {
-    btn.textContent = 'End LIVE';
-    btn.style.background = '#f33';
-    showToast('You are now broadcasting LIVE to your followers! 🔴');
-    startLiveChatSimulation();
-  } else {
-    btn.textContent = 'Go LIVE Now';
-    btn.style.background = 'var(--pink)';
-    showToast('Live stream ended.');
-  }
-}
-
-function startLiveChatSimulation() {
-  const names = ["Sophia Taylor", "Liam Chen", "Marcus Vance", "Chloe Bennett", "Noah Smith"];
-  const comments = ["Loving this stream! 🔥", "Hello from Cape Town!", "Can you show that again?", "Awesome content as always ✨", "Greetings!!"];
-  setInterval(() => {
-    if(!isLiveStreaming) return;
-    const rName = names[Math.floor(Math.random() * names.length)];
-    const rMsg = comments[Math.floor(Math.random() * comments.length)];
-    const container = document.getElementById('liveChatListContainer');
-    const div = document.createElement('div');
-    div.className = 'liveChatMsg';
-    div.innerHTML = `<span class="liveChatUser">${rName}:</span>${rMsg}`;
-    container.appendChild(div);
-    container.scrollTop = container.scrollHeight;
-  }, 3500);
-}
-
-document.getElementById('liveTapLikeBtn').onclick = () => {
-  liveLikesCount += 1;
-  document.getElementById('liveHeartCountBadge').textContent = `❤️ ${liveLikesCount}`;
-  const container = document.getElementById('liveLikesContainer');
-  const heart = document.createElement('div');
-  heart.className = 'floating-like';
-  heart.textContent = ['❤️', '💖', '🔥', '✨'][Math.floor(Math.random() * 4)];
-  container.appendChild(heart);
-  setTimeout(() => heart.remove(), 2000);
-};
-
-document.getElementById('liveSendChatBtn').onclick = () => {
-  const input = document.getElementById('liveCommentInput');
-  const txt = input.value.trim();
-  if(!txt) return;
-  const container = document.getElementById('liveChatListContainer');
-  const div = document.createElement('div');
-  div.className = 'liveChatMsg';
-  div.innerHTML = `<span class="liveChatUser">You:</span>${txt}`;
-  container.appendChild(div);
-  container.scrollTop = container.scrollHeight;
-  input.value = '';
-};
-
-// Shutter Click / Hold Recording Logic
-const shutter = document.getElementById('shutter');
-shutter.onmousedown = shutter.onttouchstart = (e) => {
-  e.preventDefault();
-  isLongPress = false;
-  pressTimer = setTimeout(() => {
-    isLongPress = true;
-    startRecording();
-  }, 400);
-};
-
-shutter.onmouseup = shutter.ontouchend = (e) => {
-  e.preventDefault();
-  clearTimeout(pressTimer);
-  if (recording) {
-    stopRecording();
-  } else if (!isLongPress) {
-    takeSnapshotPhoto();
-  }
-};
-
-function startRecording() {
-  recording = true;
-  shutter.classList.add('recording');
-  timer.classList.remove('hidden');
-  chunks = [];
-  try {
-    recorder = new MediaRecorder(mediaStream, { mimeType: 'video/webm;codecs=vp9' });
-    recorder.ondataavailable = e => chunks.push(e.data);
-    recorder.onstop = () => {
-      const blob = new Blob(chunks, { type: 'video/webm' });
-      const url = URL.createObjectURL(blob);
-      selectedMediaList = [{ type: 'video', url: url }];
-      openEditorScreen();
-    };
-    recorder.start();
-    recordSeconds = 0;
-    timerText.textContent = '00:00';
-    timerInterval = setInterval(() => {
-      recordSeconds++;
-      let m = Math.floor(recordSeconds / 60).toString().padStart(2, '0');
-      let s = (recordSeconds % 60).toString().padStart(2, '0');
-      timerText.textContent = `${m}:${s}`;
-      if(recordSeconds >= 600) stopRecording();
-    }, 1000);
-  } catch(err) {
-    showToast('Video recording started (Simulation)');
-  }
-}
-
-function stopRecording() {
-  recording = false;
-  shutter.classList.remove('recording');
-  timer.classList.add('hidden');
-  clearInterval(timerInterval);
-  if(recorder && recorder.state !== 'inactive') {
-    recorder.stop();
-  } else {
-    // Fallback simulation
-    selectedMediaList = [{ type: 'video', url: 'https://assets.mixkit.co/videos/preview/mixkit-woman-filming-herself-with-a-smartphone-41270-large.mp4' }];
-    openEditorScreen();
-  }
-}
-
-function takeSnapshotPhoto() {
-  const canvas = document.createElement('canvas');
-  canvas.width = camera.videoWidth || 1080;
-  canvas.height = camera.videoHeight || 1920;
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(camera, 0, 0, canvas.width, canvas.height);
-  const dataUrl = canvas.toDataURL('image/jpeg');
-  selectedMediaList = [{ type: 'image', url: dataUrl }];
-  openEditorScreen();
-}
-
-// File Upload Handlers (Supports 1-3 files)
-videoFileInput.onchange = (e) => {
-  const files = Array.from(e.target.files).slice(0, 3);
-  if(files.length === 0) return;
-  selectedMediaList = files.map(f => ({ type: 'video', url: URL.createObjectURL(f) }));
-  openEditorScreen();
-};
-
-photoFileInput.onchange = (e) => {
-  const files = Array.from(e.target.files).slice(0, 3);
-  if(files.length === 0) return;
-  selectedMediaList = files.map(f => ({ type: 'image', url: URL.createObjectURL(f) }));
-  openEditorScreen();
-};
-
-// Editor Screen Logic
-let editorOverlays = [];
-let editorFilterStyle = '';
-let editorDrawingActive = false;
-let editorCanvasCtx = null;
-
-function openEditorScreen() {
-  studio.classList.remove('open');
-  if(mediaStream) mediaStream.getTracks().forEach(t => t.stop());
-  
-  const container = document.getElementById('editorCanvasContainer');
-  // Clear previous media
-  container.querySelectorAll('video, img').forEach(el => el.remove());
-  
   if(selectedMediaList.length > 1) {
-    container.classList.add('multi-item');
+    previewBox.className = 'previewBox multi-item';
     selectedMediaList.forEach(m => {
       if(m.type === 'video') {
         const v = document.createElement('video');
-        v.src = m.url;
-        v.autoplay = true;
-        v.loop = true;
-        v.playsInline = true;
-        v.muted = false;
-        container.appendChild(v);
+        v.src = m.url; v.muted = true; v.playsInline = true; v.autoplay = true; v.loop = true;
+        previewBox.appendChild(v);
       } else {
         const img = document.createElement('img');
         img.src = m.url;
-        container.appendChild(img);
+        previewBox.appendChild(img);
       }
     });
   } else {
-    container.classList.remove('multi-item');
-    const m = selectedMediaList[0] || { type: 'image', url: '' };
+    previewBox.className = 'previewBox';
+    const m = selectedMediaList[0];
     if(m.type === 'video') {
       const v = document.createElement('video');
-      v.src = m.url;
-      v.autoplay = true;
-      v.loop = true;
-      v.playsInline = true;
-      v.muted = false;
-      container.appendChild(v);
-      document.getElementById('editorMuteBtn').classList.remove('hidden');
+      v.src = m.url; v.muted = true; v.playsInline = true; v.autoplay = true; v.loop = true;
+      previewBox.appendChild(v);
     } else {
       const img = document.createElement('img');
       img.src = m.url;
-      container.appendChild(img);
-      document.getElementById('editorMuteBtn').classList.add('hidden');
+      previewBox.appendChild(img);
     }
   }
-
-  editorScreen.classList.add('open');
 }
 
+function showToast(msg) {
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => { toast.classList.remove('show'); }, 2200);
+}
+
+// Initialization and Event Listeners
 document.getElementById('closeEditorBtn').onclick = () => {
   editorScreen.classList.remove('open');
-  switchTab('create');
 };
 
 document.getElementById('editorQuickPostBtn').onclick = () => {
-  // Transfer to post screen
   editorScreen.classList.remove('open');
-  document.getElementById('captionInput').value = document.getElementById('editorCaptionInput').value;
-  setupPostPreview();
   postScreen.classList.add('open');
+  setupPostPreview();
 };
 
 function toggleEditorDrawer(drawerId) {
@@ -3034,176 +2185,41 @@ function closeEditorDrawers() {
 
 function selectEditorMusic(title, artist, index) {
   selectedSound = title;
-  document.querySelectorAll('.music-list-row').forEach(r => r.classList.remove('active'));
-  document.querySelectorAll('.select-track-btn').forEach(b => {
-    b.classList.remove('selected');
-    b.textContent = 'Select';
-  });
-  const row = document.getElementById(`track-row-${index}`);
-  row.classList.add('active');
-  const btn = row.querySelector('.select-track-btn');
-  btn.classList.add('selected');
-  btn.textContent = 'Selected';
-
   document.getElementById('drawerSelectedSongTitle').textContent = title;
   document.getElementById('drawerSelectedSongArtist').textContent = artist;
-  document.getElementById('currentSoundLabel').textContent = title;
-  showToast(`Track selected: ${title} 🎵`);
-}
-
-function addStickerToCanvas(emoji) {
-  const layer = document.getElementById('editorOverlaysLayer');
-  const el = document.createElement('div');
-  el.className = 'editorOverlayElement';
-  el.textContent = emoji;
-  el.style.left = '40%';
-  el.style.top = '40%';
-  makeElementDraggable(el);
-  layer.appendChild(el);
-  closeEditorDrawers();
-  showToast('Sticker added ✨');
-}
-
-function commitEditorText() {
-  const input = document.getElementById('editorTextInputField');
-  const txt = input.value.trim();
-  if(!txt) return;
-  const layer = document.getElementById('editorOverlaysLayer');
-  const el = document.createElement('div');
-  el.className = 'editorOverlayElement text-element';
-  el.textContent = txt;
-  el.style.left = '30%';
-  el.style.top = '50%';
-  makeElementDraggable(el);
-  layer.appendChild(el);
-  input.value = '';
-  closeEditorDrawers();
-  showToast('Text overlay added ✍️');
-}
-
-function addMentionToCanvas(handle) {
-  const layer = document.getElementById('editorOverlaysLayer');
-  const el = document.createElement('div');
-  el.className = 'editorOverlayElement text-element';
-  el.textContent = handle;
-  el.style.left = '35%';
-  el.style.top = '45%';
-  makeElementDraggable(el);
-  layer.appendChild(el);
-  closeEditorDrawers();
-  showToast(`Mentioned ${handle} @`);
-}
-
-function applyEditorFilter(filterCss, btn) {
-  document.querySelectorAll('.editorFilterChip').forEach(c => c.classList.remove('active'));
-  btn.classList.add('active');
-  const container = document.getElementById('editorCanvasContainer');
-  container.querySelectorAll('video, img').forEach(el => {
-    el.style.filter = filterCss;
+  document.querySelectorAll('.music-list-row').forEach(r => r.classList.remove('active'));
+  document.querySelectorAll('.select-track-btn').forEach(b => {
+    b.textContent = 'Select';
+    b.classList.remove('selected');
   });
-  showToast('Filter applied ✨');
-}
-
-function makeElementDraggable(elmnt) {
-  let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-  elmnt.onmousedown = dragMouseDown;
-  elmnt.ontouchstart = dragTouchStart;
-
-  function dragMouseDown(e) {
-    e.preventDefault();
-    pos3 = e.clientX;
-    pos4 = e.clientY;
-    document.onmouseup = closeDragElement;
-    document.onmousemove = elementDrag;
-  }
-
-  function elementDrag(e) {
-    e.preventDefault();
-    pos1 = pos3 - e.clientX;
-    pos2 = pos4 - e.clientY;
-    pos3 = e.clientX;
-    pos4 = e.clientY;
-    elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-    elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
-  }
-
-  function dragTouchStart(e) {
-    const t = e.touches[0];
-    pos3 = t.clientX;
-    pos4 = t.clientY;
-    document.ontouchend = closeDragElement;
-    document.ontouchmove = elementTouchDrag;
-  }
-
-  function elementTouchDrag(e) {
-    const t = e.touches[0];
-    pos1 = pos3 - t.clientX;
-    pos2 = pos4 - t.clientY;
-    pos3 = t.clientX;
-    pos4 = t.clientY;
-    elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-    elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
-  }
-
-  function closeDragElement() {
-    document.onmouseup = null;
-    document.onmousemove = null;
-    document.ontouchend = null;
-    document.ontouchmove = null;
-  }
-}
-
-// Post Screen Setup
-function setupPostPreview() {
-  const box = document.getElementById('previewBox');
-  box.innerHTML = '';
-  if(selectedMediaList.length > 1) {
-    box.classList.add('multi-item');
-    selectedMediaList.forEach(m => {
-      if(m.type === 'video') {
-        const v = document.createElement('video');
-        v.src = m.url;
-        v.muted = true;
-        v.autoplay = true;
-        v.loop = true;
-        box.appendChild(v);
-      } else {
-        const img = document.createElement('img');
-        img.src = m.url;
-        box.appendChild(img);
-      }
-    });
-  } else {
-    box.classList.remove('multi-item');
-    const m = selectedMediaList[0] || { type: 'image', url: '' };
-    if(m.type === 'video') {
-      const v = document.createElement('video');
-      v.src = m.url;
-      v.muted = true;
-      v.autoplay = true;
-      v.loop = true;
-      box.appendChild(v);
-    } else {
-      const img = document.createElement('img');
-      img.src = m.url;
-      box.appendChild(img);
+  const row = document.getElementById(`track-row-${index}`);
+  if(row) {
+    row.classList.add('active');
+    const btn = row.querySelector('.select-track-btn');
+    if(btn) {
+      btn.textContent = 'Selected';
+      btn.classList.add('selected');
     }
   }
+  showToast(`Track updated: ${title} 🎵`);
 }
 
 document.getElementById('closePost').onclick = () => {
   postScreen.classList.remove('open');
   appContainer.classList.remove('hide-nav-for-create');
-  switchTab('home');
 };
 
 document.getElementById('publishBtn').onclick = () => {
-  const captionText = document.getElementById('captionInput').value.trim() || "Amazing new clip on VIBE! 🔥 #VIBE";
-  const newPost = {
+  const captionText = document.getElementById('captionInput').value.trim() || document.getElementById('editorCaptionInput').value.trim();
+  if(!selectedMediaList.length) {
+    showToast('Please attach at least one video or photo.');
+    return;
+  }
+  const newReel = {
     id: Date.now(),
-    author: "Creator VIBE",
-    handle: myProfile.username,
-    caption: captionText,
+    author: "You (@creator_vibe)",
+    handle: "@creator_vibe",
+    caption: captionText || "Shared via VIBE 🚀",
     songName: selectedSound,
     artist: "Creator VIBE",
     likes: 1,
@@ -3212,63 +2228,18 @@ document.getElementById('publishBtn').onclick = () => {
     views: "1",
     avatar: myProfile.avatar,
     mediaList: [...selectedMediaList],
+    isTagged: false,
     location: selectedPostLocation,
-    isLiked: false,
-    isSaved: false,
     commentsList: []
   };
-
-  feedData.unshift(newPost);
+  feedData.unshift(newReel);
   renderFeed();
   postScreen.classList.remove('open');
   appContainer.classList.remove('hide-nav-for-create');
-  switchTab('home');
-  showToast('Successfully posted to VIBE feed! 🎉');
+  updateNavActiveState('home');
+  showToast('Posted to feed successfully! 🎉');
 };
-
-document.getElementById('publishStoryBtn').onclick = () => {
-  showToast('Added successfully to your 24h Story! 📸');
-  postScreen.classList.remove('open');
-  appContainer.classList.remove('hide-nav-for-create');
-  switchTab('home');
-};
-
-// Profile Screen Logic
-document.querySelectorAll('.profileSubTab').forEach(tab => {
-  tab.onclick = () => {
-    document.querySelectorAll('.profileSubTab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    renderProfilePosts();
-  };
-});
-
-function renderProfilePosts() {
-  const grid = document.getElementById('userPostsGrid');
-  grid.innerHTML = '';
-  feedData.forEach(post => {
-    const thumb = document.createElement('div');
-    thumb.className = 'userPostThumb';
-    const media = post.mediaList[0] || {};
-    if(media.type === 'video') {
-      thumb.innerHTML = `<video src="${media.url}" muted playsinline></video>`;
-    } else {
-      thumb.innerHTML = `<img src="${media.url}" alt="">`;
-    }
-    thumb.innerHTML += `<div class="profile-view-badge">👁 ${post.views}</div>`;
-    grid.appendChild(thumb);
-  });
-}
-
-// Toast Helper
-function toastTimerOut(msg) {
-  toast.textContent = msg;
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 2500);
-}
-window.showToast = toastTimerOut;
-
-// Initial Feed Render
-renderFeed();
 </script>
 </body>
 </html>
+ 
