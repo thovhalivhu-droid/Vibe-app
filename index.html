@@ -1513,7 +1513,6 @@ function openReportModal() {
 
 function closeReportModal() {
   document.getElementById('reportModal').classList.remove('open');
-  // Reset selected radio
   document.querySelectorAll('input[name="reportReason"]').forEach(r => r.checked = false);
   document.querySelectorAll('.report-reason-item').forEach(i => i.classList.remove('selected'));
 }
@@ -1893,6 +1892,58 @@ function renderFeed(filteredList){
  });
 }
 
+// Profile Sub-Tab Switching & Rendering Tagged Posts
+function renderProfileGrid() {
+  const grid = document.getElementById('userPostsGrid');
+  grid.innerHTML = '';
+  
+  let targetPosts = [];
+  if (profileActiveTab === 'posts') {
+    targetPosts = feedData.filter(p => p.author === 'You' || p.handle === '@creator_vibe');
+  } else if (profileActiveTab === 'saved') {
+    targetPosts = feedData.filter(p => p.isSaved);
+  } else if (profileActiveTab === 'tagged') {
+    targetPosts = feedData.filter(p => p.isTagged);
+  }
+
+  if (targetPosts.length === 0) {
+    grid.innerHTML = `<div style="grid-column: span 3; text-align: center; color: var(--muted); padding: 40px 0; font-size: 13px;">No posts found</div>`;
+    return;
+  }
+
+  targetPosts.forEach(post => {
+    const thumb = document.createElement('div');
+    thumb.className = 'userPostThumb';
+    const media = post.mediaList && post.mediaList.length > 0 ? post.mediaList[0] : {type:'image', url:''};
+    if (media.type === 'video') {
+      thumb.innerHTML = `<video src="${media.url}" muted playsinline></video><div class="profile-view-badge">▶ ${post.views || '1'}</div>`;
+    } else {
+      thumb.innerHTML = `<img src="${media.url}" alt=""><div class="profile-view-badge">♥ ${formatCount(post.likes)}</div>`;
+    }
+    
+    // Tap to view post in the feed
+    thumb.onclick = () => {
+      profile.classList.remove('open');
+      updateNavActiveState('home');
+      pauseAllFeedVideos();
+      const idx = feedData.findIndex(f => f.id === post.id);
+      if (idx !== -1) { 
+        feed.children[idx].scrollIntoView({behavior:'smooth'}); 
+      }
+    };
+    grid.appendChild(thumb);
+  });
+}
+
+document.querySelectorAll('.profileSubTab').forEach(tab => {
+  tab.onclick = () => {
+    document.querySelectorAll('.profileSubTab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    profileActiveTab = tab.getAttribute('data-profile-tab');
+    renderProfileGrid();
+  };
+});
+
 document.querySelectorAll('.nav button').forEach(btn => {
   btn.onclick = () => {
     const tab = btn.getAttribute('data-tab');
@@ -1916,6 +1967,7 @@ document.querySelectorAll('.nav button').forEach(btn => {
       inbox.classList.add('open');
     } else if (tab === 'profile') {
       profile.classList.add('open');
+      renderProfileGrid();
     }
   };
 });
@@ -1931,6 +1983,7 @@ document.querySelectorAll('.screen .close').forEach(btn => {
 });
 
 renderFeed();
+renderProfileGrid();
 </script>
 </body>
 </html>
