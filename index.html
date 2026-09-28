@@ -192,7 +192,7 @@ button{font:inherit}
 .editorCanvasContainer.multi-item video, .editorCanvasContainer.multi-item img {flex: 0 0 100%; scroll-snap-align: start; width:100%; height:100%; object-fit:contain;}
 #editorDrawingCanvas{position:absolute;inset:0;pointer-events:auto;cursor:crosshair;z-index:5}
 #editorOverlaysLayer{position:absolute;inset:0;pointer-events:none;z-index:6}
-.editorOverlayElement{position:absolute;cursor:move;user-select:none;padding:6px 10px;font-size:22px;border:1px dashed transparent;transition:border .2s;pointer-events:auto}
+.editorOverlayElement{position:absolute;cursor:move;user-select:none;padding:6px 10px;font-size:22px;border:1px dashed transparent;transition:border .2s;pointer-events:auto;touch-action:none;}
 .editorOverlayElement:hover{border-color:rgba(255,255,255,0.4)}
 .editorOverlayElement.text-element{font-size:20px;font-weight:700;color:#fff;background:rgba(0,0,0,0.5);border-radius:8px;backdrop-filter:blur(4px);padding:8px 12px;text-shadow:0 2px 4px rgba(0,0,0,0.5)}
 
@@ -356,6 +356,26 @@ button{font:inherit}
 .sticker-item:hover {
   transform: scale(1.1);
   background: rgba(255,255,255,0.15);
+}
+
+/* Text Colors Palette */
+.text-color-palette {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 4px 0;
+}
+.color-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.color-swatch:hover, .color-swatch.active {
+  transform: scale(1.15);
+  border-color: #fff;
 }
 
 /* Edit Toolbar legacy completely hidden */
@@ -931,9 +951,20 @@ input:checked+.slider:before{transform:translateX(20px)}
 <!-- Text Input Drawer -->
 <div id="editorTextDrawer" class="editor-tool-drawer">
   <div class="drawer-header"><span>Add Custom Text</span><button class="close" onclick="closeEditorDrawers()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">×</button></div>
-  <div style="display:flex; gap:8px;">
-    <input type="text" id="editorTextInputField" class="topTextEditorInput" placeholder="Type text overlay..." autocomplete="off">
-    <button class="topTextEditorDoneBtn" onclick="commitEditorText()">Add</button>
+  <div style="display:flex; flex-direction:column; gap:10px;">
+    <div style="display:flex; gap:8px;">
+      <input type="text" id="editorTextInputField" class="topTextEditorInput" placeholder="Type text overlay..." autocomplete="off">
+      <button class="topTextEditorDoneBtn" onclick="commitEditorText()">Add</button>
+    </div>
+    <div class="text-color-palette">
+      <span style="font-size:12px; color:var(--muted); font-weight:700;">Color:</span>
+      <div class="color-swatch active" style="background:#ffffff;" onclick="setEditorTextColor('#ffffff', this)"></div>
+      <div class="color-swatch" style="background:#ff2a5f;" onclick="setEditorTextColor('#ff2a5f', this)"></div>
+      <div class="color-swatch" style="background:#00f2fe;" onclick="setEditorTextColor('#00f2fe', this)"></div>
+      <div class="color-swatch" style="background:#ffe600;" onclick="setEditorTextColor('#ffe600', this)"></div>
+      <div class="color-swatch" style="background:#00ff66;" onclick="setEditorTextColor('#00ff66', this)"></div>
+      <div class="color-swatch" style="background:#bf00ff;" onclick="setEditorTextColor('#bf00ff', this)"></div>
+    </div>
   </div>
 </div>
 
@@ -1326,6 +1357,7 @@ let feedData=[
 let myProfile={username:"@creator_vibe",bio:"Short-form content creator & explorer ✨",avatar:"https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150"};
 let activeVideo=null, muted=true, mediaStream=null, recorder=null, chunks=[], recording=false, recordSeconds=0, timerInterval=null, facing="user", selectedMediaList=[];
 let pressTimer=null, isLongPress=false, selectedSound="Original Audio";
+let selectedTextColor = "#ffffff";
 let activeCommentPostId=null;
 let profileActiveTab = 'posts';
 
@@ -1623,6 +1655,12 @@ function selectEditorMusic(songTitle, artistName, index) {
   showToast(`Track selected: ${songTitle} 🎵`);
 }
 
+function setEditorTextColor(color, swatchEl) {
+  selectedTextColor = color;
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+  if(swatchEl) swatchEl.classList.add('active');
+}
+
 function applyEditorFilter(filterStyle, btnEl) {
   const container = document.getElementById('editorCanvasContainer');
   const mediaElements = container.querySelectorAll('video, img');
@@ -1657,6 +1695,7 @@ function addMentionToCanvas(mentionText) {
   const mentionEl = document.createElement('div');
   mentionEl.className = 'editorOverlayElement text-element';
   mentionEl.textContent = mentionText;
+  mentionEl.style.color = selectedTextColor;
   mentionEl.style.left = '30%';
   mentionEl.style.top = '50%';
   
@@ -1675,6 +1714,7 @@ function commitEditorText() {
   const textEl = document.createElement('div');
   textEl.className = 'editorOverlayElement text-element';
   textEl.textContent = text;
+  textEl.style.color = selectedTextColor;
   textEl.style.left = '25%';
   textEl.style.top = '45%';
   
@@ -1686,54 +1726,34 @@ function commitEditorText() {
 }
 
 function makeElementDraggable(elm) {
-  let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-  elm.onmousedown = dragMouseDown;
-  elm.ontouchstart = dragTouchStart;
+  let startX = 0, startY = 0, initialLeft = 0, initialTop = 0;
 
-  function dragMouseDown(e) {
+  elm.onpointerdown = pointerDown;
+
+  function pointerDown(e) {
     e.preventDefault();
-    pos3 = e.clientX;
-    pos4 = e.clientY;
-    document.onmouseup = closeDragElement;
-    document.onmousemove = elementDrag;
+    startX = e.clientX;
+    startY = e.clientY;
+    initialLeft = elm.offsetLeft;
+    initialTop = elm.offsetTop;
+    
+    elm.setPointerCapture(e.pointerId);
+    elm.onpointermove = pointerMove;
+    elm.onpointerup = pointerUp;
   }
 
-  function elementDrag(e) {
+  function pointerMove(e) {
     e.preventDefault();
-    pos1 = pos3 - e.clientX;
-    pos2 = pos4 - e.clientY;
-    pos3 = e.clientX;
-    pos4 = e.clientY;
-    elm.style.top = (elm.offsetTop - pos2) + "px";
-    elm.style.left = (elm.offsetLeft - pos1) + "px";
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    elm.style.left = (initialLeft + dx) + "px";
+    elm.style.top = (initialTop + dy) + "px";
   }
 
-  function closeDragElement() {
-    document.onmouseup = null;
-    document.onmousemove = null;
-  }
-
-  function dragTouchStart(e) {
-    const touch = e.touches[0];
-    pos3 = touch.clientX;
-    pos4 = touch.clientY;
-    document.ontouchend = closeTouchDrag;
-    document.ontouchmove = elementTouchDrag;
-  }
-
-  function elementTouchDrag(e) {
-    const touch = e.touches[0];
-    pos1 = pos3 - touch.clientX;
-    pos2 = pos4 - touch.clientY;
-    pos3 = touch.clientX;
-    pos4 = touch.clientY;
-    elm.style.top = (elm.offsetTop - pos2) + "px";
-    elm.style.left = (elm.offsetLeft - pos1) + "px";
-  }
-
-  function closeTouchDrag() {
-    document.ontouchend = null;
-    document.ontouchmove = null;
+  function pointerUp(e) {
+    elm.releasePointerCapture(e.pointerId);
+    elm.onpointermove = null;
+    elm.onpointerup = null;
   }
 }
 
