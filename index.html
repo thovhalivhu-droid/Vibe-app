@@ -1063,31 +1063,22 @@ input:checked+.slider:before{transform:translateX(20px)}
   <div class="discoverBody">
     <div class="discoverSectionTitle">Account & Preferences</div>
     <div class="settings-list">
-      <div class="settings-item" onclick="toggleSettingItem('pushNotifications')">
+      <div class="settings-item" onclick="showToast('Push Notifications settings')">
         <div class="settings-item-left"><span>🔔</span> Push Notifications</div>
-        <label class="switch" onclick="event.stopPropagation()">
-          <input type="checkbox" id="settingPushNotif" onchange="updateSetting('pushNotifications', this.checked)">
-          <span class="slider"></span>
-        </label>
+        <span style="color:var(--muted);">›</span>
       </div>
-      <div class="settings-item" onclick="toggleSettingItem('darkTheme')">
+      <div class="settings-item" onclick="showToast('Dark Mode Active')">
         <div class="settings-item-left"><span>🌙</span> Dark Theme</div>
-        <label class="switch" onclick="event.stopPropagation()">
-          <input type="checkbox" id="settingDarkTheme" onchange="updateSetting('darkTheme', this.checked)">
-          <span class="slider"></span>
-        </label>
+        <span style="color:var(--cyan); font-size:12px;">Active</span>
       </div>
-      <div class="settings-item" onclick="toggleSettingItem('highQualityVideo')">
-        <div class="settings-item-left"><span>🎬</span> HD Video Playback</div>
-        <label class="switch" onclick="event.stopPropagation()">
-          <input type="checkbox" id="settingHQVideo" onchange="updateSetting('highQualityVideo', this.checked)">
-          <span class="slider"></span>
-        </label>
+      <div class="settings-item" onclick="showToast('Video playback settings')">
+        <div class="settings-item-left"><span>🎬</span> Video Playback & Quality</div>
+        <span style="color:var(--muted);">›</span>
       </div>
-      <div class="settings-item" onclick="toggleSettingItem('dataSaver')">
+      <div class="settings-item" onclick="showToast('Data Saver mode toggled')">
         <div class="settings-item-left"><span>📊</span> Data Saver</div>
         <label class="switch" onclick="event.stopPropagation()">
-          <input type="checkbox" id="settingDataSaver" onchange="updateSetting('dataSaver', this.checked)">
+          <input type="checkbox">
           <span class="slider"></span>
         </label>
       </div>
@@ -1190,44 +1181,12 @@ const photoFileInput=document.getElementById('photoFileInput');
 const timer=document.getElementById('timer');
 const timerText=document.getElementById('timerText');
 
-// Persistent Settings State
-let vibeSettings = JSON.parse(localStorage.getItem('vibe_settings')) || {
-  pushNotifications: true,
-  darkTheme: true,
-  highQualityVideo: false,
-  dataSaver: false
+let userPrivacySettings = {
+  privateAccount: false,
+  allowDm: true,
+  commentsFilter: true,
+  activityStatus: true
 };
-
-function initSettingsUI() {
-  document.getElementById('settingPushNotif').checked = vibeSettings.pushNotifications;
-  document.getElementById('settingDarkTheme').checked = vibeSettings.darkTheme;
-  document.getElementById('settingHQVideo').checked = vibeSettings.highQualityVideo;
-  document.getElementById('settingDataSaver').checked = vibeSettings.dataSaver;
-}
-
-function updateSetting(key, value) {
-  vibeSettings[key] = value;
-  localStorage.setItem('vibe_settings', JSON.stringify(vibeSettings));
-  const readableName = key.replace(/([A-Z])/g, ' $1').toLowerCase();
-  showToast(`${readableName} is now ${value ? 'Enabled' : 'Disabled'}`);
-}
-
-function toggleSettingItem(key) {
-  const map = {
-    pushNotifications: 'settingPushNotif',
-    darkTheme: 'settingDarkTheme',
-    highQualityVideo: 'settingHQVideo',
-    dataSaver: 'settingDataSaver'
-  };
-  const checkboxId = map[key];
-  if(checkboxId) {
-    const cb = document.getElementById(checkboxId);
-    if(cb) {
-      cb.checked = !cb.checked;
-      updateSetting(key, cb.checked);
-    }
-  }
-}
 
 let feedData=[
 {
@@ -1287,7 +1246,6 @@ function closePrivateInfoScreen() {
   document.getElementById('privateInfoScreen').classList.remove('open');
 }
 function openSettingsScreen() {
-  initSettingsUI();
   document.getElementById('settingsScreen').classList.add('open');
 }
 function closeSettingsScreen() {
@@ -1974,12 +1932,151 @@ function renderFeed(filteredList){
  list.forEach((item)=>{
   const card=document.createElement('article'); 
   card.className='reel';
-  // ... feed rendering continues normally
+  
+  let mediaHtml = '';
+  let dotsHtml = '';
+  const mediaList = item.mediaList && item.mediaList.length > 0 ? item.mediaList : [{type: 'video', url: ''}];
+  const isSinglePhoto = mediaList.length === 1 && mediaList[0].type === 'image';
+
+  if(isSinglePhoto) {
+    card.classList.add('image');
+  }
+
+  if(mediaList.length > 1) {
+    mediaHtml = `<div class="reel-media-slider">`;
+    mediaList.forEach((m) => {
+      if(m.type === 'video') {
+        mediaHtml += `
+          <div class="reel-media-slide" style="position:relative;">
+            <video class="reel-video" src="${m.url}" playsinline preload="auto" ${muted?'muted':''}></video>
+            <div class="video-duration-indicator">0:00</div>
+            <div class="video-control-overlay">
+              <button class="custom-pause-btn" title="Toggle Play/Pause">⏸</button>
+            </div>
+          </div>`;
+      } else {
+        mediaHtml += `<div class="reel-media-slide"><img class="reel-image" style="display:block" src="${m.url}" alt=""></div>`;
+      }
+    });
+    mediaHtml += `</div>`;
+
+    dotsHtml = `<div class="carousel-dots">`;
+    mediaList.forEach((_, idx) => {
+      dotsHtml += `<div class="carousel-dot ${idx === 0 ? 'active' : ''}"></div>`;
+    });
+    dotsHtml += `</div>`;
+  } else {
+    const m = mediaList[0];
+    if(m.type === 'video') {
+      mediaHtml = `
+        <video class="reel-video" src="${m.url}" playsinline preload="auto" ${muted?'muted':''}></video>
+        <div class="video-duration-indicator">0:00</div>
+        <div class="video-control-overlay">
+          <button class="custom-pause-btn" title="Toggle Play/Pause">⏸</button>
+        </div>`;
+    } else {
+      mediaHtml = `<img class="reel-image" style="display:block" src="${m.url}" alt="">`;
+    }
+  }
+
+  const songTitleText = item.songName || 'Original Audio';
+  const songArtistText = item.artist || item.author;
+
+  card.innerHTML=`
+  ${mediaHtml}
+  ${dotsHtml}
+  <button class="mute" style="${isSinglePhoto ? 'display:none;' : ''}">${muted?'🔇':'🔊'}</button>
+  <div class="overlay"><div class="info">
+    <div class="author"><img class="avatar" src="${item.avatar}"><span class="name">${item.author}</span><button class="follow">Follow</button></div>
+    <div class="caption">${parseCaptions(item.caption)}</div>
+    <div class="audio" data-post-id="${item.id}">♫ <span class="song-title">${songTitleText}</span> - <span class="song-artist">${songArtistText}</span></div>
+  </div>
+  <div class="actions">
+    <button class="action like ${item.isLiked ? 'liked' : ''}"><div class="circle">${item.isLiked ? '♥' : '♡'}</div><div class="count">${formatCount(item.likes)}</div></button>
+    <button class="action commentBtn"><div class="circle">💬</div><div class="count">${item.commentsList.length}</div></button>
+    <button class="action saveBtn ${item.isSaved ? 'saved' : ''}"><div class="circle">${item.isSaved ? '★' : '☆'}</div><div class="count">Save</div></button>
+    <button class="action shareBtn"><div class="circle">↗</div><div class="count">${formatCount(item.shares)}</div></button>
+  </div></div>`;
+  feed.appendChild(card);
  });
 }
 
-// Initial Setup
-initSettingsUI();
+function renderProfileGrid() {
+  const grid = document.getElementById('userPostsGrid');
+  grid.innerHTML = '';
+  
+  let targetPosts = [];
+  if (profileActiveTab === 'posts') {
+    targetPosts = feedData.filter(p => p.author === 'You' || p.handle === '@creator_vibe');
+  } else if (profileActiveTab === 'saved') {
+    targetPosts = feedData.filter(p => p.isSaved);
+  } else if (profileActiveTab === 'tagged') {
+    targetPosts = feedData.filter(p => p.isTagged);
+  }
+
+  if (targetPosts.length === 0) {
+    grid.innerHTML = `<div style="grid-column: span 3; text-align: center; color: var(--muted); padding: 40px 0; font-size: 13px;">No posts found</div>`;
+    return;
+  }
+
+  targetPosts.forEach(post => {
+    const thumb = document.createElement('div');
+    thumb.className = 'userPostThumb';
+    const media = post.mediaList && post.mediaList.length > 0 ? post.mediaList[0] : {type:'image', url:''};
+    if (media.type === 'video') {
+      thumb.innerHTML = `<video src="${media.url}" muted playsinline></video><div class="profile-view-badge">▶ ${post.views || '1'}</div>`;
+    } else {
+      thumb.innerHTML = `<img src="${media.url}" alt=""><div class="profile-view-badge">♥ ${formatCount(post.likes)}</div>`;
+    }
+    
+    thumb.onclick = () => {
+      profile.classList.remove('open');
+      updateNavActiveState('home');
+      pauseAllFeedVideos();
+      const idx = feedData.findIndex(f => f.id === post.id);
+      if (idx !== -1) { 
+        feed.children[idx].scrollIntoView({behavior:'smooth'}); 
+      }
+    };
+    grid.appendChild(thumb);
+  });
+}
+
+document.querySelectorAll('.profileSubTab').forEach(tab => {
+  tab.onclick = () => {
+    document.querySelectorAll('.profileSubTab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    profileActiveTab = tab.getAttribute('data-profile-tab');
+    renderProfileGrid();
+  };
+});
+
+document.querySelectorAll('.nav button').forEach(btn => {
+  btn.onclick = () => {
+    const tab = btn.getAttribute('data-tab');
+    updateNavActiveState(tab);
+    
+    studio.classList.remove('open');
+    discover.classList.remove('open');
+    inbox.classList.remove('open');
+    profile.classList.remove('open');
+    appContainer.classList.remove('hide-nav-for-create');
+
+    if(tab === 'discover') discover.classList.add('open');
+    else if(tab === 'create') {
+      studio.classList.add('open');
+      appContainer.classList.add('hide-nav-for-create');
+      startCamera();
+    }
+    else if(tab === 'inbox') inbox.classList.add('open');
+    else if(tab === 'profile') {
+      profile.classList.add('open');
+      renderProfileGrid();
+    }
+  };
+});
+
+renderFeed();
 </script>
 </body>
 </html>
