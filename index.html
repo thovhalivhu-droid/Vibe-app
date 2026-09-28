@@ -192,7 +192,7 @@ button{font:inherit}
 .editorCanvasContainer.multi-item video, .editorCanvasContainer.multi-item img {flex: 0 0 100%; scroll-snap-align: start; width:100%; height:100%; object-fit:contain;}
 #editorDrawingCanvas{position:absolute;inset:0;pointer-events:auto;cursor:crosshair;z-index:5}
 #editorOverlaysLayer{position:absolute;inset:0;pointer-events:none;z-index:6}
-.editorOverlayElement{position:absolute;cursor:move;user-select:none;padding:6px 10px;font-size:22px;border:1px dashed transparent;transition:border .2s;pointer-events:auto; touch-action: none;}
+.editorOverlayElement{position:absolute;cursor:move;user-select:none;padding:6px 10px;font-size:22px;border:1px dashed transparent;transition:border .2s;pointer-events:auto}
 .editorOverlayElement:hover{border-color:rgba(255,255,255,0.4)}
 .editorOverlayElement.text-element{font-size:20px;font-weight:700;color:#fff;background:rgba(0,0,0,0.5);border-radius:8px;backdrop-filter:blur(4px);padding:8px 12px;text-shadow:0 2px 4px rgba(0,0,0,0.5)}
 
@@ -330,106 +330,15 @@ button{font:inherit}
 }
 .sticker-item:hover { transform: scale(1.1); background: rgba(255,255,255,0.15); }
 
-.postPanel{padding:16px;display:flex;flex-direction:column;flex:1;overflow-y:auto;position:relative}
-.previewBox{width:100%;height:220px;background:#000;border-radius:16px;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;gap:4px;flex-shrink:0}
+.postPanel{padding:16px;display:flex;flex-direction:column;flex:1;overflow:hidden;position:relative}
+.previewBox{width:100%;flex:1;background:#000;border-radius:16px;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;gap:4px}
 .previewBox.multi-item {display:flex; overflow-x:auto; scroll-snap-type: x mandatory;}
 .previewBox.multi-item video, .previewBox.multi-item img {flex: 0 0 100%; scroll-snap-align: start; width:100%; height:100%; object-fit:cover;}
 .previewBox video,.previewBox img{width:100%;height:100%;object-fit:cover}
-.captionBoxContainer{margin-top:10px;margin-bottom:10px}
-.postPanel textarea{width:100%;height:65px;background:#1a1b22;color:#fff;border:1px solid #ffffff15;border-radius:14px;padding:10px;resize:none;font-size:14px;outline:none}
-
-/* Post Editor Options row (Location, Cover, Drafts) */
-.post-options-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.post-options-row::-webkit-scrollbar { display: none; }
-.post-option-chip {
-  background: var(--surface);
-  border: 1px solid rgba(255,255,255,0.1);
-  color: var(--text);
-  padding: 8px 14px;
-  border-radius: 14px;
-  font-size: 12px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: border-color 0.2s, background 0.2s;
-}
-.post-option-chip:hover { border-color: var(--pink); background: rgba(255,42,95,0.06); }
-.post-option-chip .chip-val { color: var(--cyan); font-weight: 600; }
-
-.postBottomActionSheet{display:flex;flex-direction:column;gap:8px;background:#14151c;padding:12px;border-radius:16px;border:1px solid #ffffff10;margin-top:auto;}
-.postBtn{width:100%;padding:12px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--pink),var(--cyan));color:#fff;font-weight:800;cursor:pointer;font-size:14px}
-
-/* Drawers / Modals for Location, Cover, Drafts */
-.post-sub-modal {
-  position: absolute;
-  inset: 0;
-  background: var(--bg);
-  z-index: 120;
-  display: none;
-  flex-direction: column;
-}
-.post-sub-modal.open { display: flex; }
-.sub-modal-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
-.location-item {
-  background: var(--surface);
-  padding: 12px 16px;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.06);
-  cursor: pointer;
-  font-weight: 700;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.location-item:hover { border-color: var(--pink); background: rgba(255,42,95,0.06); }
-
-.thumbnail-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-.thumbnail-item {
-  aspect-ratio: 9/16;
-  background: #000;
-  border-radius: 8px;
-  overflow: hidden;
-  position: relative;
-  cursor: pointer;
-  border: 2px solid transparent;
-}
-.thumbnail-item.selected { border-color: var(--pink); }
-.thumbnail-item img, .thumbnail-item video { width: 100%; height: 100%; object-fit: cover; }
-
-.draft-card {
-  background: var(--surface);
-  padding: 12px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border: 1px solid rgba(255,255,255,0.08);
-}
-.draft-thumb {
-  width: 50px;
-  height: 70px;
-  border-radius: 6px;
-  object-fit: cover;
-  background: #000;
-}
-.draft-info { flex: 1; }
-.draft-caption { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
-.draft-date { font-size: 11px; color: var(--muted); }
-.draft-actions { display: flex; gap: 6px; }
+.captionBoxContainer{margin-top:12px;margin-bottom:12px}
+.postPanel textarea{width:100%;height:75px;background:#1a1b22;color:#fff;border:1px solid #ffffff15;border-radius:14px;padding:12px;resize:none;font-size:14px;outline:none}
+.postBottomActionSheet{display:flex;flex-direction:column;gap:8px;background:#14151c;padding:12px;border-radius:16px;border:1px solid #ffffff10}
+.postBtn{width:100%;padding:13px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--pink),var(--cyan));color:#fff;font-weight:800;cursor:pointer;font-size:14px}
 
 .editor-caption-wrapper {
   padding: 10px 16px;
@@ -488,165 +397,12 @@ button{font:inherit}
 .hashtagName{font-size:14px;font-weight:800;color:#fff}
 .hashtagCount{font-size:12px;color:var(--muted)}
 
-.inboxBody{flex:1;overflow-y:auto;padding:15px;display:flex;flex-direction:column}
+.inboxBody{flex:1;overflow-y:auto;padding:15px}
 .inboxSubTabs{display:flex;gap:15px;margin-bottom:15px;border-bottom:1px solid #ffffff10;padding-bottom:10px}
 .inboxSubTab{font-weight:700;color:var(--muted);cursor:pointer}.inboxSubTab.active{color:#fff}
-.messageItem{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #ffffff0a;cursor:pointer}
+.messageItem{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #ffffff0a}
 .messageAvatar{width:45px;height:45px;border-radius:50%;object-fit:cover}
 .messageContent{flex:1}.messageName{font-weight:700;font-size:14px;margin-bottom:3px}.messageSnippet{font-size:12px;color:var(--muted)}
-
-/* DM Chat Screen Styles */
-#dmChatScreen {
-  position: absolute;
-  inset: 0;
-  background: var(--bg);
-  z-index: 120;
-  display: none;
-  flex-direction: column;
-  transform: translateX(100%);
-  transition: transform 0.3s ease;
-}
-#dmChatScreen.open {
-  display: flex;
-  transform: translateX(0);
-}
-.dmChatHeader {
-  height: 58px;
-  background: rgba(20, 21, 28, 0.95);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 16px;
-  z-index: 10;
-}
-.dmChatHeaderInfo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.dmChatAvatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1px solid var(--pink);
-}
-.dmChatName {
-  font-size: 15px;
-  font-weight: 800;
-}
-.dmChatStatus {
-  font-size: 11px;
-  color: var(--cyan);
-}
-.dmChatBody {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  scrollbar-width: none;
-}
-.dmChatBody::-webkit-scrollbar { display: none; }
-
-.chat-bubble-row {
-  display: flex;
-  flex-direction: column;
-  max-width: 75%;
-}
-.chat-bubble-row.incoming {
-  align-self: flex-start;
-}
-.chat-bubble-row.outgoing {
-  align-self: flex-end;
-}
-.chat-bubble {
-  padding: 10px 14px;
-  border-radius: 16px;
-  font-size: 13px;
-  line-height: 1.4;
-  word-break: break-word;
-}
-.incoming .chat-bubble {
-  background: var(--surface);
-  color: var(--text);
-  border-top-left-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-.outgoing .chat-bubble {
-  background: var(--pink);
-  color: #fff;
-  border-top-right-radius: 4px;
-}
-.chat-timestamp {
-  font-size: 10px;
-  color: var(--muted);
-  margin-top: 3px;
-  padding: 0 4px;
-}
-.incoming .chat-timestamp { align-self: flex-start; }
-.outgoing .chat-timestamp { align-self: flex-end; }
-
-.dmInputArea {
-  padding: 12px 16px;
-  background: #14151c;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-.dmInputField {
-  flex: 1;
-  background: #1a1b22;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 20px;
-  padding: 10px 16px;
-  color: #fff;
-  font-size: 13px;
-  outline: none;
-}
-.dmInputField::placeholder { color: var(--muted); }
-.dmSendBtn {
-  background: var(--pink);
-  border: none;
-  color: #fff;
-  font-weight: 700;
-  padding: 10px 18px;
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 13px;
-}
-
-/* Request Action Buttons Container */
-.dm-request-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 6px;
-}
-.dm-accept-btn {
-  background: var(--pink);
-  border: none;
-  color: #fff;
-  font-weight: 700;
-  padding: 6px 14px;
-  border-radius: 14px;
-  font-size: 12px;
-  cursor: pointer;
-}
-.dm-decline-btn {
-  background: var(--surface);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: var(--muted);
-  font-weight: 700;
-  padding: 6px 14px;
-  border-radius: 14px;
-  font-size: 12px;
-  cursor: pointer;
-}
-.dm-decline-btn:hover { color: #fff; border-color: #fff; }
 
 .profileBody{flex:1;overflow-y:auto;padding:20px 15px}
 .profileHeaderInfo{display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:15px}
@@ -785,100 +541,6 @@ button{font:inherit}
 .report-submit-btn { flex: 1; background: linear-gradient(135deg, var(--pink), var(--cyan)); border: none; color: #fff; font-weight: 800; padding: 12px; border-radius: 14px; cursor: pointer; font-size: 14px; }
 .report-cancel-btn { flex: 1; background: var(--surface); border: 1px solid rgba(255, 255, 255, 0.15); color: var(--text); font-weight: 700; padding: 12px; border-radius: 14px; cursor: pointer; font-size: 14px; }
 
-/* Settings Screen Styling */
-.settingsScreen {
-  position: absolute;
-  inset: 0;
-  background: var(--bg);
-  z-index: 140;
-  display: none;
-  flex-direction: column;
-  transform: translateX(100%);
-  transition: transform 0.3s ease;
-}
-.settingsScreen.open {
-  display: flex;
-  transform: translateX(0);
-}
-.settingsBody {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  scrollbar-width: none;
-}
-.settingsBody::-webkit-scrollbar { display: none; }
-.settingsSectionGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.settingsSectionHeader {
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  padding-left: 4px;
-}
-.settingsCard {
-  background: var(--surface);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  overflow: hidden;
-}
-.settingsRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.settingsRow:last-child {
-  border-bottom: none;
-}
-.settingsRow:hover {
-  background: rgba(255, 255, 255, 0.04);
-}
-.settingsRowInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  flex: 1;
-}
-.settingsRowTitle {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text);
-}
-.settingsRowDesc {
-  font-size: 11px;
-  color: var(--muted);
-}
-.settingsRowAction {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: var(--muted);
-  font-weight: 600;
-}
-.settingsInput {
-  background: #14151c;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #fff;
-  padding: 8px 12px;
-  border-radius: 10px;
-  font-size: 13px;
-  outline: none;
-  width: 160px;
-  text-align: right;
-}
-
 /* Story Viewer Modal */
 .storyModal{position:absolute;inset:0;background:#000;z-index:110;display:none;flex-direction:column;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .storyModal.open{display:flex}
@@ -938,69 +600,11 @@ input:checked+.slider:before{transform:translateX(20px)}
 .liveInputField { flex: 1; background: #1a1b22; border: 1px solid #ffffff15; border-radius: 20px; padding: 10px 14px; color: #fff; font-size: 13px; outline: none; }
 .liveSendBtn { background: var(--pink); border: 0; color: #fff; font-weight: 700; padding: 10px 16px; border-radius: 20px; cursor: pointer; }
 .liveHeartBtn { background: rgba(255,255,255,0.15); border: 0; font-size: 20px; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-
-/* Simple Confirmation Popup Styles */
-.confirm-popup-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
-  z-index: 200;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-}
-.confirm-popup-overlay.open { display: flex; }
-.confirm-popup-card {
-  background: var(--surface);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 20px;
-  padding: 24px;
-  width: 100%;
-  max-width: 320px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  box-shadow: 0 12px 32px rgba(0,0,0,0.6);
-  animation: popupScaleIn 0.2s ease-out;
-}
-@keyframes popupScaleIn {
-  from { transform: scale(0.9); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
-.confirm-popup-title { font-size: 16px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
-.confirm-popup-desc { font-size: 13px; color: var(--muted); line-height: 1.4; margin-bottom: 20px; }
-.confirm-popup-buttons { display: flex; gap: 10px; width: 100%; }
-.confirm-popup-btn {
-  flex: 1;
-  padding: 11px;
-  border-radius: 12px;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  border: none;
-}
-.confirm-popup-btn.cancel { background: rgba(255,255,255,0.1); color: var(--text); }
-.confirm-popup-btn.confirm { background: var(--pink); color: #fff; }
 </style>
 </head>
 <body>
 <div id="app">
 <div id="toast" class="toast"></div>
-
-<!-- Simple Confirmation Popup Modal -->
-<div id="confirmPopupOverlay" class="confirm-popup-overlay">
-  <div class="confirm-popup-card">
-    <div class="confirm-popup-title" id="confirmPopupTitle">Confirm Action</div>
-    <div class="confirm-popup-desc" id="confirmPopupDesc">Are you sure you want to proceed?</div>
-    <div class="confirm-popup-buttons">
-      <button class="confirm-popup-btn cancel" id="confirmPopupCancelBtn">Cancel</button>
-      <button class="confirm-popup-btn confirm" id="confirmPopupConfirmBtn">Confirm</button>
-    </div>
-  </div>
-</div>
 
 <header class="header">
   <div class="logo">VIBE</div>
@@ -1244,77 +848,17 @@ input:checked+.slider:before{transform:translateX(20px)}
   <div id="previewBox" class="previewBox" title="Tap to expand preview">
     <div style="color:#777">Choose a video or picture</div>
   </div>
-
   <div class="captionBoxContainer">
     <textarea id="captionInput" placeholder="Write a clean caption with #hashtags..."></textarea>
   </div>
-
-  <!-- Post Options Row: Location, Cover, Drafts -->
-  <div class="post-options-row">
-    <button class="post-option-chip" onclick="openLocationSelector()">
-      📍 Location: <span class="chip-val" id="selectedLocationLabel">Add location</span>
-    </button>
-    <button class="post-option-chip" onclick="openCoverSelector()">
-      🖼️ Cover: <span class="chip-val" id="selectedCoverLabel">Default</span>
-    </button>
-    <button class="post-option-chip" onclick="openDraftsModal()">
-      📁 Drafts <span class="chip-val" id="draftsCountBadge">(0)</span>
-    </button>
-  </div>
-
   <div class="postBottomActionSheet">
-    <button id="saveDraftBtn" class="postBtn" style="background:var(--surface); border:1px solid rgba(255,255,255,0.15)">Save to Drafts</button>
     <button id="publishBtn" class="postBtn">Post to Feed</button>
     <button id="publishStoryBtn" class="postBtn" style="background:var(--cyan);color:#000">Add as Story (24h)</button>
   </div>
 </div>
-
-<!-- Location Selector Sub-Modal -->
-<div id="locationModal" class="post-sub-modal">
-  <div class="screenHead">
-    <button class="close" onclick="closeLocationSelector()">×</button>
-    <span>Select Location</span>
-    <span style="width:24px"></span>
-  </div>
-  <div class="sub-modal-body">
-    <div class="location-item" onclick="selectLocation('Johannesburg, South Africa')"><span>Johannesburg, South Africa</span><span>📍</span></div>
-    <div class="location-item" onclick="selectLocation('Cape Town, South Africa')"><span>Cape Town, South Africa</span><span>📍</span></div>
-    <div class="location-item" onclick="selectLocation('Sandton City')"><span>Sandton City</span><span>📍</span></div>
-    <div class="location-item" onclick="selectLocation('Durban Beachfront')"><span>Durban Beachfront</span><span>📍</span></div>
-    <div class="location-item" onclick="selectLocation('Pretoria Central')"><span>Pretoria Central</span><span>📍</span></div>
-    <div class="location-item" onclick="selectLocation('Clear Location')"><span style="color:var(--pink)">Remove Location</span><span>×</span></div>
-  </div>
-</div>
-
-<!-- Cover / Thumbnail Selector Sub-Modal -->
-<div id="coverModal" class="post-sub-modal">
-  <div class="screenHead">
-    <button class="close" onclick="closeCoverSelector()">×</button>
-    <span>Select Cover Thumbnail</span>
-    <span style="width:24px"></span>
-  </div>
-  <div class="sub-modal-body">
-    <div style="font-size:13px; color:var(--muted); margin-bottom:8px;">Choose a frame to represent your video on profiles & discover feeds:</div>
-    <div class="thumbnail-grid" id="coverThumbnailGrid">
-      <!-- Generated dynamically -->
-    </div>
-  </div>
-</div>
-
-<!-- Drafts Manager Sub-Modal -->
-<div id="draftsModal" class="post-sub-modal">
-  <div class="screenHead">
-    <button class="close" onclick="closeDraftsModal()">×</button>
-    <span>Saved Drafts</span>
-    <span style="width:24px"></span>
-  </div>
-  <div class="sub-modal-body" id="draftsListContainer">
-    <!-- Rendered dynamically -->
-  </div>
-</div>
 </section>
 
-<!-- DISCOVER & SEARCH SCREEN -->
+<!-- FULLY FUNCTIONAL DISCOVER & SEARCH SCREEN -->
 <section id="discover" class="screen">
 <div class="screenHead"><span>Discover & Search</span><button class="close" data-close="discover">×</button></div>
 <div class="discoverBody">
@@ -1330,11 +874,13 @@ input:checked+.slider:before{transform:translateX(20px)}
     <button class="discoverTab" data-search-filter="hashtags">Hashtags</button>
   </div>
 
-  <div id="discoverResultsContainer" style="display:flex; flex-direction:column; gap:16px;"></div>
+  <div id="discoverResultsContainer" style="display:flex; flex-direction:column; gap:16px;">
+    <!-- Rendered dynamically by JavaScript -->
+  </div>
 </div>
 </section>
 
-<!-- Creator Profile Modal -->
+<!-- Creator Profile Modal (when tapping a creator in search) -->
 <section id="creatorProfileModal" class="screen" style="z-index: 130;">
   <div class="screenHead">
     <button class="close" onclick="closeCreatorProfileModal()">×</button>
@@ -1356,8 +902,6 @@ input:checked+.slider:before{transform:translateX(20px)}
       </div>
       <div style="display:flex; gap:8px; justify-content:center; margin-top:12px;">
         <button class="editProfileBtn" id="modalCreatorFollowBtn" style="margin-top:0; background:var(--pink); border-color:var(--pink); color:#fff;" onclick="toggleModalCreatorFollow()">Follow</button>
-        <button class="editProfileBtn" onclick="promptReportCreator()" style="margin-top:0; border-color:var(--pink); color:var(--pink);">Report</button>
-        <button class="editProfileBtn" onclick="promptBlockCreator()" style="margin-top:0; background:rgba(255,42,95,0.15); border-color:var(--pink); color:var(--pink);">Block</button>
       </div>
     </div>
     <div class="profileSubTabs">
@@ -1397,210 +941,22 @@ input:checked+.slider:before{transform:translateX(20px)}
     <span class="inboxSubTab" data-inbox-tab="notifications">Notifications</span>
   </div>
   <div id="inboxContentContainer">
-    <!-- Rendered dynamically -->
+    <div class="messageItem">
+      <img class="messageAvatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150">
+      <div class="messageContent">
+        <div class="messageName">Elena Rostova</div>
+        <div class="messageSnippet">Loved your recent vibe post! ✨</div>
+      </div>
+    </div>
+    <div class="messageItem">
+      <img class="messageAvatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150">
+      <div class="messageContent">
+        <div class="messageName">Liam Chen</div>
+        <div class="messageSnippet">Let's collaborate on a clip soon.</div>
+      </div>
+    </div>
   </div>
 </div>
-</section>
-
-<!-- DM Chat Screen (With Chat Bubbles, Message Input, Send, Accept, and Decline) -->
-<section id="dmChatScreen" class="screen">
-  <div class="dmChatHeader">
-    <div class="dmChatHeaderInfo">
-      <button class="close" onclick="closeDMChat()" style="position:static; font-size:22px; margin-right:4px;">‹</button>
-      <img class="dmChatAvatar" id="dmChatHeaderAvatar" src="">
-      <div>
-        <div class="dmChatName" id="dmChatHeaderName">Chat Name</div>
-        <div class="dmChatStatus" id="dmChatHeaderStatus">Active now</div>
-      </div>
-    </div>
-    <div style="display:flex; gap:8px; align-items:center;">
-      <button onclick="promptReportActiveChat()" style="background:none; border:none; color:var(--muted); font-size:14px; font-weight:700; cursor:pointer;" title="Report User">Report</button>
-      <button onclick="promptBlockActiveChat()" style="background:none; border:none; color:var(--pink); font-size:14px; font-weight:700; cursor:pointer;" title="Block User">Block</button>
-    </div>
-  </div>
-
-  <div class="dmChatBody" id="dmChatMessagesList">
-    <!-- Chat bubbles rendered dynamically -->
-  </div>
-
-  <div class="dmInputArea" id="dmChatInputArea">
-    <input type="text" id="dmMessageInputField" class="dmInputField" placeholder="Type a message..." autocomplete="off">
-    <button id="dmSendMsgBtn" class="dmSendBtn">Send</button>
-  </div>
-</section>
-
-<!-- Settings & Privacy Hub Screen -->
-<section id="settingsScreen" class="settingsScreen">
-  <div class="screenHead">
-    <button class="close" onclick="closeSettingsScreen()">×</button>
-    <span>Settings & Privacy</span>
-    <span style="width:24px"></span>
-  </div>
-  <div class="settingsBody">
-    
-    <!-- Account Settings -->
-    <div class="settingsSectionGroup">
-      <div class="settingsSectionHeader">Account</div>
-      <div class="settingsCard">
-        <div class="settingsRow">
-          <div class="settingsRowInfo">
-            <div class="settingsRowTitle">Username</div>
-            <div class="settingsRowDesc" id="settingsDisplayUsername">@creator_vibe</div>
-          </div>
-          <button class="select-track-btn" onclick="promptChangeUsername()">Edit</button>
-        </div>
-        <div class="settingsRow">
-          <div class="settingsRowInfo">
-            <div class="settingsRowTitle">Email Address</div>
-            <div class="settingsRowDesc" id="settingsDisplayEmail">creator@vibe-platform.com</div>
-          </div>
-          <button class="select-track-btn" onclick="promptChangeEmail()">Update</button>
-        </div>
-        <div class="settingsRow">
-          <div class="settingsRowInfo">
-            <div class="settingsRowTitle">Download Account Data</div>
-            <div class="settingsRowDesc">Request a copy of your VIBE data</div>
-          </div>
-          <button class="select-track-btn" onclick="requestAccountDataExport()">Request</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Privacy Settings -->
-    <div class="settingsSectionGroup">
-      <div class="settingsSectionHeader">Privacy</div>
-      <div class="settingsCard">
-        <div class="settingsRow">
-          <div class="settingsRowInfo">
-            <div class="settingsRowTitle">Private Account</div>
-            <div class="settingsRowDesc">Only approved followers can view your videos & stories</div>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="settingPrivateAccount" onchange="toggleSettingState('privateAccount', this.checked)">
-            <span class="slider"></span>
-          </label>
-        </div>
-        <div class="settingsRow">
-          <div class="settingsRowInfo">
-            <div class="settingsRowTitle">Allow Direct Messages</div>
-            <div class="settingsRowDesc">Choose who can send you direct messages</div>
-          </div>
-          <select class="settingsInput" id="settingDMPreference" onchange="updateSettingValue('dmPreference', this.value)">
-            <option value="everyone">Everyone</option>
-            <option value="followers">Followers Only</option>
-            <option value="none">Nobody</option>
-          </select>
-        </div>
-        <div class="settingsRow">
-          <div class="settingsRowInfo">
-            <div class="settingsRowTitle">Activity Status</div>
-            <div class="settingsRowDesc">Show when you are active on VIBE</div>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="settingActivityStatus" checked onchange="toggleSettingState('activityStatus', this.checked)">
-            <span class="slider"></span>
-          </label>
-        </div>
-      </div>
-    </div>
-
-    <!-- Security Settings -->
-    <div class="settingsSectionGroup">
-      <div class="settingsSectionHeader">Security</div>
-      <div class="settingsCard">
-        <div class="settingsRow" onclick="promptChangePassword()">
-          <div class="settingsRowInfo">
-            <div class="settingsRowTitle">Change Password</div>
-            <div class="settingsRowDesc">Update your account password securely</div>
-          </div>
-          <div class="settingsRowAction"><span>›</span></div>
-        </div>
-        <div class="settingsRow">
-          <div class="settingsRowInfo">
-            <div class="settingsRowTitle">Two-Factor Authentication (2FA)</div>
-            <div class="settingsRowDesc">Secure your account with extra verification</div>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="settingTwoFactor" onchange="toggleSettingState('twoFactor', this.checked)">
-            <span class="slider"></span>
-          </label>
-        </div>
-        <div class="settingsRow" onclick="showToast('No unrecognized login sessions detected.')">
-          <div class="settingsRowInfo">
-            <div class="settingsRowTitle">Login Sessions</div>
-            <div class="settingsRowDesc">Manage devices logged into your account</div>
-          </div>
-          <div class="settingsRowAction"><span style="color:var(--cyan)">1 Active</span><span>›</span></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Notification Settings -->
-    <div class="settingsSectionGroup">
-      <div class="settingsSectionHeader">Notifications</div>
-      <div class="settingsCard">
-        <div class="settingsRow">
-          <div class="settingsRowInfo">
-            <div class="settingsRowTitle">Push Notifications</div>
-            <div class="settingsRowDesc">Receive alerts for likes, comments & follows</div>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="settingPushNotifs" checked onchange="toggleSettingState('pushNotifs', this.checked)">
-            <span class="slider"></span>
-          </label>
-        </div>
-        <div class="settingsRow">
-          <div class="settingsRowInfo">
-            <div class="settingsRowTitle">Direct Message Alerts</div>
-            <div class="settingsRowDesc">Get notified when someone sends you a DM</div>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="settingDMNotifs" checked onchange="toggleSettingState('dmNotifs', this.checked)">
-            <span class="slider"></span>
-          </label>
-        </div>
-        <div class="settingsRow">
-          <div class="settingsRowInfo">
-            <div class="settingsRowTitle">Live Stream Broadcasts</div>
-            <div class="settingsRowDesc">Notify when creators you follow go LIVE</div>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="settingLiveNotifs" checked onchange="toggleSettingState('liveNotifs', this.checked)">
-            <span class="slider"></span>
-          </label>
-        </div>
-      </div>
-    </div>
-
-    <!-- Legal & About -->
-    <div class="settingsSectionGroup">
-      <div class="settingsSectionHeader">Legal & Support</div>
-      <div class="settingsCard">
-        <div class="settingsRow" onclick="openPrivacyPolicy()">
-          <div class="settingsRowInfo">
-            <div class="settingsRowTitle">Privacy Policy</div>
-            <div class="settingsRowDesc">Read our data collection and usage policy</div>
-          </div>
-          <div class="settingsRowAction"><span>›</span></div>
-        </div>
-        <div class="settingsRow" onclick="showToast('VIBE Terms of Service (2026)')">
-          <div class="settingsRowInfo">
-            <div class="settingsRowTitle">Terms of Service</div>
-            <div class="settingsRowDesc">Platform guidelines and user agreement</div>
-          </div>
-          <div class="settingsRowAction"><span>›</span></div>
-        </div>
-        <div class="settingsRow" onclick="confirmLogout()" style="color:var(--pink);">
-          <div class="settingsRowInfo">
-            <div class="settingsRowTitle" style="color:var(--pink);">Log Out</div>
-            <div class="settingsRowDesc">Sign out of @creator_vibe</div>
-          </div>
-          <div class="settingsRowAction"><span>›</span></div>
-        </div>
-      </div>
-    </div>
-
-  </div>
 </section>
 
 <!-- Profile Screen -->
@@ -1608,7 +964,8 @@ input:checked+.slider:before{transform:translateX(20px)}
 <div class="screenHead">
   <span>My Profile</span>
   <div style="display: flex; align-items: center; gap: 8px;">
-    <button onclick="openSettingsScreen()" style="background: none; border: none; color: #fff; font-size: 18px; cursor: pointer; padding: 4px 6px;" title="Settings & Privacy">⚙️</button>
+    <button onclick="openSecuritySettings()" style="background: none; border: none; color: #fff; font-size: 16px; cursor: pointer; padding: 4px 6px;" title="Privacy & Security">🔒</button>
+    <button onclick="openPrivacyPolicy()" style="background: none; border: none; color: #fff; font-size: 16px; cursor: pointer; padding: 4px 6px;" title="Privacy Policy">📄</button>
     <button class="close" data-close="profile" style="position: static; font-size: 24px;">×</button>
   </div>
 </div>
@@ -1687,12 +1044,18 @@ const photoFileInput=document.getElementById('photoFileInput');
 const timer=document.getElementById('timer');
 const timerText=document.getElementById('timerText');
 
+let userPrivacySettings = {
+  privateAccount: false,
+  allowDm: true,
+  commentsFilter: true,
+  activityStatus: true
+};
+
 let feedData=[
 {
  id:1, author:"Elena Rostova", handle:"@elena_rostova", caption:"Golden hour tones hitting different today ✨ #goldenhour #VIBE", songName:"Golden Hour Vibe", artist:"Elena Rostova", likes:24500, commentsCount:2, shares:1200, views:"112K", avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150", 
  mediaList:[{type:"video", url:"https://assets.mixkit.co/videos/preview/mixkit-woman-filming-herself-with-a-smartphone-41270-large.mp4"}],
  isTagged: true,
- location: "Cape Town, South Africa",
  commentsList:[
   {user:"Liam Chen", text:"Absolute cinematic shots!", avatar:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150"},
   {user:"Sophia Taylor", text:"Where is this spot?? ✨", avatar:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"}
@@ -1702,469 +1065,602 @@ let feedData=[
  id:2, author:"Liam Chen", handle:"@liam_chen", caption:"Late night coding session 💻⚡ #coding #tech #VIBE", songName:"Lofi Chill Beats", artist:"ChillHop Records", likes:58100, commentsCount:1, shares:4500, views:"340K", avatar:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150", 
  mediaList:[{type:"video", url:"https://assets.mixkit.co/videos/preview/mixkit-hands-typing-on-a-laptop-keyboard-close-up-42861-large.mp4"}],
  isTagged: false,
- location: "Johannesburg, South Africa",
  commentsList:[
   {user:"Elena Rostova", text:"Relatable haha ☕", avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150"}
  ]
+},
+{
+ id:3, author:"Sophia Taylor", handle:"@sophia_taylor", caption:"Sunset dance vibes at the beach 🌊💃 #dance #sunset #VIBE", songName:"Summer Vibes Remix", artist:"DJ Sunset", likes:89200, commentsCount:0, shares:3100, views:"510K", avatar:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150", 
+ mediaList:[{type:"video", url:"https://assets.mixkit.co/videos/preview/mixkit-young-woman-dancing-in-the-street-at-sunset-41617-large.mp4"}],
+ isTagged: false,
+ commentsList:[]
 }
 ];
 
 let creatorsDirectory = [
   { name: "Elena Rostova", handle: "@elena_rostova", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150", bio: "Cinematic creator & golden hour lover ✨", followers: "24.5K", following: 180, likes: "150K", isFollowing: false },
-  { name: "Liam Chen", handle: "@liam_chen", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150", bio: "Tech enthusiast & late-night coder 💻", followers: "42.1K", following: 210, likes: "320K", isFollowing: false }
+  { name: "Liam Chen", handle: "@liam_chen", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150", bio: "Tech enthusiast & late-night coder 💻", followers: "42.1K", following: 210, likes: "320K", isFollowing: false },
+  { name: "Sophia Taylor", handle: "@sophia_taylor", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150", bio: "Dance, travel, and good vibes only 🌊", followers: "89.3K", following: 340, likes: "890K", isFollowing: true }
 ];
 
 let hashtagsDirectory = [
   { name: "#VIBE", count: "1.2M views", postsCount: 1420 },
-  { name: "#goldenhour", count: "450K views", postsCount: 520 }
+  { name: "#goldenhour", count: "450K views", postsCount: 520 },
+  { name: "#coding", count: "210K views", postsCount: 310 },
+  { name: "#tech", count: "380K views", postsCount: 450 },
+  { name: "#dance", count: "890K views", postsCount: 980 },
+  { name: "#sunset", count: "620K views", postsCount: 710 }
 ];
 
-// Simple Confirmation Popup Controller
-function showConfirmPopup(title, desc, onConfirm) {
-  const overlay = document.getElementById('confirmPopupOverlay');
-  document.getElementById('confirmPopupTitle').textContent = title;
-  document.getElementById('confirmPopupDesc').textContent = desc;
-  
-  const confirmBtn = document.getElementById('confirmPopupConfirmBtn');
-  const newConfirmBtn = confirmBtn.cloneNode(true);
-  confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
-  
-  const cancelBtnEl = document.getElementById('confirmPopupCancelBtn');
-  const newCancelBtn = cancelBtnEl.cloneNode(true);
-  cancelBtnEl.parentNode.replaceChild(newCancelBtn, cancelBtnEl);
-
-  newConfirmBtn.onclick = () => {
-    overlay.classList.remove('open');
-    if(onConfirm) onConfirm();
-  };
-
-  newCancelBtn.onclick = () => {
-    overlay.classList.remove('open');
-  };
-
-  overlay.classList.add('open');
-}
-
-function promptReportCreator() {
-  showConfirmPopup("Report User", "Are you sure you want to report this user for violating community guidelines?", () => {
-    showToast("User reported. Thank you for keeping VIBE safe 🛡️");
-  });
-}
-
-function promptBlockCreator() {
-  showConfirmPopup("Block User", "Are you sure you want to block this user? You will no longer see their content or receive messages from them.", () => {
-    showToast("User blocked successfully 🚫");
-    closeCreatorProfileModal();
-  });
-}
-
-function promptReportActiveChat() {
-  showConfirmPopup("Report Conversation", "Are you sure you want to report this conversation?", () => {
-    showToast("Conversation reported successfully 🛡️");
-  });
-}
-
-function promptBlockActiveChat() {
-  showConfirmPopup("Block Contact", "Are you sure you want to block this contact?", () => {
-    showToast("Contact blocked successfully 🚫");
-    closeDMChat();
-  });
-}
-
-let selectedPostLocation = "";
-let selectedCoverMediaIndex = 0;
-let userDrafts = [];
-
-let userSettings = {
-  privateAccount: false,
-  dmPreference: 'everyone',
-  activityStatus: true,
-  twoFactor: false,
-  pushNotifs: true,
-  dmNotifs: true,
-  liveNotifs: true
-};
-
-let dmConversations = [
-  {
-    id: 1,
-    name: "Elena Rostova",
-    handle: "@elena_rostova",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
-    isRequest: false,
-    messages: [
-      { sender: "them", text: "Loved your recent vibe post! ✨", time: "10:42 AM" },
-      { sender: "me", text: "Thank you so much Elena! Means a lot.", time: "10:45 AM" }
-    ]
-  },
-  {
-    id: 2,
-    name: "Liam Chen",
-    handle: "@liam_chen",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
-    isRequest: false,
-    messages: [
-      { sender: "them", text: "Let's collaborate on a clip soon.", time: "Yesterday" }
-    ]
-  }
-];
-
-let activeInboxTab = 'messages';
-let activeDMConversation = null;
 let myProfile={username:"@creator_vibe",bio:"Short-form content creator & explorer ✨",avatar:"https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150"};
 let activeVideo=null, muted=true, mediaStream=null, recorder=null, chunks=[], recording=false, recordSeconds=0, timerInterval=null, facing="user", selectedMediaList=[];
-let selectedSound="Original Audio";
+let pressTimer=null, isLongPress=false, selectedSound="Original Audio";
+let activeCommentPostId=null;
+let profileActiveTab = 'posts';
+let activeTabKey = 'home';
+let searchFilterType = 'all';
+let currentActiveCreator = null;
 
-function openSettingsScreen() {
-  document.getElementById('settingPrivateAccount').checked = userSettings.privateAccount;
-  document.getElementById('settingDMPreference').value = userSettings.dmPreference;
-  document.getElementById('settingActivityStatus').checked = userSettings.activityStatus;
-  document.getElementById('settingTwoFactor').checked = userSettings.twoFactor;
-  document.getElementById('settingPushNotifs').checked = userSettings.pushNotifs;
-  document.getElementById('settingDMNotifs').checked = userSettings.dmNotifs;
-  document.getElementById('settingLiveNotifs').checked = userSettings.liveNotifs;
-  document.getElementById('settingsScreen').classList.add('open');
-}
+// Discover & Search State & Execution
+const searchInput = document.getElementById('searchInput');
+const discoverResultsContainer = document.getElementById('discoverResultsContainer');
 
-function closeSettingsScreen() {
-  document.getElementById('settingsScreen').classList.remove('open');
-}
+document.querySelectorAll('.discoverTab').forEach(tab => {
+  tab.onclick = () => {
+    document.querySelectorAll('.discoverTab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    searchFilterType = tab.getAttribute('data-search-filter');
+    executeSearch(searchInput.value.trim());
+  };
+});
 
-function toggleSettingState(key, val) {
-  userSettings[key] = val;
-  showToast('Settings updated ✨');
-}
+searchInput.oninput = (e) => {
+  executeSearch(e.target.value.trim());
+};
 
-function updateSettingValue(key, val) {
-  userSettings[key] = val;
-  showToast('Privacy preferences updated ✨');
-}
+function executeSearch(query) {
+  const q = query.toLowerCase();
+  discoverResultsContainer.innerHTML = '';
 
-function promptChangeUsername() {
-  const newName = prompt("Enter new username:", myProfile.username);
-  if(newName && newName.trim() !== '') {
-    myProfile.username = newName.startsWith('@') ? newName.trim() : '@' + newName.trim();
-    document.getElementById('profileUsername').textContent = myProfile.username;
-    document.getElementById('settingsDisplayUsername').textContent = myProfile.username;
-    showToast('Username updated successfully!');
+  // Filter Posts
+  const matchedPosts = feedData.filter(p => 
+    p.caption.toLowerCase().includes(q) || 
+    p.author.toLowerCase().includes(q) ||
+    (p.handle && p.handle.toLowerCase().includes(q)) ||
+    p.songName.toLowerCase().includes(q)
+  );
+
+  // Filter Creators
+  const matchedCreators = creatorsDirectory.filter(c =>
+    c.name.toLowerCase().includes(q) || c.handle.toLowerCase().includes(q) || c.bio.toLowerCase().includes(q)
+  );
+
+  // Filter Hashtags
+  const matchedHashtags = hashtagsDirectory.filter(h =>
+    h.name.toLowerCase().includes(q)
+  );
+
+  // Render based on searchFilterType
+  if (searchFilterType === 'all' || searchFilterType === 'posts') {
+    if (matchedPosts.length > 0) {
+      const sectionHeader = document.createElement('div');
+      sectionHeader.className = 'discoverSectionTitle';
+      sectionHeader.textContent = 'Posts (' + matchedPosts.length + ')';
+      discoverResultsContainer.appendChild(sectionHeader);
+
+      const grid = document.createElement('div');
+      grid.className = 'discoverGrid';
+      matchedPosts.forEach(post => {
+        const item = document.createElement('div');
+        item.className = 'discoverGridItem';
+        const media = post.mediaList && post.mediaList.length > 0 ? post.mediaList[0] : {type:'image', url:''};
+        if(media.type === 'video') {
+          item.innerHTML = `<video src="${media.url}" muted playsinline></video>`;
+        } else {
+          item.innerHTML = `<img src="${media.url}" alt="">`;
+        }
+        item.onclick = () => {
+          discover.classList.remove('open');
+          updateNavActiveState('home');
+          pauseAllFeedVideos();
+          const idx = feedData.findIndex(f => f.id === post.id);
+          if(idx !== -1) { feed.children[idx].scrollIntoView({behavior:'smooth'}); }
+        };
+        grid.appendChild(item);
+      });
+      discoverResultsContainer.appendChild(grid);
+    }
+  }
+
+  if (searchFilterType === 'all' || searchFilterType === 'creators') {
+    if (matchedCreators.length > 0) {
+      const sectionHeader = document.createElement('div');
+      sectionHeader.className = 'discoverSectionTitle';
+      sectionHeader.textContent = 'Creators (' + matchedCreators.length + ')';
+      discoverResultsContainer.appendChild(sectionHeader);
+
+      const list = document.createElement('div');
+      list.className = 'creatorsListContainer';
+      matchedCreators.forEach(creator => {
+        const row = document.createElement('div');
+        row.className = 'creatorSearchRow';
+        row.innerHTML = `
+          <div class="creatorSearchInfo">
+            <img class="creatorSearchAvatar" src="${creator.avatar}">
+            <div class="creatorSearchMeta">
+              <div class="name">${creator.name}</div>
+              <div class="handle">${creator.handle} • ${creator.followers} followers</div>
+            </div>
+          </div>
+          <button class="creatorFollowBtn ${creator.isFollowing ? 'following' : ''}">${creator.isFollowing ? 'Following' : 'Follow'}</button>
+        `;
+        row.onclick = (e) => {
+          if(e.target.tagName === 'BUTTON') return;
+          openCreatorProfile(creator);
+        };
+        row.querySelector('button').onclick = (e) => {
+          e.stopPropagation();
+          creator.isFollowing = !creator.isFollowing;
+          e.target.textContent = creator.isFollowing ? 'Following' : 'Follow';
+          e.target.classList.toggle('following', creator.isFollowing);
+          showToast(creator.isFollowing ? `Following ${creator.name} ✨` : `Unfollowed ${creator.name}`);
+        };
+        list.appendChild(row);
+      });
+      discoverResultsContainer.appendChild(list);
+    }
+  }
+
+  if (searchFilterType === 'all' || searchFilterType === 'hashtags') {
+    if (matchedHashtags.length > 0) {
+      const sectionHeader = document.createElement('div');
+      sectionHeader.className = 'discoverSectionTitle';
+      sectionHeader.textContent = 'Hashtags (' + matchedHashtags.length + ')';
+      discoverResultsContainer.appendChild(sectionHeader);
+
+      const list = document.createElement('div');
+      list.className = 'hashtagsListContainer';
+      matchedHashtags.forEach(tag => {
+        const row = document.createElement('div');
+        row.className = 'hashtagSearchRow';
+        row.innerHTML = `
+          <div style="display:flex; align-items:center;">
+            <div class="hashtagSymbol">#</div>
+            <div class="hashtagDetails">
+              <div class="hashtagName">${tag.name}</div>
+              <div class="hashtagCount">${tag.count} • ${tag.postsCount} posts</div>
+            </div>
+          </div>
+          <span style="font-size:16px; color:var(--muted);">›</span>
+        `;
+        row.onclick = () => {
+          openHashtagModal(tag);
+        };
+        list.appendChild(row);
+      });
+      discoverResultsContainer.appendChild(list);
+    }
+  }
+
+  if(discoverResultsContainer.innerHTML === '') {
+    discoverResultsContainer.innerHTML = `<div style="text-align:center; color:var(--muted); padding:30px; font-size:14px;">No results found for "${query}"</div>`;
   }
 }
 
-function promptChangeEmail() {
-  const newEmail = prompt("Enter your new email address:", "creator@vibe-platform.com");
-  if(newEmail && newEmail.trim() !== '') {
-    document.getElementById('settingsDisplayEmail').textContent = newEmail.trim();
-    showToast('Email address updated securely.');
-  }
-}
+function openCreatorProfile(creator) {
+  currentActiveCreator = creator;
+  document.getElementById('modalCreatorHeaderName').textContent = creator.name;
+  document.getElementById('modalCreatorAvatar').src = creator.avatar;
+  document.getElementById('modalCreatorName').textContent = creator.name;
+  document.getElementById('modalCreatorHandle').textContent = creator.handle;
+  document.getElementById('modalCreatorBio').textContent = creator.bio;
+  document.getElementById('modalCreatorFollowers').textContent = creator.followers;
+  document.getElementById('modalCreatorFollowing').textContent = creator.following;
+  document.getElementById('modalCreatorLikes').textContent = creator.likes;
 
-function promptChangePassword() {
-  const current = prompt("Enter current password:");
-  if(!current) return;
-  const newPass = prompt("Enter new password (min 6 characters):");
-  if(newPass && newPass.length >= 6) {
-    showToast('Password changed successfully! 🔒');
-  } else if(newPass) {
-    showToast('Password must be at least 6 characters.');
-  }
-}
+  const followBtn = document.getElementById('modalCreatorFollowBtn');
+  followBtn.textContent = creator.isFollowing ? 'Following' : 'Follow';
+  followBtn.style.background = creator.isFollowing ? 'transparent' : 'var(--pink)';
+  followBtn.style.border = creator.isFollowing ? '1px solid rgba(255,255,255,0.2)' : '1px solid var(--pink)';
 
-function requestAccountDataExport() {
-  showToast('Data export requested. We will email your archive shortly 📥');
-}
-
-function confirmLogout() {
-  showConfirmPopup("Log Out", "Are you sure you want to sign out of @creator_vibe?", () => {
-    showToast('Logged out successfully.');
-    closeSettingsScreen();
+  const grid = document.getElementById('modalCreatorPostsGrid');
+  grid.innerHTML = '';
+  const creatorPosts = feedData.filter(p => p.author === creator.name);
+  creatorPosts.forEach(post => {
+    const thumb = document.createElement('div');
+    thumb.className = 'userPostThumb';
+    const media = post.mediaList && post.mediaList.length > 0 ? post.mediaList[0] : {type:'image', url:''};
+    if(media.type === 'video') {
+      thumb.innerHTML = `<video src="${media.url}" muted playsinline></video>`;
+    } else {
+      thumb.innerHTML = `<img src="${media.url}" alt="">`;
+    }
+    thumb.onclick = () => {
+      document.getElementById('creatorProfileModal').classList.remove('open');
+      discover.classList.remove('open');
+      updateNavActiveState('home');
+      pauseAllFeedVideos();
+      const idx = feedData.findIndex(f => f.id === post.id);
+      if(idx !== -1) { feed.children[idx].scrollIntoView({behavior:'smooth'}); }
+    };
+    grid.appendChild(thumb);
   });
+
+  document.getElementById('creatorProfileModal').classList.add('open');
+}
+
+function closeCreatorProfileModal() {
+  document.getElementById('creatorProfileModal').classList.remove('open');
+}
+
+function toggleModalCreatorFollow() {
+  if(!currentActiveCreator) return;
+  currentActiveCreator.isFollowing = !currentActiveCreator.isFollowing;
+  const followBtn = document.getElementById('modalCreatorFollowBtn');
+  followBtn.textContent = currentActiveCreator.isFollowing ? 'Following' : 'Follow';
+  followBtn.style.background = currentActiveCreator.isFollowing ? 'transparent' : 'var(--pink)';
+  followBtn.style.border = currentActiveCreator.isFollowing ? '1px solid rgba(255,255,255,0.2)' : '1px solid var(--pink)';
+  showToast(currentActiveCreator.isFollowing ? `Following ${currentActiveCreator.name} ✨` : `Unfollowed ${currentActiveCreator.name}`);
+  executeSearch(searchInput.value.trim());
+}
+
+function openHashtagModal(tag) {
+  document.getElementById('hashtagModalTitle').textContent = tag.name;
+  document.getElementById('hashtagModalName').textContent = tag.name;
+  document.getElementById('hashtagModalViews').textContent = `${tag.count} on platform`;
+
+  const grid = document.getElementById('hashtagModalPostsGrid');
+  grid.innerHTML = '';
+  const tagPosts = feedData.filter(p => p.caption.toLowerCase().includes(tag.name.toLowerCase()));
+  tagPosts.forEach(post => {
+    const thumb = document.createElement('div');
+    thumb.className = 'userPostThumb';
+    const media = post.mediaList && post.mediaList.length > 0 ? post.mediaList[0] : {type:'image', url:''};
+    if(media.type === 'video') {
+      thumb.innerHTML = `<video src="${media.url}" muted playsinline></video>`;
+    } else {
+      thumb.innerHTML = `<img src="${media.url}" alt="">`;
+    }
+    thumb.onclick = () => {
+      document.getElementById('hashtagModal').classList.remove('open');
+      discover.classList.remove('open');
+      updateNavActiveState('home');
+      pauseAllFeedVideos();
+      const idx = feedData.findIndex(f => f.id === post.id);
+      if(idx !== -1) { feed.children[idx].scrollIntoView({behavior:'smooth'}); }
+    };
+    grid.appendChild(thumb);
+  });
+
+  document.getElementById('hashtagModal').classList.add('open');
+}
+
+function closeHashtagModal() {
+  document.getElementById('hashtagModal').classList.remove('open');
+}
+
+// Initial default search load
+executeSearch('');
+
+// Camera and Recording Logic
+async function startCamera() {
+  try {
+    if (mediaStream) {
+      mediaStream.getTracks().forEach(t => t.stop());
+    }
+    mediaStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: facing },
+      audio: true
+    });
+    camera.srcObject = mediaStream;
+  } catch (err) {
+    console.warn("Camera permission error or not supported:", err);
+    showToast("Camera access unavailable. Using simulated mode.");
+  }
+}
+
+function stopCamera() {
+  if (mediaStream) {
+    mediaStream.getTracks().forEach(t => t.stop());
+    mediaStream = null;
+  }
+}
+
+document.getElementById('flipBtn').onclick = () => {
+  facing = facing === 'user' ? 'environment' : 'user';
+  startCamera();
+};
+
+const shutterBtn = document.getElementById('shutter');
+shutterBtn.onmousedown = () => {
+  isLongPress = false;
+  pressTimer = setTimeout(() => {
+    isLongPress = true;
+    startVideoRecording();
+  }, 500);
+};
+
+shutterBtn.onmouseup = () => {
+  clearTimeout(pressTimer);
+  if (recording) {
+    stopVideoRecording();
+  } else if (!isLongPress) {
+    takeSnapshotPhoto();
+  }
+};
+
+shutterBtn.ontouchstart = (e) => {
+  e.preventDefault();
+  isLongPress = false;
+  pressTimer = setTimeout(() => {
+    isLongPress = true;
+    startVideoRecording();
+  }, 500);
+};
+
+shutterBtn.ontouchend = (e) => {
+  e.preventDefault();
+  clearTimeout(pressTimer);
+  if (recording) {
+    stopVideoRecording();
+  } else if (!isLongPress) {
+    takeSnapshotPhoto();
+  }
+};
+
+function takeSnapshotPhoto() {
+  if (!camera.videoWidth) {
+    showToast('Camera is still loading...');
+    return;
+  }
+  const canvas = document.createElement('canvas');
+  canvas.width = camera.videoWidth;
+  canvas.height = camera.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(camera, 0, 0);
+  canvas.toBlob(blob => {
+    const photoUrl = URL.createObjectURL(blob);
+    selectedMediaList = [{ type: 'image', url: photoUrl }];
+    openMediaEditor();
+    showToast('Photo captured! 📸');
+  }, 'image/jpeg');
+}
+
+function startVideoRecording() {
+  if (!mediaStream) {
+    showToast('Camera stream active required');
+    return;
+  }
+  chunks = [];
+  try {
+    recorder = new MediaRecorder(mediaStream, { mimeType: 'video/webm' });
+  } catch (e) {
+    try { recorder = new MediaRecorder(mediaStream); } catch(err) {
+      showToast('Video recording not supported');
+      return;
+    }
+  }
+
+  recorder.ondataavailable = e => {
+    if (e.data && e.data.size > 0) chunks.push(e.data);
+  };
+
+  recorder.onstop = () => {
+    const blob = new Blob(chunks, { type: 'video/webm' });
+    const videoUrl = URL.createObjectURL(blob);
+    selectedMediaList = [{ type: 'video', url: videoUrl }];
+    openMediaEditor();
+    showToast('Video recorded successfully! 🎥');
+  };
+
+  recorder.start();
+  recording = true;
+  shutterBtn.classList.add('recording');
+  timer.classList.remove('hidden');
+  recordSeconds = 0;
+  timerText.textContent = '00:00';
+  timerInterval = setInterval(() => {
+    recordSeconds++;
+    const m = Math.floor(recordSeconds / 60);
+    const s = recordSeconds % 60;
+    timerText.textContent = `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+    if (recordSeconds >= 600) stopVideoRecording();
+  }, 1000);
+}
+
+function stopVideoRecording() {
+  if (!recording || !recorder) return;
+  recorder.stop();
+  recording = false;
+  shutterBtn.classList.remove('recording');
+  timer.classList.add('hidden');
+  clearInterval(timerInterval);
+}
+
+function openReportModal() {
+  showToast('Report modal initialized');
+}
+
+function openSecuritySettings() {
+  showToast('Privacy & Security settings open');
 }
 
 function openPrivacyPolicy() {
-  showToast('Opening VIBE Privacy Policy...');
+  showToast('Privacy Policy open');
 }
 
-function openLocationSelector() { document.getElementById('locationModal').classList.add('open'); }
-function closeLocationSelector() { document.getElementById('locationModal').classList.remove('open'); }
-function selectLocation(loc) {
-  if(loc === 'Clear Location') {
-    selectedPostLocation = "";
-    document.getElementById('selectedLocationLabel').textContent = "Add location";
-    showToast('Location removed');
-  } else {
-    selectedPostLocation = loc;
-    document.getElementById('selectedLocationLabel').textContent = loc;
-    showToast(`Location set: ${loc} 📍`);
-  }
-  closeLocationSelector();
-}
-
-function openCoverSelector() {
-  if(!selectedMediaList || selectedMediaList.length === 0) {
-    showToast('No media selected for cover');
-    return;
-  }
-  const grid = document.getElementById('coverThumbnailGrid');
-  grid.innerHTML = '';
-  selectedMediaList.forEach((m, idx) => {
-    const item = document.createElement('div');
-    item.className = `thumbnail-item ${idx === selectedCoverMediaIndex ? 'selected' : ''}`;
-    if(m.type === 'video') {
-      item.innerHTML = `<video src="${m.url}" muted playsinline></video>`;
-    } else {
-      item.innerHTML = `<img src="${m.url}" alt="">`;
-    }
-    item.onclick = () => {
-      selectedCoverMediaIndex = idx;
-      document.querySelectorAll('.thumbnail-item').forEach(el => el.classList.remove('selected'));
-      item.classList.add('selected');
-      document.getElementById('selectedCoverLabel').textContent = `Item #${idx + 1}`;
-      showToast(`Cover thumbnail updated 🖼️`);
-      closeCoverSelector();
-    };
-    grid.appendChild(item);
-  });
-  document.getElementById('coverModal').classList.add('open');
-}
-function closeCoverSelector() { document.getElementById('coverModal').classList.remove('open'); }
-
-function openDraftsModal() {
-  const container = document.getElementById('draftsListContainer');
-  container.innerHTML = '';
-  document.getElementById('draftsCountBadge').textContent = `(${userDrafts.length})`;
-
-  if(userDrafts.length === 0) {
-    container.innerHTML = `<div style="text-align:center; color:var(--muted); padding:30px; font-size:13px;">No saved drafts found</div>`;
-  } else {
-    userDrafts.forEach((draft, index) => {
-      const card = document.createElement('div');
-      card.className = 'draft-card';
-      const firstMedia = draft.mediaList[0] || {};
-      let thumbHtml = firstMedia.type === 'video' ? `<video class="draft-thumb" src="${firstMedia.url}"></video>` : `<img class="draft-thumb" src="${firstMedia.url}">`;
-      
-      card.innerHTML = `
-        ${thumbHtml}
-        <div class="draft-info">
-          <div class="draft-caption">${draft.caption || 'Untitled Draft'}</div>
-          <div class="draft-date">${draft.date} • Location: ${draft.location || 'None'}</div>
-        </div>
-        <div class="draft-actions">
-          <button class="select-track-btn selected" onclick="loadDraft(${index})">Load</button>
-          <button class="select-track-btn" onclick="deleteDraft(event, ${index})" style="background:rgba(255,42,95,0.2); border-color:var(--pink);">×</button>
-        </div>
-      `;
-      container.appendChild(card);
-    });
-  }
-  document.getElementById('draftsModal').classList.add('open');
-}
-
-function closeDraftsModal() { document.getElementById('draftsModal').classList.remove('open'); }
-
-document.getElementById('saveDraftBtn').onclick = () => {
-  const captionText = document.getElementById('editorCaptionInput').value.trim() || document.getElementById('captionInput').value.trim();
-  const draft = {
-    caption: captionText,
-    mediaList: [...selectedMediaList],
-    location: selectedPostLocation,
-    coverIndex: selectedCoverMediaIndex,
-    sound: selectedSound,
-    date: new Date().toLocaleDateString()
-  };
-  userDrafts.push(draft);
-  document.getElementById('draftsCountBadge').textContent = `(${userDrafts.length})`;
-  showToast('Saved to drafts successfully! 📁');
-  postScreen.classList.remove('open');
-  appContainer.classList.remove('hide-nav-for-create');
-  updateNavActiveState('home');
+videoFileInput.onchange = (e) => {
+  const files = Array.from(e.target.files);
+  if(!files.length) return;
+  selectedMediaList = files.map(f => ({ type: 'video', url: URL.createObjectURL(f) }));
+  openMediaEditor();
 };
 
-function loadDraft(index) {
-  const draft = userDrafts[index];
-  if(!draft) return;
-  selectedMediaList = [...draft.mediaList];
-  selectedPostLocation = draft.location || "";
-  selectedCoverMediaIndex = draft.coverIndex || 0;
-  selectedSound = draft.sound || "Original Audio";
-  
-  document.getElementById('editorCaptionInput').value = draft.caption;
-  document.getElementById('captionInput').value = draft.caption;
-  document.getElementById('selectedLocationLabel').textContent = selectedPostLocation || "Add location";
-  document.getElementById('selectedCoverLabel').textContent = `Item #${selectedCoverMediaIndex + 1}`;
-  
-  closeDraftsModal();
-  setupPostPreview();
-  showToast('Draft loaded successfully ✨');
+photoFileInput.onchange = (e) => {
+  const files = Array.from(e.target.files);
+  if(!files.length) return;
+  selectedMediaList = files.map(f => ({ type: 'image', url: URL.createObjectURL(f) }));
+  openMediaEditor();
+};
+
+function openMediaEditor() {
+  studio.classList.remove('open');
+  stopCamera();
+  editorScreen.classList.add('open');
+  setupEditorContainer();
 }
 
-function deleteDraft(e, index) {
-  e.stopPropagation();
-  showConfirmPopup("Delete Draft", "Are you sure you want to delete this saved draft?", () => {
-    userDrafts.splice(index, 1);
-    document.getElementById('draftsCountBadge').textContent = `(${userDrafts.length})`;
-    openDraftsModal();
-    showToast('Draft deleted');
+function setupEditorContainer() {
+  const container = document.getElementById('editorCanvasContainer');
+  const existingMedia = container.querySelectorAll('video, img, .reel-media-slider');
+  existingMedia.forEach(el => el.remove());
+
+  if (selectedMediaList.length === 1) {
+    container.classList.remove('multi-item');
+    const m = selectedMediaList[0];
+    if (m.type === 'video') {
+      const vid = document.createElement('video');
+      vid.src = m.url;
+      vid.autoplay = true;
+      vid.loop = true;
+      vid.muted = false;
+      vid.playsInline = true;
+      vid.id = "editorActiveVideo";
+      container.insertBefore(vid, container.firstChild);
+    } else {
+      const img = document.createElement('img');
+      img.src = m.url;
+      img.id = "editorActiveImage";
+      container.insertBefore(img, container.firstChild);
+    }
+  } else {
+    container.classList.add('multi-item');
+    const slider = document.createElement('div');
+    slider.className = 'reel-media-slider';
+    selectedMediaList.forEach(m => {
+      const slide = document.createElement('div');
+      slide.className = 'reel-media-slide';
+      if (m.type === 'video') {
+        slide.innerHTML = `<video src="${m.url}" loop autoplay playsinline muted></video>`;
+      } else {
+        slide.innerHTML = `<img src="${m.url}" alt="">`;
+      }
+      slider.appendChild(slide);
+    });
+    container.insertBefore(slider, container.firstChild);
+  }
+}
+
+function closeEditorDrawers() {
+  document.querySelectorAll('.editor-tool-drawer').forEach(d => d.classList.remove('open'));
+  document.querySelectorAll('.edit-tool-btn').forEach(b => b.classList.remove('active'));
+}
+
+function toggleEditorDrawer(drawerId) {
+  const drawer = document.getElementById(drawerId);
+  const isOpen = drawer.classList.contains('open');
+  closeEditorDrawers();
+  if (!isOpen) {
+    drawer.classList.add('open');
+  }
+}
+
+function selectEditorMusic(songTitle, artistName, index) {
+  selectedSound = songTitle;
+  const labelEl = document.getElementById('currentSoundLabel');
+  if(labelEl) labelEl.textContent = songTitle;
+
+  document.getElementById('drawerSelectedSongTitle').textContent = songTitle;
+  document.getElementById('drawerSelectedSongArtist').textContent = artistName;
+
+  document.querySelectorAll('.music-list-row').forEach((row, idx) => {
+    const btn = row.querySelector('.select-track-btn');
+    if (idx === index) {
+      row.classList.add('active');
+      btn.textContent = 'Selected';
+      btn.classList.add('selected');
+    } else {
+      row.classList.remove('active');
+      btn.textContent = 'Select';
+      btn.classList.remove('selected');
+    }
   });
+
+  showToast(`Track selected: ${songTitle} 🎵`);
 }
 
-// ----------------------------------------------------
-// FIXED TEXT EDITOR & DRAGGABLE OVERLAY IMPLEMENTATION
-// ----------------------------------------------------
-function makeElementDraggable(elm) {
-  let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-  elm.onmousedown = dragMouseDown;
-  elm.ontouchstart = dragTouchStart;
-
-  function dragMouseDown(e) {
-    e = e || window.event;
-    e.preventDefault();
-    pos3 = e.clientX;
-    pos4 = e.clientY;
-    document.onmouseup = closeDragElement;
-    document.onmousemove = elementDrag;
+function applyEditorFilter(filterStyle, btnEl) {
+  const container = document.getElementById('editorCanvasContainer');
+  container.querySelectorAll('video, img').forEach(el => { el.style.filter = filterStyle; });
+  const drawer = document.getElementById('editorEffectsDrawer');
+  if (drawer) {
+    drawer.querySelectorAll('.editorFilterChip').forEach(chip => chip.classList.remove('active'));
   }
-
-  function elementDrag(e) {
-    e = e || window.event;
-    e.preventDefault();
-    pos1 = pos3 - e.clientX;
-    pos2 = pos4 - e.clientY;
-    pos3 = e.clientX;
-    pos4 = e.clientY;
-    elm.style.top = (elm.offsetTop - pos2) + "px";
-    elm.style.left = (elm.offsetLeft - pos1) + "px";
-  }
-
-  function dragTouchStart(e) {
-    if (e.touches.length === 1) {
-      pos3 = e.touches[0].clientX;
-      pos4 = e.touches[0].clientY;
-      document.ontouchend = closeDragElement;
-      document.ontouchmove = elementTouchDrag;
-    }
-  }
-
-  function elementTouchDrag(e) {
-    if (e.touches.length === 1) {
-      pos1 = pos3 - e.touches[0].clientX;
-      pos2 = pos4 - e.touches[0].clientY;
-      pos3 = e.touches[0].clientX;
-      pos4 = e.touches[0].clientY;
-      elm.style.top = (elm.offsetTop - pos2) + "px";
-      elm.style.left = (elm.offsetLeft - pos1) + "px";
-    }
-  }
-
-  function closeDragElement() {
-    document.onmouseup = null;
-    document.onmousemove = null;
-    document.ontouchend = null;
-    document.ontouchmove = null;
-  }
+  if (btnEl) btnEl.classList.add('active');
+  showToast('Effect applied! ✨');
 }
 
-function commitEditorText() {
-  const input = document.getElementById('editorTextInputField');
-  const textVal = input.value.trim();
-  if(!textVal) return;
-  
+function addStickerToCanvas(emoji) {
   const layer = document.getElementById('editorOverlaysLayer');
-  const overlayEl = document.createElement('div');
-  overlayEl.className = 'editorOverlayElement text-element';
-  overlayEl.textContent = textVal;
-  overlayEl.style.top = '40%';
-  overlayEl.style.left = '30%';
-  
-  makeElementDraggable(overlayEl);
-  layer.appendChild(overlayEl);
-  
-  input.value = '';
+  const stickerEl = document.createElement('div');
+  stickerEl.className = 'editorOverlayElement';
+  stickerEl.textContent = emoji;
+  stickerEl.style.left = '40%';
+  stickerEl.style.top = '40%';
+  makeElementDraggable(stickerEl);
+  layer.appendChild(stickerEl);
   closeEditorDrawers();
-  showToast('Text added to media ✨');
-}
-
-function addStickerToCanvas(stickerEmoji) {
-  const layer = document.getElementById('editorOverlaysLayer');
-  const overlayEl = document.createElement('div');
-  overlayEl.className = 'editorOverlayElement';
-  overlayEl.textContent = stickerEmoji;
-  overlayEl.style.top = '45%';
-  overlayEl.style.left = '40%';
-  
-  makeElementDraggable(overlayEl);
-  layer.appendChild(overlayEl);
-  closeEditorDrawers();
-  showToast('Sticker added ✨');
+  showToast('Sticker added!');
 }
 
 function addMentionToCanvas(mentionText) {
   const layer = document.getElementById('editorOverlaysLayer');
-  const overlayEl = document.createElement('div');
-  overlayEl.className = 'editorOverlayElement text-element';
-  overlayEl.textContent = mentionText;
-  overlayEl.style.top = '50%';
-  overlayEl.style.left = '30%';
-  
-  makeElementDraggable(overlayEl);
-  layer.appendChild(overlayEl);
+  const mentionEl = document.createElement('div');
+  mentionEl.className = 'editorOverlayElement text-element';
+  mentionEl.textContent = mentionText;
+  mentionEl.style.left = '30%';
+  mentionEl.style.top = '50%';
+  makeElementDraggable(mentionEl);
+  layer.appendChild(mentionEl);
   closeEditorDrawers();
-  showToast('Mention added ✨');
+  showToast('Mention added!');
 }
 
-function applyEditorFilter(filterStyle, btn) {
-  document.querySelectorAll('.editorFilterChip').forEach(c => c.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  const container = document.getElementById('editorCanvasContainer');
-  const mediaElms = container.querySelectorAll('video, img');
-  mediaElms.forEach(m => m.style.filter = filterStyle);
-}
-// ----------------------------------------------------
-
-function setupPostPreview() {
-  const previewBox = document.getElementById('previewBox');
-  previewBox.innerHTML = '';
-  if(!selectedMediaList || selectedMediaList.length === 0) {
-    previewBox.innerHTML = `<div style="color:#777">Choose a video or picture</div>`;
-    return;
-  }
-  if(selectedMediaList.length > 1) {
-    previewBox.className = 'previewBox multi-item';
-    selectedMediaList.forEach(m => {
-      if(m.type === 'video') {
-        const v = document.createElement('video');
-        v.src = m.url; v.muted = true; v.playsInline = true; v.autoplay = true; v.loop = true;
-        previewBox.appendChild(v);
-      } else {
-        const img = document.createElement('img');
-        img.src = m.url;
-        previewBox.appendChild(img);
-      }
-    });
-  } else {
-    previewBox.className = 'previewBox';
-    const m = selectedMediaList[0];
-    if(m.type === 'video') {
-      const v = document.createElement('video');
-      v.src = m.url; v.muted = true; v.playsInline = true; v.autoplay = true; v.loop = true;
-      previewBox.appendChild(v);
-    } else {
-      const img = document.createElement('img');
-      img.src = m.url;
-      previewBox.appendChild(img);
-    }
-  }
+function commitEditorText() {
+  const input = document.getElementById('editorTextInputField');
+  const text = input.value.trim();
+  if (!text) return;
+  const layer = document.getElementById('editorOverlaysLayer');
+  const textEl = document.createElement('div');
+  textEl.className = 'editorOverlayElement text-element';
+  textEl.textContent = text;
+  textEl.style.left = '25%';
+  textEl.style.top = '45%';
+  makeElementDraggable(textEl);
+  layer.appendChild(textEl);
+  input.value = '';
+  closeEditorDrawers();
+  showToast('Text overlay added!');
 }
 
-function showToast(msg) {
-  toast.textContent = msg;
-  toast.classList.add('show');
-  setTimeout(() => { toast.classList.remove('show'); }, 2200);
+function makeElementDraggable(elm) {
+  let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+  elm.onmousedown = (e) => {
+    e.preventDefault();
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    document.onmouseup = () => { document.onmouseup = null; document.onmousemove = null; };
+    document.onmousemove = (ev) => {
+      ev.preventDefault();
+      pos1 = pos3 - ev.clientX;
+      pos2 = pos4 - ev.clientY;
+      pos3 = ev.clientX;
+      pos4 = ev.clientY;
+      elm.style.top = (elm.offsetTop - pos2) + "px";
+      elm.style.left = (elm.offsetLeft - pos1) + "px";
+    };
+  };
 }
-
-// Initialization and Event Listeners
-document.getElementById('closeEditorBtn').onclick = () => {
-  editorScreen.classList.remove('open');
-};
 
 document.getElementById('editorQuickPostBtn').onclick = () => {
   editorScreen.classList.remove('open');
@@ -2172,73 +1668,216 @@ document.getElementById('editorQuickPostBtn').onclick = () => {
   setupPostPreview();
 };
 
-function toggleEditorDrawer(drawerId) {
-  const drawer = document.getElementById(drawerId);
-  const isOpen = drawer.classList.contains('open');
-  closeEditorDrawers();
-  if(!isOpen) drawer.classList.add('open');
-}
-
-function closeEditorDrawers() {
-  document.querySelectorAll('.editor-tool-drawer').forEach(d => d.classList.remove('open'));
-}
-
-function selectEditorMusic(title, artist, index) {
-  selectedSound = title;
-  document.getElementById('drawerSelectedSongTitle').textContent = title;
-  document.getElementById('drawerSelectedSongArtist').textContent = artist;
-  document.querySelectorAll('.music-list-row').forEach(r => r.classList.remove('active'));
-  document.querySelectorAll('.select-track-btn').forEach(b => {
-    b.textContent = 'Select';
-    b.classList.remove('selected');
-  });
-  const row = document.getElementById(`track-row-${index}`);
-  if(row) {
-    row.classList.add('active');
-    const btn = row.querySelector('.select-track-btn');
-    if(btn) {
-      btn.textContent = 'Selected';
-      btn.classList.add('selected');
+function setupPostPreview() {
+  const previewBox = document.getElementById('previewBox');
+  previewBox.innerHTML = '';
+  if (selectedMediaList.length === 1) {
+    previewBox.classList.remove('multi-item');
+    const m = selectedMediaList[0];
+    if (m.type === 'video') {
+      previewBox.innerHTML = `<video src="${m.url}" autoplay loop muted playsinline></video>`;
+    } else {
+      previewBox.innerHTML = `<img src="${m.url}" alt="">`;
     }
+  } else {
+    previewBox.classList.add('multi-item');
+    let sliderHtml = `<div class="reel-media-slider">`;
+    selectedMediaList.forEach(m => {
+      if (m.type === 'video') {
+        sliderHtml += `<div class="reel-media-slide"><video src="${m.url}" autoplay loop muted playsinline></video></div>`;
+      } else {
+        sliderHtml += `<div class="reel-media-slide"><img src="${m.url}" alt=""></div>`;
+      }
+    });
+    sliderHtml += `</div>`;
+    previewBox.innerHTML = sliderHtml;
   }
-  showToast(`Track updated: ${title} 🎵`);
 }
-
-document.getElementById('closePost').onclick = () => {
-  postScreen.classList.remove('open');
-  appContainer.classList.remove('hide-nav-for-create');
-};
 
 document.getElementById('publishBtn').onclick = () => {
-  const captionText = document.getElementById('captionInput').value.trim() || document.getElementById('editorCaptionInput').value.trim();
-  if(!selectedMediaList.length) {
-    showToast('Please attach at least one video or photo.');
-    return;
-  }
-  const newReel = {
+  const captionText = document.getElementById('editorCaptionInput').value.trim() || document.getElementById('captionInput').value.trim() || 'My new VIBE post ✨ #VIBE';
+  const newPost = {
     id: Date.now(),
-    author: "You (@creator_vibe)",
-    handle: "@creator_vibe",
-    caption: captionText || "Shared via VIBE 🚀",
+    author: 'You',
+    handle: '@creator_vibe',
+    caption: captionText,
     songName: selectedSound,
-    artist: "Creator VIBE",
+    artist: 'Creator VIBE',
     likes: 1,
     commentsCount: 0,
     shares: 0,
-    views: "1",
+    views: '1',
     avatar: myProfile.avatar,
     mediaList: [...selectedMediaList],
+    isLiked: false,
+    isSaved: false,
     isTagged: false,
-    location: selectedPostLocation,
     commentsList: []
   };
-  feedData.unshift(newReel);
-  renderFeed();
+
+  feedData.unshift(newPost);
   postScreen.classList.remove('open');
   appContainer.classList.remove('hide-nav-for-create');
   updateNavActiveState('home');
-  showToast('Posted to feed successfully! 🎉');
+  renderFeed();
+  showToast('Posted successfully to VIBE! 🎉');
 };
+
+function updateNavActiveState(tabKey) {
+ activeTabKey = tabKey;
+ document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+ const activeBtn = document.querySelector(`.nav button[data-tab="${tabKey}"]`);
+ if(activeBtn) activeBtn.classList.add('active');
+ 
+ if(tabKey !== 'home') {
+   pauseAllFeedVideos();
+ } else {
+   setTimeout(setupObserver, 50);
+ }
+}
+
+function pauseAllFeedVideos() {
+  document.querySelectorAll('video').forEach(v => { 
+    v.pause(); 
+    const card = v.closest('.reel');
+    if(card) {
+      const controlOverlay = card.querySelector('.video-control-overlay');
+      const durationIndicator = card.querySelector('.video-duration-indicator');
+      const pauseBtn = card.querySelector('.custom-pause-btn');
+      if(controlOverlay) controlOverlay.classList.remove('show');
+      if(durationIndicator) durationIndicator.classList.remove('show');
+      if(pauseBtn) pauseBtn.textContent = '▶';
+    }
+  });
+}
+
+function showToast(msg){toast.textContent=msg;toast.classList.add('show');clearTimeout(showToast.t);showToast.t=setTimeout(()=>toast.classList.remove('show'),2200)}
+
+function parseCaptions(text){
+ return text.replace(/(#[\w\d]+)/g, '<span class="hashtag">$1</span>');
+}
+
+function formatCount(num) {
+ if (typeof num === 'string') return num;
+ if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+ if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+ return num;
+}
+
+function renderFeed(filteredList){
+ const list = filteredList || feedData;
+ feed.innerHTML='';
+ list.forEach((item)=>{
+  const card=document.createElement('article'); 
+  card.className='reel';
+  
+  let mediaHtml = '';
+  let dotsHtml = '';
+  const mediaList = item.mediaList && item.mediaList.length > 0 ? item.mediaList : [{type: 'video', url: ''}];
+  const isSinglePhoto = mediaList.length === 1 && mediaList[0].type === 'image';
+
+  if(isSinglePhoto) {
+    card.classList.add('image');
+  }
+
+  if(mediaList.length > 1) {
+    mediaHtml = `<div class="reel-media-slider">`;
+    mediaList.forEach((m) => {
+      if(m.type === 'video') {
+        mediaHtml += `
+          <div class="reel-media-slide" style="position:relative;">
+            <video class="reel-video" src="${m.url}" playsinline preload="auto" ${muted?'muted':''}></video>
+            <div class="video-duration-indicator">0:00</div>
+            <div class="video-control-overlay">
+              <button class="custom-pause-btn" title="Toggle Play/Pause">⏸</button>
+            </div>
+          </div>`;
+      } else {
+        mediaHtml += `<div class="reel-media-slide"><img class="reel-image" style="display:block" src="${m.url}" alt=""></div>`;
+      }
+    });
+    mediaHtml += `</div>`;
+
+    dotsHtml = `<div class="carousel-dots">`;
+    mediaList.forEach((_, idx) => {
+      dotsHtml += `<div class="carousel-dot ${idx === 0 ? 'active' : ''}"></div>`;
+    });
+    dotsHtml += `</div>`;
+  } else {
+    const m = mediaList[0];
+    if(m.type === 'video') {
+      mediaHtml = `
+        <video class="reel-video" src="${m.url}" playsinline preload="auto" ${muted?'muted':''}></video>
+        <div class="video-duration-indicator">0:00</div>
+        <div class="video-control-overlay">
+          <button class="custom-pause-btn" title="Toggle Play/Pause">⏸</button>
+        </div>`;
+    } else {
+      mediaHtml = `<img class="reel-image" style="display:block" src="${m.url}" alt="">`;
+    }
+  }
+
+  const songTitleText = item.songName || 'Original Audio';
+  const songArtistText = item.artist || item.author;
+
+  card.innerHTML=`
+  ${mediaHtml}
+  ${dotsHtml}
+  <button class="mute" style="${isSinglePhoto ? 'display:none;' : ''}">${muted?'🔇':'🔊'}</button>
+  <div class="overlay"><div class="info">
+    <div class="author"><img class="avatar" src="${item.avatar}"><span class="name">${item.author}</span><button class="follow">Follow</button></div>
+    <div class="caption">${parseCaptions(item.caption)}</div>
+    <div class="audio" data-post-id="${item.id}">♫ <span class="song-title">${songTitleText}</span> - <span class="song-artist">${songArtistText}</span></div>
+  </div>
+  <div class="actions">
+    <button class="action like ${item.isLiked ? 'liked' : ''}"><div class="circle">${item.isLiked ? '♥' : '♡'}</div><div class="count">${formatCount(item.likes)}</div></button>
+    <button class="action commentBtn"><div class="circle">💬</div><div class="count">${item.commentsList.length}</div></button>
+    <button class="action saveBtn ${item.isSaved ? 'saved' : ''}"><div class="circle">${item.isSaved ? '★' : '☆'}</div><div class="count">Save</div></button>
+    <button class="action shareBtn"><div class="circle">↗</div><div class="count">${formatCount(item.shares)}</div></button>
+  </div></div>`;
+  feed.appendChild(card);
+ });
+}
+
+// Navigation & Screen Switches
+document.querySelectorAll('.nav button').forEach(btn => {
+  btn.onclick = () => {
+    const tab = btn.getAttribute('data-tab');
+    updateNavActiveState(tab);
+    
+    studio.classList.remove('open');
+    discover.classList.remove('open');
+    inbox.classList.remove('open');
+    profile.classList.remove('open');
+    appContainer.classList.remove('hide-nav-for-create');
+    stopCamera();
+
+    if (tab === 'discover') {
+      discover.classList.add('open');
+      executeSearch(searchInput.value.trim());
+    } else if (tab === 'create') {
+      appContainer.classList.add('hide-nav-for-create');
+      studio.classList.add('open');
+      startCamera();
+    } else if (tab === 'inbox') {
+      inbox.classList.add('open');
+    } else if (tab === 'profile') {
+      profile.classList.add('open');
+    }
+  };
+});
+
+document.querySelectorAll('.screen .close').forEach(btn => {
+  btn.onclick = () => {
+    const screen = btn.closest('.screen');
+    if(screen) screen.classList.remove('open');
+    appContainer.classList.remove('hide-nav-for-create');
+    updateNavActiveState('home');
+    stopCamera();
+  };
+});
+
+renderFeed();
 </script>
 </body>
 </html>
