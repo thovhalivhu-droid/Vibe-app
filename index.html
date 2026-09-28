@@ -748,7 +748,8 @@ input:checked+.slider:before{transform:translateX(20px)}
   <input id="videoFileInput" class="hidden" type="file" accept="video/*" multiple>
   <input id="photoFileInput" class="hidden" type="file" accept="image/*" multiple>
   
-  <button class="shutter" id="shutter"><span class="inner"></span></button>
+  <!-- Working Camera Shutter Button with Click for Photo, Hold/Click for Video Toggle -->
+  <button class="shutter" id="shutter" title="Tap for Photo, Hold or Record Video"><span class="inner"></span></button>
   <button class="textBtn" id="flipBtn">Flip ⟳</button>
   <div style="width:50px"></div>
   </div>
@@ -1237,6 +1238,143 @@ let undoStack = [];
 let redoStack = [];
 let activeLiveTextElement = null;
 
+// Camera and Recording Logic
+async function startCamera() {
+  try {
+    if (mediaStream) {
+      mediaStream.getTracks().forEach(t => t.stop());
+    }
+    mediaStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: facing },
+      audio: true
+    });
+    camera.srcObject = mediaStream;
+  } catch (err) {
+    console.warn("Camera permission error or not supported:", err);
+    showToast("Camera access unavailable. Using simulated mode.");
+  }
+}
+
+function stopCamera() {
+  if (mediaStream) {
+    mediaStream.getTracks().forEach(t => t.stop());
+    mediaStream = null;
+  }
+}
+
+document.getElementById('flipBtn').onclick = () => {
+  facing = facing === 'user' ? 'environment' : 'user';
+  startCamera();
+};
+
+const shutterBtn = document.getElementById('shutter');
+
+// Tap for Photo, Hold for Video Recording
+shutterBtn.onmousedown = () => {
+  isLongPress = false;
+  pressTimer = setTimeout(() => {
+    isLongPress = true;
+    startVideoRecording();
+  }, 500);
+};
+
+shutterBtn.onmouseup = () => {
+  clearTimeout(pressTimer);
+  if (recording) {
+    stopVideoRecording();
+  } else if (!isLongPress) {
+    takeSnapshotPhoto();
+  }
+};
+
+shutterBtn.ontouchstart = (e) => {
+  e.preventDefault();
+  isLongPress = false;
+  pressTimer = setTimeout(() => {
+    isLongPress = true;
+    startVideoRecording();
+  }, 500);
+};
+
+shutterBtn.ontouchend = (e) => {
+  e.preventDefault();
+  clearTimeout(pressTimer);
+  if (recording) {
+    stopVideoRecording();
+  } else if (!isLongPress) {
+    takeSnapshotPhoto();
+  }
+};
+
+function takeSnapshotPhoto() {
+  if (!camera.videoWidth) {
+    showToast('Camera is still loading...');
+    return;
+  }
+  const canvas = document.createElement('canvas');
+  canvas.width = camera.videoWidth;
+  canvas.height = camera.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(camera, 0, 0);
+  canvas.toBlob(blob => {
+    const photoUrl = URL.createObjectURL(blob);
+    selectedMediaList = [{ type: 'image', url: photoUrl }];
+    openMediaEditor();
+    showToast('Photo captured! 📸');
+  }, 'image/jpeg');
+}
+
+function startVideoRecording() {
+  if (!mediaStream) {
+    showToast('Camera stream active required');
+    return;
+  }
+  chunks = [];
+  try {
+    recorder = new MediaRecorder(mediaStream, { mimeType: 'video/webm' });
+  } catch (e) {
+    try { recorder = new MediaRecorder(mediaStream); } catch(err) {
+      showToast('Video recording not supported');
+      return;
+    }
+  }
+
+  recorder.ondataavailable = e => {
+    if (e.data && e.data.size > 0) chunks.push(e.data);
+  };
+
+  recorder.onstop = () => {
+    const blob = new Blob(chunks, { type: 'video/webm' });
+    const videoUrl = URL.createObjectURL(blob);
+    selectedMediaList = [{ type: 'video', url: videoUrl }];
+    openMediaEditor();
+    showToast('Video recorded successfully! 🎥');
+  };
+
+  recorder.start();
+  recording = true;
+  shutterBtn.classList.add('recording');
+  timer.classList.remove('hidden');
+  recordSeconds = 0;
+  timerText.textContent = '00:00';
+  timerInterval = setInterval(() => {
+    recordSeconds++;
+    const m = Math.floor(recordSeconds / 60);
+    const s = recordSeconds % 60;
+    timerText.textContent = `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+    if (recordSeconds >= 600) stopVideoRecording();
+  }, 1000);
+}
+
+function stopVideoRecording() {
+  if (!recording || !recorder) return;
+  recorder.stop();
+  recording = false;
+  shutterBtn.classList.remove('recording');
+  timer.classList.add('hidden');
+  clearInterval(timerInterval);
+}
+
 function openReportModal() {
   document.getElementById('reportUserModal').classList.add('open');
 }
@@ -1246,7 +1384,6 @@ function closeReportModal() {
 }
 
 function submitReportUser() {
-  const selectedReason = document.querySelector('input[name="reportReason"]:checked');
   closeReportModal();
   showToast('Report submitted successfully. Thank you! 🛡️');
 }
@@ -1313,7 +1450,6 @@ function openMediaEditor() {
 
 function setupEditorContainer() {
   const container = document.getElementById('editorCanvasContainer');
-  // Clear previous elements except canvas/layers
   const existingMedia = container.querySelectorAll('video, img, .reel-media-slider');
   existingMedia.forEach(el => el.remove());
 
@@ -1489,13 +1625,6 @@ function formatTime(seconds) {
   return `${m}:${s < 10 ? '0' : ''}${s}`;
 }
 
-function getValidStories(){
- const now = Date.now();
- const twentyFourHours = 24 * 60 * 60 * 1000;
- storiesData = storiesData.filter(s => (now - s.timestamp) < twentyFourHours);
- return storiesData;
-}
-
 function renderFeed(filteredList){
  const list = filteredList || feedData;
  feed.innerHTML='';
@@ -1574,7 +1703,6 @@ function renderFeed(filteredList){
     openAudioModal(item);
   };
 
-  // Video Sequential Playback Support (Play one by one in carousel)
   card.querySelectorAll('.reel-video').forEach((v, vIdx, vArr) => {
     v.onended = () => {
       const slider = card.querySelector('.reel-media-slider');
@@ -1867,11 +1995,11 @@ function renderProfileGrid(){
  });
 }
 
-document.getElementById('navHomeBtn').onclick=()=>{ updateNavActiveState('home'); feed.style.display='block'; discover.classList.remove('open'); inbox.classList.remove('open'); profile.classList.remove('open'); studio.classList.remove('open'); };
-document.getElementById('navDiscoverBtn').onclick=()=>{ updateNavActiveState('discover'); discover.classList.add('open'); inbox.classList.remove('open'); profile.classList.remove('open'); studio.classList.remove('open'); pauseAllFeedVideos(); renderDiscoverGrid(); };
-document.getElementById('navCreateBtn').onclick=()=>{ updateNavActiveState('create'); studio.classList.add('open'); discover.classList.remove('open'); inbox.classList.remove('open'); profile.classList.remove('open'); pauseAllFeedVideos(); };
-document.getElementById('navInboxBtn').onclick=()=>{ updateNavActiveState('inbox'); inbox.classList.add('open'); discover.classList.remove('open'); profile.classList.remove('open'); studio.classList.remove('open'); pauseAllFeedVideos(); };
-document.getElementById('navProfileBtn').onclick=()=>{ updateNavActiveState('profile'); profile.classList.add('open'); discover.classList.remove('open'); inbox.classList.remove('open'); studio.classList.remove('open'); pauseAllFeedVideos(); renderProfileGrid(); };
+document.getElementById('navHomeBtn').onclick=()=>{ updateNavActiveState('home'); feed.style.display='block'; discover.classList.remove('open'); inbox.classList.remove('open'); profile.classList.remove('open'); studio.classList.remove('open'); stopCamera(); };
+document.getElementById('navDiscoverBtn').onclick=()=>{ updateNavActiveState('discover'); discover.classList.add('open'); inbox.classList.remove('open'); profile.classList.remove('open'); studio.classList.remove('open'); pauseAllFeedVideos(); stopCamera(); renderDiscoverGrid(); };
+document.getElementById('navCreateBtn').onclick=()=>{ updateNavActiveState('create'); studio.classList.add('open'); discover.classList.remove('open'); inbox.classList.remove('open'); profile.classList.remove('open'); pauseAllFeedVideos(); startCamera(); };
+document.getElementById('navInboxBtn').onclick=()=>{ updateNavActiveState('inbox'); inbox.classList.add('open'); discover.classList.remove('open'); profile.classList.remove('open'); studio.classList.remove('open'); pauseAllFeedVideos(); stopCamera(); };
+document.getElementById('navProfileBtn').onclick=()=>{ updateNavActiveState('profile'); profile.classList.add('open'); discover.classList.remove('open'); inbox.classList.remove('open'); studio.classList.remove('open'); pauseAllFeedVideos(); stopCamera(); renderProfileGrid(); };
 
 document.querySelectorAll('.screenHead .close[data-close]').forEach(btn=>{
  btn.onclick=()=>{
@@ -1881,8 +2009,8 @@ document.querySelectorAll('.screenHead .close[data-close]').forEach(btn=>{
  };
 });
 
-document.getElementById('closeStudio').onclick=()=>{ studio.classList.remove('open'); updateNavActiveState('home'); };
-document.getElementById('closeEditorBtn').onclick=()=>{ editorScreen.classList.remove('open'); studio.classList.add('open'); };
+document.getElementById('closeStudio').onclick=()=>{ studio.classList.remove('open'); stopCamera(); updateNavActiveState('home'); };
+document.getElementById('closeEditorBtn').onclick=()=>{ editorScreen.classList.remove('open'); studio.classList.add('open'); startCamera(); };
 document.getElementById('closePost').onclick=()=>{ postScreen.classList.remove('open'); editorScreen.classList.add('open'); };
 
 renderFeed();
