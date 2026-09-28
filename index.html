@@ -1063,28 +1063,32 @@ input:checked+.slider:before{transform:translateX(20px)}
   <div class="discoverBody">
     <div class="discoverSectionTitle">Account & Preferences</div>
     <div class="settings-list">
-      <!-- Added Account Button -->
+      <!-- 1. Account Setting -->
       <div class="settings-item" onclick="showToast('Account management opened')">
         <div class="settings-item-left"><span>👤</span> Account</div>
         <span style="color:var(--muted);">›</span>
       </div>
-      <!-- Added Reference Work Button -->
-      <div class="settings-item" onclick="showToast('Reference Work management opened')">
-        <div class="settings-item-left"><span>💼</span> Reference Work</div>
+      <!-- 2. Reference Setting -->
+      <div class="settings-item" onclick="showToast('Reference material & references opened')">
+        <div class="settings-item-left"><span>💼</span> Reference</div>
         <span style="color:var(--muted);">›</span>
       </div>
-      <div class="settings-item" onclick="showToast('Push Notifications settings')">
+      <!-- 3. Push Notifications Setting -->
+      <div class="settings-item" onclick="showToast('Push Notifications settings opened')">
         <div class="settings-item-left"><span>🔔</span> Push Notifications</div>
         <span style="color:var(--muted);">›</span>
       </div>
-      <div class="settings-item" onclick="showToast('Dark Mode Active')">
+      <!-- 4. Dark Theme Setting -->
+      <div class="settings-item" onclick="showToast('Dark Theme is currently active')">
         <div class="settings-item-left"><span>🌙</span> Dark Theme</div>
         <span style="color:var(--cyan); font-size:12px;">Active</span>
       </div>
-      <div class="settings-item" onclick="showToast('Video playback settings')">
+      <!-- 5. Video Playback & Quality Setting -->
+      <div class="settings-item" onclick="showToast('Video Playback & Quality settings opened')">
         <div class="settings-item-left"><span>🎬</span> Video Playback & Quality</div>
         <span style="color:var(--muted);">›</span>
       </div>
+      
       <div class="settings-item" onclick="showToast('Data Saver mode toggled')">
         <div class="settings-item-left"><span>📊</span> Data Saver</div>
         <label class="switch" onclick="event.stopPropagation()">
@@ -1924,10 +1928,6 @@ function pauseAllFeedVideos() {
 }
 
 function showToast(msg){toast.textContent=msg;toast.classList.add('show');clearTimeout(showToast.t);showToast.t=setTimeout(()=>toast.classList.remove('show'),2200)}
-
-function parseCaptions(text){
- return text.replace(/(#[\w\d]+)/g, '<span class="hashtag">$1</span>');
-}
 
 function formatCount(num) {
  if (typeof num === 'string') return num;
