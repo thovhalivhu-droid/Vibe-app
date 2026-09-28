@@ -452,7 +452,7 @@ button{font:inherit}
 .editor-caption-input::placeholder { color: var(--muted); }
 
 .hidden{display:none!important}
-.toast{position:absolute;z-index:200;top:70px;left:50%;transform:translateX(-50%) translateY(-15px);opacity:0;background:#000e;padding:9px 16px;border-radius:20px;font-size:13px;transition:.2s;pointer-events:none}
+.toast{position:absolute;z-index:110;top:70px;left:50%;transform:translateX(-50%) translateY(-15px);opacity:0;background:#000e;padding:9px 16px;border-radius:20px;font-size:13px;transition:.2s;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%)}
 
 /* Discover & Search Screen Enhanced Styling */
@@ -744,65 +744,46 @@ button{font:inherit}
 .commentInputField{flex:1;background:#1a1b22;border:1px solid #ffffff15;border-radius:20px;padding:10px 14px;color:#fff;font-size:13px;outline:none}
 .commentSendBtn{background:var(--pink);border:0;color:#fff;font-weight:700;padding:8px 16px;border-radius:20px;cursor:pointer}
 
-/* Popup Overlay Backdrop */
-.modal-backdrop {
+/* Report User Bottom Sheet Styles */
+.report-modal {
   position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(6px);
-  z-index: 250;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-.modal-backdrop.open {
-  display: flex;
-  opacity: 1;
-}
-
-/* Report & Block Popup Box */
-.popup-box {
-  background: var(--surface);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 20px;
-  width: 100%;
-  max-width: 360px;
-  padding: 20px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #14151c;
+  z-index: 150;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.8);
-  transform: scale(0.95);
+  padding: 20px;
+  transform: translateY(100%);
   transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.8);
 }
-.modal-backdrop.open .popup-box {
-  transform: scale(1);
-}
-.popup-title { font-size: 16px; font-weight: 800; text-align: center; color: var(--text); }
-.popup-subtitle { font-size: 12px; color: var(--muted); text-align: center; line-height: 1.4; }
-.popup-reasons { display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; scrollbar-width: none; }
-.popup-reasons::-webkit-scrollbar { display: none; }
-.popup-reason-item {
+.report-modal.open { transform: translateY(0); }
+.report-title { font-size: 16px; font-weight: 800; text-align: center; margin-bottom: 4px; color: var(--text); }
+.report-subtitle { font-size: 12px; color: var(--muted); text-align: center; margin-bottom: 16px; }
+.report-reasons-list { display: flex; flex-direction: column; gap: 8px; max-height: 240px; overflow-y: auto; margin-bottom: 16px; scrollbar-width: none; }
+.report-reasons-list::-webkit-scrollbar { display: none; }
+.report-reason-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #14151c;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 10px 14px;
-  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 12px 16px;
+  border-radius: 14px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
 }
-.popup-reason-item input[type="radio"] { accent-color: var(--pink); transform: scale(1.1); cursor: pointer; }
-.popup-reason-item.selected { border-color: var(--pink); background: rgba(255, 42, 95, 0.08); }
-.popup-actions { display: flex; gap: 10px; margin-top: 4px; }
-.popup-btn-cancel { flex: 1; background: #14151c; border: 1px solid rgba(255, 255, 255, 0.15); color: var(--text); font-weight: 700; padding: 12px; border-radius: 14px; cursor: pointer; font-size: 13px; text-align: center; }
-.popup-btn-confirm { flex: 1; background: linear-gradient(135deg, var(--pink), var(--cyan)); border: none; color: #fff; font-weight: 800; padding: 12px; border-radius: 14px; cursor: pointer; font-size: 13px; text-align: center; }
-.popup-btn-danger { flex: 1; background: var(--pink); border: none; color: #fff; font-weight: 800; padding: 12px; border-radius: 14px; cursor: pointer; font-size: 13px; text-align: center; }
+.report-reason-item input[type="radio"] { accent-color: var(--pink); transform: scale(1.2); cursor: pointer; }
+.report-reason-item.selected { border-color: var(--pink); background: rgba(255, 42, 95, 0.08); }
+.report-actions { display: flex; gap: 10px; }
+.report-submit-btn { flex: 1; background: linear-gradient(135deg, var(--pink), var(--cyan)); border: none; color: #fff; font-weight: 800; padding: 12px; border-radius: 14px; cursor: pointer; font-size: 14px; }
+.report-cancel-btn { flex: 1; background: var(--surface); border: 1px solid rgba(255, 255, 255, 0.15); color: var(--text); font-weight: 700; padding: 12px; border-radius: 14px; cursor: pointer; font-size: 14px; }
 
 /* Settings Screen Styling */
 .settingsScreen {
@@ -957,54 +938,66 @@ input:checked+.slider:before{transform:translateX(20px)}
 .liveInputField { flex: 1; background: #1a1b22; border: 1px solid #ffffff15; border-radius: 20px; padding: 10px 14px; color: #fff; font-size: 13px; outline: none; }
 .liveSendBtn { background: var(--pink); border: 0; color: #fff; font-weight: 700; padding: 10px 16px; border-radius: 20px; cursor: pointer; }
 .liveHeartBtn { background: rgba(255,255,255,0.15); border: 0; font-size: 20px; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+/* Simple Confirmation Popup Styles */
+.confirm-popup-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.confirm-popup-overlay.open { display: flex; }
+.confirm-popup-card {
+  background: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  padding: 24px;
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.6);
+  animation: popupScaleIn 0.2s ease-out;
+}
+@keyframes popupScaleIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.confirm-popup-title { font-size: 16px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+.confirm-popup-desc { font-size: 13px; color: var(--muted); line-height: 1.4; margin-bottom: 20px; }
+.confirm-popup-buttons { display: flex; gap: 10px; width: 100%; }
+.confirm-popup-btn {
+  flex: 1;
+  padding: 11px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+}
+.confirm-popup-btn.cancel { background: rgba(255,255,255,0.1); color: var(--text); }
+.confirm-popup-btn.confirm { background: var(--pink); color: #fff; }
 </style>
 </head>
 <body>
 <div id="app">
 <div id="toast" class="toast"></div>
 
-<!-- REPORT USER POPUP MODAL -->
-<div id="reportUserModal" class="modal-backdrop">
-  <div class="popup-box">
-    <div class="popup-title">Report User</div>
-    <div class="popup-subtitle">Please select a reason for reporting this account. Your report is anonymous.</div>
-    <div class="popup-reasons" id="reportReasonsList">
-      <label class="popup-reason-item selected">
-        <span>Spam or misleading content</span>
-        <input type="radio" name="reportReason" value="Spam" checked>
-      </label>
-      <label class="popup-reason-item">
-        <span>Harassment or bullying</span>
-        <input type="radio" name="reportReason" value="Harassment">
-      </label>
-      <label class="popup-reason-item">
-        <span>Inappropriate or sensitive content</span>
-        <input type="radio" name="reportReason" value="Inappropriate">
-      </label>
-      <label class="popup-reason-item">
-        <span>Hate speech or symbols</span>
-        <input type="radio" name="reportReason" value="Hate Speech">
-      </label>
-      <label class="popup-reason-item">
-        <span>Fake account or impersonation</span>
-        <input type="radio" name="reportReason" value="Fake Account">
-      </label>
-    </div>
-    <div class="popup-actions">
-      <button class="popup-btn-cancel" onclick="closeReportModal()">Cancel</button>
-      <button class="popup-btn-confirm" onclick="submitReportUser()">Submit Report</button>
-    </div>
-  </div>
-</div>
-
-<!-- BLOCK USER POPUP MODAL -->
-<div id="blockUserModal" class="modal-backdrop">
-  <div class="popup-box">
-    <div class="popup-title">Block User?</div>
-    <div class="popup-subtitle">They won't be able to find your profile, posts, or message you. VIBE will not notify them that you blocked them.</div>
-    <div class="popup-actions">
-      <button class="popup-btn-cancel" onclick="closeBlockModal()">Cancel</button>
-      <button class="popup-btn-danger" onclick="confirmBlockUser()">Block</button>
+<!-- Simple Confirmation Popup Modal -->
+<div id="confirmPopupOverlay" class="confirm-popup-overlay">
+  <div class="confirm-popup-card">
+    <div class="confirm-popup-title" id="confirmPopupTitle">Confirm Action</div>
+    <div class="confirm-popup-desc" id="confirmPopupDesc">Are you sure you want to proceed?</div>
+    <div class="confirm-popup-buttons">
+      <button class="confirm-popup-btn cancel" id="confirmPopupCancelBtn">Cancel</button>
+      <button class="confirm-popup-btn confirm" id="confirmPopupConfirmBtn">Confirm</button>
     </div>
   </div>
 </div>
@@ -1363,6 +1356,8 @@ input:checked+.slider:before{transform:translateX(20px)}
       </div>
       <div style="display:flex; gap:8px; justify-content:center; margin-top:12px;">
         <button class="editProfileBtn" id="modalCreatorFollowBtn" style="margin-top:0; background:var(--pink); border-color:var(--pink); color:#fff;" onclick="toggleModalCreatorFollow()">Follow</button>
+        <button class="editProfileBtn" onclick="promptReportCreator()" style="margin-top:0; border-color:var(--pink); color:var(--pink);">Report</button>
+        <button class="editProfileBtn" onclick="promptBlockCreator()" style="margin-top:0; background:rgba(255,42,95,0.15); border-color:var(--pink); color:var(--pink);">Block</button>
       </div>
     </div>
     <div class="profileSubTabs">
@@ -1418,7 +1413,10 @@ input:checked+.slider:before{transform:translateX(20px)}
         <div class="dmChatStatus" id="dmChatHeaderStatus">Active now</div>
       </div>
     </div>
-    <span style="width:24px"></span>
+    <div style="display:flex; gap:8px; align-items:center;">
+      <button onclick="promptReportActiveChat()" style="background:none; border:none; color:var(--muted); font-size:14px; font-weight:700; cursor:pointer;" title="Report User">Report</button>
+      <button onclick="promptBlockActiveChat()" style="background:none; border:none; color:var(--pink); font-size:14px; font-weight:700; cursor:pointer;" title="Block User">Block</button>
+    </div>
   </div>
 
   <div class="dmChatBody" id="dmChatMessagesList">
@@ -1628,10 +1626,9 @@ input:checked+.slider:before{transform:translateX(20px)}
       <div><span id="statFollowers">1.2K</span>Followers</div>
       <div><span id="statLikes">8.4K</span>Likes</div>
     </div>
-    <div style="display:flex; gap:8px; justify-content:center; margin-top:12px; flex-wrap:wrap;">
+    <div style="display:flex; gap:8px; justify-content:center; margin-top:12px;">
       <button class="editProfileBtn" id="editProfileBtn" style="margin-top:0;">Edit Profile</button>
       <button class="editProfileBtn" onclick="openReportModal()" style="margin-top:0; border-color:var(--pink); color:var(--pink);">Report User</button>
-      <button class="editProfileBtn" onclick="openBlockModal()" style="margin-top:0; border-color:#ff4d4d; color:#ff4d4d;">Block User</button>
     </div>
   </div>
 
@@ -1722,6 +1719,62 @@ let hashtagsDirectory = [
   { name: "#goldenhour", count: "450K views", postsCount: 520 }
 ];
 
+// Simple Confirmation Popup Controller
+function showConfirmPopup(title, desc, onConfirm) {
+  const overlay = document.getElementById('confirmPopupOverlay');
+  document.getElementById('confirmPopupTitle').textContent = title;
+  document.getElementById('confirmPopupDesc').textContent = desc;
+  
+  const confirmBtn = document.getElementById('confirmPopupConfirmBtn');
+  const cancelBtn = document.getElementById('confirmPopupConfirmBtn'); // placeholder for cleanup
+  
+  // Clone buttons to clear existing listeners
+  const newConfirmBtn = confirmBtn.cloneNode(true);
+  confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+  
+  const cancelBtnEl = document.getElementById('confirmPopupCancelBtn');
+  const newCancelBtn = cancelBtnEl.cloneNode(true);
+  cancelBtnEl.parentNode.replaceChild(newCancelBtn, cancelBtnEl);
+
+  newConfirmBtn.onclick = () => {
+    overlay.classList.remove('open');
+    if(onConfirm) onConfirm();
+  };
+
+  newCancelBtn.onclick = () => {
+    overlay.classList.remove('open');
+  };
+
+  overlay.classList.add('open');
+}
+
+// Report and Block Action Helpers
+function promptReportCreator() {
+  showConfirmPopup("Report User", "Are you sure you want to report this user for violating community guidelines?", () => {
+    showToast("User reported. Thank you for keeping VIBE safe 🛡️");
+  });
+}
+
+function promptBlockCreator() {
+  showConfirmPopup("Block User", "Are you sure you want to block this user? You will no longer see their content or receive messages from them.", () => {
+    showToast("User blocked successfully 🚫");
+    closeCreatorProfileModal();
+  });
+}
+
+function promptReportActiveChat() {
+  showConfirmPopup("Report Conversation", "Are you sure you want to report this conversation?", () => {
+    showToast("Conversation reported successfully 🛡️");
+  });
+}
+
+function promptBlockActiveChat() {
+  showConfirmPopup("Block Contact", "Are you sure you want to block this contact?", () => {
+    showToast("Contact blocked successfully 🚫");
+    closeDMChat();
+  });
+}
+
 // Post Editor Extra State: Location, Cover, Drafts
 let selectedPostLocation = "";
 let selectedCoverMediaIndex = 0;
@@ -1793,42 +1846,6 @@ let activeTabKey = 'home';
 let searchFilterType = 'all';
 let currentActiveCreator = null;
 
-// Report User Modal Logic
-function openReportModal() {
-  document.getElementById('reportUserModal').classList.add('open');
-}
-function closeReportModal() {
-  document.getElementById('reportUserModal').classList.remove('open');
-}
-function submitReportUser() {
-  const selectedRadio = document.querySelector('input[name="reportReason"]:checked');
-  const reason = selectedRadio ? selectedRadio.value : 'General';
-  closeReportModal();
-  showToast(`Report submitted (${reason}). Thank you for keeping VIBE safe 🛡️`);
-}
-
-// Block User Modal Logic
-function openBlockModal() {
-  document.getElementById('blockUserModal').classList.add('open');
-}
-function closeBlockModal() {
-  document.getElementById('blockUserModal').classList.remove('open');
-}
-function confirmBlockUser() {
-  closeBlockModal();
-  showToast('User has been blocked successfully 🚫');
-}
-
-// Interactive selection styling for report radio buttons
-document.querySelectorAll('.popup-reason-item').forEach(item => {
-  item.onclick = () => {
-    document.querySelectorAll('.popup-reason-item').forEach(el => el.classList.remove('selected'));
-    item.classList.add('selected');
-    const radio = item.querySelector('input[type="radio"]');
-    if(radio) radio.checked = true;
-  };
-});
-
 // Settings & Privacy Navigation & Management
 function openSettingsScreen() {
   document.getElementById('settingPrivateAccount').checked = userSettings.privateAccount;
@@ -1890,10 +1907,10 @@ function requestAccountDataExport() {
 }
 
 function confirmLogout() {
-  if(confirm("Are you sure you want to log out of VIBE?")) {
+  showConfirmPopup("Log Out", "Are you sure you want to sign out of @creator_vibe?", () => {
     showToast('Logged out successfully.');
     closeSettingsScreen();
-  }
+  });
 }
 
 function openPrivacyPolicy() {
@@ -2018,10 +2035,12 @@ function loadDraft(index) {
 
 function deleteDraft(e, index) {
   e.stopPropagation();
-  userDrafts.splice(index, 1);
-  document.getElementById('draftsCountBadge').textContent = `(${userDrafts.length})`;
-  openDraftsModal();
-  showToast('Draft deleted');
+  showConfirmPopup("Delete Draft", "Are you sure you want to delete this saved draft?", () => {
+    userDrafts.splice(index, 1);
+    document.getElementById('draftsCountBadge').textContent = `(${userDrafts.length})`;
+    openDraftsModal();
+    showToast('Draft deleted');
+  });
 }
 
 // Inbox & DM Renderer
@@ -2151,19 +2170,1105 @@ function acceptDMRequest(e, chatId) {
 
 function declineDMRequest(e, chatId) {
   e.stopPropagation();
-  dmConversations = dmConversations.filter(c => c.id !== chatId);
-  showToast('Message request declined');
-  renderInboxList();
+  showConfirmPopup("Decline Request", "Are you sure you want to decline this message request?", () => {
+    dmConversations = dmConversations.filter(c => c.id !== chatId);
+    showToast('Message request declined');
+    renderInboxList();
+  });
 }
 
-// Toast notification helper
-function showToast(message) {
-  toast.textContent = message;
-  toast.classList.add('show');
-  setTimeout(() => {
-    toast.classList.remove('show');
-  }, 2500);
+// Discover & Search State & Execution
+const searchInput = document.getElementById('searchInput');
+const discoverResultsContainer = document.getElementById('discoverResultsContainer');
+
+document.querySelectorAll('.discoverTab').forEach(tab => {
+  tab.onclick = () => {
+    document.querySelectorAll('.discoverTab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    searchFilterType = tab.getAttribute('data-search-filter');
+    executeSearch(searchInput.value.trim());
+  };
+});
+
+searchInput.oninput = (e) => {
+  executeSearch(e.target.value.trim());
+};
+
+function executeSearch(query) {
+  const q = query.toLowerCase();
+  discoverResultsContainer.innerHTML = '';
+
+  const matchedPosts = feedData.filter(p => 
+    p.caption.toLowerCase().includes(q) || 
+    p.author.toLowerCase().includes(q) ||
+    (p.handle && p.handle.toLowerCase().includes(q)) ||
+    p.songName.toLowerCase().includes(q)
+  );
+
+  const matchedCreators = creatorsDirectory.filter(c =>
+    c.name.toLowerCase().includes(q) || c.handle.toLowerCase().includes(q) || c.bio.toLowerCase().includes(q)
+  );
+
+  const matchedHashtags = hashtagsDirectory.filter(h =>
+    h.name.toLowerCase().includes(q)
+  );
+
+  if (searchFilterType === 'all' || searchFilterType === 'posts') {
+    if (matchedPosts.length > 0) {
+      const sectionHeader = document.createElement('div');
+      sectionHeader.className = 'discoverSectionTitle';
+      sectionHeader.textContent = 'Posts (' + matchedPosts.length + ')';
+      discoverResultsContainer.appendChild(sectionHeader);
+
+      const grid = document.createElement('div');
+      grid.className = 'discoverGrid';
+      matchedPosts.forEach(post => {
+        const item = document.createElement('div');
+        item.className = 'discoverGridItem';
+        const media = post.mediaList && post.mediaList.length > 0 ? post.mediaList[0] : {type:'image', url:''};
+        if(media.type === 'video') {
+          item.innerHTML = `<video src="${media.url}" muted playsinline></video>`;
+        } else {
+          item.innerHTML = `<img src="${media.url}" alt="">`;
+        }
+        item.onclick = () => {
+          // Jump to feed or open preview
+          switchTab('home');
+        };
+        grid.appendChild(item);
+      });
+      discoverResultsContainer.appendChild(grid);
+    }
+  }
+
+  if (searchFilterType === 'all' || searchFilterType === 'creators') {
+    if (matchedCreators.length > 0) {
+      const sectionHeader = document.createElement('div');
+      sectionHeader.className = 'discoverSectionTitle';
+      sectionHeader.textContent = 'Creators (' + matchedCreators.length + ')';
+      discoverResultsContainer.appendChild(sectionHeader);
+
+      const list = document.createElement('div');
+      list.className = 'creatorsListContainer';
+      matchedCreators.forEach(creator => {
+        const row = document.createElement('div');
+        row.className = 'creatorSearchRow';
+        row.innerHTML = `
+          <div class="creatorSearchInfo">
+            <img class="creatorSearchAvatar" src="${creator.avatar}">
+            <div class="creatorSearchMeta">
+              <div class="name">${creator.name}</div>
+              <div class="handle">${creator.handle} • ${creator.followers} followers</div>
+            </div>
+          </div>
+          <button class="creatorFollowBtn ${creator.isFollowing ? 'following' : ''}">${creator.isFollowing ? 'Following' : 'Follow'}</button>
+        `;
+        row.onclick = (e) => {
+          if(e.target.tagName === 'BUTTON') {
+            creator.isFollowing = !creator.isFollowing;
+            e.target.textContent = creator.isFollowing ? 'Following' : 'Follow';
+            e.target.classList.toggle('following', creator.isFollowing);
+            showToast(creator.isFollowing ? `Following ${creator.name}` : `Unfollowed ${creator.name}`);
+            return;
+          }
+          openCreatorProfileModal(creator);
+        };
+        list.appendChild(row);
+      });
+      discoverResultsContainer.appendChild(list);
+    }
+  }
+
+  if (searchFilterType === 'all' || searchFilterType === 'hashtags') {
+    if (matchedHashtags.length > 0) {
+      const sectionHeader = document.createElement('div');
+      sectionHeader.className = 'discoverSectionTitle';
+      sectionHeader.textContent = 'Hashtags (' + matchedHashtags.length + ')';
+      discoverResultsContainer.appendChild(sectionHeader);
+
+      const list = document.createElement('div');
+      list.className = 'hashtagsListContainer';
+      matchedHashtags.forEach(hashtag => {
+        const row = document.createElement('div');
+        row.className = 'hashtagSearchRow';
+        row.innerHTML = `
+          <div style="display:flex; align-items:center;">
+            <div class="hashtagSymbol">#</div>
+            <div class="hashtagDetails">
+              <div class="hashtagName">${hashtag.name}</div>
+              <div class="hashtagCount">${hashtag.count} • ${hashtag.postsCount} posts</div>
+            </div>
+          </div>
+          <span style="color:var(--muted); font-size:14px;">›</span>
+        `;
+        row.onclick = () => {
+          openHashtagModal(hashtag);
+        };
+        list.appendChild(row);
+      });
+      discoverResultsContainer.appendChild(list);
+    }
+  }
+
+  if (discoverResultsContainer.innerHTML === '') {
+    discoverResultsContainer.innerHTML = `<div style="text-align:center; color:var(--muted); padding:40px; font-size:13px;">No results found for "${query}"</div>`;
+  }
 }
+
+function openCreatorProfileModal(creator) {
+  currentActiveCreator = creator;
+  document.getElementById('modalCreatorHeaderName').textContent = creator.name;
+  document.getElementById('modalCreatorAvatar').src = creator.avatar;
+  document.getElementById('modalCreatorName').textContent = creator.name;
+  document.getElementById('modalCreatorHandle').textContent = creator.handle;
+  document.getElementById('modalCreatorBio').textContent = creator.bio;
+  document.getElementById('modalCreatorFollowing').textContent = creator.following;
+  document.getElementById('modalCreatorFollowers').textContent = creator.followers;
+  document.getElementById('modalCreatorLikes').textContent = creator.likes;
+
+  const followBtn = document.getElementById('modalCreatorFollowBtn');
+  followBtn.textContent = creator.isFollowing ? 'Following' : 'Follow';
+  followBtn.style.background = creator.isFollowing ? 'transparent' : 'var(--pink)';
+  followBtn.style.color = creator.isFollowing ? 'var(--muted)' : '#fff';
+  followBtn.style.borderColor = creator.isFollowing ? 'rgba(255,255,255,0.2)' : 'var(--pink)';
+
+  const grid = document.getElementById('modalCreatorPostsGrid');
+  grid.innerHTML = '';
+  feedData.forEach((post, i) => {
+    if(post.author === creator.name) {
+      const thumb = document.createElement('div');
+      thumb.className = 'userPostThumb';
+      const media = post.mediaList[0] || {};
+      if(media.type === 'video') {
+        thumb.innerHTML = `<video src="${media.url}" muted playsinline></video>`;
+      } else {
+        thumb.innerHTML = `<img src="${media.url}" alt="">`;
+      }
+      grid.appendChild(thumb);
+    }
+  });
+
+  document.getElementById('creatorProfileModal').classList.add('open');
+}
+
+function closeCreatorProfileModal() {
+  document.getElementById('creatorProfileModal').classList.remove('open');
+  currentActiveCreator = null;
+}
+
+function toggleModalCreatorFollow() {
+  if(!currentActiveCreator) return;
+  currentActiveCreator.isFollowing = !currentActiveCreator.isFollowing;
+  const followBtn = document.getElementById('modalCreatorFollowBtn');
+  followBtn.textContent = currentActiveCreator.isFollowing ? 'Following' : 'Follow';
+  followBtn.style.background = currentActiveCreator.isFollowing ? 'transparent' : 'var(--pink)';
+  followBtn.style.color = currentActiveCreator.isFollowing ? 'var(--muted)' : '#fff';
+  followBtn.style.borderColor = currentActiveCreator.isFollowing ? 'rgba(255,255,255,0.2)' : 'var(--pink)';
+  showToast(currentActiveCreator.isFollowing ? `Following ${currentActiveCreator.name}` : `Unfollowed ${currentActiveCreator.name}`);
+  executeSearch(searchInput.value.trim());
+}
+
+function openHashtagModal(hashtag) {
+  document.getElementById('hashtagModalTitle').textContent = hashtag.name;
+  document.getElementById('hashtagModalName').textContent = hashtag.name;
+  document.getElementById('hashtagModalViews').textContent = `${hashtag.count} on platform`;
+
+  const grid = document.getElementById('hashtagModalPostsGrid');
+  grid.innerHTML = '';
+  feedData.forEach(post => {
+    if(post.caption.toLowerCase().includes(hashtag.name.toLowerCase())) {
+      const thumb = document.createElement('div');
+      thumb.className = 'discoverGridItem';
+      const media = post.mediaList[0] || {};
+      if(media.type === 'video') {
+        thumb.innerHTML = `<video src="${media.url}" muted playsinline></video>`;
+      } else {
+        thumb.innerHTML = `<img src="${media.url}" alt="">`;
+      }
+      grid.appendChild(thumb);
+    }
+  });
+
+  document.getElementById('hashtagModal').classList.add('open');
+}
+
+function closeHashtagModal() {
+  document.getElementById('hashtagModal').classList.remove('open');
+}
+
+// Initial Population of Discover & Search View
+executeSearch('');
+
+// Feed Rendering
+function renderFeed() {
+  feed.innerHTML = '';
+  feedData.forEach((post, index) => {
+    const reel = document.createElement('div');
+    reel.className = 'reel';
+    reel.setAttribute('data-index', index);
+
+    let mediaSliderHtml = `<div class="reel-media-slider" id="mediaSlider-${post.id}">`;
+    post.mediaList.forEach((media, mIdx) => {
+      if(media.type === 'video') {
+        mediaSliderHtml += `<div class="reel-media-slide"><video src="${media.url}" loop playsinline ${mIdx === 0 && index === 0 && !muted ? '' : 'muted'}></video></div>`;
+      } else {
+        mediaSliderHtml += `<div class="reel-media-slide"><img src="${media.url}" alt=""></div>`;
+      }
+    });
+    mediaSliderHtml += `</div>`;
+
+    let dotsHtml = '';
+    if(post.mediaList.length > 1) {
+      dotsHtml += `<div class="carousel-dots" id="carouselDots-${post.id}">`;
+      post.mediaList.forEach((_, dIdx) => {
+        dotsHtml += `<div class="carousel-dot ${dIdx === 0 ? 'active' : ''}"></div>`;
+      });
+      dotsHtml += `</div>`;
+    }
+
+    reel.innerHTML = `
+      ${mediaSliderHtml}
+      ${dotsHtml}
+      <button class="mute" id="muteBtn-${post.id}" onclick="toggleMute()">${muted ? '🔇' : '🔊'}</button>
+      <div class="video-duration-indicator" id="durationIndicator-${post.id}">0:00 / 0:00</div>
+      
+      <div class="video-control-overlay" id="controlOverlay-${post.id}">
+        <button class="custom-pause-btn" id="pauseBtn-${post.id}">▶</button>
+      </div>
+
+      <div class="overlay">
+        <div class="info">
+          <div class="author">
+            <img class="avatar" src="${post.avatar}" alt="">
+            <span class="name">${post.author}</span>
+            <button class="follow" onclick="toggleFollow(this)">Follow</button>
+          </div>
+          <div class="caption">${formatCaption(post.caption)}</div>
+          <div class="audio" onclick="openSoundModal('${post.songName}', '${post.artist}')">
+            <span>♫</span>
+            <span class="song-title">${post.songName}</span>
+            <span class="song-artist">- ${post.artist}</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="action ${post.isLiked ? 'liked' : ''}" onclick="toggleLike(event, ${post.id})">
+            <div class="circle">♥</div>
+            <div class="count">${formatCount(post.likes)}</div>
+          </button>
+          <button class="action" onclick="openComments(${post.id})">
+            <div class="circle">💬</div>
+            <div class="count">${formatCount(post.commentsCount || (post.commentsList ? post.commentsList.length : 0))}</div>
+          </button>
+          <button class="action ${post.isSaved ? 'saved' : ''}" onclick="toggleSave(event, ${post.id})">
+            <div class="circle">⭐</div>
+            <div class="count">Save</div>
+          </button>
+          <button class="action" onclick="sharePost(${post.id})">
+            <div class="circle">↗</div>
+            <div class="count">Share</div>
+          </button>
+        </div>
+      </div>
+    `;
+
+    // Setup media slider scroll listener for dots synchronization
+    const slider = reel.querySelector(`#mediaSlider-${post.id}`);
+    if(slider && post.mediaList.length > 1) {
+      slider.onscroll = () => {
+        const slideWidth = slider.clientWidth;
+        const activeIdx = Math.round(slider.scrollLeft / slideWidth);
+        const dots = reel.querySelectorAll(`#carouselDots-${post.id} .carousel-dot`);
+        dots.forEach((dot, dIdx) => {
+          dot.classList.toggle('active', dIdx === activeIdx);
+        });
+      };
+    }
+
+    // Double tap & single tap controls on video container
+    let lastTapTime = 0;
+    slider.onclick = (e) => {
+      const currentTime = new Date().getTime();
+      const tapLength = currentTime - lastTapTime;
+      if (tapLength < 300 && tapLength > 0) {
+        // Double tap -> Like
+        triggerDoubleTapHeart(reel, e.clientX, e.clientY);
+        likePostById(post.id);
+        e.preventDefault();
+      } else {
+        // Single tap -> Toggle Play/Pause
+        const activeVideoEl = reel.querySelector('.reel-media-slide video');
+        if(activeVideoEl) {
+          const controlOverlay = reel.querySelector(`#controlOverlay-${post.id}`);
+          const pauseBtn = reel.querySelector(`#pauseBtn-${post.id}`);
+          if(activeVideoEl.paused) {
+            activeVideoEl.play();
+            controlOverlay.classList.remove('show');
+          } else {
+            activeVideoEl.pause();
+            pauseBtn.textContent = '▶';
+            controlOverlay.classList.add('show');
+            showDurationIndicator(reel, activeVideoEl);
+          }
+        }
+      }
+      lastTapTime = currentTime;
+    };
+
+    const pauseBtnEl = reel.querySelector(`#pauseBtn-${post.id}`);
+    if(pauseBtnEl) {
+      pauseBtnEl.onclick = (e) => {
+        e.stopPropagation();
+        const activeVideoEl = reel.querySelector('.reel-media-slide video');
+        const controlOverlay = reel.querySelector(`#controlOverlay-${post.id}`);
+        if(activeVideoEl) {
+          if(activeVideoEl.paused) {
+            activeVideoEl.play();
+            controlOverlay.classList.remove('show');
+          } else {
+            activeVideoEl.pause();
+            controlOverlay.classList.add('show');
+          }
+        }
+      };
+    }
+
+    feed.appendChild(reel);
+  });
+
+  setupObserver();
+}
+
+function showDurationIndicator(reel, videoEl) {
+  const indicator = reel.querySelector('.video-duration-indicator');
+  if(!indicator || isNaN(videoEl.duration)) return;
+  const curMin = Math.floor(videoEl.currentTime / 60);
+  const curSec = Math.floor(videoEl.currentTime % 60).toString().padStart(2, '0');
+  const durMin = Math.floor(videoEl.duration / 60);
+  const durSec = Math.floor(videoEl.duration % 60).toString().padStart(2, '0');
+  indicator.textContent = `${curMin}:${curSec} / ${durMin}:${durSec}`;
+  indicator.classList.add('show');
+  setTimeout(() => {
+    indicator.classList.remove('show');
+  }, 1800);
+}
+
+function triggerDoubleTapHeart(reel, x, y) {
+  const heart = document.createElement('div');
+  heart.className = 'double-tap-heart';
+  heart.textContent = '❤';
+  const rect = reel.getBoundingClientRect();
+  heart.style.left = `${x - rect.left}px`;
+  heart.style.top = `${y - rect.top}px`;
+  reel.appendChild(heart);
+  setTimeout(() => heart.remove(), 800);
+}
+
+function likePostById(id) {
+  const post = feedData.find(p => p.id === id);
+  if(post && !post.isLiked) {
+    post.isLiked = true;
+    post.likes += 1;
+    renderFeed();
+  }
+}
+
+function formatCaption(text) {
+  return text.replace(/(#\w+)/g, '<span>$1</span>');
+}
+
+function formatCount(num) {
+  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+  if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+  return num;
+}
+
+function toggleLike(e, id) {
+  e.stopPropagation();
+  const post = feedData.find(p => p.id === id);
+  if(post) {
+    post.isLiked = !post.isLiked;
+    post.likes += post.isLiked ? 1 : -1;
+    renderFeed();
+  }
+}
+
+function toggleSave(e, id) {
+  e.stopPropagation();
+  const post = feedData.find(p => p.id === id);
+  if(post) {
+    post.isSaved = !post.isSaved;
+    showToast(post.isSaved ? 'Added to Saved Videos ⭐' : 'Removed from Saved Videos');
+    renderFeed();
+  }
+}
+
+function toggleFollow(btn) {
+  btn.textContent = btn.textContent === 'Follow' ? 'Following' : 'Follow';
+  btn.style.background = btn.textContent === 'Following' ? 'transparent' : 'var(--pink)';
+  btn.style.border = btn.textContent === 'Following' ? '1px solid rgba(255,255,255,0.3)' : '0';
+  showToast(btn.textContent === 'Following' ? 'Followed creator ✨' : 'Unfollowed creator');
+}
+
+function sharePost(id) {
+  if (navigator.share) {
+    navigator.share({ title: 'VIBE Video', url: window.location.href }).catch(() => {});
+  } else {
+    showToast('Link copied to clipboard! 🔗');
+  }
+}
+
+function toggleMute() {
+  muted = !muted;
+  document.querySelectorAll('.reel video').forEach(v => v.muted = muted);
+  document.querySelectorAll('.mute').forEach(btn => btn.textContent = muted ? '🔇' : '🔊');
+}
+
+// Intersection Observer for Feed Videos Auto Play/Pause
+function setupObserver() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const video = entry.target.querySelector('video');
+      if (video) {
+        if (entry.isIntersecting) {
+          activeVideo = video;
+          video.muted = muted;
+          video.play().catch(() => {});
+        } else {
+          video.pause();
+          video.currentTime = 0;
+        }
+      }
+    });
+  }, { threshold: 0.6 });
+
+  document.querySelectorAll('.reel').forEach(reel => observer.observe(reel));
+}
+
+// Comments Drawer Logic
+function openComments(postId) {
+  const post = feedData.find(p => p.id === postId);
+  if(!post) return;
+
+  const container = document.getElementById('commentListContainer');
+  container.innerHTML = '';
+  document.getElementById('commentModalTitle').textContent = `Comments (${post.commentsList ? post.commentsList.length : 0})`;
+
+  if(post.commentsList && post.commentsList.length > 0) {
+    post.commentsList.forEach(c => {
+      const row = document.createElement('div');
+      row.className = 'commentRow';
+      row.innerHTML = `
+        <img class="commentAvatar" src="${c.avatar}" alt="">
+        <div class="commentBubble">
+          <div class="commentUser">${c.user}</div>
+          <div class="commentText">${c.text}</div>
+        </div>
+      `;
+      container.appendChild(row);
+    });
+  } else {
+    container.innerHTML = `<div style="text-align:center;color:var(--muted);padding:30px;font-size:13px;">No comments yet. Be the first!</div>`;
+  }
+
+  document.getElementById('commentSendBtn').onclick = () => {
+    const input = document.getElementById('commentInputField');
+    const txt = input.value.trim();
+    if(!txt) return;
+    if(!post.commentsList) post.commentsList = [];
+    post.commentsList.push({user: myProfile.username, text: txt, avatar: myProfile.avatar});
+    input.value = '';
+    openComments(postId);
+    renderFeed();
+  };
+
+  document.getElementById('commentModal').classList.add('open');
+}
+
+document.getElementById('closeCommentModal').onclick = () => {
+  document.getElementById('commentModal').classList.remove('open');
+};
+
+// Sound Modal Logic
+function openSoundModal(songName, artist) {
+  document.getElementById('audioModalSongTitle').textContent = songName;
+  document.getElementById('audioModalArtist').textContent = artist;
+  const grid = document.getElementById('audioModalVideosGrid');
+  grid.innerHTML = '';
+  feedData.forEach(p => {
+    const thumb = document.createElement('div');
+    thumb.style.aspectRatio = '9/16';
+    thumb.style.background = '#222';
+    thumb.style.borderRadius = '8px';
+    thumb.style.overflow = 'hidden';
+    const media = p.mediaList[0] || {};
+    if(media.type === 'video') {
+      thumb.innerHTML = `<video src="${media.url}" muted style="width:100%;height:100%;object-fit:cover;"></video>`;
+    } else {
+      thumb.innerHTML = `<img src="${media.url}" style="width:100%;height:100%;object-fit:cover;">`;
+    }
+    grid.appendChild(thumb);
+  });
+  document.getElementById('soundModal').classList.add('open');
+}
+
+document.getElementById('closeSoundModal').onclick = () => {
+  document.getElementById('soundModal').classList.remove('open');
+};
+
+// Navigation Tab Switches
+function switchTab(tabKey) {
+  activeTabKey = tabKey;
+  document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+  
+  // Close all screens first
+  studio.classList.remove('open');
+  editorScreen.classList.remove('open');
+  postScreen.classList.remove('open');
+  discover.classList.remove('open');
+  inbox.classList.remove('open');
+  profile.classList.remove('open');
+  appContainer.classList.remove('hide-nav-for-create');
+
+  if(tabKey === 'home') {
+    document.getElementById('navHomeBtn').classList.add('active');
+  } else if(tabKey === 'discover') {
+    document.getElementById('navDiscoverBtn').classList.add('active');
+    discover.classList.add('open');
+  } else if(tabKey === 'create') {
+    document.getElementById('navCreateBtn').classList.add('active');
+    appContainer.classList.add('hide-nav-for-create');
+    studio.classList.add('open');
+    startCamera();
+  } else if(tabKey === 'inbox') {
+    document.getElementById('navInboxBtn').classList.add('active');
+    renderInboxList();
+    inbox.classList.add('open');
+  } else if(tabKey === 'profile') {
+    document.getElementById('navProfileBtn').classList.add('active');
+    renderProfilePosts();
+    profile.classList.add('open');
+  }
+}
+
+document.querySelectorAll('.nav button').forEach(btn => {
+  btn.onclick = () => {
+    const t = btn.getAttribute('data-tab');
+    switchTab(t);
+  };
+});
+
+document.querySelectorAll('.close[data-close]').forEach(btn => {
+  btn.onclick = () => {
+    switchTab('home');
+  };
+});
+
+// Studio & Camera Logic
+async function startCamera() {
+  try {
+    if(mediaStream) {
+      mediaStream.getTracks().forEach(t => t.stop());
+    }
+    mediaStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: facing, width: { ideal: 1080 }, height: { ideal: 1920 } },
+      audio: true
+    });
+    camera.srcObject = mediaStream;
+  } catch(e) {
+    showToast('Camera access unavailable. Uploading files supported.');
+  }
+}
+
+document.getElementById('closeStudio').onclick = () => {
+  if(mediaStream) mediaStream.getTracks().forEach(t => t.stop());
+  switchTab('home');
+};
+
+document.getElementById('flipBtn').onclick = () => {
+  facing = facing === 'user' ? 'environment' : 'user';
+  startCamera();
+};
+
+function switchStudioMode(mode) {
+  document.querySelectorAll('.studioModeTab').forEach(t => t.classList.remove('active'));
+  if(mode === 'video') {
+    document.getElementById('modeVideoTab').classList.add('active');
+    document.getElementById('videoModePanel').classList.remove('hidden');
+    document.getElementById('liveModePanel').classList.add('hidden');
+    document.getElementById('liveStreamOverlayElements').classList.add('hidden');
+  } else {
+    document.getElementById('modeLiveTab').classList.add('active');
+    document.getElementById('videoModePanel').classList.add('hidden');
+    document.getElementById('liveModePanel').classList.remove('hidden');
+    document.getElementById('liveStreamOverlayElements').classList.remove('hidden');
+    showToast('Switched to Live Broadcast Mode 🔴');
+  }
+}
+
+// Live Stream Simulation
+let isLiveStreaming = false;
+let liveLikesCount = 0;
+function toggleLiveStream() {
+  isLiveStreaming = !isLiveStreaming;
+  const btn = document.getElementById('startLiveBtn');
+  if(isLiveStreaming) {
+    btn.textContent = 'End LIVE';
+    btn.style.background = '#f33';
+    showToast('You are now broadcasting LIVE to your followers! 🔴');
+    startLiveChatSimulation();
+  } else {
+    btn.textContent = 'Go LIVE Now';
+    btn.style.background = 'var(--pink)';
+    showToast('Live stream ended.');
+  }
+}
+
+function startLiveChatSimulation() {
+  const names = ["Sophia Taylor", "Liam Chen", "Marcus Vance", "Chloe Bennett", "Noah Smith"];
+  const comments = ["Loving this stream! 🔥", "Hello from Cape Town!", "Can you show that again?", "Awesome content as always ✨", "Greetings!!"];
+  setInterval(() => {
+    if(!isLiveStreaming) return;
+    const rName = names[Math.floor(Math.random() * names.length)];
+    const rMsg = comments[Math.floor(Math.random() * comments.length)];
+    const container = document.getElementById('liveChatListContainer');
+    const div = document.createElement('div');
+    div.className = 'liveChatMsg';
+    div.innerHTML = `<span class="liveChatUser">${rName}:</span>${rMsg}`;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+  }, 3500);
+}
+
+document.getElementById('liveTapLikeBtn').onclick = () => {
+  liveLikesCount += 1;
+  document.getElementById('liveHeartCountBadge').textContent = `❤️ ${liveLikesCount}`;
+  const container = document.getElementById('liveLikesContainer');
+  const heart = document.createElement('div');
+  heart.className = 'floating-like';
+  heart.textContent = ['❤️', '💖', '🔥', '✨'][Math.floor(Math.random() * 4)];
+  container.appendChild(heart);
+  setTimeout(() => heart.remove(), 2000);
+};
+
+document.getElementById('liveSendChatBtn').onclick = () => {
+  const input = document.getElementById('liveCommentInput');
+  const txt = input.value.trim();
+  if(!txt) return;
+  const container = document.getElementById('liveChatListContainer');
+  const div = document.createElement('div');
+  div.className = 'liveChatMsg';
+  div.innerHTML = `<span class="liveChatUser">You:</span>${txt}`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  input.value = '';
+};
+
+// Shutter Click / Hold Recording Logic
+const shutter = document.getElementById('shutter');
+shutter.onmousedown = shutter.onttouchstart = (e) => {
+  e.preventDefault();
+  isLongPress = false;
+  pressTimer = setTimeout(() => {
+    isLongPress = true;
+    startRecording();
+  }, 400);
+};
+
+shutter.onmouseup = shutter.ontouchend = (e) => {
+  e.preventDefault();
+  clearTimeout(pressTimer);
+  if (recording) {
+    stopRecording();
+  } else if (!isLongPress) {
+    takeSnapshotPhoto();
+  }
+};
+
+function startRecording() {
+  recording = true;
+  shutter.classList.add('recording');
+  timer.classList.remove('hidden');
+  chunks = [];
+  try {
+    recorder = new MediaRecorder(mediaStream, { mimeType: 'video/webm;codecs=vp9' });
+    recorder.ondataavailable = e => chunks.push(e.data);
+    recorder.onstop = () => {
+      const blob = new Blob(chunks, { type: 'video/webm' });
+      const url = URL.createObjectURL(blob);
+      selectedMediaList = [{ type: 'video', url: url }];
+      openEditorScreen();
+    };
+    recorder.start();
+    recordSeconds = 0;
+    timerText.textContent = '00:00';
+    timerInterval = setInterval(() => {
+      recordSeconds++;
+      let m = Math.floor(recordSeconds / 60).toString().padStart(2, '0');
+      let s = (recordSeconds % 60).toString().padStart(2, '0');
+      timerText.textContent = `${m}:${s}`;
+      if(recordSeconds >= 600) stopRecording();
+    }, 1000);
+  } catch(err) {
+    showToast('Video recording started (Simulation)');
+  }
+}
+
+function stopRecording() {
+  recording = false;
+  shutter.classList.remove('recording');
+  timer.classList.add('hidden');
+  clearInterval(timerInterval);
+  if(recorder && recorder.state !== 'inactive') {
+    recorder.stop();
+  } else {
+    // Fallback simulation
+    selectedMediaList = [{ type: 'video', url: 'https://assets.mixkit.co/videos/preview/mixkit-woman-filming-herself-with-a-smartphone-41270-large.mp4' }];
+    openEditorScreen();
+  }
+}
+
+function takeSnapshotPhoto() {
+  const canvas = document.createElement('canvas');
+  canvas.width = camera.videoWidth || 1080;
+  canvas.height = camera.videoHeight || 1920;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(camera, 0, 0, canvas.width, canvas.height);
+  const dataUrl = canvas.toDataURL('image/jpeg');
+  selectedMediaList = [{ type: 'image', url: dataUrl }];
+  openEditorScreen();
+}
+
+// File Upload Handlers (Supports 1-3 files)
+videoFileInput.onchange = (e) => {
+  const files = Array.from(e.target.files).slice(0, 3);
+  if(files.length === 0) return;
+  selectedMediaList = files.map(f => ({ type: 'video', url: URL.createObjectURL(f) }));
+  openEditorScreen();
+};
+
+photoFileInput.onchange = (e) => {
+  const files = Array.from(e.target.files).slice(0, 3);
+  if(files.length === 0) return;
+  selectedMediaList = files.map(f => ({ type: 'image', url: URL.createObjectURL(f) }));
+  openEditorScreen();
+};
+
+// Editor Screen Logic
+let editorOverlays = [];
+let editorFilterStyle = '';
+let editorDrawingActive = false;
+let editorCanvasCtx = null;
+
+function openEditorScreen() {
+  studio.classList.remove('open');
+  if(mediaStream) mediaStream.getTracks().forEach(t => t.stop());
+  
+  const container = document.getElementById('editorCanvasContainer');
+  // Clear previous media
+  container.querySelectorAll('video, img').forEach(el => el.remove());
+  
+  if(selectedMediaList.length > 1) {
+    container.classList.add('multi-item');
+    selectedMediaList.forEach(m => {
+      if(m.type === 'video') {
+        const v = document.createElement('video');
+        v.src = m.url;
+        v.autoplay = true;
+        v.loop = true;
+        v.playsInline = true;
+        v.muted = false;
+        container.appendChild(v);
+      } else {
+        const img = document.createElement('img');
+        img.src = m.url;
+        container.appendChild(img);
+      }
+    });
+  } else {
+    container.classList.remove('multi-item');
+    const m = selectedMediaList[0] || { type: 'image', url: '' };
+    if(m.type === 'video') {
+      const v = document.createElement('video');
+      v.src = m.url;
+      v.autoplay = true;
+      v.loop = true;
+      v.playsInline = true;
+      v.muted = false;
+      container.appendChild(v);
+      document.getElementById('editorMuteBtn').classList.remove('hidden');
+    } else {
+      const img = document.createElement('img');
+      img.src = m.url;
+      container.appendChild(img);
+      document.getElementById('editorMuteBtn').classList.add('hidden');
+    }
+  }
+
+  editorScreen.classList.add('open');
+}
+
+document.getElementById('closeEditorBtn').onclick = () => {
+  editorScreen.classList.remove('open');
+  switchTab('create');
+};
+
+document.getElementById('editorQuickPostBtn').onclick = () => {
+  // Transfer to post screen
+  editorScreen.classList.remove('open');
+  document.getElementById('captionInput').value = document.getElementById('editorCaptionInput').value;
+  setupPostPreview();
+  postScreen.classList.add('open');
+};
+
+function toggleEditorDrawer(drawerId) {
+  const drawer = document.getElementById(drawerId);
+  const isOpen = drawer.classList.contains('open');
+  closeEditorDrawers();
+  if(!isOpen) drawer.classList.add('open');
+}
+
+function closeEditorDrawers() {
+  document.querySelectorAll('.editor-tool-drawer').forEach(d => d.classList.remove('open'));
+}
+
+function selectEditorMusic(title, artist, index) {
+  selectedSound = title;
+  document.querySelectorAll('.music-list-row').forEach(r => r.classList.remove('active'));
+  document.querySelectorAll('.select-track-btn').forEach(b => {
+    b.classList.remove('selected');
+    b.textContent = 'Select';
+  });
+  const row = document.getElementById(`track-row-${index}`);
+  row.classList.add('active');
+  const btn = row.querySelector('.select-track-btn');
+  btn.classList.add('selected');
+  btn.textContent = 'Selected';
+
+  document.getElementById('drawerSelectedSongTitle').textContent = title;
+  document.getElementById('drawerSelectedSongArtist').textContent = artist;
+  document.getElementById('currentSoundLabel').textContent = title;
+  showToast(`Track selected: ${title} 🎵`);
+}
+
+function addStickerToCanvas(emoji) {
+  const layer = document.getElementById('editorOverlaysLayer');
+  const el = document.createElement('div');
+  el.className = 'editorOverlayElement';
+  el.textContent = emoji;
+  el.style.left = '40%';
+  el.style.top = '40%';
+  makeElementDraggable(el);
+  layer.appendChild(el);
+  closeEditorDrawers();
+  showToast('Sticker added ✨');
+}
+
+function commitEditorText() {
+  const input = document.getElementById('editorTextInputField');
+  const txt = input.value.trim();
+  if(!txt) return;
+  const layer = document.getElementById('editorOverlaysLayer');
+  const el = document.createElement('div');
+  el.className = 'editorOverlayElement text-element';
+  el.textContent = txt;
+  el.style.left = '30%';
+  el.style.top = '50%';
+  makeElementDraggable(el);
+  layer.appendChild(el);
+  input.value = '';
+  closeEditorDrawers();
+  showToast('Text overlay added ✍️');
+}
+
+function addMentionToCanvas(handle) {
+  const layer = document.getElementById('editorOverlaysLayer');
+  const el = document.createElement('div');
+  el.className = 'editorOverlayElement text-element';
+  el.textContent = handle;
+  el.style.left = '35%';
+  el.style.top = '45%';
+  makeElementDraggable(el);
+  layer.appendChild(el);
+  closeEditorDrawers();
+  showToast(`Mentioned ${handle} @`);
+}
+
+function applyEditorFilter(filterCss, btn) {
+  document.querySelectorAll('.editorFilterChip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  const container = document.getElementById('editorCanvasContainer');
+  container.querySelectorAll('video, img').forEach(el => {
+    el.style.filter = filterCss;
+  });
+  showToast('Filter applied ✨');
+}
+
+function makeElementDraggable(elmnt) {
+  let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+  elmnt.onmousedown = dragMouseDown;
+  elmnt.ontouchstart = dragTouchStart;
+
+  function dragMouseDown(e) {
+    e.preventDefault();
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    document.onmouseup = closeDragElement;
+    document.onmousemove = elementDrag;
+  }
+
+  function elementDrag(e) {
+    e.preventDefault();
+    pos1 = pos3 - e.clientX;
+    pos2 = pos4 - e.clientY;
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+    elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+  }
+
+  function dragTouchStart(e) {
+    const t = e.touches[0];
+    pos3 = t.clientX;
+    pos4 = t.clientY;
+    document.ontouchend = closeDragElement;
+    document.ontouchmove = elementTouchDrag;
+  }
+
+  function elementTouchDrag(e) {
+    const t = e.touches[0];
+    pos1 = pos3 - t.clientX;
+    pos2 = pos4 - t.clientY;
+    pos3 = t.clientX;
+    pos4 = t.clientY;
+    elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+    elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+  }
+
+  function closeDragElement() {
+    document.onmouseup = null;
+    document.onmousemove = null;
+    document.ontouchend = null;
+    document.ontouchmove = null;
+  }
+}
+
+// Post Screen Setup
+function setupPostPreview() {
+  const box = document.getElementById('previewBox');
+  box.innerHTML = '';
+  if(selectedMediaList.length > 1) {
+    box.classList.add('multi-item');
+    selectedMediaList.forEach(m => {
+      if(m.type === 'video') {
+        const v = document.createElement('video');
+        v.src = m.url;
+        v.muted = true;
+        v.autoplay = true;
+        v.loop = true;
+        box.appendChild(v);
+      } else {
+        const img = document.createElement('img');
+        img.src = m.url;
+        box.appendChild(img);
+      }
+    });
+  } else {
+    box.classList.remove('multi-item');
+    const m = selectedMediaList[0] || { type: 'image', url: '' };
+    if(m.type === 'video') {
+      const v = document.createElement('video');
+      v.src = m.url;
+      v.muted = true;
+      v.autoplay = true;
+      v.loop = true;
+      box.appendChild(v);
+    } else {
+      const img = document.createElement('img');
+      img.src = m.url;
+      box.appendChild(img);
+    }
+  }
+}
+
+document.getElementById('closePost').onclick = () => {
+  postScreen.classList.remove('open');
+  appContainer.classList.remove('hide-nav-for-create');
+  switchTab('home');
+};
+
+document.getElementById('publishBtn').onclick = () => {
+  const captionText = document.getElementById('captionInput').value.trim() || "Amazing new clip on VIBE! 🔥 #VIBE";
+  const newPost = {
+    id: Date.now(),
+    author: "Creator VIBE",
+    handle: myProfile.username,
+    caption: captionText,
+    songName: selectedSound,
+    artist: "Creator VIBE",
+    likes: 1,
+    commentsCount: 0,
+    shares: 0,
+    views: "1",
+    avatar: myProfile.avatar,
+    mediaList: [...selectedMediaList],
+    location: selectedPostLocation,
+    isLiked: false,
+    isSaved: false,
+    commentsList: []
+  };
+
+  feedData.unshift(newPost);
+  renderFeed();
+  postScreen.classList.remove('open');
+  appContainer.classList.remove('hide-nav-for-create');
+  switchTab('home');
+  showToast('Successfully posted to VIBE feed! 🎉');
+};
+
+document.getElementById('publishStoryBtn').onclick = () => {
+  showToast('Added successfully to your 24h Story! 📸');
+  postScreen.classList.remove('open');
+  appContainer.classList.remove('hide-nav-for-create');
+  switchTab('home');
+};
+
+// Profile Screen Logic
+document.querySelectorAll('.profileSubTab').forEach(tab => {
+  tab.onclick = () => {
+    document.querySelectorAll('.profileSubTab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    renderProfilePosts();
+  };
+});
+
+function renderProfilePosts() {
+  const grid = document.getElementById('userPostsGrid');
+  grid.innerHTML = '';
+  feedData.forEach(post => {
+    const thumb = document.createElement('div');
+    thumb.className = 'userPostThumb';
+    const media = post.mediaList[0] || {};
+    if(media.type === 'video') {
+      thumb.innerHTML = `<video src="${media.url}" muted playsinline></video>`;
+    } else {
+      thumb.innerHTML = `<img src="${media.url}" alt="">`;
+    }
+    thumb.innerHTML += `<div class="profile-view-badge">👁 ${post.views}</div>`;
+    grid.appendChild(thumb);
+  });
+}
+
+// Toast Helper
+function toastTimerOut(msg) {
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+window.showToast = toastTimerOut;
+
+// Initial Feed Render
+renderFeed();
 </script>
 </body>
 </html>
