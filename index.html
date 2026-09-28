@@ -1613,11 +1613,8 @@ function renderDiscoverResults(query) {
   let html = '';
   const q = query.toLowerCase();
 
-  // Filter Creators
   const matchedCreators = creatorsDirectory.filter(c => c.name.toLowerCase().includes(q) || c.handle.toLowerCase().includes(q));
-  // Filter Hashtags
   const matchedHashtags = hashtagsDirectory.filter(h => h.name.toLowerCase().includes(q));
-  // Filter Posts
   const matchedPosts = feedData.filter(p => p.caption.toLowerCase().includes(q) || p.author.toLowerCase().includes(q));
 
   if (currentSearchFilter === 'all' || currentSearchFilter === 'creators') {
@@ -1916,57 +1913,107 @@ async function openStudio() {
     mediaStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
     camera.srcObject = mediaStream;
   } catch(e) {
-    showToast('Camera stream initialized in simulation mode');
+    showToast('Camera access unavailable. Use upload buttons.');
   }
 }
+
 document.getElementById('closeStudio').addEventListener('click', () => {
-  if(mediaStream) mediaStream.getTracks().forEach(t => t.stop());
   appContainer.classList.remove('hide-nav-for-create');
   closeScreen(studio);
+  if(mediaStream) {
+    mediaStream.getTracks().forEach(track => track.stop());
+  }
 });
 
-function switchStudioMode(mode) {
-  document.querySelectorAll('.studioModeTab').forEach(t => t.classList.remove('active'));
-  if(mode === 'video') {
-    document.getElementById('modeVideoTab').classList.add('active');
-    document.getElementById('videoModePanel').classList.remove('hidden');
-    document.getElementById('liveModePanel').classList.add('hidden');
-    document.getElementById('liveStreamOverlayElements').classList.add('hidden');
-  } else {
-    document.getElementById('modeLiveTab').classList.add('active');
-    document.getElementById('videoModePanel').classList.add('hidden');
-    document.getElementById('liveModePanel').classList.remove('hidden');
-    document.getElementById('liveStreamOverlayElements').classList.remove('hidden');
+// Photo & Video File Upload Handlers for Publishing Feed Posts
+let stagingMediaList = [];
+let activeSoundTrack = { title: "Original Audio", artist: "Creator VIBE" };
+
+videoFileInput.addEventListener('change', (e) => {
+  handleFilesSelection(e.target.files, 'video');
+});
+
+photoFileInput.addEventListener('change', (e) => {
+  handleFilesSelection(e.target.files, 'image');
+});
+
+function handleFilesSelection(files, defaultType) {
+  if(!files || files.length === 0) return;
+  stagingMediaList = [];
+  
+  Array.from(files).forEach(file => {
+    const url = URL.createObjectURL(file);
+    const type = file.type.startsWith('image/') ? 'image' : 'video';
+    stagingMediaList.push({ type, url });
+  });
+
+  // Close studio and open post screen preview
+  closeScreen(studio);
+  if(mediaStream) mediaStream.getTracks().forEach(t => t.stop());
+  appContainer.classList.remove('hide-nav-for-create');
+
+  openPostScreenWithStaging();
+}
+
+function openPostScreenWithStaging() {
+  const previewBox = document.getElementById('previewBox');
+  if(stagingMediaList.length > 1) {
+    previewBox.className = 'previewBox multi-item';
+    let html = '';
+    stagingMediaList.forEach(m => {
+      if(m.type === 'video') html += `<video src="${m.url}" controls muted></video>`;
+      else html += `<img src="${m.url}">`;
+    });
+    previewBox.innerHTML = html;
+  } else if(stagingMediaList.length === 1) {
+    previewBox.className = 'previewBox';
+    const m = stagingMediaList[0];
+    if(m.type === 'video') {
+      previewBox.innerHTML = `<video src="${m.url}" controls autoplay muted loop></video>`;
+    } else {
+      previewBox.innerHTML = `<img src="${m.url}">`;
+    }
   }
+  openScreen(postScreen);
 }
 
-function toggleLiveStream() {
-  const btn = document.getElementById('startLiveBtn');
-  if(btn.textContent.includes('Now')) {
-    btn.textContent = 'End LIVE';
-    btn.style.background = '#f33';
-    showToast('You are now LIVE streaming!');
-  } else {
-    btn.textContent = 'Go LIVE Now';
-    btn.style.background = 'var(--pink)';
-    showToast('LIVE broadcast ended');
-  }
-}
+document.getElementById('closePost').addEventListener('click', () => {
+  closeScreen(postScreen);
+});
 
-function toggleLiveMic() {
-  showToast('Microphone toggled');
-}
+document.getElementById('publishBtn').addEventListener('click', () => {
+  const captionText = document.getElementById('captionInput').value.trim() || "New vibe upload ✨ #VIBE";
+  const newPost = {
+    id: Date.now(),
+    author: "@creator_vibe",
+    handle: "@creator_vibe",
+    caption: captionText,
+    songName: activeSoundTrack.title,
+    artist: activeSoundTrack.artist,
+    likes: 1,
+    commentsCount: 0,
+    shares: 0,
+    views: "1",
+    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150",
+    mediaList: stagingMediaList,
+    isLiked: false,
+    isSaved: false,
+    isTagged: false,
+    commentsList: []
+  };
 
-function openGuestRequestsModal() {
-  showToast('Guest requests drawer opened');
-}
+  feedData.unshift(newPost);
+  userPosts.unshift(newPost);
+  renderFeed();
+  closeScreen(postScreen);
+  showToast('Successfully posted to VIBE feed! 🎉');
+  document.getElementById('captionInput').value = '';
+});
 
-function openLiveSettingsModal() {
-  showToast('LIVE broadcast settings opened');
-}
-
-// Initialization
-renderFeed();
+// Initialize feed on load
+window.addEventListener('DOMContentLoaded', () => {
+  renderFeed();
+});
 </script>
 </body>
 </html>
