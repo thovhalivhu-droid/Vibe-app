@@ -160,7 +160,7 @@ button{font:inherit}
 .nav{position:absolute;bottom:0;left:0;right:0;height:var(--nav);z-index:100;display:flex;justify-content:space-around;align-items:center;background:var(--surface);backdrop-filter:blur(16px);border-top:1px solid #ffffff12;pointer-events:auto;transition:transform .3s ease}
 .nav button{background:none;border:0;color:var(--muted);font-size:10px;display:flex;flex-direction:column;align-items:center;gap:4px;width:20%;cursor:pointer;pointer-events:auto}.nav button.active{color:var(--text)}.nav .plus{width:42px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--pink),var(--cyan));color:#fff;font-size:22px;line-height:1}
 
-/* Global utility class to hide navigation and header when a screen/post editor is open */
+/* Global utility class to hide navigation and header ONLY when Create or Edit Media is open */
 #app.hide-nav-for-create .nav { transform: translateY(100%); pointer-events: none; }
 #app.hide-nav-for-create .header { transform: translateY(-100%); pointer-events: none; }
 
@@ -1574,15 +1574,15 @@ document.querySelectorAll('.nav button').forEach(btn => {
 
 function openScreen(el) {
   el.classList.add('open');
-  // Hide navigation and header ONLY when Create/Studio is pressed
-  if (el.id === 'studio' || el.id === 'editorScreen' || el.id === 'postScreen') {
+  // Hide navigation and header ONLY when Create/Studio or Edit Media is active
+  if (el.id === 'studio' || el.id === 'editorScreen') {
     appContainer.classList.add('hide-nav-for-create');
   }
 }
 function closeScreen(el) {
   el.classList.remove('open');
-  // Bring back navigation and header when leaving Create/Studio screens
-  if (!document.querySelector('#studio.open') && !document.querySelector('#editorScreen.open') && !document.querySelector('#postScreen.open')) {
+  // Bring back navigation and header when leaving Create/Studio and Edit Media screens
+  if (!document.querySelector('#studio.open') && !document.querySelector('#editorScreen.open')) {
     appContainer.classList.remove('hide-nav-for-create');
   }
 }
