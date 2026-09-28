@@ -1210,30 +1210,13 @@ let feedData=[
 }
 ];
 
-let storiesData = [];
-let pendingMessageRequests = [
-  { id: 301, name: "Marcus Vance", username: "@marcus_v", text: "Hey! Loved your content, can we chat?", avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" }
-];
-
 let myProfile={username:"@creator_vibe",bio:"Short-form content creator & explorer ✨",avatar:"https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150"};
 let activeVideo=null, muted=true, mediaStream=null, recorder=null, chunks=[], recording=false, recordSeconds=0, timerInterval=null, facing="user", selectedMediaList=[];
 let pressTimer=null, isLongPress=false, selectedSound="Original Audio";
 let activeCommentPostId=null;
 let profileActiveTab = 'posts';
-let currentStoryIndex = 0;
-let storyTimeout = null;
-let storyStartTime = 0;
-let storyDuration = 5000;
-let storyTimeRemaining = 5000;
-let isStoryPaused = false;
-let currentStoryVideoEl = null;
 
 let activeTabKey = 'home';
-let editorMode = null; 
-let drawCanvas, drawCtx;
-let undoStack = [];
-let redoStack = [];
-let activeLiveTextElement = null;
 
 // Camera and Recording Logic
 async function startCamera() {
@@ -1458,10 +1441,12 @@ function setupEditorContainer() {
       vid.loop = true;
       vid.muted = false;
       vid.playsInline = true;
+      vid.id = "editorActiveVideo";
       container.insertBefore(vid, container.firstChild);
     } else {
       const img = document.createElement('img');
       img.src = m.url;
+      img.id = "editorActiveImage";
       container.insertBefore(img, container.firstChild);
     }
   } else {
@@ -1479,6 +1464,142 @@ function setupEditorContainer() {
       slider.appendChild(slide);
     });
     container.insertBefore(slider, container.firstChild);
+  }
+}
+
+// Editor Drawers & Working Tools Logic
+function closeEditorDrawers() {
+  document.querySelectorAll('.editor-tool-drawer').forEach(d => d.classList.remove('open'));
+  document.querySelectorAll('.edit-tool-btn').forEach(b => b.classList.remove('active'));
+}
+
+function toggleEditorDrawer(drawerId) {
+  const drawer = document.getElementById(drawerId);
+  const isOpen = drawer.classList.contains('open');
+  closeEditorDrawers();
+  if (!isOpen) {
+    drawer.classList.add('open');
+  }
+}
+
+function selectEditorMusic(songTitle, artistName) {
+  selectedSound = songTitle;
+  showToast(`Music selected: ${songTitle} 🎵`);
+  closeEditorDrawers();
+}
+
+function applyEditorFilter(filterStyle, btnEl) {
+  const container = document.getElementById('editorCanvasContainer');
+  const mediaElements = container.querySelectorAll('video, img');
+  mediaElements.forEach(el => {
+    el.style.filter = filterStyle;
+  });
+  
+  // Also highlight the active filter chip in the drawer
+  const drawer = document.getElementById('editorEffectsDrawer');
+  if (drawer) {
+    drawer.querySelectorAll('.editorFilterChip').forEach(chip => chip.classList.remove('active'));
+  }
+  if (btnEl) btnEl.classList.add('active');
+  showToast('Effect applied! ✨');
+}
+
+function addStickerToCanvas(emoji) {
+  const layer = document.getElementById('editorOverlaysLayer');
+  const stickerEl = document.createElement('div');
+  stickerEl.className = 'editorOverlayElement';
+  stickerEl.textContent = emoji;
+  stickerEl.style.left = '40%';
+  stickerEl.style.top = '40%';
+  
+  makeElementDraggable(stickerEl);
+  layer.appendChild(stickerEl);
+  closeEditorDrawers();
+  showToast('Sticker added! Tap & drag to position.');
+}
+
+function addMentionToCanvas(mentionText) {
+  const layer = document.getElementById('editorOverlaysLayer');
+  const mentionEl = document.createElement('div');
+  mentionEl.className = 'editorOverlayElement text-element';
+  mentionEl.textContent = mentionText;
+  mentionEl.style.left = '30%';
+  mentionEl.style.top = '50%';
+  
+  makeElementDraggable(mentionEl);
+  layer.appendChild(mentionEl);
+  closeEditorDrawers();
+  showToast('Mention added!');
+}
+
+function commitEditorText() {
+  const input = document.getElementById('editorTextInputField');
+  const text = input.value.trim();
+  if (!text) return;
+  
+  const layer = document.getElementById('editorOverlaysLayer');
+  const textEl = document.createElement('div');
+  textEl.className = 'editorOverlayElement text-element';
+  textEl.textContent = text;
+  textEl.style.left = '25%';
+  textEl.style.top = '45%';
+  
+  makeElementDraggable(textEl);
+  layer.appendChild(textEl);
+  input.value = '';
+  closeEditorDrawers();
+  showToast('Text overlay added!');
+}
+
+function makeElementDraggable(elm) {
+  let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+  elm.onmousedown = dragMouseDown;
+  elm.ontouchstart = dragTouchStart;
+
+  function dragMouseDown(e) {
+    e.preventDefault();
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    document.onmouseup = closeDragElement;
+    document.onmousemove = elementDrag;
+  }
+
+  function elementDrag(e) {
+    e.preventDefault();
+    pos1 = pos3 - e.clientX;
+    pos2 = pos4 - e.clientY;
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    elm.style.top = (elm.offsetTop - pos2) + "px";
+    elm.style.left = (elm.offsetLeft - pos1) + "px";
+  }
+
+  function closeDragElement() {
+    document.onmouseup = null;
+    document.onmousemove = null;
+  }
+
+  function dragTouchStart(e) {
+    const touch = e.touches[0];
+    pos3 = touch.clientX;
+    pos4 = touch.clientY;
+    document.ontouchend = closeTouchDrag;
+    document.ontouchmove = elementTouchDrag;
+  }
+
+  function elementTouchDrag(e) {
+    const touch = e.touches[0];
+    pos1 = pos3 - touch.clientX;
+    pos2 = pos4 - touch.clientY;
+    pos3 = touch.clientX;
+    pos4 = touch.clientY;
+    elm.style.top = (elm.offsetTop - pos2) + "px";
+    elm.style.left = (elm.offsetLeft - pos1) + "px";
+  }
+
+  function closeTouchDrag() {
+    document.ontouchend = null;
+    document.ontouchmove = null;
   }
 }
 
@@ -1515,7 +1636,7 @@ function setupPostPreview() {
 }
 
 document.getElementById('publishBtn').onclick = () => {
-  const captionText = document.getElementById('captionInput').value.trim() || 'My new VIBE post ✨ #VIBE';
+  const captionText = document.getElementById('editorCaptionInput').value.trim() || document.getElementById('captionInput').value.trim() || 'My new VIBE post ✨ #VIBE';
   const newPost = {
     id: Date.now(),
     author: 'You',
@@ -1729,11 +1850,9 @@ function renderFeed(filteredList){
       const tapLength = currentTime - lastTapTime;
       
       if (tapLength < 300 && tapLength > 0) {
-        // Double Tap Detected -> Like & Heart Animation
         triggerLikeAction(e.clientX, e.clientY);
         e.preventDefault();
       } else {
-        // Single Tap Detected -> Toggle Play/Pause for Video
         setTimeout(() => {
           if (new Date().getTime() - currentTime >= 300) {
             const activeVideoEl = card.querySelector('video') || card.querySelector('.reel-media-slide video');
@@ -2067,41 +2186,22 @@ document.getElementById('navCreateBtn').onclick=()=>{
   pauseAllFeedVideos(); 
   startCamera(); 
 };
-document.getElementById('navInboxBtn').onclick=()=>{ updateNavActiveState('inbox'); inbox.classList.add('open'); discover.classList.remove('open'); profile.classList.remove('open'); profile.classList.remove('open'); studio.classList.remove('open'); appContainer.classList.remove('hide-nav-for-create'); pauseAllFeedVideos(); stopCamera(); renderInboxRequests(); };
+document.getElementById('navInboxBtn').onclick=()=>{ updateNavActiveState('inbox'); inbox.classList.add('open'); discover.classList.remove('open'); profile.classList.remove('open'); studio.classList.remove('open'); appContainer.classList.remove('hide-nav-for-create'); pauseAllFeedVideos(); stopCamera(); };
 document.getElementById('navProfileBtn').onclick=()=>{ updateNavActiveState('profile'); profile.classList.add('open'); discover.classList.remove('open'); inbox.classList.remove('open'); studio.classList.remove('open'); appContainer.classList.remove('hide-nav-for-create'); pauseAllFeedVideos(); stopCamera(); renderProfileGrid(); };
 
-document.querySelectorAll('.screenHead .close[data-close]').forEach(btn=>{
- btn.onclick=()=>{
-  const target = btn.dataset.close;
-  if(target==='discover') discover.classList.remove('open');
-  if(target==='inbox') inbox.classList.remove('open');
-  if(target==='profile') profile.classList.remove('open');
-  updateNavActiveState('home');
-  setupObserver();
- };
+document.querySelectorAll('.close').forEach(btn => {
+  btn.onclick = (e) => {
+    const parentScreen = btn.closest('.screen');
+    if (parentScreen) {
+      parentScreen.classList.remove('open');
+    }
+    appContainer.classList.remove('hide-nav-for-create');
+    updateNavActiveState('home');
+    stopCamera();
+  };
 });
 
-document.getElementById('closeStudio').onclick=()=>{
- studio.classList.remove('open');
- appContainer.classList.remove('hide-nav-for-create');
- updateNavActiveState('home');
- stopCamera();
- setupObserver();
-};
-
-document.getElementById('closeEditorBtn').onclick=()=>{
- editorScreen.classList.remove('open');
- studio.classList.add('open');
- startCamera();
-};
-
-document.getElementById('closePost').onclick=()=>{
- postScreen.classList.remove('open');
- editorScreen.classList.add('open');
-};
-
 renderFeed();
-updateNavActiveState('home');
 </script>
 </body>
 </html>
