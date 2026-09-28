@@ -2067,27 +2067,41 @@ document.getElementById('navCreateBtn').onclick=()=>{
   pauseAllFeedVideos(); 
   startCamera(); 
 };
-document.getElementById('navInboxBtn').onclick=()=>{ updateNavActiveState('inbox'); inbox.classList.add('open'); discover.classList.remove('open'); profile.classList.remove('open'); studio.classList.remove('open'); appContainer.classList.remove('hide-nav-for-create'); pauseAllFeedVideos(); stopCamera(); };
+document.getElementById('navInboxBtn').onclick=()=>{ updateNavActiveState('inbox'); inbox.classList.add('open'); discover.classList.remove('open'); profile.classList.remove('open'); profile.classList.remove('open'); studio.classList.remove('open'); appContainer.classList.remove('hide-nav-for-create'); pauseAllFeedVideos(); stopCamera(); renderInboxRequests(); };
 document.getElementById('navProfileBtn').onclick=()=>{ updateNavActiveState('profile'); profile.classList.add('open'); discover.classList.remove('open'); inbox.classList.remove('open'); studio.classList.remove('open'); appContainer.classList.remove('hide-nav-for-create'); pauseAllFeedVideos(); stopCamera(); renderProfileGrid(); };
 
 document.querySelectorAll('.screenHead .close[data-close]').forEach(btn=>{
  btn.onclick=()=>{
-  const screenKey = btn.dataset.close;
-  document.getElementById(screenKey).classList.remove('open');
+  const target = btn.dataset.close;
+  if(target==='discover') discover.classList.remove('open');
+  if(target==='inbox') inbox.classList.remove('open');
+  if(target==='profile') profile.classList.remove('open');
   updateNavActiveState('home');
+  setupObserver();
  };
 });
 
-document.getElementById('closeStudio').onclick=()=>{ 
-  studio.classList.remove('open'); 
-  appContainer.classList.remove('hide-nav-for-create');
-  stopCamera(); 
-  updateNavActiveState('home'); 
+document.getElementById('closeStudio').onclick=()=>{
+ studio.classList.remove('open');
+ appContainer.classList.remove('hide-nav-for-create');
+ updateNavActiveState('home');
+ stopCamera();
+ setupObserver();
 };
-document.getElementById('closeEditorBtn').onclick=()=>{ editorScreen.classList.remove('open'); studio.classList.add('open'); startCamera(); };
-document.getElementById('closePost').onclick=()=>{ postScreen.classList.remove('open'); editorScreen.classList.add('open'); };
+
+document.getElementById('closeEditorBtn').onclick=()=>{
+ editorScreen.classList.remove('open');
+ studio.classList.add('open');
+ startCamera();
+};
+
+document.getElementById('closePost').onclick=()=>{
+ postScreen.classList.remove('open');
+ editorScreen.classList.add('open');
+};
 
 renderFeed();
+updateNavActiveState('home');
 </script>
 </body>
 </html>
