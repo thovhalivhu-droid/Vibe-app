@@ -164,6 +164,10 @@ button{font:inherit}
 #app.hide-nav-for-create .nav { transform: translateY(100%); pointer-events: none; }
 #app.hide-nav-for-create .header { transform: translateY(-100%); pointer-events: none; }
 
+/* Logged-out state helper class */
+#app.logged-out .nav { display: none !important; }
+#app.logged-out .header { display: none !important; }
+
 .screen{position:absolute;top:0;left:0;right:0;bottom:0;z-index:40;background:var(--bg);transform:translateY(100%);transition:.3s;display:flex;flex-direction:column}
 .screen.open{transform:translateY(0)}
 #studio{background:#000;bottom:0;z-index:60}
@@ -642,11 +646,62 @@ input:checked+.slider:before{transform:translateX(20px)}
   color: var(--text);
   font-size: 22px;
 }
+
+/* Logged-Out Screen View Overlay */
+#loggedOutScreen {
+  position: absolute;
+  inset: 0;
+  z-index: 2000;
+  background: var(--bg);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  text-align: center;
+}
+#app.logged-out #loggedOutScreen {
+  display: flex;
+}
+.logged-out-logo {
+  font-size: 42px;
+  font-weight: 900;
+  background: linear-gradient(45deg, var(--pink), var(--cyan));
+  -webkit-background-clip: text;
+  color: transparent;
+  margin-bottom: 10px;
+}
+.logged-out-subtitle {
+  color: var(--muted);
+  font-size: 14px;
+  margin-bottom: 30px;
+  line-height: 1.4;
+}
+.logged-out-btn {
+  width: 100%;
+  max-width: 280px;
+  padding: 14px;
+  border-radius: 24px;
+  border: none;
+  background: linear-gradient(135deg, var(--pink), var(--cyan));
+  color: #fff;
+  font-weight: 800;
+  font-size: 15px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(255,42,95,0.3);
+}
 </style>
 </head>
 <body>
 <div id="app">
 <div id="toast" class="toast"></div>
+
+<!-- Logged-Out Welcome Screen -->
+<div id="loggedOutScreen">
+  <div class="logged-out-logo">VIBE</div>
+  <div class="logged-out-subtitle">Log back into your account to explore trending short-form videos and share your clips with the world.</div>
+  <button class="logged-out-btn" onclick="simulateLogIn()">Log In / Sign Up</button>
+</div>
 
 <header class="header">
   <div class="logo">VIBE</div>
@@ -1681,261 +1736,7 @@ document.querySelectorAll('.screenHead .close').forEach(btn => {
   });
 });
 
-// Robust touch handler binding for editor toolbar buttons to trigger every time without disappearing
-['toolMusicBtn', 'toolStickersBtn', 'toolCustomTextBtn', 'toolEffectsBtn', 'toolMentionBtn'].forEach(btnId => {
-  const el = document.getElementById(btnId);
-  if(el) {
-    el.addEventListener('click', (e) => {
-      e.stopPropagation();
-      let drawerId = 'editorMusicDrawer';
-      if(btnId === 'toolStickersBtn') drawerId = 'editorStickersDrawer';
-      else if(btnId === 'toolCustomTextBtn') drawerId = 'editorTextDrawer';
-      else if(btnId === 'toolEffectsBtn') drawerId = 'editorEffectsDrawer';
-      else if(btnId === 'toolMentionBtn') drawerId = 'editorMentionDrawer';
-      toggleEditorDrawer(drawerId);
-    });
-  }
-});
-
-function toggleEditorDrawer(drawerId) {
-  const drawer = document.getElementById(drawerId);
-  const isOpen = drawer.classList.contains('open');
-  closeEditorDrawers();
-  if(!isOpen) {
-    drawer.classList.add('open');
-  }
-}
-
-function closeEditorDrawers() {
-  document.querySelectorAll('.editor-tool-drawer').forEach(d => d.classList.remove('open'));
-}
-
-// Discover & Search Engine Logic
-const searchInput = document.getElementById('searchInput');
-const discoverResultsContainer = document.getElementById('discoverResultsContainer');
-
-document.querySelectorAll('.discoverTab').forEach(tab => {
-  tab.addEventListener('click', (e) => {
-    e.stopPropagation();
-    document.querySelectorAll('.discoverTab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    currentSearchFilter = tab.getAttribute('data-search-filter');
-    renderDiscoverResults(searchInput.value.trim());
-  });
-});
-
-searchInput.addEventListener('input', (e) => {
-  renderDiscoverResults(e.target.value.trim());
-});
-
-function renderDiscoverResults(query) {
-  let html = '';
-  const q = query.toLowerCase();
-
-  const matchedCreators = creatorsDirectory.filter(c => c.name.toLowerCase().includes(q) || c.handle.toLowerCase().includes(q));
-  const matchedHashtags = hashtagsDirectory.filter(h => h.name.toLowerCase().includes(q));
-  const matchedPosts = feedData.filter(p => p.caption.toLowerCase().includes(q) || p.author.toLowerCase().includes(q));
-
-  if (currentSearchFilter === 'all' || currentSearchFilter === 'creators') {
-    if (matchedCreators.length > 0) {
-      html += `<div class="discoverSectionTitle">Creators</div><div class="creatorsListContainer">`;
-      matchedCreators.forEach(c => {
-        html += `
-          <div class="creatorSearchRow" onclick="openCreatorProfile('${c.name}')">
-            <div class="creatorSearchInfo">
-              <img class="creatorSearchAvatar" src="${c.avatar}">
-              <div class="creatorSearchMeta">
-                <div class="name">${c.name}</div>
-                <div class="handle">${c.handle} • ${c.followers} followers</div>
-              </div>
-            </div>
-            <button class="creatorFollowBtn ${c.isFollowing?'following':''}" onclick="event.stopPropagation(); toggleCreatorFollow('${c.handle}', this)">${c.isFollowing?'Following':'Follow'}</button>
-          </div>
-        `;
-      });
-      html += `</div>`;
-    }
-  }
-
-  if (currentSearchFilter === 'all' || currentSearchFilter === 'hashtags') {
-    if (matchedHashtags.length > 0) {
-      html += `<div class="discoverSectionTitle">Hashtags</div><div class="hashtagsListContainer">`;
-      matchedHashtags.forEach(h => {
-        html += `
-          <div class="hashtagSearchRow" onclick="openHashtagModal('${h.name}')">
-            <div style="display:flex; align-items:center;">
-              <div class="hashtagSymbol">#</div>
-              <div class="hashtagDetails">
-                <div class="hashtagName">${h.name}</div>
-                <div class="hashtagCount">${h.count}</div>
-              </div>
-            </div>
-            <span style="color:var(--muted); font-size:14px;">›</span>
-          </div>
-        `;
-      });
-      html += `</div>`;
-    }
-  }
-
-  if (currentSearchFilter === 'all' || currentSearchFilter === 'posts') {
-    if (matchedPosts.length > 0) {
-      html += `<div class="discoverSectionTitle">Posts</div><div class="discoverGrid">`;
-      matchedPosts.forEach(p => {
-        const media = p.mediaList ? p.mediaList[0] : {type:'video', url:p.videoUrl};
-        html += `
-          <div class="discoverGridItem" onclick="showToast('Opened post by ${p.author}')">
-            ${media.type==='video'?`<video src="${media.url}"></video>`:`<img src="${media.url}">`}
-          </div>
-        `;
-      });
-      html += `</div>`;
-    }
-  }
-
-  if (!html) {
-    html = `<div style="text-align:center; color:var(--muted); padding:30px 0;">No results found for "${query}"</div>`;
-  }
-
-  discoverResultsContainer.innerHTML = html;
-}
-
-function toggleCreatorFollow(handle, btn) {
-  const creator = creatorsDirectory.find(c => c.handle === handle);
-  if(creator) {
-    creator.isFollowing = !creator.isFollowing;
-    btn.classList.toggle('following', creator.isFollowing);
-    btn.textContent = creator.isFollowing ? 'Following' : 'Follow';
-    showToast(creator.isFollowing ? `Following ${creator.name}` : `Unfollowed ${creator.name}`);
-  }
-}
-
-// Creator Profile Modal
-function openCreatorProfile(name) {
-  const creator = creatorsDirectory.find(c => c.name === name) || creatorsDirectory[0];
-  document.getElementById('modalCreatorHeaderName').textContent = creator.name;
-  document.getElementById('modalCreatorAvatar').src = creator.avatar;
-  document.getElementById('modalCreatorName').textContent = creator.name;
-  document.getElementById('modalCreatorHandle').textContent = creator.handle;
-  document.getElementById('modalCreatorBio').textContent = creator.bio;
-  document.getElementById('modalCreatorFollowers').textContent = creator.followers;
-  document.getElementById('modalCreatorFollowing').textContent = creator.following;
-  document.getElementById('modalCreatorLikes').textContent = creator.likes;
-  
-  const followBtn = document.getElementById('modalCreatorFollowBtn');
-  followBtn.textContent = creator.isFollowing ? 'Following' : 'Follow';
-  followBtn.style.background = creator.isFollowing ? 'transparent' : 'var(--pink)';
-  followBtn.style.borderColor = creator.isFollowing ? 'rgba(255,255,255,0.2)' : 'var(--pink)';
-
-  const grid = document.getElementById('modalCreatorPostsGrid');
-  let gridHtml = '';
-  feedData.filter(f => f.author === creator.name).forEach(p => {
-    const m = p.mediaList ? p.mediaList[0] : {type:'video', url:p.videoUrl};
-    gridHtml += `<div class="userPostThumb">${m.type==='video'?`<video src="${m.url}"></video>`:`<img src="${m.url}">`}</div>`;
-  });
-  if(!gridHtml) {
-    gridHtml = `<div style="grid-column:span 3; text-align:center; color:var(--muted); padding:20px;">No posts published yet</div>`;
-  }
-  grid.innerHTML = gridHtml;
-
-  openScreen(document.getElementById('creatorProfileModal'));
-}
-
-function closeCreatorProfileModal() {
-  closeScreen(document.getElementById('creatorProfileModal'));
-}
-
-function toggleModalCreatorFollow() {
-  const name = document.getElementById('modalCreatorName').textContent;
-  const creator = creatorsDirectory.find(c => c.name === name);
-  if(creator) {
-    creator.isFollowing = !creator.isFollowing;
-    const followBtn = document.getElementById('modalCreatorFollowBtn');
-    followBtn.textContent = creator.isFollowing ? 'Following' : 'Follow';
-    followBtn.style.background = creator.isFollowing ? 'transparent' : 'var(--pink)';
-    followBtn.style.borderColor = creator.isFollowing ? 'rgba(255,255,255,0.2)' : 'var(--pink)';
-    showToast(creator.isFollowing ? `Following ${creator.name}` : `Unfollowed ${creator.name}`);
-  }
-}
-
-// Hashtag Modal
-function openHashtagModal(tagName) {
-  document.getElementById('hashtagModalTitle').textContent = tagName;
-  document.getElementById('hashtagModalName').textContent = tagName;
-  const tagObj = hashtagsDirectory.find(h => h.name === tagName) || {views: "1.2M views"};
-  document.getElementById('hashtagModalViews').textContent = `${tagObj.views} on platform`;
-
-  const grid = document.getElementById('hashtagModalPostsGrid');
-  let html = '';
-  feedData.forEach(p => {
-    const m = p.mediaList ? p.mediaList[0] : {type:'video', url:p.videoUrl};
-    html += `<div class="discoverGridItem">${m.type==='video'?`<video src="${m.url}"></video>`:`<img src="${m.url}">`}</div>`;
-  });
-  grid.innerHTML = html;
-
-  openScreen(document.getElementById('hashtagModal'));
-}
-
-function closeHashtagModal() {
-  closeScreen(document.getElementById('hashtagModal'));
-}
-
-// Profile Sub-tabs rendering
-document.querySelectorAll('.profileSubTab').forEach(tab => {
-  tab.addEventListener('click', (e) => {
-    e.stopPropagation();
-    document.querySelectorAll('.profileSubTab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    const tabName = tab.getAttribute('data-profile-tab');
-    renderUserProfilePosts(tabName);
-  });
-});
-
-function renderUserProfilePosts(type) {
-  const grid = document.getElementById('userPostsGrid');
-  let html = '';
-  let dataset = userPosts;
-  if (type === 'saved') dataset = savedPosts;
-  else if (type === 'tagged') dataset = feedData.filter(f => f.isTagged);
-
-  dataset.forEach(item => {
-    const m = item.mediaList ? item.mediaList[0] : {type:item.type||'video', url:item.url||item.videoUrl};
-    html += `
-      <div class="userPostThumb">
-        ${m.type==='video'?`<video src="${m.url}"></video>`:`<img src="${m.url}">`}
-        ${item.views?`<div class="profile-view-badge">▶ ${item.views}</div>`:''}
-      </div>
-    `;
-  });
-
-  if(!html) {
-    html = `<div style="grid-column:span 3; text-align:center; color:var(--muted); padding:30px 0;">No items found</div>`;
-  }
-  grid.innerHTML = html;
-}
-
-// Settings and Sub-panels
-function openSettingsScreen() {
-  openScreen(document.getElementById('settingsScreen'));
-}
-function closeSettingsScreen() {
-  closeScreen(document.getElementById('settingsScreen'));
-}
-function openPrivateInfoScreen() {
-  openScreen(document.getElementById('privateInfoScreen'));
-}
-function closePrivateInfoScreen() {
-  closeScreen(document.getElementById('privateInfoScreen'));
-}
-
-function openHelpCenter() {
-  openScreen(document.getElementById('helpCenterSubPanel'));
-}
-
-function openTermsOfService() {
-  openScreen(document.getElementById('termsOfServiceSubPanel'));
-}
-
+// Logout Handling Functions
 function openLogOutModal() {
   document.getElementById('logoutModal').classList.add('open');
 }
@@ -1947,22 +1748,26 @@ function closeLogOutModal() {
 function confirmLogOut() {
   closeLogOutModal();
   closeSettingsScreen();
+  closeAllScreens();
+  // Hide the bottom navigation bar and header, and show the logged-out screen view
+  appContainer.classList.add('logged-out');
   showToast('Logged out successfully');
-  setTimeout(() => {
-    window.location.reload();
-  }, 1000);
 }
 
-function openAccountSettings() { openScreen(document.getElementById('accountSettingsSubPanel')); }
-function openReferenceSettings() { openScreen(document.getElementById('referenceSettingsSubPanel')); }
-function openPushNotificationsSettings() { openScreen(document.getElementById('pushNotificationsSubPanel')); }
-function openVideoPlaybackSettings() { openScreen(document.getElementById('videoPlaybackSubPanel')); }
-
-function closeSubPanel(id) {
-  closeScreen(document.getElementById(id));
+function simulateLogIn() {
+  appContainer.classList.remove('logged-out');
+  showToast('Welcome back, @creator_vibe!');
 }
 
-// Initialize feed on load
+function openSettingsScreen() {
+  openScreen(document.getElementById('settingsScreen'));
+}
+
+function closeSettingsScreen() {
+  closeScreen(document.getElementById('settingsScreen'));
+}
+
+// Initial render
 renderFeed();
 </script>
 </body>
