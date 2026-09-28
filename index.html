@@ -744,14 +744,29 @@ button{font:inherit}
 .commentInputField{flex:1;background:#1a1b22;border:1px solid #ffffff15;border-radius:20px;padding:10px 14px;color:#fff;font-size:13px;outline:none}
 .commentSendBtn{background:var(--pink);border:0;color:#fff;font-weight:700;padding:8px 16px;border-radius:20px;cursor:pointer}
 
-/* Report User Bottom Sheet Styles */
-.report-modal {
+/* Report & Block Modal Backdrop & Bottom Sheets */
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 150;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.modal-backdrop.open {
+  display: block;
+  opacity: 1;
+}
+
+.report-modal, .block-modal {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
   background: #14151c;
-  z-index: 150;
+  z-index: 160;
   border-top-left-radius: 24px;
   border-top-right-radius: 24px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -762,12 +777,12 @@ button{font:inherit}
   transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
   box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.8);
 }
-.report-modal.open { transform: translateY(0); }
-.report-title { font-size: 16px; font-weight: 800; text-align: center; margin-bottom: 4px; color: var(--text); }
-.report-subtitle { font-size: 12px; color: var(--muted); text-align: center; margin-bottom: 16px; }
-.report-reasons-list { display: flex; flex-direction: column; gap: 8px; max-height: 240px; overflow-y: auto; margin-bottom: 16px; scrollbar-width: none; }
-.report-reasons-list::-webkit-scrollbar { display: none; }
-.report-reason-item {
+.report-modal.open, .block-modal.open { transform: translateY(0); }
+.report-title, .block-title { font-size: 16px; font-weight: 800; text-align: center; margin-bottom: 4px; color: var(--text); }
+.report-subtitle, .block-subtitle { font-size: 12px; color: var(--muted); text-align: center; margin-bottom: 16px; }
+.report-reasons-list, .block-reasons-list { display: flex; flex-direction: column; gap: 8px; max-height: 240px; overflow-y: auto; margin-bottom: 16px; scrollbar-width: none; }
+.report-reasons-list::-webkit-scrollbar, .block-reasons-list::-webkit-scrollbar { display: none; }
+.report-reason-item, .block-reason-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -779,11 +794,12 @@ button{font:inherit}
   font-size: 14px;
   font-weight: 600;
 }
-.report-reason-item input[type="radio"] { accent-color: var(--pink); transform: scale(1.2); cursor: pointer; }
-.report-reason-item.selected { border-color: var(--pink); background: rgba(255, 42, 95, 0.08); }
-.report-actions { display: flex; gap: 10px; }
-.report-submit-btn { flex: 1; background: linear-gradient(135deg, var(--pink), var(--cyan)); border: none; color: #fff; font-weight: 800; padding: 12px; border-radius: 14px; cursor: pointer; font-size: 14px; }
-.report-cancel-btn { flex: 1; background: var(--surface); border: 1px solid rgba(255, 255, 255, 0.15); color: var(--text); font-weight: 700; padding: 12px; border-radius: 14px; cursor: pointer; font-size: 14px; }
+.report-reason-item input[type="radio"], .block-reason-item input[type="radio"] { accent-color: var(--pink); transform: scale(1.2); cursor: pointer; }
+.report-reason-item.selected, .block-reason-item.selected { border-color: var(--pink); background: rgba(255, 42, 95, 0.08); }
+.report-actions, .block-actions { display: flex; gap: 10px; }
+.report-submit-btn, .block-submit-btn { flex: 1; background: linear-gradient(135deg, var(--pink), var(--cyan)); border: none; color: #fff; font-weight: 800; padding: 12px; border-radius: 14px; cursor: pointer; font-size: 14px; }
+.report-cancel-btn, .block-cancel-btn { flex: 1; background: var(--surface); border: 1px solid rgba(255, 255, 255, 0.15); color: var(--text); font-weight: 700; padding: 12px; border-radius: 14px; cursor: pointer; font-size: 14px; }
+.block-submit-btn { background: var(--pink); }
 
 /* Settings Screen Styling */
 .settingsScreen {
@@ -943,6 +959,61 @@ input:checked+.slider:before{transform:translateX(20px)}
 <body>
 <div id="app">
 <div id="toast" class="toast"></div>
+
+<!-- Shared Backdrop for Popups -->
+<div id="modalBackdrop" class="modal-backdrop"></div>
+
+<!-- Report User Bottom Sheet -->
+<div id="reportModal" class="report-modal">
+  <div class="report-title">Report User</div>
+  <div class="report-subtitle">Select a reason for reporting this account. Your report is anonymous.</div>
+  <div class="report-reasons-list">
+    <label class="report-reason-item selected" onclick="selectReportReason(this)">
+      <span>Inappropriate Content or Behavior</span>
+      <input type="radio" name="reportReason" checked>
+    </label>
+    <label class="report-reason-item" onclick="selectReportReason(this)">
+      <span>Harassment or Bullying</span>
+      <input type="radio" name="reportReason">
+    </label>
+    <label class="report-reason-item" onclick="selectReportReason(this)">
+      <span>Spam or Fake Account</span>
+      <input type="radio" name="reportReason">
+    </label>
+    <label class="report-reason-item" onclick="selectReportReason(this)">
+      <span>Intellectual Property Violation</span>
+      <input type="radio" name="reportReason">
+    </label>
+    <label class="report-reason-item" onclick="selectReportReason(this)">
+      <span>Dangerous Activities or Harmful Acts</span>
+      <input type="radio" name="reportReason">
+    </label>
+  </div>
+  <div class="report-actions">
+    <button class="report-cancel-btn" onclick="closeReportModal()">Cancel</button>
+    <button class="report-submit-btn" onclick="submitReportUser()">Submit Report</button>
+  </div>
+</div>
+
+<!-- Block User Bottom Sheet -->
+<div id="blockModal" class="block-modal">
+  <div class="block-title">Block User</div>
+  <div class="block-subtitle">They won't be able to find your profile, posts, or message you.</div>
+  <div class="block-reasons-list">
+    <label class="block-reason-item selected" onclick="selectBlockReason(this)">
+      <span>Block this account and any new accounts they may create</span>
+      <input type="radio" name="blockReason" checked>
+    </label>
+    <label class="block-reason-item" onclick="selectBlockReason(this)">
+      <span>Block only this specific account</span>
+      <input type="radio" name="blockReason">
+    </label>
+  </div>
+  <div class="block-actions">
+    <button class="block-cancel-btn" onclick="closeBlockModal()">Cancel</button>
+    <button class="block-submit-btn" onclick="submitBlockUser()">Block User</button>
+  </div>
+</div>
 
 <header class="header">
   <div class="logo">VIBE</div>
@@ -1281,7 +1352,10 @@ input:checked+.slider:before{transform:translateX(20px)}
   <div class="screenHead">
     <button class="close" onclick="closeCreatorProfileModal()">×</button>
     <span id="modalCreatorHeaderName">Creator Profile</span>
-    <span style="width:24px"></span>
+    <div style="display: flex; gap: 8px;">
+      <button onclick="openReportModal()" style="background: none; border: none; color: var(--pink); font-size: 16px; cursor: pointer; padding: 4px;" title="Report User">⚠️</button>
+      <button onclick="openBlockModal()" style="background: none; border: none; color: #ff3333; font-size: 16px; cursor: pointer; padding: 4px;" title="Block User">🚫</button>
+    </div>
   </div>
   <div class="profileBody">
     <div class="profileHeaderInfo">
@@ -1353,7 +1427,10 @@ input:checked+.slider:before{transform:translateX(20px)}
         <div class="dmChatStatus" id="dmChatHeaderStatus">Active now</div>
       </div>
     </div>
-    <span style="width:24px"></span>
+    <div style="display: flex; gap: 8px;">
+      <button onclick="openReportModal()" style="background: none; border: none; color: var(--pink); font-size: 16px; cursor: pointer; padding: 4px;" title="Report User">⚠️</button>
+      <button onclick="openBlockModal()" style="background: none; border: none; color: #ff3333; font-size: 16px; cursor: pointer; padding: 4px;" title="Block User">🚫</button>
+    </div>
   </div>
 
   <div class="dmChatBody" id="dmChatMessagesList">
@@ -1566,6 +1643,7 @@ input:checked+.slider:before{transform:translateX(20px)}
     <div style="display:flex; gap:8px; justify-content:center; margin-top:12px;">
       <button class="editProfileBtn" id="editProfileBtn" style="margin-top:0;">Edit Profile</button>
       <button class="editProfileBtn" onclick="openReportModal()" style="margin-top:0; border-color:var(--pink); color:var(--pink);">Report User</button>
+      <button class="editProfileBtn" onclick="openBlockModal()" style="margin-top:0; border-color:#ff3333; color:#ff3333;">Block User</button>
     </div>
   </div>
 
@@ -1727,9 +1805,74 @@ let activeTabKey = 'home';
 let searchFilterType = 'all';
 let currentActiveCreator = null;
 
+// Report User Popup Logic
+function openReportModal() {
+  document.getElementById('modalBackdrop').classList.add('open');
+  document.getElementById('reportModal').classList.add('open');
+}
+
+function closeReportModal() {
+  document.getElementById('reportModal').classList.remove('open');
+  // Only close backdrop if block modal isn't open either
+  if (!document.getElementById('blockModal').classList.contains('open')) {
+    document.getElementById('modalBackdrop').classList.remove('open');
+  }
+}
+
+function selectReportReason(item) {
+  document.querySelectorAll('.report-reason-item').forEach(el => {
+    el.classList.remove('selected');
+    el.querySelector('input').checked = false;
+  });
+  item.classList.add('selected');
+  item.querySelector('input').checked = true;
+}
+
+function submitReportUser() {
+  const selectedRadio = document.querySelector('input[name="reportReason"]:checked');
+  const reasonText = selectedRadio ? selectedRadio.parentElement.querySelector('span').textContent : 'Inappropriate Content';
+  closeReportModal();
+  showToast(`Report submitted successfully (${reasonText}). Thank you for keeping VIBE safe 🛡️`);
+}
+
+// Block User Popup Logic
+function openBlockModal() {
+  document.getElementById('modalBackdrop').classList.add('open');
+  document.getElementById('blockModal').classList.add('open');
+}
+
+function closeBlockModal() {
+  document.getElementById('blockModal').classList.remove('open');
+  // Only close backdrop if report modal isn't open either
+  if (!document.getElementById('reportModal').classList.contains('open')) {
+    document.getElementById('modalBackdrop').classList.remove('open');
+  }
+}
+
+function selectBlockReason(item) {
+  document.querySelectorAll('.block-reason-item').forEach(el => {
+    el.classList.remove('selected');
+    el.querySelector('input').checked = false;
+  });
+  item.classList.add('selected');
+  item.querySelector('input').checked = true;
+}
+
+function submitBlockUser() {
+  closeBlockModal();
+  showToast('User blocked successfully. 🚫');
+  // Close any active modal/profile screens if appropriate
+  closeCreatorProfileModal();
+}
+
+// Backdrop click closes any open modals
+document.getElementById('modalBackdrop').onclick = () => {
+  closeReportModal();
+  closeBlockModal();
+};
+
 // Settings & Privacy Navigation & Management
 function openSettingsScreen() {
-  // Sync UI state with userSettings object
   document.getElementById('settingPrivateAccount').checked = userSettings.privateAccount;
   document.getElementById('settingDMPreference').value = userSettings.dmPreference;
   document.getElementById('settingActivityStatus').checked = userSettings.activityStatus;
@@ -1930,7 +2073,6 @@ function renderInboxList() {
 
   const filtered = dmConversations.filter(c => activeInboxTab === 'requests' ? c.isRequest : !c.isRequest);
   
-  // Update badge count
   const reqCount = dmConversations.filter(c => c.isRequest).length;
   const badge = document.getElementById('inboxRequestsBadge');
   if(badge) badge.textContent = reqCount;
@@ -1972,7 +2114,6 @@ function renderInboxList() {
   });
 }
 
-// Inbox sub-tabs click bindings
 document.querySelectorAll('.inboxSubTab').forEach(tab => {
   tab.onclick = () => {
     document.querySelectorAll('.inboxSubTab').forEach(t => t.classList.remove('active'));
@@ -2018,7 +2159,6 @@ function renderDMMessages() {
   container.scrollTop = container.scrollHeight;
 }
 
-// Send Message action
 document.getElementById('dmSendMsgBtn').onclick = () => {
   const input = document.getElementById('dmMessageInputField');
   const text = input.value.trim();
@@ -2058,1153 +2198,106 @@ function declineDMRequest(e, chatId) {
   renderInboxList();
 }
 
-// Discover & Search State & Execution
-const searchInput = document.getElementById('searchInput');
-const discoverResultsContainer = document.getElementById('discoverResultsContainer');
+// Toast Notification
+function showToast(msg) {
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => { toast.classList.remove('show'); }, 2500);
+}
 
-document.querySelectorAll('.discoverTab').forEach(tab => {
-  tab.onclick = () => {
-    document.querySelectorAll('.discoverTab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    searchFilterType = tab.getAttribute('data-search-filter');
-    executeSearch(searchInput.value.trim());
+// Basic navigation tab switcher
+document.querySelectorAll('.nav button').forEach(btn => {
+  btn.onclick = () => {
+    const tabKey = btn.getAttribute('data-tab');
+    if(tabKey === 'create') {
+      studio.classList.add('open');
+      appContainer.classList.add('hide-nav-for-create');
+      startCamera();
+      return;
+    }
+    document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // Close all screens first
+    discover.classList.remove('open');
+    inbox.classList.remove('open');
+    profile.classList.remove('open');
+
+    if(tabKey === 'discover') {
+      discover.classList.add('open');
+    } else if(tabKey === 'inbox') {
+      inbox.classList.add('open');
+      renderInboxList();
+    } else if(tabKey === 'profile') {
+      profile.classList.add('open');
+    }
   };
 });
 
-searchInput.oninput = (e) => {
-  executeSearch(e.target.value.trim());
-};
+document.querySelectorAll('.close').forEach(btn => {
+  btn.onclick = () => {
+    const targetClose = btn.getAttribute('data-close');
+    if(targetClose === 'discover') discover.classList.remove('open');
+    if(targetClose === 'inbox') inbox.classList.remove('open');
+    if(targetClose === 'profile') profile.classList.remove('open');
+    studio.classList.remove('open');
+    editorScreen.classList.remove('open');
+    postScreen.classList.remove('open');
+    appContainer.classList.remove('hide-nav-for-create');
+  };
+});
 
-function executeSearch(query) {
-  const q = query.toLowerCase();
-  discoverResultsContainer.innerHTML = '';
-
-  const matchedPosts = feedData.filter(p => 
-    p.caption.toLowerCase().includes(q) || 
-    p.author.toLowerCase().includes(q) ||
-    (p.handle && p.handle.toLowerCase().includes(q)) ||
-    p.songName.toLowerCase().includes(q)
-  );
-
-  const matchedCreators = creatorsDirectory.filter(c =>
-    c.name.toLowerCase().includes(q) || c.handle.toLowerCase().includes(q) || c.bio.toLowerCase().includes(q)
-  );
-
-  const matchedHashtags = hashtagsDirectory.filter(h =>
-    h.name.toLowerCase().includes(q)
-  );
-
-  if (searchFilterType === 'all' || searchFilterType === 'posts') {
-    if (matchedPosts.length > 0) {
-      const sectionHeader = document.createElement('div');
-      sectionHeader.className = 'discoverSectionTitle';
-      sectionHeader.textContent = 'Posts (' + matchedPosts.length + ')';
-      discoverResultsContainer.appendChild(sectionHeader);
-
-      const grid = document.createElement('div');
-      grid.className = 'discoverGrid';
-      matchedPosts.forEach(post => {
-        const item = document.createElement('div');
-        item.className = 'discoverGridItem';
-        const media = post.mediaList && post.mediaList.length > 0 ? post.mediaList[0] : {type:'image', url:''};
-        if(media.type === 'video') {
-          item.innerHTML = `<video src="${media.url}" muted playsinline></video>`;
-        } else {
-          item.innerHTML = `<img src="${media.url}" alt="">`;
-        }
-        item.onclick = () => {
-          discover.classList.remove('open');
-          updateNavActiveState('home');
-          pauseAllFeedVideos();
-          const idx = feedData.findIndex(f => f.id === post.id);
-          if(idx !== -1) { feed.children[idx].scrollIntoView({behavior:'smooth'}); }
-        };
-        grid.appendChild(item);
-      });
-      discoverResultsContainer.appendChild(grid);
-    }
-  }
-
-  if (searchFilterType === 'all' || searchFilterType === 'creators') {
-    if (matchedCreators.length > 0) {
-      const sectionHeader = document.createElement('div');
-      sectionHeader.className = 'discoverSectionTitle';
-      sectionHeader.textContent = 'Creators (' + matchedCreators.length + ')';
-      discoverResultsContainer.appendChild(sectionHeader);
-
-      const list = document.createElement('div');
-      list.className = 'creatorsListContainer';
-      matchedCreators.forEach(creator => {
-        const row = document.createElement('div');
-        row.className = 'creatorSearchRow';
-        row.innerHTML = `
-          <div class="creatorSearchInfo">
-            <img class="creatorSearchAvatar" src="${creator.avatar}">
-            <div class="creatorSearchMeta">
-              <div class="name">${creator.name}</div>
-              <div class="handle">${creator.handle} • ${creator.followers} followers</div>
-            </div>
-          </div>
-          <button class="creatorFollowBtn ${creator.isFollowing ? 'following' : ''}">${creator.isFollowing ? 'Following' : 'Follow'}</button>
-        `;
-        row.onclick = (e) => {
-          if(e.target.tagName === 'BUTTON') return;
-          openCreatorProfile(creator);
-        };
-        row.querySelector('button').onclick = (e) => {
-          e.stopPropagation();
-          creator.isFollowing = !creator.isFollowing;
-          e.target.textContent = creator.isFollowing ? 'Following' : 'Follow';
-          e.target.classList.toggle('following', creator.isFollowing);
-          showToast(creator.isFollowing ? `Following ${creator.name} ✨` : `Unfollowed ${creator.name}`);
-        };
-        list.appendChild(row);
-      });
-      discoverResultsContainer.appendChild(list);
-    }
-  }
-
-  if (searchFilterType === 'all' || searchFilterType === 'hashtags') {
-    if (matchedHashtags.length > 0) {
-      const sectionHeader = document.createElement('div');
-      sectionHeader.className = 'discoverSectionTitle';
-      sectionHeader.textContent = 'Hashtags (' + matchedHashtags.length + ')';
-      discoverResultsContainer.appendChild(sectionHeader);
-
-      const list = document.createElement('div');
-      list.className = 'hashtagsListContainer';
-      matchedHashtags.forEach(tag => {
-        const row = document.createElement('div');
-        row.className = 'hashtagSearchRow';
-        row.innerHTML = `
-          <div style="display:flex; align-items:center;">
-            <div class="hashtagSymbol">#</div>
-            <div class="hashtagDetails">
-              <div class="hashtagName">${tag.name}</div>
-              <div class="hashtagCount">${tag.count} • ${tag.postsCount} posts</div>
-            </div>
-          </div>
-          <span style="font-size:16px; color:var(--muted);">›</span>
-        `;
-        row.onclick = () => {
-          openHashtagModal(tag);
-        };
-        list.appendChild(row);
-      });
-      discoverResultsContainer.appendChild(list);
-    }
-  }
-
-  if(discoverResultsContainer.innerHTML === '') {
-    discoverResultsContainer.innerHTML = `<div style="text-align:center; color:var(--muted); padding:30px; font-size:14px;">No results found for "${query}"</div>`;
-  }
-}
-
-function openCreatorProfile(creator) {
-  currentActiveCreator = creator;
-  document.getElementById('modalCreatorHeaderName').textContent = creator.name;
-  document.getElementById('modalCreatorAvatar').src = creator.avatar;
-  document.getElementById('modalCreatorName').textContent = creator.name;
-  document.getElementById('modalCreatorHandle').textContent = creator.handle;
-  document.getElementById('modalCreatorBio').textContent = creator.bio;
-  document.getElementById('modalCreatorFollowers').textContent = creator.followers;
-  document.getElementById('modalCreatorFollowing').textContent = creator.following;
-  document.getElementById('modalCreatorLikes').textContent = creator.likes;
-
-  const followBtn = document.getElementById('modalCreatorFollowBtn');
-  followBtn.textContent = creator.isFollowing ? 'Following' : 'Follow';
-  followBtn.style.background = creator.isFollowing ? 'transparent' : 'var(--pink)';
-  followBtn.style.border = creator.isFollowing ? '1px solid rgba(255,255,255,0.2)' : '1px solid var(--pink)';
-
-  const grid = document.getElementById('modalCreatorPostsGrid');
-  grid.innerHTML = '';
-  const creatorPosts = feedData.filter(p => p.author === creator.name);
-  creatorPosts.forEach(post => {
-    const thumb = document.createElement('div');
-    thumb.className = 'userPostThumb';
-    const media = post.mediaList && post.mediaList.length > 0 ? post.mediaList[0] : {type:'image', url:''};
-    if(media.type === 'video') {
-      thumb.innerHTML = `<video src="${media.url}" muted playsinline></video>`;
-    } else {
-      thumb.innerHTML = `<img src="${media.url}" alt="">`;
-    }
-    thumb.onclick = () => {
-      document.getElementById('creatorProfileModal').classList.remove('open');
-      discover.classList.remove('open');
-      updateNavActiveState('home');
-      pauseAllFeedVideos();
-      const idx = feedData.findIndex(f => f.id === post.id);
-      if(idx !== -1) { feed.children[idx].scrollIntoView({behavior:'smooth'}); }
-    };
-    grid.appendChild(thumb);
-  });
-
-  document.getElementById('creatorProfileModal').classList.add('open');
+function startCamera() {
+  navigator.mediaDevices?.getUserMedia({ video: { facingMode: facing }, audio: true })
+    .then(stream => {
+      mediaStream = stream;
+      camera.srcObject = stream;
+    }).catch(err => {
+      console.log("Camera access error:", err);
+    });
 }
 
 function closeCreatorProfileModal() {
   document.getElementById('creatorProfileModal').classList.remove('open');
 }
 
-function toggleModalCreatorFollow() {
-  if(!currentActiveCreator) return;
-  currentActiveCreator.isFollowing = !currentActiveCreator.isFollowing;
-  const followBtn = document.getElementById('modalCreatorFollowBtn');
-  followBtn.textContent = currentActiveCreator.isFollowing ? 'Following' : 'Follow';
-  followBtn.style.background = currentActiveCreator.isFollowing ? 'transparent' : 'var(--pink)';
-  followBtn.style.border = currentActiveCreator.isFollowing ? '1px solid rgba(255,255,255,0.2)' : '1px solid var(--pink)';
-  showToast(currentActiveCreator.isFollowing ? `Following ${currentActiveCreator.name} ✨` : `Unfollowed ${currentActiveCreator.name}`);
-  executeSearch(searchInput.value.trim());
-}
-
-function openHashtagModal(tag) {
-  document.getElementById('hashtagModalTitle').textContent = tag.name;
-  document.getElementById('hashtagModalName').textContent = tag.name;
-  document.getElementById('hashtagModalViews').textContent = `${tag.count} on platform`;
-
-  const grid = document.getElementById('hashtagModalPostsGrid');
-  grid.innerHTML = '';
-  const tagPosts = feedData.filter(p => p.caption.toLowerCase().includes(tag.name.toLowerCase()));
-  tagPosts.forEach(post => {
-    const thumb = document.createElement('div');
-    thumb.className = 'userPostThumb';
-    const media = post.mediaList && post.mediaList.length > 0 ? post.mediaList[0] : {type:'image', url:''};
-    if(media.type === 'video') {
-      thumb.innerHTML = `<video src="${media.url}" muted playsinline></video>`;
-    } else {
-      thumb.innerHTML = `<img src="${media.url}" alt="">`;
-    }
-    thumb.onclick = () => {
-      document.getElementById('hashtagModal').classList.remove('open');
-      discover.classList.remove('open');
-      updateNavActiveState('home');
-      pauseAllFeedVideos();
-      const idx = feedData.findIndex(f => f.id === post.id);
-      if(idx !== -1) { feed.children[idx].scrollIntoView({behavior:'smooth'}); }
-    };
-    grid.appendChild(thumb);
-  });
-
-  document.getElementById('hashtagModal').classList.add('open');
-}
-
 function closeHashtagModal() {
   document.getElementById('hashtagModal').classList.remove('open');
 }
 
-executeSearch('');
-
-// Camera and Recording Logic
-async function startCamera() {
-  try {
-    if (mediaStream) {
-      mediaStream.getTracks().forEach(t => t.stop());
-    }
-    mediaStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: facing },
-      audio: true
-    });
-    camera.srcObject = mediaStream;
-  } catch (err) {
-    console.warn("Camera permission error or not supported:", err);
-    showToast("Camera access unavailable. Using simulated mode.");
-  }
-}
-
-function stopCamera() {
-  if (mediaStream) {
-    mediaStream.getTracks().forEach(t => t.stop());
-    mediaStream = null;
-  }
-}
-
-document.getElementById('flipBtn').onclick = () => {
-  facing = facing === 'user' ? 'environment' : 'user';
-  startCamera();
-};
-
-const shutterBtn = document.getElementById('shutter');
-shutterBtn.onmousedown = () => {
-  isLongPress = false;
-  pressTimer = setTimeout(() => {
-    isLongPress = true;
-    startVideoRecording();
-  }, 500);
-};
-
-shutterBtn.onmouseup = () => {
-  clearTimeout(pressTimer);
-  if (recording) {
-    stopVideoRecording();
-  } else if (!isLongPress) {
-    takeSnapshotPhoto();
-  }
-};
-
-shutterBtn.ontouchstart = (e) => {
-  e.preventDefault();
-  isLongPress = false;
-  pressTimer = setTimeout(() => {
-    isLongPress = true;
-    startVideoRecording();
-  }, 500);
-};
-
-shutterBtn.ontouchend = (e) => {
-  e.preventDefault();
-  clearTimeout(pressTimer);
-  if (recording) {
-    stopVideoRecording();
-  } else if (!isLongPress) {
-    takeSnapshotPhoto();
-  }
-};
-
-function takeSnapshotPhoto() {
-  if (!camera.videoWidth) {
-    showToast('Camera is still loading...');
-    return;
-  }
-  const canvas = document.createElement('canvas');
-  canvas.width = camera.videoWidth;
-  canvas.height = camera.videoHeight;
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(camera, 0, 0);
-  canvas.toBlob(blob => {
-    const photoUrl = URL.createObjectURL(blob);
-    selectedMediaList = [{ type: 'image', url: photoUrl }];
-    openMediaEditor();
-    showToast('Photo captured! 📸');
-  }, 'image/jpeg');
-}
-
-function startVideoRecording() {
-  if (!mediaStream) {
-    showToast('Camera stream active required');
-    return;
-  }
-  chunks = [];
-  try {
-    recorder = new MediaRecorder(mediaStream, { mimeType: 'video/webm' });
-  } catch (e) {
-    try { recorder = new MediaRecorder(mediaStream); } catch(err) {
-      showToast('Video recording not supported');
-      return;
-    }
-  }
-
-  recorder.ondataavailable = e => {
-    if (e.data && e.data.size > 0) chunks.push(e.data);
-  };
-
-  recorder.onstop = () => {
-    const blob = new Blob(chunks, { type: 'video/webm' });
-    const videoUrl = URL.createObjectURL(blob);
-    selectedMediaList = [{ type: 'video', url: videoUrl }];
-    openMediaEditor();
-    showToast('Video recorded successfully! 🎥');
-  };
-
-  recorder.start();
-  recording = true;
-  shutterBtn.classList.add('recording');
-  timer.classList.remove('hidden');
-  recordSeconds = 0;
-  timerText.textContent = '00:00';
-  timerInterval = setInterval(() => {
-    recordSeconds++;
-    let m = String(Math.floor(recordSeconds / 60)).padStart(2, '0');
-    let s = String(recordSeconds % 60).padStart(2, '0');
-    timerText.textContent = `${m}:${s}`;
-    if(recordSeconds >= 600) { stopVideoRecording(); }
-  }, 1000);
-}
-
-function stopVideoRecording() {
-  if(!recording) return;
-  clearInterval(timerInterval);
-  recorder.stop();
-  recording = false;
-  shutterBtn.classList.remove('recording');
-  timer.classList.add('hidden');
-}
-
-// Media Upload Handlers (Multi 1-3 files)
-videoFileInput.onchange = (e) => {
-  const files = Array.from(e.target.files).slice(0, 3);
-  if(files.length === 0) return;
-  selectedMediaList = files.map(f => ({ type: 'video', url: URL.createObjectURL(f) }));
-  openMediaEditor();
-  showToast(`Loaded ${files.length} video(s) 🎥`);
-};
-
-photoFileInput.onchange = (e) => {
-  const files = Array.from(e.target.files).slice(0, 3);
-  if(files.length === 0) return;
-  selectedMediaList = files.map(f => ({ type: 'image', url: URL.createObjectURL(f) }));
-  openMediaEditor();
-  showToast(`Loaded ${files.length} photo(s) 📸`);
-};
-
-function openMediaEditor() {
-  studio.classList.remove('open');
-  stopCamera();
-  const container = document.getElementById('editorCanvasContainer');
-  // clear old elements except canvas and overlays
-  const existingMedia = container.querySelectorAll('video, img');
-  existingMedia.forEach(el => el.remove());
-
-  if(selectedMediaList.length > 1) {
-    container.classList.add('multi-item');
-    selectedMediaList.forEach(m => {
-      if(m.type === 'video') {
-        const v = document.createElement('video');
-        v.src = m.url; v.controls = false; v.loop = true; v.muted = false; v.playsInline = true; v.autoplay = true;
-        container.appendChild(v);
-      } else {
-        const img = document.createElement('img');
-        img.src = m.url;
-        container.appendChild(img);
-      }
-    });
-  } else if(selectedMediaList.length === 1) {
-    container.classList.remove('multi-item');
-    const m = selectedMediaList[0];
-    if(m.type === 'video') {
-      const v = document.createElement('video');
-      v.id = 'editorActiveVideo'; v.src = m.url; v.controls = false; v.loop = true; v.muted = false; v.playsInline = true; v.autoplay = true;
-      container.appendChild(v);
-    } else {
-      const img = document.createElement('img');
-      img.id = 'editorActiveImg'; img.src = m.url;
-      container.appendChild(img);
-    }
-  }
-
-  editorScreen.classList.add('open');
-}
-
-document.getElementById('closeEditorBtn').onclick = () => {
-  editorScreen.classList.remove('open');
-  appContainer.classList.remove('hide-nav-for-create');
-  updateNavActiveState('home');
-};
-
-document.getElementById('editorQuickPostBtn').onclick = () => {
-  editorScreen.classList.remove('open');
-  openPostScreen();
-};
-
-function openPostScreen() {
-  setupPostPreview();
-  postScreen.classList.add('open');
-}
-
-function setupPostPreview() {
-  const box = document.getElementById('previewBox');
-  box.innerHTML = '';
-  if(selectedMediaList.length > 1) {
-    box.classList.add('multi-item');
-    selectedMediaList.forEach(m => {
-      if(m.type === 'video') {
-        const v = document.createElement('video'); v.src = m.url; v.muted = true; v.loop = true; v.autoplay = true; v.playsInline = true;
-        box.appendChild(v);
-      } else {
-        const img = document.createElement('img'); img.src = m.url;
-        box.appendChild(img);
-      }
-    });
-  } else if(selectedMediaList.length === 1) {
-    box.classList.remove('multi-item');
-    const m = selectedMediaList[0];
-    if(m.type === 'video') {
-      const v = document.createElement('video'); v.src = m.url; v.muted = true; v.loop = true; v.autoplay = true; v.playsInline = true;
-      box.appendChild(v);
-    } else {
-      const img = document.createElement('img'); img.src = m.url;
-      box.appendChild(img);
-    }
-  } else {
-    box.innerHTML = `<div style="color:#777">No media selected</div>`;
-  }
-}
-
-// Editor Tool Drawers Toggle
-function toggleEditorDrawer(drawerId) {
-  const drawer = document.getElementById(drawerId);
-  const isOpen = drawer.classList.contains('open');
-  closeEditorDrawers();
-  if(!isOpen) {
-    drawer.classList.add('open');
-  }
-}
-
-function closeEditorDrawers() {
-  document.querySelectorAll('.editor-tool-drawer').forEach(d => d.classList.remove('open'));
-}
-
-function selectEditorMusic(title, artist, idx) {
-  selectedSound = title;
-  document.getElementById('drawerSelectedSongTitle').textContent = title;
-  document.getElementById('drawerSelectedSongArtist').textContent = artist;
-  document.getElementById('currentSoundLabel').textContent = title;
-  
-  document.querySelectorAll('.music-list-row').forEach(r => r.classList.remove('active'));
-  document.querySelectorAll('.select-track-btn').forEach(b => { b.textContent = 'Select'; b.classList.remove('selected'); });
-  
-  const row = document.getElementById(`track-row-${idx}`);
-  if(row) {
-    row.classList.add('active');
-    const btn = row.querySelector('.select-track-btn');
-    if(btn) { btn.textContent = 'Selected'; btn.classList.add('selected'); }
-  }
-  showToast(`Selected track: ${title} 🎵`);
-  closeEditorDrawers();
-}
-
-function addStickerToCanvas(emoji) {
-  const layer = document.getElementById('editorOverlaysLayer');
-  const el = document.createElement('div');
-  el.className = 'editorOverlayElement';
-  el.textContent = emoji;
-  el.style.left = '40%'; el.style.top = '40%';
-  makeElementDraggable(el);
-  layer.appendChild(el);
-  closeEditorDrawers();
-  showToast('Sticker added ✨');
-}
-
-function commitEditorText() {
-  const input = document.getElementById('editorTextInputField');
-  const text = input.value.trim();
-  if(!text) return;
-  const layer = document.getElementById('editorOverlaysLayer');
-  const el = document.createElement('div');
-  el.className = 'editorOverlayElement text-element';
-  el.textContent = text;
-  el.style.left = '25%'; el.style.top = '50%';
-  makeElementDraggable(el);
-  layer.appendChild(el);
-  input.value = '';
-  closeEditorDrawers();
-  showToast('Text overlay added ✍️');
-}
-
-function addMentionToCanvas(handle) {
-  const layer = document.getElementById('editorOverlaysLayer');
-  const el = document.createElement('div');
-  el.className = 'editorOverlayElement text-element';
-  el.textContent = handle;
-  el.style.left = '30%'; el.style.top = '45%';
-  makeElementDraggable(el);
-  layer.appendChild(el);
-  closeEditorDrawers();
-  showToast(`Mentioned ${handle}`);
-}
-
-function applyEditorFilter(filterCss, btn) {
-  const container = document.getElementById('editorCanvasContainer');
-  container.style.filter = filterCss;
-  document.querySelectorAll('.editorFilterChip').forEach(c => c.classList.remove('active'));
-  btn.classList.add('active');
-  showToast('Visual effect applied ✨');
-}
-
-function makeElementDraggable(elm) {
-  let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-  elm.onmousedown = dragMouseDown;
-  elm.ontouchstart = dragTouchStart;
-
-  function dragMouseDown(e) {
-    e.preventDefault();
-    pos3 = e.clientX; pos4 = e.clientY;
-    document.onmouseup = closeDragElement;
-    document.onmousemove = elementDrag;
-  }
-
-  function elementDrag(e) {
-    e.preventDefault();
-    pos1 = pos3 - e.clientX; pos2 = pos4 - e.clientY;
-    pos3 = e.clientX; pos4 = e.clientY;
-    elm.style.top = (elm.offsetTop - pos2) + "px";
-    elm.style.left = (elm.offsetLeft - pos1) + "px";
-  }
-
-  function closeDragElement() {
-    document.onmouseup = null;
-    document.onmousemove = null;
-  }
-
-  function dragTouchStart(e) {
-    const touch = e.touches[0];
-    pos3 = touch.clientX; pos4 = touch.clientY;
-    document.ontouchend = closeDragTouch;
-    document.ontouchmove = elementTouchDrag;
-  }
-
-  function elementTouchDrag(e) {
-    const touch = e.touches[0];
-    pos1 = pos3 - touch.clientX; pos2 = pos4 - touch.clientY;
-    pos3 = touch.clientX; pos4 = touch.clientY;
-    elm.style.top = (elm.offsetTop - pos2) + "px";
-    elm.style.left = (elm.offsetLeft - pos1) + "px";
-  }
-
-  function closeDragTouch() {
-    document.ontouchend = null;
-    document.ontouchmove = null;
-  }
-}
-
-// Publish Post Action
-document.getElementById('publishBtn').onclick = () => {
-  const caption = document.getElementById('captionInput').value.trim() || document.getElementById('editorCaptionInput').value.trim() || "Amazing new VIBE post! ✨ #VIBE";
-  const newPost = {
-    id: Date.now(),
-    author: myProfile.username,
-    handle: myProfile.username,
-    caption: caption,
-    songName: selectedSound,
-    artist: "Creator VIBE",
-    likes: 1,
-    commentsCount: 0,
-    shares: 0,
-    views: "1",
-    avatar: myProfile.avatar,
-    mediaList: [...selectedMediaList],
-    location: selectedPostLocation,
-    isTagged: false,
-    commentsList: []
-  };
-
-  feedData.unshift(newPost);
-  renderFeed();
-  postScreen.classList.remove('open');
-  editorScreen.classList.remove('open');
-  appContainer.classList.remove('hide-nav-for-create');
-  updateNavActiveState('home');
-  showToast('Posted to feed successfully! 🎉');
-};
-
-document.getElementById('publishStoryBtn').onclick = () => {
-  showToast('Added to your 24h Story successfully! ⚡');
-  postScreen.classList.remove('open');
-  editorScreen.classList.remove('open');
-  appContainer.classList.remove('hide-nav-for-create');
-  updateNavActiveState('home');
-};
-
-// Feed Renderer
+// Render Feed initially
 function renderFeed() {
   feed.innerHTML = '';
-  feedData.forEach((post, index) => {
+  feedData.forEach(item => {
     const reel = document.createElement('div');
     reel.className = 'reel';
-    if(post.mediaList && post.mediaList.length > 1) {
-      // Multi-media Carousel
-      let sliderHtml = `<div class="reel-media-slider" id="slider-${post.id}">`;
-      post.mediaList.forEach(m => {
-        if(m.type === 'video') {
-          sliderHtml += `<div class="reel-media-slide"><video src="${m.url}" loop muted playsinline></video></div>`;
-        } else {
-          sliderHtml += `<div class="reel-media-slide"><img src="${m.url}" alt=""></div>`;
-        }
-      });
-      sliderHtml += `</div>`;
-      
-      let dotsHtml = `<div class="carousel-dots" id="dots-${post.id}">`;
-      post.mediaList.forEach((_, idx) => {
-        dotsHtml += `<div class="carousel-dot ${idx === 0 ? 'active' : ''}"></div>`;
-      });
-      dotsHtml += `</div>`;
-
-      reel.innerHTML = `
-        ${sliderHtml}
-        ${dotsHtml}
-        <button class="mute" onclick="toggleMute(event)">${muted ? '🔇' : '🔊'}</button>
-        <div class="video-duration-indicator" id="duration-${post.id}">0:12 / 0:30</div>
-        <div class="video-control-overlay" id="controlOverlay-${post.id}">
-          <button class="custom-pause-btn" id="pauseBtn-${post.id}">▶</button>
+    reel.innerHTML = `
+      <div class="reel-media-slider">
+        <div class="reel-media-slide">
+          <video src="${item.mediaList[0].url}" loop playsinline autoplay muted></video>
         </div>
-        <div class="overlay">
-          <div class="info">
-            <div class="author">
-              <img class="avatar" src="${post.avatar}">
-              <span class="name">${post.author}</span>
-              <button class="follow" onclick="toggleFollow(this)">Follow</button>
-            </div>
-            <div class="caption">${formatCaption(post.caption)}</div>
-            <div class="audio" onclick="openSoundModal('${post.songName}', '${post.artist}')">
-              <span>🎵</span> <span class="song-title">${post.songName}</span> • <span class="song-artist">${post.artist}</span>
-            </div>
+      </div>
+      <div class="overlay">
+        <div class="info">
+          <div class="author">
+            <img class="avatar" src="${item.avatar}">
+            <span class="name">${item.author}</span>
+            <button class="follow">Follow</button>
           </div>
-          <div class="actions">
-            <button class="action liked" onclick="toggleLike(this)">
-              <div class="circle">♥</div>
-              <div class="count">${post.likes}</div>
-            </button>
-            <button class="action" onclick="openComments(${post.id})">
-              <div class="circle">💬</div>
-              <div class="count">${post.commentsCount}</div>
-            </button>
-            <button class="action saved" onclick="toggleSave(this)">
-              <div class="circle">🔖</div>
-              <div class="count">${post.shares}</div>
-            </button>
-            <button class="action" onclick="sharePost()">
-              <div class="circle">↗</div>
-              <div class="count">Share</div>
-            </button>
-          </div>
+          <div class="caption">${item.caption}</div>
+          <div class="audio">♫ <span class="song-title">${item.songName}</span> - <span class="song-artist">${item.artist}</span></div>
         </div>
-      `;
-
-      // Carousel scroll listener to update dots
-      setTimeout(() => {
-        const slider = document.getElementById(`slider-${post.id}`);
-        const dotsContainer = document.getElementById(`dots-${post.id}`);
-        if(slider && dotsContainer) {
-          slider.onscroll = () => {
-            const slideWidth = slider.clientWidth;
-            const activeIdx = Math.round(slider.scrollLeft / slideWidth);
-            const dots = dotsContainer.querySelectorAll('.carousel-dot');
-            dots.forEach((d, idx) => {
-              d.classList.toggle('active', idx === activeIdx);
-            });
-          };
-        }
-      }, 50);
-
-    } else {
-      const media = post.mediaList && post.mediaList.length > 0 ? post.mediaList[0] : {type:'video', url:''};
-      let mediaHtml = media.type === 'video' ? `<video src="${media.url}" loop muted playsinline></video>` : `<img src="${media.url}">`;
-      if(media.type === 'image') reel.classList.add('image');
-
-      reel.innerHTML = `
-        ${mediaHtml}
-        <button class="mute" onclick="toggleMute(event)">${muted ? '🔇' : '🔊'}</button>
-        <div class="video-duration-indicator" id="duration-${post.id}">0:12 / 0:30</div>
-        <div class="video-control-overlay" id="controlOverlay-${post.id}">
-          <button class="custom-pause-btn" id="pauseBtn-${post.id}">▶</button>
+        <div class="actions">
+          <button class="action liked"><div class="circle">♥</div><div class="count">${item.likes}</div></button>
+          <button class="action"><div class="circle">💬</div><div class="count">${item.commentsCount}</div></button>
+          <button class="action saved"><div class="circle">💾</div><div class="count">${item.shares}</div></button>
         </div>
-        <div class="overlay">
-          <div class="info">
-            <div class="author">
-              <img class="avatar" src="${post.avatar}">
-              <span class="name">${post.author}</span>
-              <button class="follow" onclick="toggleFollow(this)">Follow</button>
-            </div>
-            <div class="caption">${formatCaption(post.caption)}</div>
-            <div class="audio" onclick="openSoundModal('${post.songName}', '${post.artist}')">
-              <span>🎵</span> <span class="song-title">${post.songName}</span> • <span class="song-artist">${post.artist}</span>
-            </div>
-          </div>
-          <div class="actions">
-            <button class="action liked" onclick="toggleLike(this)">
-              <div class="circle">♥</div>
-              <div class="count">${post.likes}</div>
-            </button>
-            <button class="action" onclick="openComments(${post.id})">
-              <div class="circle">💬</div>
-              <div class="count">${post.commentsCount}</div>
-            </button>
-            <button class="action saved" onclick="toggleSave(this)">
-              <div class="circle">🔖</div>
-              <div class="count">${post.shares}</div>
-            </button>
-            <button class="action" onclick="sharePost()">
-              <div class="circle">↗</div>
-              <div class="count">Share</div>
-            </button>
-          </div>
-        </div>
-      `;
-    }
-
-    // Double tap heart & tap pause/resume interactivity for videos
-    const vidEl = reel.querySelector('video');
-    if(vidEl) {
-      let lastTap = 0;
-      vidEl.onclick = (e) => {
-        const currentTime = new Date().getTime();
-        const tapLength = currentTime - lastTap;
-        if (tapLength < 300 && tapLength > 0) {
-          // Double tap heart animation
-          triggerDoubleTapHeart(e, reel);
-          e.preventDefault();
-        } else {
-          // Single tap pause/play toggle
-          setTimeout(() => {
-            if (currentTime - lastTap >= 300) {
-              toggleVideoPlayback(vidEl, post.id);
-            }
-          }, 300);
-        }
-        lastTap = currentTime;
-      };
-    }
-
+      </div>
+    `;
     feed.appendChild(reel);
   });
-  setupObserver();
 }
-
-function triggerDoubleTapHeart(e, reel) {
-  const heart = document.createElement('div');
-  heart.className = 'double-tap-heart';
-  heart.textContent = '❤️';
-  const rect = reel.getBoundingClientRect();
-  heart.style.left = `${e.clientX - rect.left}px`;
-  heart.style.top = `${e.clientY - rect.top}px`;
-  reel.appendChild(heart);
-  setTimeout(() => heart.remove(), 800);
-  showToast('Liked post! ❤️');
-}
-
-function toggleVideoPlayback(vid, postId) {
-  const overlay = document.getElementById(`controlOverlay-${postId}`);
-  const btn = document.getElementById(`pauseBtn-${postId}`);
-  const durationIndicator = document.getElementById(`duration-${postId}`);
-  
-  if(vid.paused) {
-    vid.play();
-    if(overlay) overlay.classList.remove('show');
-    if(durationIndicator) durationIndicator.classList.remove('show');
-  } else {
-    vid.pause();
-    if(btn) btn.textContent = '▶';
-    if(overlay) overlay.classList.add('show');
-    if(durationIndicator) {
-      const curM = String(Math.floor(vid.currentTime / 60)).padStart(2, '0');
-      const curS = String(Math.floor(vid.currentTime % 60)).padStart(2, '0');
-      const durM = String(Math.floor(vid.duration / 60 || 0)).padStart(2, '0');
-      const durS = String(Math.floor(vid.duration % 60 || 30)).padStart(2, '0');
-      durationIndicator.textContent = `${curM}:${curS} / ${durM}:${durS}`;
-      durationIndicator.classList.add('show');
-    }
-  }
-}
-
-function formatCaption(cap) {
-  return cap.replace(/(#[a-zA-Z0-9_]+)/g, '<span>$1</span>');
-}
-
-function toggleMute(e) {
-  muted = !muted;
-  e.target.textContent = muted ? '🔇' : '🔊';
-  document.querySelectorAll('video').forEach(v => v.muted = muted);
-}
-
-function toggleLike(btn) {
-  btn.classList.toggle('liked');
-  const countEl = btn.querySelector('.count');
-  let count = parseInt(countEl.textContent);
-  count = btn.classList.contains('liked') ? count + 1 : count - 1;
-  countEl.textContent = count;
-  showToast(btn.classList.contains('liked') ? 'Added to liked posts ♥' : 'Removed from liked posts');
-}
-
-function toggleSave(btn) {
-  btn.classList.toggle('saved');
-  showToast(btn.classList.contains('saved') ? 'Video saved to favorites 🔖' : 'Removed from favorites');
-}
-
-function toggleFollow(btn) {
-  const isFollowing = btn.textContent === 'Following';
-  btn.textContent = isFollowing ? 'Follow' : 'Following';
-  btn.style.background = isFollowing ? 'var(--pink)' : 'var(--surface)';
-  btn.style.border = isFollowing ? 'none' : '1px solid rgba(255,255,255,0.2)';
-  showToast(isFollowing ? 'Unfollowed creator' : 'Following creator ✨');
-}
-
-function sharePost() {
-  showToast('Link copied to clipboard! ↗');
-}
-
-// Intersection Observer for Feed Reels Playback
-function setupObserver() {
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      const vid = entry.target.querySelector('video');
-      if(vid) {
-        if(entry.isIntersecting) {
-          vid.muted = muted;
-          vid.play().catch(() => {});
-          activeVideo = vid;
-        } else {
-          vid.pause();
-          vid.currentTime = 0;
-        }
-      }
-    });
-  }, { threshold: 0.6 });
-
-  document.querySelectorAll('.reel').forEach(reel => observer.observe(reel));
-}
-
-function pauseAllFeedVideos() {
-  document.querySelectorAll('.reel video').forEach(v => v.pause());
-}
-
-// Navigation Bar Switching
-document.querySelectorAll('.nav button').forEach(btn => {
-  btn.onclick = () => {
-    const tabKey = btn.getAttribute('data-tab');
-    if(tabKey === 'create') {
-      openStudio();
-      return;
-    }
-    updateNavActiveState(tabKey);
-    closeAllScreens();
-
-    if(tabKey === 'discover') discover.classList.add('open');
-    if(tabKey === 'inbox') {
-      renderInboxList();
-      inbox.classList.add('open');
-    }
-    if(tabKey === 'profile') {
-      renderProfilePosts('posts');
-      profile.classList.add('open');
-    }
-  };
-});
-
-document.querySelectorAll('[data-close]').forEach(btn => {
-  btn.onclick = () => {
-    const screenId = btn.getAttribute('data-close');
-    document.getElementById(screenId).classList.remove('open');
-    updateNavActiveState('home');
-  };
-});
-
-function updateNavActiveState(tabKey) {
-  activeTabKey = tabKey;
-  document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
-  if(tabKey === 'home') document.getElementById('navHomeBtn').classList.add('active');
-  if(tabKey === 'discover') document.getElementById('navDiscoverBtn').classList.add('active');
-  if(tabKey === 'inbox') document.getElementById('navInboxBtn').classList.add('active');
-  if(tabKey === 'profile') document.getElementById('navProfileBtn').classList.add('active');
-}
-
-function closeAllScreens() {
-  discover.classList.remove('open');
-  inbox.classList.remove('open');
-  profile.classList.remove('open');
-  studio.classList.remove('open');
-  editorScreen.classList.remove('open');
-  postScreen.classList.remove('open');
-}
-
-function openStudio() {
-  appContainer.classList.add('hide-nav-for-create');
-  studio.classList.add('open');
-  startCamera();
-}
-
-document.getElementById('closeStudio').onclick = () => {
-  studio.classList.remove('open');
-  stopCamera();
-  appContainer.classList.remove('hide-nav-for-create');
-  updateNavActiveState('home');
-};
-
-document.getElementById('closePost').onclick = () => {
-  postScreen.classList.remove('open');
-  appContainer.classList.remove('hide-nav-for-create');
-  updateNavActiveState('home');
-};
-
-// Studio Mode Tabs (Video vs Live)
-function switchStudioMode(mode) {
-  document.querySelectorAll('.studioModeTab').forEach(t => t.classList.remove('active'));
-  if(mode === 'video') {
-    document.getElementById('modeVideoTab').classList.add('active');
-    document.getElementById('videoModePanel').classList.remove('hidden');
-    document.getElementById('liveModePanel').classList.add('hidden');
-    document.getElementById('liveStreamOverlayElements').classList.add('hidden');
-  } else {
-    document.getElementById('modeLiveTab').classList.add('active');
-    document.getElementById('videoModePanel').classList.add('hidden');
-    document.getElementById('liveModePanel').classList.remove('hidden');
-    document.getElementById('liveStreamOverlayElements').classList.remove('hidden');
-  }
-}
-
-let isLiveStreaming = false;
-function toggleLiveStream() {
-  isLiveStreaming = !isLiveStreaming;
-  const btn = document.getElementById('startLiveBtn');
-  if(isLiveStreaming) {
-    btn.textContent = 'End LIVE';
-    btn.style.background = '#f33';
-    showToast('You are now broadcasting LIVE! 🔴');
-  } else {
-    btn.textContent = 'Go LIVE Now';
-    btn.style.background = 'var(--pink)';
-    showToast('Live stream ended.');
-  }
-}
-
-function toggleLiveMic() {
-  showToast('Microphone muted/unmuted');
-}
-
-// Profile Sub-Tabs Renderer
-document.querySelectorAll('.profileSubTab').forEach(tab => {
-  tab.onclick = () => {
-    document.querySelectorAll('.profileSubTab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    const profileTabKey = tab.getAttribute('data-profile-tab');
-    renderProfilePosts(profileTabKey);
-  };
-});
-
-function renderProfilePosts(tabKey) {
-  const grid = document.getElementById('userPostsGrid');
-  grid.innerHTML = '';
-  
-  let items = [];
-  if(tabKey === 'posts') {
-    items = feedData.filter(p => p.author === myProfile.username);
-  } else if(tabKey === 'saved') {
-    items = feedData; // simulated saved
-  } else if(tabKey === 'tagged') {
-    items = feedData.filter(p => p.isTagged);
-  }
-
-  if(items.length === 0) {
-    grid.innerHTML = `<div style="grid-column: span 3; text-align:center; color:var(--muted); padding:30px; font-size:13px;">No posts found</div>`;
-    return;
-  }
-
-  items.forEach(post => {
-    const thumb = document.createElement('div');
-    thumb.className = 'userPostThumb';
-    const media = post.mediaList && post.mediaList.length > 0 ? post.mediaList[0] : {type:'image', url:''};
-    if(media.type === 'video') {
-      thumb.innerHTML = `
-        <video src="${media.url}" muted playsinline></video>
-        <div class="profile-view-badge">▶ ${post.views || '12K'}</div>
-      `;
-    } else {
-      thumb.innerHTML = `
-        <img src="${media.url}" alt="">
-        <div class="profile-view-badge">♥ ${post.likes}</div>
-      `;
-    }
-    thumb.onclick = () => {
-      profile.classList.remove('open');
-      updateNavActiveState('home');
-      pauseAllFeedVideos();
-      const idx = feedData.findIndex(f => f.id === post.id);
-      if(idx !== -1) { feed.children[idx].scrollIntoView({behavior:'smooth'}); }
-    };
-    grid.appendChild(thumb);
-  });
-}
-
-// Sound Modal
-function openSoundModal(songName, artist) {
-  document.getElementById('audioModalSongTitle').textContent = songName;
-  document.getElementById('audioModalArtist').textContent = artist;
-  const grid = document.getElementById('audioModalVideosGrid');
-  grid.innerHTML = '';
-  
-  feedData.forEach(post => {
-    const thumb = document.createElement('div');
-    thumb.className = 'userPostThumb';
-    const media = post.mediaList && post.mediaList.length > 0 ? post.mediaList[0] : {type:'image', url:''};
-    if(media.type === 'video') {
-      thumb.innerHTML = `<video src="${media.url}" muted playsinline></video>`;
-    } else {
-      thumb.innerHTML = `<img src="${media.url}" alt="">`;
-    }
-    thumb.onclick = () => {
-      document.getElementById('soundModal').classList.remove('open');
-      updateNavActiveState('home');
-      pauseAllFeedVideos();
-      const idx = feedData.findIndex(f => f.id === post.id);
-      if(idx !== -1) { feed.children[idx].scrollIntoView({behavior:'smooth'}); }
-    };
-    grid.appendChild(thumb);
-  });
-
-  document.getElementById('soundModal').classList.add('open');
-}
-
-document.getElementById('closeSoundModal').onclick = () => {
-  document.getElementById('soundModal').classList.remove('open');
-};
-
-// Comments Drawer Logic
-let activeCommentPostId = null;
-function openComments(postId) {
-  activeCommentPostId = postId;
-  const post = feedData.find(p => p.id === postId);
-  if(!post) return;
-
-  document.getElementById('commentModalTitle').textContent = `Comments (${post.commentsList.length})`;
-  const container = document.getElementById('commentListContainer');
-  container.innerHTML = '';
-
-  if(post.commentsList.length === 0) {
-    container.innerHTML = `<div style="text-align:center; color:var(--muted); padding:30px; font-size:13px;">No comments yet. Be the first!</div>`;
-  } else {
-    post.commentsList.forEach(c => {
-      const row = document.createElement('div');
-      row.className = 'commentRow';
-      row.innerHTML = `
-        <img class="commentAvatar" src="${c.avatar}">
-        <div class="commentBubble">
-          <div class="commentUser">${c.user}</div>
-          <div class="commentText">${c.text}</div>
-        </div>
-      `;
-      container.appendChild(row);
-    });
-  }
-
-  document.getElementById('commentModal').classList.add('open');
-}
-
-document.getElementById('closeCommentModal').onclick = () => {
-  document.getElementById('commentModal').classList.remove('open');
-};
-
-document.getElementById('commentSendBtn').onclick = () => {
-  const input = document.getElementById('commentInputField');
-  const text = input.value.trim();
-  if(!text || !activeCommentPostId) return;
-
-  const post = feedData.find(p => p.id === activeCommentPostId);
-  if(post) {
-    post.commentsList.push({
-      user: myProfile.username,
-      text: text,
-      avatar: myProfile.avatar
-    });
-    post.commentsCount++;
-    openComments(activeCommentPostId);
-    renderFeed();
-    input.value = '';
-    showToast('Comment posted! 💬');
-  }
-};
-
-// Report User Modal
-function openReportModal() {
-  showToast('Select report reason from support guidelines');
-}
-
-function showToast(msg) {
-  toast.textContent = msg;
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 2500);
-}
-
-// Initial Render
 renderFeed();
 </script>
 </body>
 </html>
- 
