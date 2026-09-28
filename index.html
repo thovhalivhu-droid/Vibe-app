@@ -1574,13 +1574,15 @@ document.querySelectorAll('.nav button').forEach(btn => {
 
 function openScreen(el) {
   el.classList.add('open');
-  // Automatically hide header and navigation when any screen (like Post screen) opens
-  appContainer.classList.add('hide-nav-for-create');
+  // Hide navigation and header ONLY when Create/Studio is pressed
+  if (el.id === 'studio' || el.id === 'editorScreen' || el.id === 'postScreen') {
+    appContainer.classList.add('hide-nav-for-create');
+  }
 }
 function closeScreen(el) {
   el.classList.remove('open');
-  // Bring back navigation and header when all main screens are closed
-  if (!document.querySelector('.screen.open')) {
+  // Bring back navigation and header when leaving Create/Studio screens
+  if (!document.querySelector('#studio.open') && !document.querySelector('#editorScreen.open') && !document.querySelector('#postScreen.open')) {
     appContainer.classList.remove('hide-nav-for-create');
   }
 }
