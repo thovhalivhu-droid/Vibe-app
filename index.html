@@ -265,8 +265,9 @@ button{font:inherit}
   justify-content: space-around;
   padding: 8px 12px;
   gap: 12px;
-  z-index: 20;
+  z-index: 200;
   box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  pointer-events: auto !important;
 }
 .edit-tool-btn {
   background: transparent;
@@ -280,10 +281,12 @@ button{font:inherit}
   padding: 6px 10px;
   border-radius: 16px;
   transition: background 0.2s, transform 0.2s;
+  pointer-events: auto !important;
+  touch-action: manipulation;
 }
 .edit-tool-btn:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-2px); }
-.edit-tool-btn .tool-icon { font-size: 18px; }
-.edit-tool-btn .tool-label { font-size: 10px; font-weight: 700; color: var(--muted); }
+.edit-tool-btn .tool-icon { font-size: 18px; pointer-events: none; }
+.edit-tool-btn .tool-label { font-size: 10px; font-weight: 700; color: var(--muted); pointer-events: none; }
 .edit-tool-btn.active .tool-label, .edit-tool-btn:hover .tool-label { color: #fff; }
 
 .editor-tool-drawer {
@@ -833,24 +836,24 @@ input:checked+.slider:before{transform:translateX(20px)}
   </div>
 </div>
 
-<div class="bottom-edit-toolbar">
-  <button class="edit-tool-btn" id="toolMusicBtn" onclick="toggleEditorDrawer('editorMusicDrawer')">
+<div class="bottom-edit-toolbar" id="bottomEditToolbar">
+  <button class="edit-tool-btn" id="toolMusicBtn">
     <span class="tool-icon">🎵</span>
     <span class="tool-label">Music</span>
   </button>
-  <button class="edit-tool-btn" id="toolStickersBtn" onclick="toggleEditorDrawer('editorStickersDrawer')">
+  <button class="edit-tool-btn" id="toolStickersBtn">
     <span class="tool-icon">⭐</span>
     <span class="tool-label">Stickers</span>
   </button>
-  <button class="edit-tool-btn" id="toolCustomTextBtn" onclick="toggleEditorDrawer('editorTextDrawer')">
+  <button class="edit-tool-btn" id="toolCustomTextBtn">
     <span class="tool-icon">✍️</span>
     <span class="tool-label">Text</span>
   </button>
-  <button class="edit-tool-btn" id="toolEffectsBtn" onclick="toggleEditorDrawer('editorEffectsDrawer')">
+  <button class="edit-tool-btn" id="toolEffectsBtn">
     <span class="tool-icon">✨</span>
     <span class="tool-label">Effects</span>
   </button>
-  <button class="edit-tool-btn" id="toolMentionBtn" onclick="toggleEditorDrawer('editorMentionDrawer')">
+  <button class="edit-tool-btn" id="toolMentionBtn">
     <span class="tool-icon">@</span>
     <span class="tool-label">Mention</span>
   </button>
@@ -1574,14 +1577,12 @@ document.querySelectorAll('.nav button').forEach(btn => {
 
 function openScreen(el) {
   el.classList.add('open');
-  // Hide navigation and header ONLY when Create/Studio or Edit Media is active
   if (el.id === 'studio' || el.id === 'editorScreen') {
     appContainer.classList.add('hide-nav-for-create');
   }
 }
 function closeScreen(el) {
   el.classList.remove('open');
-  // Bring back navigation and header when leaving Create/Studio and Edit Media screens
   if (!document.querySelector('#studio.open') && !document.querySelector('#editorScreen.open')) {
     appContainer.classList.remove('hide-nav-for-create');
   }
@@ -1601,6 +1602,26 @@ document.querySelectorAll('.screenHead .close').forEach(btn => {
     }
   });
 });
+
+// Robust touch handler binding for editor toolbar buttons to trigger every time without disappearing
+document.getElementById('toolMusicBtn').addEventListener('click', (e) => { e.stopPropagation(); toggleEditorDrawer('editorMusicDrawer'); });
+document.getElementById('toolStickersBtn').addEventListener('click', (e) => { e.stopPropagation(); toggleEditorDrawer('editorStickersDrawer'); });
+document.getElementById('toolCustomTextBtn').addEventListener('click', (e) => { e.stopPropagation(); toggleEditorDrawer('editorTextDrawer'); });
+document.getElementById('toolEffectsBtn').addEventListener('click', (e) => { e.stopPropagation(); toggleEditorDrawer('editorEffectsDrawer'); });
+document.getElementById('toolMentionBtn').addEventListener('click', (e) => { e.stopPropagation(); toggleEditorDrawer('editorMentionDrawer'); });
+
+function toggleEditorDrawer(drawerId) {
+  const drawer = document.getElementById(drawerId);
+  const isOpen = drawer.classList.contains('open');
+  closeEditorDrawers();
+  if(!isOpen) {
+    drawer.classList.add('open');
+  }
+}
+
+function closeEditorDrawers() {
+  document.querySelectorAll('.editor-tool-drawer').forEach(d => d.classList.remove('open'));
+}
 
 // Discover & Search Engine Logic
 const searchInput = document.getElementById('searchInput');
