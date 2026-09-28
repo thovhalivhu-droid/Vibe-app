@@ -192,9 +192,33 @@ button{font:inherit}
 .editorCanvasContainer.multi-item video, .editorCanvasContainer.multi-item img {flex: 0 0 100%; scroll-snap-align: start; width:100%; height:100%; object-fit:contain;}
 #editorDrawingCanvas{position:absolute;inset:0;pointer-events:auto;cursor:crosshair;z-index:5}
 #editorOverlaysLayer{position:absolute;inset:0;pointer-events:none;z-index:6}
-.editorOverlayElement{position:absolute;cursor:move;user-select:none;padding:6px 10px;font-size:22px;border:1px dashed transparent;transition:border .2s;pointer-events:auto;touch-action:none;}
+.editorOverlayElement{position:absolute;cursor:grab;user-select:none;padding:6px 10px;font-size:22px;border:1px dashed transparent;transition:border .2s;pointer-events:auto;touch-action:none;}
+.editorOverlayElement:active {cursor:grabbing;}
 .editorOverlayElement:hover{border-color:rgba(255,255,255,0.4)}
 .editorOverlayElement.text-element{font-size:20px;font-weight:700;color:#fff;background:rgba(0,0,0,0.5);border-radius:8px;backdrop-filter:blur(4px);padding:8px 12px;text-shadow:0 2px 4px rgba(0,0,0,0.5)}
+
+/* Text Color Swatches inside Text Drawer */
+.text-color-picker {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 4px;
+}
+.color-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.color-swatch:hover {
+  transform: scale(1.15);
+}
+.color-swatch.active {
+  border-color: #fff;
+  transform: scale(1.15);
+}
 
 /* Direct Quick Post Button Hidden Globally, Shown Only on Edit Media Screen */
 .editor-quick-post-btn {
@@ -356,26 +380,6 @@ button{font:inherit}
 .sticker-item:hover {
   transform: scale(1.1);
   background: rgba(255,255,255,0.15);
-}
-
-/* Text Colors Palette */
-.text-color-palette {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  padding: 4px 0;
-}
-.color-swatch {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  cursor: pointer;
-  border: 2px solid transparent;
-  transition: transform 0.2s, border-color 0.2s;
-}
-.color-swatch:hover, .color-swatch.active {
-  transform: scale(1.15);
-  border-color: #fff;
 }
 
 /* Edit Toolbar legacy completely hidden */
@@ -890,7 +894,6 @@ input:checked+.slider:before{transform:translateX(20px)}
     <button class="close" onclick="closeEditorDrawers()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">×</button>
   </div>
   
-  <!-- Selected Music Display Area -->
   <div class="selected-music-display">
     <div class="selected-music-info">
       <div class="label">Currently Selected Track</div>
@@ -900,7 +903,6 @@ input:checked+.slider:before{transform:translateX(20px)}
     <span style="font-size: 22px;">🎵</span>
   </div>
 
-  <!-- Styled Music List -->
   <div class="music-list-container">
     <div class="music-list-row active" id="track-row-0">
       <div class="music-details">
@@ -948,23 +950,21 @@ input:checked+.slider:before{transform:translateX(20px)}
   </div>
 </div>
 
-<!-- Text Input Drawer -->
+<!-- Text Input Drawer with Color Picker -->
 <div id="editorTextDrawer" class="editor-tool-drawer">
   <div class="drawer-header"><span>Add Custom Text</span><button class="close" onclick="closeEditorDrawers()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">×</button></div>
-  <div style="display:flex; flex-direction:column; gap:10px;">
-    <div style="display:flex; gap:8px;">
-      <input type="text" id="editorTextInputField" class="topTextEditorInput" placeholder="Type text overlay..." autocomplete="off">
-      <button class="topTextEditorDoneBtn" onclick="commitEditorText()">Add</button>
-    </div>
-    <div class="text-color-palette">
-      <span style="font-size:12px; color:var(--muted); font-weight:700;">Color:</span>
-      <div class="color-swatch active" style="background:#ffffff;" onclick="setEditorTextColor('#ffffff', this)"></div>
-      <div class="color-swatch" style="background:#ff2a5f;" onclick="setEditorTextColor('#ff2a5f', this)"></div>
-      <div class="color-swatch" style="background:#00f2fe;" onclick="setEditorTextColor('#00f2fe', this)"></div>
-      <div class="color-swatch" style="background:#ffe600;" onclick="setEditorTextColor('#ffe600', this)"></div>
-      <div class="color-swatch" style="background:#00ff66;" onclick="setEditorTextColor('#00ff66', this)"></div>
-      <div class="color-swatch" style="background:#bf00ff;" onclick="setEditorTextColor('#bf00ff', this)"></div>
-    </div>
+  <div style="display:flex; gap:8px;">
+    <input type="text" id="editorTextInputField" class="topTextEditorInput" placeholder="Type text overlay..." autocomplete="off">
+    <button class="topTextEditorDoneBtn" onclick="commitEditorText()">Add</button>
+  </div>
+  <div class="text-color-picker">
+    <span style="font-size: 11px; color: var(--muted); font-weight:700;">Text Color:</span>
+    <div class="color-swatch active" style="background:#ffffff;" onclick="selectTextColor('#ffffff', this)" title="White"></div>
+    <div class="color-swatch" style="background:#ff2a5f;" onclick="selectTextColor('#ff2a5f', this)" title="Pink"></div>
+    <div class="color-swatch" style="background:#00f2fe;" onclick="selectTextColor('#00f2fe', this)" title="Cyan"></div>
+    <div class="color-swatch" style="background:#ffe600;" onclick="selectTextColor('#ffe600', this)" title="Yellow"></div>
+    <div class="color-swatch" style="background:#00ff66;" onclick="selectTextColor('#00ff66', this)" title="Green"></div>
+    <div class="color-swatch" style="background:#bf00ff;" onclick="selectTextColor('#bf00ff', this)" title="Purple"></div>
   </div>
 </div>
 
@@ -1334,6 +1334,14 @@ let userPrivacySettings = {
   activityStatus: true
 };
 
+let selectedTextColor = '#ffffff';
+
+function selectTextColor(color, swatchEl) {
+  selectedTextColor = color;
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+  swatchEl.classList.add('active');
+}
+
 let feedData=[
 {
  id:1, author:"Elena Rostova", caption:"Golden hour tones hitting different today ✨ #goldenhour #VIBE", songName:"Golden Hour Vibe", artist:"Elena Rostova", likes:24500, commentsCount:2, shares:1200, views:"112K", avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150", 
@@ -1357,7 +1365,6 @@ let feedData=[
 let myProfile={username:"@creator_vibe",bio:"Short-form content creator & explorer ✨",avatar:"https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150"};
 let activeVideo=null, muted=true, mediaStream=null, recorder=null, chunks=[], recording=false, recordSeconds=0, timerInterval=null, facing="user", selectedMediaList=[];
 let pressTimer=null, isLongPress=false, selectedSound="Original Audio";
-let selectedTextColor = "#ffffff";
 let activeCommentPostId=null;
 let profileActiveTab = 'posts';
 
@@ -1630,15 +1637,12 @@ function toggleEditorDrawer(drawerId) {
 function selectEditorMusic(songTitle, artistName, index) {
   selectedSound = songTitle;
   
-  // Update the top-level label in studio
   const labelEl = document.getElementById('currentSoundLabel');
   if(labelEl) labelEl.textContent = songTitle;
 
-  // Update selected-music display inside drawer
   document.getElementById('drawerSelectedSongTitle').textContent = songTitle;
   document.getElementById('drawerSelectedSongArtist').textContent = artistName;
 
-  // Update active state across all music list rows and buttons
   document.querySelectorAll('.music-list-row').forEach((row, idx) => {
     const btn = row.querySelector('.select-track-btn');
     if (idx === index) {
@@ -1653,12 +1657,6 @@ function selectEditorMusic(songTitle, artistName, index) {
   });
 
   showToast(`Track selected: ${songTitle} 🎵`);
-}
-
-function setEditorTextColor(color, swatchEl) {
-  selectedTextColor = color;
-  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
-  if(swatchEl) swatchEl.classList.add('active');
 }
 
 function applyEditorFilter(filterStyle, btnEl) {
@@ -1687,7 +1685,7 @@ function addStickerToCanvas(emoji) {
   makeElementDraggable(stickerEl);
   layer.appendChild(stickerEl);
   closeEditorDrawers();
-  showToast('Sticker added! Tap & drag to position.');
+  showToast('Sticker added! Drag anywhere.');
 }
 
 function addMentionToCanvas(mentionText) {
@@ -1726,7 +1724,7 @@ function commitEditorText() {
 }
 
 function makeElementDraggable(elm) {
-  let startX = 0, startY = 0, initialLeft = 0, initialTop = 0;
+  let startX = 0, startY = 0, initialX = 0, initialY = 0;
 
   elm.onpointerdown = pointerDown;
 
@@ -1734,9 +1732,9 @@ function makeElementDraggable(elm) {
     e.preventDefault();
     startX = e.clientX;
     startY = e.clientY;
-    initialLeft = elm.offsetLeft;
-    initialTop = elm.offsetTop;
-    
+    initialX = elm.offsetLeft;
+    initialY = elm.offsetTop;
+
     elm.setPointerCapture(e.pointerId);
     elm.onpointermove = pointerMove;
     elm.onpointerup = pointerUp;
@@ -1746,8 +1744,8 @@ function makeElementDraggable(elm) {
     e.preventDefault();
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
-    elm.style.left = (initialLeft + dx) + "px";
-    elm.style.top = (initialTop + dy) + "px";
+    elm.style.left = (initialX + dx) + 'px';
+    elm.style.top = (initialY + dy) + 'px';
   }
 
   function pointerUp(e) {
