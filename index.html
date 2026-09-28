@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-<title>VIBE - Short-Form video Platform</title>
+<title>VIBE - Short-Form Video Platform</title>
 <style>
 :root{--bg:#0f1015;--surface:#1a1b22;--pink:#ff2a5f;--cyan:#00f2fe;--text:#fff;--muted:#9a9dac;--nav:62px}
 :root.light-theme{--bg:#f4f5f8;--surface:#ffffff;--text:#111216;--muted:#686a76;--nav:62px}
@@ -1121,18 +1121,67 @@ input:checked+.slider:before{transform:translateX(20px)}
 
     <div class="discoverSectionTitle" style="margin-top:10px;">Support & About</div>
     <div class="settings-list">
-      <div class="settings-item" onclick="showToast('Help Center opened')">
+      <div class="settings-item" onclick="openHelpCenter()">
         <div class="settings-item-left"><span>❓</span> Help Center</div>
         <span style="color:var(--muted);">›</span>
       </div>
-      <div class="settings-item" onclick="showToast('Terms of Service opened')">
+      <div class="settings-item" onclick="openTermsOfService()">
         <div class="settings-item-left"><span>📄</span> Terms of Service</div>
         <span style="color:var(--muted);">›</span>
       </div>
-      <div class="settings-item" onclick="showToast('Logged out successfully')" style="color: var(--pink);">
+      <div class="settings-item" onclick="openLogOutModal()" style="color: var(--pink);">
         <div class="settings-item-left" style="color: var(--pink);"><span>🚪</span> Log Out</div>
         <span>›</span>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- Sub-panel: Help Center -->
+<section id="helpCenterSubPanel" class="settings-subpanel">
+  <div class="screenHead">
+    <button class="close" onclick="closeSubPanel('helpCenterSubPanel')">×</button>
+    <span>Help Center</span>
+    <span style="width:24px"></span>
+  </div>
+  <div class="discoverBody">
+    <div class="discoverSectionTitle">Frequently Asked Questions</div>
+    <div class="settings-list">
+      <div class="settings-item" onclick="showToast('Guide: How to upload clips')">
+        <div class="settings-item-left"><span>📹</span> How do I upload or record videos?</div>
+        <span style="color:var(--muted);">›</span>
+      </div>
+      <div class="settings-item" onclick="showToast('Guide: Managing your profile')">
+        <div class="settings-item-left"><span>👤</span> Managing your profile & stories</div>
+        <span style="color:var(--muted);">›</span>
+      </div>
+      <div class="settings-item" onclick="showToast('Guide: Community standards & safety')">
+        <div class="settings-item-left"><span>🛡️</span> Community standards & safety</div>
+        <span style="color:var(--muted);">›</span>
+      </div>
+      <div class="settings-item" onclick="showToast('Contact support form opened')">
+        <div class="settings-item-left"><span>✉️</span> Contact VIBE Support Team</div>
+        <span style="color:var(--cyan); font-size:12px;">Get Help ›</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Sub-panel: Terms of Service -->
+<section id="termsOfServiceSubPanel" class="settings-subpanel">
+  <div class="screenHead">
+    <button class="close" onclick="closeSubPanel('termsOfServiceSubPanel')">×</button>
+    <span>Terms of Service</span>
+    <span style="width:24px"></span>
+  </div>
+  <div class="discoverBody" style="gap: 16px;">
+    <div style="background: var(--surface); padding: 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 12px; font-size: 13px; line-height: 1.5; color: var(--muted);">
+      <div style="font-size: 15px; font-weight: 800; color: var(--text);">VIBE Platform Terms & Conditions</div>
+      <div>Last updated: September 2026</div>
+      <p>1. <strong>Acceptance of Terms:</strong> By accessing and using VIBE, you agree to comply with and be bound by these terms.</p>
+      <p>2. <strong>User Conduct:</strong> You agree not to post harmful, fraudulent, or infringing content, and to maintain respectful interactions within the creator community.</p>
+      <p>3. <strong>Content Ownership:</strong> Creators retain ownership of all original videos, photos, and media uploaded to their profiles, granting VIBE a license to stream and distribute.</p>
+      <p>4. <strong>Account Security:</strong> You are responsible for safeguarding your credentials and 2FA authentication methods.</p>
     </div>
   </div>
 </section>
@@ -1290,6 +1339,16 @@ input:checked+.slider:before{transform:translateX(20px)}
   <div class="report-actions">
     <button class="report-cancel-btn" onclick="closeReportModal()">Cancel</button>
     <button class="report-submit-btn" onclick="submitReport()">Submit Report</button>
+  </div>
+</div>
+
+<!-- Logout Confirmation Modal -->
+<div id="logoutModal" class="report-modal">
+  <div class="report-title">Log Out of VIBE?</div>
+  <div class="report-subtitle">You will need to sign back in with your credentials to access your creator profile.</div>
+  <div class="report-actions" style="margin-top: 10px;">
+    <button class="report-cancel-btn" onclick="closeLogOutModal()">Cancel</button>
+    <button class="report-submit-btn" onclick="confirmLogOut()" style="background: var(--pink);">Log Out</button>
   </div>
 </div>
 
@@ -1869,6 +1928,31 @@ function closePrivateInfoScreen() {
   closeScreen(document.getElementById('privateInfoScreen'));
 }
 
+function openHelpCenter() {
+  openScreen(document.getElementById('helpCenterSubPanel'));
+}
+
+function openTermsOfService() {
+  openScreen(document.getElementById('termsOfServiceSubPanel'));
+}
+
+function openLogOutModal() {
+  document.getElementById('logoutModal').classList.add('open');
+}
+
+function closeLogOutModal() {
+  document.getElementById('logoutModal').classList.remove('open');
+}
+
+function confirmLogOut() {
+  closeLogOutModal();
+  closeSettingsScreen();
+  showToast('Logged out successfully');
+  setTimeout(() => {
+    window.location.reload();
+  }, 1000);
+}
+
 function openAccountSettings() { openScreen(document.getElementById('accountSettingsSubPanel')); }
 function openReferenceSettings() { openScreen(document.getElementById('referenceSettingsSubPanel')); }
 function openPushNotificationsSettings() { openScreen(document.getElementById('pushNotificationsSubPanel')); }
@@ -1878,163 +1962,7 @@ function closeSubPanel(id) {
   closeScreen(document.getElementById(id));
 }
 
-function toggleDarkThemeSetting() {
-  const cb = document.getElementById('darkThemeCheckbox');
-  cb.checked = !cb.checked;
-  handleDarkThemeToggle(cb);
-}
-
-function handleDarkThemeToggle(cb) {
-  if(cb.checked) {
-    document.documentElement.classList.add('light-theme');
-    showToast('Light theme enabled');
-  } else {
-    document.documentElement.classList.remove('light-theme');
-    showToast('Dark theme enabled');
-  }
-}
-
-function selectVideoQuality(qual) {
-  document.getElementById('currentQualityLabel').textContent = qual + ' ›';
-  showToast(`Default streaming quality set to ${qual}`);
-}
-
-// Report User Modal
-function openReportModal() {
-  document.getElementById('reportModal').classList.add('open');
-}
-function closeReportModal() {
-  document.getElementById('reportModal').classList.remove('open');
-}
-function selectReportReason(el) {
-  document.querySelectorAll('.report-reason-item').forEach(i => i.classList.remove('selected'));
-  el.classList.add('selected');
-  const radio = el.querySelector('input[type="radio"]');
-  if(radio) radio.checked = true;
-}
-function submitReport() {
-  closeReportModal();
-  showToast('Report submitted successfully. Thank you.');
-}
-
-// Sound Modal
-function openSoundModal(song, artist) {
-  document.getElementById('audioModalSongTitle').textContent = song;
-  document.getElementById('audioModalArtist').textContent = artist;
-  const grid = document.getElementById('audioModalVideosGrid');
-  let html = '';
-  feedData.filter(f => f.songName === song).forEach(p => {
-    const m = p.mediaList ? p.mediaList[0] : {type:'video', url:p.videoUrl};
-    html += `<div class="userPostThumb">${m.type==='video'?`<video src="${m.url}"></video>`:`<img src="${m.url}">`}</div>`;
-  });
-  if(!html) {
-    html = `<div style="grid-column:span 3; text-align:center; color:var(--muted); padding:20px;">No public clips using this sound yet</div>`;
-  }
-  grid.innerHTML = html;
-  document.getElementById('soundModal').classList.add('open');
-}
-document.getElementById('closeSoundModal').addEventListener('click', () => {
-  document.getElementById('soundModal').classList.remove('open');
-});
-
-// Comments Modal
-let activeCommentPostId = null;
-function openComments(id) {
-  activeCommentPostId = id;
-  const item = feedData.find(f => f.id === id);
-  document.getElementById('commentModalTitle').textContent = `${formatCount(item.commentsCount)} Comments`;
-  renderCommentsList(item.commentsList);
-  document.getElementById('commentModal').classList.add('open');
-}
-
-function renderCommentsList(comments) {
-  const container = document.getElementById('commentListContainer');
-  let html = '';
-  comments.forEach(c => {
-    html += `
-      <div class="commentRow">
-        <img class="commentAvatar" src="${c.avatar}">
-        <div class="commentBubble">
-          <div class="commentUser">${c.user}</div>
-          <div class="commentText">${c.text}</div>
-        </div>
-      </div>
-    `;
-  });
-  if(!comments.length) {
-    html = `<div style="text-align:center; color:var(--muted); padding:30px 0;">No comments yet. Be the first!</div>`;
-  }
-  container.innerHTML = html;
-}
-
-document.getElementById('closeCommentModal').addEventListener('click', () => {
-  document.getElementById('commentModal').classList.remove('open');
-});
-
-document.getElementById('commentSendBtn').addEventListener('click', () => {
-  const input = document.getElementById('commentInputField');
-  const text = input.value.trim();
-  if(!text || !activeCommentPostId) return;
-  const item = feedData.find(f => f.id === activeCommentPostId);
-  item.commentsList.push({user:"@creator_vibe", text: text, avatar:"https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150"});
-  item.commentsCount++;
-  input.value = '';
-  renderCommentsList(item.commentsList);
-  renderFeed();
-});
-
-// Studio Camera Logic
-let mediaStream = null;
-let isRecording = false;
-let mediaRecorder = null;
-let recordedChunks = [];
-let recordingTimerInterval = null;
-let recordingSeconds = 0;
-let isFrontCamera = true;
-let studioMode = 'video';
-
-function openStudio() {
-  openScreen(studio);
-  startCamera();
-}
-
-async function startCamera() {
-  try {
-    if(mediaStream) {
-      mediaStream.getTracks().forEach(t => t.stop());
-    }
-    mediaStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: isFrontCamera ? 'user' : 'environment' },
-      audio: true
-    });
-    camera.srcObject = mediaStream;
-  } catch(e) {
-    console.log("Camera access fallback or permission denied:", e);
-  }
-}
-
-function flipCamera() {
-  isFrontCamera = !isFrontCamera;
-  startCamera();
-  showToast(isFrontCamera ? 'Switched to front camera' : 'Switched to rear camera');
-}
-
-document.getElementById('flipBtn').addEventListener('click', flipCamera);
-document.getElementById('closeStudio').addEventListener('click', () => {
-  if(mediaStream) mediaStream.getTracks().forEach(t => t.stop());
-  closeScreen(studio);
-});
-
-function switchStudioMode(mode) {
-  studioMode = mode;
-  document.getElementById('modeVideoTab').classList.toggle('active', mode === 'video');
-  document.getElementById('modeLiveTab').classList.toggle('active', mode === 'live');
-  document.getElementById('videoModePanel').classList.toggle('hidden', mode !== 'video');
-  document.getElementById('liveModePanel').classList.toggle('hidden', mode !== 'live');
-  document.getElementById('liveStreamOverlayElements').classList.toggle('hidden', mode !== 'live');
-}
-
-// Initial render
+// Initialize feed on load
 renderFeed();
 </script>
 </body>
