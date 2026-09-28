@@ -157,8 +157,8 @@ button{font:inherit}
   background: rgba(0, 0, 0, 0.7);
 }
 
-.nav{position:absolute;bottom:0;left:0;right:0;height:var(--nav);z-index:100;display:flex;justify-content:space-around;align-items:center;background:var(--surface);backdrop-filter:blur(16px);border-top:1px solid #ffffff12;pointer-events:auto;transition:transform .3s ease}
-.nav button{background:none;border:0;color:var(--muted);font-size:10px;display:flex;flex-direction:column;align-items:center;gap:4px;width:20%;cursor:pointer;pointer-events:auto}.nav button.active{color:var(--text)}.nav .plus{width:42px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--pink),var(--cyan));color:#fff;font-size:22px;line-height:1}
+.nav{position:absolute;bottom:0;left:0;right:0;height:var(--nav);z-index:1000;display:flex;justify-content:space-around;align-items:center;background:var(--surface);backdrop-filter:blur(16px);border-top:1px solid #ffffff12;pointer-events:auto !important;transition:transform .3s ease}
+.nav button{background:none;border:0;color:var(--muted);font-size:10px;display:flex;flex-direction:column;align-items:center;gap:4px;width:20%;cursor:pointer;pointer-events:auto !important;touch-action:manipulation}.nav button.active{color:var(--text)}.nav .plus{width:42px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--pink),var(--cyan));color:#fff;font-size:22px;line-height:1}
 
 /* Global utility class to hide navigation and header ONLY when Create or Edit Media is open */
 #app.hide-nav-for-create .nav { transform: translateY(100%); pointer-events: none; }
@@ -1583,7 +1583,7 @@ document.querySelectorAll('.nav button').forEach(btn => {
       openScreen(discover);
       renderDiscoverResults('');
     } else if(tab === 'create') {
-      openStudio();
+      openScreen(studio);
     } else if(tab === 'inbox') {
       openScreen(inbox);
     } else if(tab === 'profile') {
@@ -1909,85 +1909,132 @@ function closeReportModal() {
 function selectReportReason(el) {
   document.querySelectorAll('.report-reason-item').forEach(i => i.classList.remove('selected'));
   el.classList.add('selected');
-  el.querySelector('input[type="radio"]').checked = true;
+  const radio = el.querySelector('input[type="radio"]');
+  if(radio) radio.checked = true;
 }
 function submitReport() {
-  const selected = document.querySelector('input[name="reportReason"]:checked');
-  if(!selected) {
-    showToast('Please select a reason for reporting');
-    return;
-  }
   closeReportModal();
-  showToast('Report submitted anonymously. Thank you.');
+  showToast('Report submitted successfully. Thank you.');
 }
 
-// Sound modal & Comments
+// Sound Modal
 function openSoundModal(song, artist) {
   document.getElementById('audioModalSongTitle').textContent = song;
   document.getElementById('audioModalArtist').textContent = artist;
   const grid = document.getElementById('audioModalVideosGrid');
   let html = '';
-  feedData.forEach(p => {
+  feedData.filter(f => f.songName === song).forEach(p => {
     const m = p.mediaList ? p.mediaList[0] : {type:'video', url:p.videoUrl};
     html += `<div class="userPostThumb">${m.type==='video'?`<video src="${m.url}"></video>`:`<img src="${m.url}">`}</div>`;
   });
+  if(!html) {
+    html = `<div style="grid-column:span 3; text-align:center; color:var(--muted); padding:20px;">No public clips using this sound yet</div>`;
+  }
   grid.innerHTML = html;
   document.getElementById('soundModal').classList.add('open');
 }
-document.getElementById('closeSoundModal').addEventListener('click', (e) => {
-  e.stopPropagation();
+document.getElementById('closeSoundModal').addEventListener('click', () => {
   document.getElementById('soundModal').classList.remove('open');
 });
 
+// Comments Modal
+let activeCommentPostId = null;
 function openComments(id) {
+  activeCommentPostId = id;
   const item = feedData.find(f => f.id === id);
-  document.getElementById('commentModalTitle').textContent = `${item.commentsCount} Comments`;
-  const container = document.getElementById('commentListContainer');
-  let html = '';
-  if(item.commentsList && item.commentsList.length > 0) {
-    item.commentsList.forEach(c => {
-      html += `
-        <div class="commentRow">
-          <img class="commentAvatar" src="${c.avatar}">
-          <div class="commentBubble">
-            <div class="commentUser">${c.user}</div>
-            <div class="commentText">${c.text}</div>
-          </div>
-        </div>
-      `;
-    });
-  } else {
-    html = `<div style="text-align:center;color:var(--muted);padding:30px;">No comments yet. Be the first!</div>`;
-  }
-  container.innerHTML = html;
+  document.getElementById('commentModalTitle').textContent = `${formatCount(item.commentsCount)} Comments`;
+  renderCommentsList(item.commentsList);
   document.getElementById('commentModal').classList.add('open');
 }
-document.getElementById('closeCommentModal').addEventListener('click', (e) => {
-  e.stopPropagation();
+
+function renderCommentsList(comments) {
+  const container = document.getElementById('commentListContainer');
+  let html = '';
+  comments.forEach(c => {
+    html += `
+      <div class="commentRow">
+        <img class="commentAvatar" src="${c.avatar}">
+        <div class="commentBubble">
+          <div class="commentUser">${c.user}</div>
+          <div class="commentText">${c.text}</div>
+        </div>
+      </div>
+    `;
+  });
+  if(!comments.length) {
+    html = `<div style="text-align:center; color:var(--muted); padding:30px 0;">No comments yet. Be the first!</div>`;
+  }
+  container.innerHTML = html;
+}
+
+document.getElementById('closeCommentModal').addEventListener('click', () => {
   document.getElementById('commentModal').classList.remove('open');
 });
 
-// Studio & Camera Control Placeholders
+document.getElementById('commentSendBtn').addEventListener('click', () => {
+  const input = document.getElementById('commentInputField');
+  const text = input.value.trim();
+  if(!text || !activeCommentPostId) return;
+  const item = feedData.find(f => f.id === activeCommentPostId);
+  item.commentsList.push({user:"@creator_vibe", text: text, avatar:"https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150"});
+  item.commentsCount++;
+  input.value = '';
+  renderCommentsList(item.commentsList);
+  renderFeed();
+});
+
+// Studio Camera Logic
 let mediaStream = null;
-async function openStudio() {
+let isRecording = false;
+let mediaRecorder = null;
+let recordedChunks = [];
+let recordingTimerInterval = null;
+let recordingSeconds = 0;
+let isFrontCamera = true;
+let studioMode = 'video';
+
+function openStudio() {
   openScreen(studio);
+  startCamera();
+}
+
+async function startCamera() {
   try {
-    mediaStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
+    if(mediaStream) {
+      mediaStream.getTracks().forEach(t => t.stop());
+    }
+    mediaStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: isFrontCamera ? 'user' : 'environment' },
+      audio: true
+    });
     camera.srcObject = mediaStream;
   } catch(e) {
-    showToast('Camera access unavailable. Use upload buttons.');
+    console.log("Camera access fallback or permission denied:", e);
   }
 }
 
-document.getElementById('closeStudio').addEventListener('click', (e) => {
-  e.stopPropagation();
+function flipCamera() {
+  isFrontCamera = !isFrontCamera;
+  startCamera();
+  showToast(isFrontCamera ? 'Switched to front camera' : 'Switched to rear camera');
+}
+
+document.getElementById('flipBtn').addEventListener('click', flipCamera);
+document.getElementById('closeStudio').addEventListener('click', () => {
+  if(mediaStream) mediaStream.getTracks().forEach(t => t.stop());
   closeScreen(studio);
-  if(mediaStream) {
-    mediaStream.getTracks().forEach(track => track.stop());
-  }
 });
 
-// Initial load
+function switchStudioMode(mode) {
+  studioMode = mode;
+  document.getElementById('modeVideoTab').classList.toggle('active', mode === 'video');
+  document.getElementById('modeLiveTab').classList.toggle('active', mode === 'live');
+  document.getElementById('videoModePanel').classList.toggle('hidden', mode !== 'video');
+  document.getElementById('liveModePanel').classList.toggle('hidden', mode !== 'live');
+  document.getElementById('liveStreamOverlayElements').classList.toggle('hidden', mode !== 'live');
+}
+
+// Initial render
 renderFeed();
 </script>
 </body>
