@@ -468,6 +468,79 @@ button{font:inherit}
 .soundTitle{font-weight:700;font-size:14px}.soundAuthor{font-size:12px;color:var(--muted)}
 .useSoundBtn{padding:5px 12px;background:var(--pink);border:0;border-radius:14px;color:#fff;font-size:12px;font-weight:700}
 
+/* Newly Added/Styled Music List & Selection Display Styles */
+.selected-music-display {
+  background: rgba(255, 42, 95, 0.1);
+  border: 1px solid var(--pink);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.selected-music-info .label {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+.selected-music-info .song-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: #fff;
+  margin-top: 2px;
+}
+.selected-music-info .artist-name {
+  font-size: 12px;
+  color: var(--cyan);
+}
+.music-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.music-list-container::-webkit-scrollbar { display: none; }
+.music-list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 10px 14px;
+  border-radius: 12px;
+  transition: border-color 0.2s;
+}
+.music-list-row.active {
+  border-color: var(--pink);
+  background: rgba(255, 42, 95, 0.06);
+}
+.music-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.select-track-btn {
+  background: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.select-track-btn.selected {
+  background: var(--pink);
+  border-color: var(--pink);
+  color: #fff;
+}
+
 /* Comment Screen Drawer */
 .commentModal{position:absolute;bottom:0;left:0;right:0;height:65%;background:#14151c;z-index:105;border-top-left-radius:20px;border-top-right-radius:20px;display:none;flex-direction:column;transform:translateY(100%);transition:transform .3s ease}
 .commentModal.open{display:flex;transform:translateY(0)}
@@ -790,13 +863,53 @@ input:checked+.slider:before{transform:translateX(20px)}
   <textarea id="editorCaptionInput" class="editor-caption-input" placeholder="Write a caption with #hashtags before posting..."></textarea>
 </div>
 
-<!-- Music Drawer -->
+<!-- Music Drawer with Selected-Music Display & Select Buttons -->
 <div id="editorMusicDrawer" class="editor-tool-drawer">
-  <div class="drawer-header"><span>Select Background Track</span><button class="close" onclick="closeEditorDrawers()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">×</button></div>
-  <div style="display:flex; flex-direction:column; gap:6px; max-height:160px; overflow-y:auto;">
-    <div class="soundItem" onclick="selectEditorMusic('Lofi Chill Beats', 'ChillHop Records')"><div><div class="soundTitle">Lofi Chill Beats</div><div class="soundAuthor">ChillHop Records</div></div><button class="useSoundBtn">Use</button></div>
-    <div class="soundItem" onclick="selectEditorMusic('Ambient Space', 'Cosmic Waves')"><div><div class="soundTitle">Ambient Space</div><div class="soundAuthor">Cosmic Waves</div></div><button class="useSoundBtn">Use</button></div>
-    <div class="soundItem" onclick="selectEditorMusic('Summer Vibes Remix', 'DJ Sunset')"><div><div class="soundTitle">Summer Vibes Remix</div><div class="soundAuthor">DJ Sunset</div></div><button class="useSoundBtn">Use</button></div>
+  <div class="drawer-header">
+    <span>Background Track Selection</span>
+    <button class="close" onclick="closeEditorDrawers()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">×</button>
+  </div>
+  
+  <!-- Selected Music Display Area -->
+  <div class="selected-music-display">
+    <div class="selected-music-info">
+      <div class="label">Currently Selected Track</div>
+      <div class="song-name" id="drawerSelectedSongTitle">Original Audio</div>
+      <div class="artist-name" id="drawerSelectedSongArtist">Creator VIBE</div>
+    </div>
+    <span style="font-size: 22px;">🎵</span>
+  </div>
+
+  <!-- Styled Music List -->
+  <div class="music-list-container">
+    <div class="music-list-row active" id="track-row-0">
+      <div class="music-details">
+        <div class="soundTitle">Original Audio</div>
+        <div class="soundAuthor">Creator VIBE</div>
+      </div>
+      <button class="select-track-btn selected" onclick="selectEditorMusic('Original Audio', 'Creator VIBE', 0)">Selected</button>
+    </div>
+    <div class="music-list-row" id="track-row-1">
+      <div class="music-details">
+        <div class="soundTitle">Lofi Chill Beats</div>
+        <div class="soundAuthor">ChillHop Records</div>
+      </div>
+      <button class="select-track-btn" onclick="selectEditorMusic('Lofi Chill Beats', 'ChillHop Records', 1)">Select</button>
+    </div>
+    <div class="music-list-row" id="track-row-2">
+      <div class="music-details">
+        <div class="soundTitle">Ambient Space</div>
+        <div class="soundAuthor">Cosmic Waves</div>
+      </div>
+      <button class="select-track-btn" onclick="selectEditorMusic('Ambient Space', 'Cosmic Waves', 2)">Select</button>
+    </div>
+    <div class="music-list-row" id="track-row-3">
+      <div class="music-details">
+        <div class="soundTitle">Summer Vibes Remix</div>
+        <div class="soundAuthor">DJ Sunset</div>
+      </div>
+      <button class="select-track-btn" onclick="selectEditorMusic('Summer Vibes Remix', 'DJ Sunset', 3)">Select</button>
+    </div>
   </div>
 </div>
 
@@ -1482,10 +1595,32 @@ function toggleEditorDrawer(drawerId) {
   }
 }
 
-function selectEditorMusic(songTitle, artistName) {
+function selectEditorMusic(songTitle, artistName, index) {
   selectedSound = songTitle;
-  showToast(`Music selected: ${songTitle} 🎵`);
-  closeEditorDrawers();
+  
+  // Update the top-level label in studio
+  const labelEl = document.getElementById('currentSoundLabel');
+  if(labelEl) labelEl.textContent = songTitle;
+
+  // Update selected-music display inside drawer
+  document.getElementById('drawerSelectedSongTitle').textContent = songTitle;
+  document.getElementById('drawerSelectedSongArtist').textContent = artistName;
+
+  // Update active state across all music list rows and buttons
+  document.querySelectorAll('.music-list-row').forEach((row, idx) => {
+    const btn = row.querySelector('.select-track-btn');
+    if (idx === index) {
+      row.classList.add('active');
+      btn.textContent = 'Selected';
+      btn.classList.add('selected');
+    } else {
+      row.classList.remove('active');
+      btn.textContent = 'Select';
+      btn.classList.remove('selected');
+    }
+  });
+
+  showToast(`Track selected: ${songTitle} 🎵`);
 }
 
 function applyEditorFilter(filterStyle, btnEl) {
@@ -1495,7 +1630,6 @@ function applyEditorFilter(filterStyle, btnEl) {
     el.style.filter = filterStyle;
   });
   
-  // Also highlight the active filter chip in the drawer
   const drawer = document.getElementById('editorEffectsDrawer');
   if (drawer) {
     drawer.querySelectorAll('.editorFilterChip').forEach(chip => chip.classList.remove('active'));
@@ -1736,12 +1870,6 @@ function formatCount(num) {
  return num;
 }
 
-function formatTime(seconds) {
-  const m = Math.floor(seconds / 60);
-  const s = Math.floor(seconds % 60);
-  return `${m}:${s < 10 ? '0' : ''}${s}`;
-}
-
 function renderFeed(filteredList){
  const list = filteredList || feedData;
  feed.innerHTML='';
@@ -1814,392 +1942,8 @@ function renderFeed(filteredList){
     <button class="action shareBtn"><div class="circle">↗</div><div class="count">${formatCount(item.shares)}</div></button>
   </div></div>`;
   feed.appendChild(card);
-  
-  // TAP TO PAUSE / PLAY & DOUBLE-TAP TO LIKE LOGIC
-  const likeBtn = card.querySelector('.like');
-  const triggerLikeAction = (clientX, clientY) => {
-    if (!item.isLiked) {
-      item.isLiked = true;
-      item.likes += 1;
-      likeBtn.classList.add('liked');
-      likeBtn.querySelector('.circle').textContent = '♥';
-      likeBtn.querySelector('.count').textContent = formatCount(item.likes);
-    }
-    
-    // Create and trigger floating heart animation
-    const heart = document.createElement('div');
-    heart.className = 'double-tap-heart';
-    heart.innerHTML = '❤️';
-    
-    const rect = card.getBoundingClientRect();
-    const x = clientX ? clientX - rect.left : rect.width / 2;
-    const y = clientY ? clientY - rect.top : rect.height / 2;
-    
-    heart.style.left = `${x}px`;
-    heart.style.top = `${y}px`;
-    card.appendChild(heart);
-    setTimeout(() => heart.remove(), 800);
-  };
-
-  let lastTapTime = 0;
-  const mediaInteractionContainers = card.querySelectorAll('video, img, .reel-media-slide');
-  mediaInteractionContainers.forEach(container => {
-    container.style.cursor = 'pointer';
-    container.addEventListener('click', (e) => {
-      const currentTime = new Date().getTime();
-      const tapLength = currentTime - lastTapTime;
-      
-      if (tapLength < 300 && tapLength > 0) {
-        triggerLikeAction(e.clientX, e.clientY);
-        e.preventDefault();
-      } else {
-        setTimeout(() => {
-          if (new Date().getTime() - currentTime >= 300) {
-            const activeVideoEl = card.querySelector('video') || card.querySelector('.reel-media-slide video');
-            if (activeVideoEl) {
-              const controlOverlay = card.querySelector('.video-control-overlay');
-              const pauseBtn = card.querySelector('.custom-pause-btn');
-              if (activeVideoEl.paused) {
-                activeVideoEl.play().catch(()=>{});
-                if(controlOverlay) controlOverlay.classList.remove('show');
-                if(pauseBtn) pauseBtn.textContent = '⏸';
-              } else {
-                activeVideoEl.pause();
-                if(controlOverlay) controlOverlay.classList.add('show');
-                if(pauseBtn) pauseBtn.textContent = '▶';
-              }
-            }
-          }
-        }, 300);
-      }
-      lastTapTime = currentTime;
-    });
-  });
-
-  card.querySelectorAll('.reel-video').forEach((v) => {
-    v.onended = () => {
-      const slider = card.querySelector('.reel-media-slider');
-      if (slider) {
-        const slideWidth = slider.clientWidth || 1;
-        const currentIdx = Math.round(slider.scrollLeft / slideWidth);
-        const nextIdx = currentIdx + 1;
-        const slides = slider.querySelectorAll('.reel-media-slide');
-        if (nextIdx < slides.length) {
-          slider.scrollTo({ left: nextIdx * slideWidth, behavior: 'smooth' });
-          const nextVid = slides[nextIdx].querySelector('video');
-          if (nextVid) {
-            nextVid.currentTime = 0;
-            nextVid.muted = muted;
-            nextVid.play().catch(()=>{});
-          }
-        }
-      }
-    };
-
-    const controlOverlay = v.parentElement.querySelector('.video-control-overlay');
-    const durationIndicator = v.parentElement.querySelector('.video-duration-indicator');
-    const pauseBtn = v.parentElement.querySelector('.custom-pause-btn');
-
-    v.addEventListener('loadedmetadata', () => {
-      if (durationIndicator && !isNaN(v.duration)) {
-        durationIndicator.textContent = formatTime(v.duration);
-      }
-    });
-
-    if(pauseBtn) {
-      pauseBtn.onclick = (e) => {
-        e.stopPropagation();
-        if(v.paused) {
-          v.play().catch(()=>{});
-          pauseBtn.textContent = '⏸';
-          if(controlOverlay) controlOverlay.classList.remove('show');
-        } else {
-          v.pause();
-          pauseBtn.textContent = '▶';
-          if(controlOverlay) controlOverlay.classList.add('show');
-        }
-      };
-    }
-  });
-
-  const slider = card.querySelector('.reel-media-slider');
-  if(slider) {
-    const dots = card.querySelectorAll('.carousel-dot');
-    slider.onscroll = () => {
-      const slideWidth = slider.clientWidth || 1;
-      const activeIdx = Math.round(slider.scrollLeft / slideWidth);
-      dots.forEach((d, idx) => {
-        d.classList.toggle('active', idx === activeIdx);
-      });
-
-      card.querySelectorAll('.reel-video').forEach((vSlide, sIdx) => {
-        const slidePauseBtn = vSlide.parentElement.querySelector('.custom-pause-btn');
-        if(sIdx === activeIdx && isCardFullyInViewport(card)) {
-          if(activeVideo && activeVideo !== vSlide) {
-            activeVideo.pause();
-          }
-          activeVideo = vSlide;
-          vSlide.muted = muted;
-          vSlide.play().then(() => {
-            if(slidePauseBtn) slidePauseBtn.textContent = '⏸';
-          }).catch(()=>{});
-        } else {
-          vSlide.pause();
-          if(slidePauseBtn) slidePauseBtn.textContent = '▶';
-        }
-      });
-    };
-  }
-
-  const commentActionBtn=card.querySelector('.commentBtn');
-  const saveBtn=card.querySelector('.saveBtn');
-  const shareBtn=card.querySelector('.shareBtn');
-  const muteBtnEl = card.querySelector('.mute');
-  
-  if(muteBtnEl) {
-    muteBtnEl.onclick=e=>{
-      e.stopPropagation();
-      muted=!muted;
-      document.querySelectorAll('.reel-video').forEach(x=>x.muted=muted);
-      document.querySelectorAll('.mute').forEach(b=>b.textContent=muted?'🔇':'🔊');
-    };
-  }
-  
-  likeBtn.onclick=e=>{
-   e.stopPropagation();
-   item.isLiked = !item.isLiked;
-   item.likes += item.isLiked ? 1 : -1;
-   likeBtn.classList.toggle('liked', item.isLiked);
-   likeBtn.querySelector('.circle').textContent = item.isLiked ? '♥' : '♡';
-   likeBtn.querySelector('.count').textContent = formatCount(item.likes);
-  };
-
-  card.querySelector('.audio').onclick = (e) => {
-    e.stopPropagation();
-    openAudioModal(item);
-  };
-
-  commentActionBtn.onclick=e=>{
-   e.stopPropagation();
-   openCommentsModal(item);
-  };
-
-  saveBtn.onclick = e => {
-   e.stopPropagation();
-   item.isSaved = !item.isSaved;
-   saveBtn.classList.toggle('saved', item.isSaved);
-   saveBtn.querySelector('.circle').textContent = item.isSaved ? '★' : '☆';
-   showToast(item.isSaved ? 'Saved to your profile! ✨' : 'Removed from saved videos');
-   renderProfileGrid();
-  };
-
-  shareBtn.onclick = async e => {
-   e.stopPropagation();
-   try {
-    await navigator.clipboard.writeText(window.location.href);
-    item.shares += 1;
-    shareBtn.querySelector('.count').textContent = formatCount(item.shares);
-    showToast('Link copied to clipboard! 🔗');
-   } catch (err) { showToast('Unable to share link'); }
-  };
-
-  card.querySelector('.follow').onclick=e=>{e.stopPropagation();e.currentTarget.textContent=e.currentTarget.textContent==='Follow'?'Following':'Follow'};
- });
-
- setupObserver();
- renderDiscoverGrid();
- renderProfileGrid();
-}
-
-function isCardFullyInViewport(card) {
-  const rect = card.getBoundingClientRect();
-  return rect.top >= -10 && rect.top <= 10;
-}
-
-let feedObserver = null;
-
-function setupObserver(){
- if (feedObserver) feedObserver.disconnect();
-
- feedObserver = new IntersectionObserver(entries => {
-  entries.forEach(en => {
-   const card = en.target;
-   const slider = card.querySelector('.reel-media-slider');
-   
-   if (en.isIntersecting && activeTabKey === 'home') {
-    pauseAllFeedVideos();
-    if (slider) {
-      const slideWidth = slider.clientWidth || 1;
-      const activeIdx = Math.round(slider.scrollLeft / slideWidth);
-      const activeSlideVid = slider.querySelectorAll('.reel-media-slide video')[activeIdx];
-      if (activeSlideVid) {
-        activeVideo = activeSlideVid;
-        activeSlideVid.muted = muted;
-        activeSlideVid.play().catch(() => {});
-      }
-    } else {
-      const v = card.querySelector('video');
-      if (v) {
-        activeVideo = v;
-        v.muted = muted;
-        v.play().catch(() => {});
-      }
-    }
-   }
-  });
- }, { root: feed, threshold: 0.6 });
-
- document.querySelectorAll('.reel').forEach(x => feedObserver.observe(x));
-}
-
-function openCommentsModal(item){
- activeCommentPostId = item.id;
- document.getElementById('commentModalTitle').textContent = `Comments (${item.commentsList.length})`;
- renderCommentList(item);
- document.getElementById('commentModal').classList.add('open');
-}
-
-function renderCommentList(item){
- const container = document.getElementById('commentListContainer');
- container.innerHTML = '';
- if(item.commentsList.length === 0){
-  container.innerHTML = `<div style="text-align:center;color:var(--muted);padding-top:30px;font-size:13px;">No comments yet. Be the first to comment!</div>`;
-  return;
- }
- item.commentsList.forEach(c=>{
-  container.innerHTML += `
-   <div class="commentRow">
-     <img class="commentAvatar" src="${c.avatar}">
-     <div class="commentBubble">
-       <div class="commentUser">${c.user}</div>
-       <div class="commentText">${c.text}</div>
-     </div>
-   </div>`;
  });
 }
-
-document.getElementById('closeCommentModal').onclick=()=>{
- document.getElementById('commentModal').classList.remove('open');
- activeCommentPostId = null;
-};
-
-document.getElementById('commentSendBtn').onclick=()=>{
- const input = document.getElementById('commentInputField');
- const text = input.value.trim();
- if(!text || !activeCommentPostId) return;
- const targetPost = feedData.find(p => p.id === activeCommentPostId);
- if(targetPost){
-  targetPost.commentsList.push({ user: myProfile.username, text: text, avatar: myProfile.avatar });
-  input.value = '';
-  renderCommentList(targetPost);
-  renderFeed();
-  showToast('Comment posted!');
- }
-};
-
-function renderDiscoverGrid(filterText=""){
- const grid = document.getElementById('discoverGrid');
- if(!grid) return;
- grid.innerHTML = '';
- const query = filterText.toLowerCase();
- const matches = feedData.filter(item => item.caption.toLowerCase().includes(query) || item.author.toLowerCase().includes(query));
- 
- matches.forEach(item => {
-  const cell = document.createElement('div');
-  cell.className = 'discoverGridItem';
-  const firstMedia = item.mediaList && item.mediaList.length > 0 ? item.mediaList[0] : {type: 'image', url: ''};
-  if(firstMedia.type === 'image') { cell.innerHTML = `<img style="display:block" src="${firstMedia.url}" alt="">`; }
-  else { cell.innerHTML = `<video src="${firstMedia.url}" muted playsinline></video>`; }
-  cell.onclick = () => {
-   discover.classList.remove('open');
-   updateNavActiveState('home');
-   pauseAllFeedVideos();
-   const idx = feedData.findIndex(f => f.id === item.id);
-   if(idx !== -1) { feed.children[idx].scrollIntoView({behavior:'smooth'}); }
-  };
-  grid.appendChild(cell);
- });
-}
-
-document.getElementById('searchInput').oninput=(e)=>{ renderDiscoverGrid(e.target.value); };
-
-document.querySelectorAll('.profileSubTab').forEach(tab=>{
- tab.onclick=()=>{
-  document.querySelectorAll('.profileSubTab').forEach(x=>x.classList.remove('active'));
-  tab.classList.add('active');
-  profileActiveTab = tab.dataset.profileTab;
-  renderProfileGrid();
- };
-});
-
-function renderProfileGrid(){
- const grid = document.getElementById('userPostsGrid');
- if(!grid) return;
- grid.innerHTML = '';
- document.getElementById('profileUsername').textContent = myProfile.username;
- document.getElementById('profileBio').textContent = myProfile.bio;
- document.getElementById('profileAvatarImg').src = myProfile.avatar;
-
- let listToDisplay = [];
- if (profileActiveTab === 'posts') {
-   listToDisplay = feedData.filter(i => i.author === 'You');
- } else if (profileActiveTab === 'saved') {
-   listToDisplay = feedData.filter(i => i.isSaved);
- } else if (profileActiveTab === 'tagged') {
-   listToDisplay = feedData.filter(i => i.isTagged);
- }
-
- if(listToDisplay.length === 0){
-  grid.innerHTML = `<div style="grid-column:span 3;text-align:center;color:var(--muted);padding-top:40px;font-size:13px;">No posts found.</div>`;
-  return;
- }
-
- listToDisplay.forEach(item => {
-  const cell = document.createElement('div');
-  cell.className = 'userPostThumb';
-  const firstMedia = item.mediaList && item.mediaList.length > 0 ? item.mediaList[0] : {type: 'image', url: ''};
-  if(firstMedia.type === 'image') { 
-    cell.innerHTML = `<img style="display:block" src="${firstMedia.url}" alt="">`; 
-  } else { 
-    cell.innerHTML = `<video src="${firstMedia.url}" muted playsinline></video>`; 
-  }
-  cell.onclick = () => {
-   profile.classList.remove('open');
-   updateNavActiveState('home');
-   pauseAllFeedVideos();
-   const idx = feedData.findIndex(f => f.id === item.id);
-   if(idx !== -1) { feed.children[idx].scrollIntoView({behavior:'smooth'}); }
-  };
-  grid.appendChild(cell);
- });
-}
-
-document.getElementById('navHomeBtn').onclick=()=>{ updateNavActiveState('home'); feed.style.display='block'; discover.classList.remove('open'); inbox.classList.remove('open'); profile.classList.remove('open'); studio.classList.remove('open'); appContainer.classList.remove('hide-nav-for-create'); stopCamera(); };
-document.getElementById('navDiscoverBtn').onclick=()=>{ updateNavActiveState('discover'); discover.classList.add('open'); inbox.classList.remove('open'); profile.classList.remove('open'); studio.classList.remove('open'); appContainer.classList.remove('hide-nav-for-create'); pauseAllFeedVideos(); stopCamera(); renderDiscoverGrid(); };
-document.getElementById('navCreateBtn').onclick=()=>{ 
-  updateNavActiveState('create'); 
-  studio.classList.add('open'); 
-  appContainer.classList.add('hide-nav-for-create');
-  discover.classList.remove('open'); 
-  inbox.classList.remove('open'); 
-  profile.classList.remove('open'); 
-  pauseAllFeedVideos(); 
-  startCamera(); 
-};
-document.getElementById('navInboxBtn').onclick=()=>{ updateNavActiveState('inbox'); inbox.classList.add('open'); discover.classList.remove('open'); profile.classList.remove('open'); studio.classList.remove('open'); appContainer.classList.remove('hide-nav-for-create'); pauseAllFeedVideos(); stopCamera(); };
-document.getElementById('navProfileBtn').onclick=()=>{ updateNavActiveState('profile'); profile.classList.add('open'); discover.classList.remove('open'); inbox.classList.remove('open'); studio.classList.remove('open'); appContainer.classList.remove('hide-nav-for-create'); pauseAllFeedVideos(); stopCamera(); renderProfileGrid(); };
-
-document.querySelectorAll('.close').forEach(btn => {
-  btn.onclick = (e) => {
-    const parentScreen = btn.closest('.screen');
-    if (parentScreen) {
-      parentScreen.classList.remove('open');
-    }
-    appContainer.classList.remove('hide-nav-for-create');
-    updateNavActiveState('home');
-    stopCamera();
-  };
-});
 
 renderFeed();
 </script>
