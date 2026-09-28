@@ -156,7 +156,7 @@ button{font:inherit}
   background: rgba(0, 0, 0, 0.7);
 }
 
-.nav{position:absolute;bottom:0;left:0;right:0;height:var(--nav);z-index:100;display:flex;justify-around;align-items:center;background:#171820ee;backdrop-filter:blur(16px);border-top:1px solid #ffffff12;pointer-events:auto;transition:transform .3s ease}
+.nav{position:absolute;bottom:0;left:0;right:0;height:var(--nav);z-index:100;display:flex;justify-content:space-around;align-items:center;background:#171820ee;backdrop-filter:blur(16px);border-top:1px solid #ffffff12;pointer-events:auto;transition:transform .3s ease}
 .nav button{background:none;border:0;color:#9a9dac;font-size:10px;display:flex;flex-direction:column;align-items:center;gap:4px;width:20%;cursor:pointer;pointer-events:auto}.nav button.active{color:#fff}.nav .plus{width:42px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--pink),var(--cyan));color:#fff;font-size:22px;line-height:1}
 
 #app.hide-nav-for-create .nav { transform: translateY(100%); pointer-events: none; }
@@ -1541,6 +1541,7 @@ document.getElementById('publishBtn').onclick = () => {
 
   feedData.unshift(newPost);
   postScreen.classList.remove('open');
+  appContainer.classList.remove('hide-nav-for-create'); // Restore nav when leaving Create flow
   updateNavActiveState('home');
   renderFeed();
   showToast('Posted successfully to VIBE! 🎉');
@@ -1995,11 +1996,20 @@ function renderProfileGrid(){
  });
 }
 
-document.getElementById('navHomeBtn').onclick=()=>{ updateNavActiveState('home'); feed.style.display='block'; discover.classList.remove('open'); inbox.classList.remove('open'); profile.classList.remove('open'); studio.classList.remove('open'); stopCamera(); };
-document.getElementById('navDiscoverBtn').onclick=()=>{ updateNavActiveState('discover'); discover.classList.add('open'); inbox.classList.remove('open'); profile.classList.remove('open'); studio.classList.remove('open'); pauseAllFeedVideos(); stopCamera(); renderDiscoverGrid(); };
-document.getElementById('navCreateBtn').onclick=()=>{ updateNavActiveState('create'); studio.classList.add('open'); discover.classList.remove('open'); inbox.classList.remove('open'); profile.classList.remove('open'); pauseAllFeedVideos(); startCamera(); };
-document.getElementById('navInboxBtn').onclick=()=>{ updateNavActiveState('inbox'); inbox.classList.add('open'); discover.classList.remove('open'); profile.classList.remove('open'); studio.classList.remove('open'); pauseAllFeedVideos(); stopCamera(); };
-document.getElementById('navProfileBtn').onclick=()=>{ updateNavActiveState('profile'); profile.classList.add('open'); discover.classList.remove('open'); inbox.classList.remove('open'); studio.classList.remove('open'); pauseAllFeedVideos(); stopCamera(); renderProfileGrid(); };
+document.getElementById('navHomeBtn').onclick=()=>{ updateNavActiveState('home'); feed.style.display='block'; discover.classList.remove('open'); inbox.classList.remove('open'); profile.classList.remove('open'); studio.classList.remove('open'); appContainer.classList.remove('hide-nav-for-create'); stopCamera(); };
+document.getElementById('navDiscoverBtn').onclick=()=>{ updateNavActiveState('discover'); discover.classList.add('open'); inbox.classList.remove('open'); profile.classList.remove('open'); studio.classList.remove('open'); appContainer.classList.remove('hide-nav-for-create'); pauseAllFeedVideos(); stopCamera(); renderDiscoverGrid(); };
+document.getElementById('navCreateBtn').onclick=()=>{ 
+  updateNavActiveState('create'); 
+  studio.classList.add('open'); 
+  appContainer.classList.add('hide-nav-for-create'); /* Hides Home, Discover, Inbox, Profile & Create nav */
+  discover.classList.remove('open'); 
+  inbox.classList.remove('open'); 
+  profile.classList.remove('open'); 
+  pauseAllFeedVideos(); 
+  startCamera(); 
+};
+document.getElementById('navInboxBtn').onclick=()=>{ updateNavActiveState('inbox'); inbox.classList.add('open'); discover.classList.remove('open'); profile.classList.remove('open'); studio.classList.remove('open'); appContainer.classList.remove('hide-nav-for-create'); pauseAllFeedVideos(); stopCamera(); };
+document.getElementById('navProfileBtn').onclick=()=>{ updateNavActiveState('profile'); profile.classList.add('open'); discover.classList.remove('open'); inbox.classList.remove('open'); studio.classList.remove('open'); appContainer.classList.remove('hide-nav-for-create'); pauseAllFeedVideos(); stopCamera(); renderProfileGrid(); };
 
 document.querySelectorAll('.screenHead .close[data-close]').forEach(btn=>{
  btn.onclick=()=>{
@@ -2009,7 +2019,12 @@ document.querySelectorAll('.screenHead .close[data-close]').forEach(btn=>{
  };
 });
 
-document.getElementById('closeStudio').onclick=()=>{ studio.classList.remove('open'); stopCamera(); updateNavActiveState('home'); };
+document.getElementById('closeStudio').onclick=()=>{ 
+  studio.classList.remove('open'); 
+  appContainer.classList.remove('hide-nav-for-create'); /* Shows navigation buttons again */
+  stopCamera(); 
+  updateNavActiveState('home'); 
+};
 document.getElementById('closeEditorBtn').onclick=()=>{ editorScreen.classList.remove('open'); studio.classList.add('open'); startCamera(); };
 document.getElementById('closePost').onclick=()=>{ postScreen.classList.remove('open'); editorScreen.classList.add('open'); };
 
