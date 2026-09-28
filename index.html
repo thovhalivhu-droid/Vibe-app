@@ -999,6 +999,40 @@ input:checked+.slider:before{transform:translateX(20px)}
 </div>
 </section>
 
+<!-- Report User Bottom Sheet Modal -->
+<div id="reportModal" class="report-modal">
+  <div class="report-title">Report User</div>
+  <div class="report-subtitle">Please select a reason for reporting this profile. Your report is anonymous.</div>
+  
+  <div class="report-reasons-list" id="reportReasonsList">
+    <label class="report-reason-item" onclick="selectReportReason(this)">
+      <span>Spam</span>
+      <input type="radio" name="reportReason" value="Spam">
+    </label>
+    <label class="report-reason-item" onclick="selectReportReason(this)">
+      <span>Harassment</span>
+      <input type="radio" name="reportReason" value="Harassment">
+    </label>
+    <label class="report-reason-item" onclick="selectReportReason(this)">
+      <span>Fake Account</span>
+      <input type="radio" name="reportReason" value="Fake Account">
+    </label>
+    <label class="report-reason-item" onclick="selectReportReason(this)">
+      <span>Inappropriate Content</span>
+      <input type="radio" name="reportReason" value="Inappropriate Content">
+    </label>
+    <label class="report-reason-item" onclick="selectReportReason(this)">
+      <span>Other</span>
+      <input type="radio" name="reportReason" value="Other">
+    </label>
+  </div>
+
+  <div class="report-actions">
+    <button class="report-cancel-btn" onclick="closeReportModal()">Cancel</button>
+    <button class="report-submit-btn" onclick="submitReport()">Submit Report</button>
+  </div>
+</div>
+
 <!-- Sound Modal -->
 <div id="soundModal" class="modalScreen">
 <div class="screenHead"><span id="soundModalHeaderTitle">Audio Details</span><button class="close" id="closeSoundModal">×</button></div>
@@ -1122,7 +1156,6 @@ function executeSearch(query) {
   const q = query.toLowerCase();
   discoverResultsContainer.innerHTML = '';
 
-  // Filter Posts
   const matchedPosts = feedData.filter(p => 
     p.caption.toLowerCase().includes(q) || 
     p.author.toLowerCase().includes(q) ||
@@ -1130,17 +1163,14 @@ function executeSearch(query) {
     p.songName.toLowerCase().includes(q)
   );
 
-  // Filter Creators
   const matchedCreators = creatorsDirectory.filter(c =>
     c.name.toLowerCase().includes(q) || c.handle.toLowerCase().includes(q) || c.bio.toLowerCase().includes(q)
   );
 
-  // Filter Hashtags
   const matchedHashtags = hashtagsDirectory.filter(h =>
     h.name.toLowerCase().includes(q)
   );
 
-  // Render based on searchFilterType
   if (searchFilterType === 'all' || searchFilterType === 'posts') {
     if (matchedPosts.length > 0) {
       const sectionHeader = document.createElement('div');
@@ -1339,7 +1369,6 @@ function closeHashtagModal() {
   document.getElementById('hashtagModal').classList.remove('open');
 }
 
-// Initial default search load
 executeSearch('');
 
 // Camera and Recording Logic
@@ -1477,8 +1506,33 @@ function stopVideoRecording() {
   clearInterval(timerInterval);
 }
 
+// Report User Functions
 function openReportModal() {
-  showToast('Report modal initialized');
+  document.getElementById('reportModal').classList.add('open');
+}
+
+function closeReportModal() {
+  document.getElementById('reportModal').classList.remove('open');
+  // Reset selected radio
+  document.querySelectorAll('input[name="reportReason"]').forEach(r => r.checked = false);
+  document.querySelectorAll('.report-reason-item').forEach(i => i.classList.remove('selected'));
+}
+
+function selectReportReason(itemElement) {
+  document.querySelectorAll('.report-reason-item').forEach(i => i.classList.remove('selected'));
+  itemElement.classList.add('selected');
+  const radio = itemElement.querySelector('input[type="radio"]');
+  if (radio) radio.checked = true;
+}
+
+function submitReport() {
+  const selectedRadio = document.querySelector('input[name="reportReason"]:checked');
+  if (!selectedRadio) {
+    showToast('Please select a reason to submit report.');
+    return;
+  }
+  closeReportModal();
+  showToast('Report submitted successfully. Thank you!');
 }
 
 function openSecuritySettings() {
@@ -1839,7 +1893,6 @@ function renderFeed(filteredList){
  });
 }
 
-// Navigation & Screen Switches
 document.querySelectorAll('.nav button').forEach(btn => {
   btn.onclick = () => {
     const tab = btn.getAttribute('data-tab');
