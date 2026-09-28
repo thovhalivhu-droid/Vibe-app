@@ -192,7 +192,7 @@ button{font:inherit}
 .editorCanvasContainer.multi-item video, .editorCanvasContainer.multi-item img {flex: 0 0 100%; scroll-snap-align: start; width:100%; height:100%; object-fit:contain;}
 #editorDrawingCanvas{position:absolute;inset:0;pointer-events:auto;cursor:crosshair;z-index:5}
 #editorOverlaysLayer{position:absolute;inset:0;pointer-events:none;z-index:6}
-.editorOverlayElement{position:absolute;cursor:move;user-select:none;padding:6px 10px;font-size:22px;border:1px dashed transparent;transition:border .2s;pointer-events:auto; touch-action: none;}
+.editorOverlayElement{position:absolute;cursor:move;user-select:none;padding:6px 10px;font-size:22px;border:1px dashed transparent;transition:border .2s;pointer-events:auto}
 .editorOverlayElement:hover{border-color:rgba(255,255,255,0.4)}
 .editorOverlayElement.text-element{font-size:20px;font-weight:700;color:#fff;background:rgba(0,0,0,0.5);border-radius:8px;backdrop-filter:blur(4px);padding:8px 12px;text-shadow:0 2px 4px rgba(0,0,0,0.5)}
 
@@ -744,14 +744,29 @@ button{font:inherit}
 .commentInputField{flex:1;background:#1a1b22;border:1px solid #ffffff15;border-radius:20px;padding:10px 14px;color:#fff;font-size:13px;outline:none}
 .commentSendBtn{background:var(--pink);border:0;color:#fff;font-weight:700;padding:8px 16px;border-radius:20px;cursor:pointer}
 
-/* Report User Bottom Sheet Styles */
-.report-modal {
+/* Report & Block Modal Backdrop & Bottom Sheets */
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 150;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.modal-backdrop.open {
+  display: block;
+  opacity: 1;
+}
+
+.report-modal, .block-modal {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
   background: #14151c;
-  z-index: 150;
+  z-index: 160;
   border-top-left-radius: 24px;
   border-top-right-radius: 24px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -762,12 +777,12 @@ button{font:inherit}
   transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
   box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.8);
 }
-.report-modal.open { transform: translateY(0); }
-.report-title { font-size: 16px; font-weight: 800; text-align: center; margin-bottom: 4px; color: var(--text); }
-.report-subtitle { font-size: 12px; color: var(--muted); text-align: center; margin-bottom: 16px; }
-.report-reasons-list { display: flex; flex-direction: column; gap: 8px; max-height: 240px; overflow-y: auto; margin-bottom: 16px; scrollbar-width: none; }
-.report-reasons-list::-webkit-scrollbar { display: none; }
-.report-reason-item {
+.report-modal.open, .block-modal.open { transform: translateY(0); }
+.report-title, .block-title { font-size: 16px; font-weight: 800; text-align: center; margin-bottom: 4px; color: var(--text); }
+.report-subtitle, .block-subtitle { font-size: 12px; color: var(--muted); text-align: center; margin-bottom: 16px; }
+.report-reasons-list, .block-reasons-list { display: flex; flex-direction: column; gap: 8px; max-height: 240px; overflow-y: auto; margin-bottom: 16px; scrollbar-width: none; }
+.report-reasons-list::-webkit-scrollbar, .block-reasons-list::-webkit-scrollbar { display: none; }
+.report-reason-item, .block-reason-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -779,11 +794,12 @@ button{font:inherit}
   font-size: 14px;
   font-weight: 600;
 }
-.report-reason-item input[type="radio"] { accent-color: var(--pink); transform: scale(1.2); cursor: pointer; }
-.report-reason-item.selected { border-color: var(--pink); background: rgba(255, 42, 95, 0.08); }
-.report-actions { display: flex; gap: 10px; }
-.report-submit-btn { flex: 1; background: linear-gradient(135deg, var(--pink), var(--cyan)); border: none; color: #fff; font-weight: 800; padding: 12px; border-radius: 14px; cursor: pointer; font-size: 14px; }
-.report-cancel-btn { flex: 1; background: var(--surface); border: 1px solid rgba(255, 255, 255, 0.15); color: var(--text); font-weight: 700; padding: 12px; border-radius: 14px; cursor: pointer; font-size: 14px; }
+.report-reason-item input[type="radio"], .block-reason-item input[type="radio"] { accent-color: var(--pink); transform: scale(1.2); cursor: pointer; }
+.report-reason-item.selected, .block-reason-item.selected { border-color: var(--pink); background: rgba(255, 42, 95, 0.08); }
+.report-actions, .block-actions { display: flex; gap: 10px; }
+.report-submit-btn, .block-submit-btn { flex: 1; background: linear-gradient(135deg, var(--pink), var(--cyan)); border: none; color: #fff; font-weight: 800; padding: 12px; border-radius: 14px; cursor: pointer; font-size: 14px; }
+.report-cancel-btn, .block-cancel-btn { flex: 1; background: var(--surface); border: 1px solid rgba(255, 255, 255, 0.15); color: var(--text); font-weight: 700; padding: 12px; border-radius: 14px; cursor: pointer; font-size: 14px; }
+.block-submit-btn { background: var(--pink); }
 
 /* Settings Screen Styling */
 .settingsScreen {
@@ -938,67 +954,64 @@ input:checked+.slider:before{transform:translateX(20px)}
 .liveInputField { flex: 1; background: #1a1b22; border: 1px solid #ffffff15; border-radius: 20px; padding: 10px 14px; color: #fff; font-size: 13px; outline: none; }
 .liveSendBtn { background: var(--pink); border: 0; color: #fff; font-weight: 700; padding: 10px 16px; border-radius: 20px; cursor: pointer; }
 .liveHeartBtn { background: rgba(255,255,255,0.15); border: 0; font-size: 20px; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-
-/* Simple Confirmation Popup Styles */
-.confirm-popup-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
-  z-index: 200;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-}
-.confirm-popup-overlay.open { display: flex; }
-.confirm-popup-card {
-  background: var(--surface);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 20px;
-  padding: 24px;
-  width: 100%;
-  max-width: 320px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  box-shadow: 0 12px 32px rgba(0,0,0,0.6);
-  animation: popupScaleIn 0.2s ease-out;
-}
-@keyframes popupScaleIn {
-  from { transform: scale(0.9); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
-.confirm-popup-title { font-size: 16px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
-.confirm-popup-desc { font-size: 13px; color: var(--muted); line-height: 1.4; margin-bottom: 20px; }
-.confirm-popup-buttons { display: flex; gap: 10px; width: 100%; }
-.confirm-popup-btn {
-  flex: 1;
-  padding: 11px;
-  border-radius: 12px;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  border: none;
-}
-.confirm-popup-btn.cancel { background: rgba(255,255,255,0.1); color: var(--text); }
-.confirm-popup-btn.confirm { background: var(--pink); color: #fff; }
 </style>
 </head>
 <body>
 <div id="app">
 <div id="toast" class="toast"></div>
 
-<!-- Simple Confirmation Popup Modal -->
-<div id="confirmPopupOverlay" class="confirm-popup-overlay">
-  <div class="confirm-popup-card">
-    <div class="confirm-popup-title" id="confirmPopupTitle">Confirm Action</div>
-    <div class="confirm-popup-desc" id="confirmPopupDesc">Are you sure you want to proceed?</div>
-    <div class="confirm-popup-buttons">
-      <button class="confirm-popup-btn cancel" id="confirmPopupCancelBtn">Cancel</button>
-      <button class="confirm-popup-btn confirm" id="confirmPopupConfirmBtn">Confirm</button>
-    </div>
+<!-- Shared Backdrop for Popups -->
+<div id="modalBackdrop" class="modal-backdrop"></div>
+
+<!-- Report User Bottom Sheet -->
+<div id="reportModal" class="report-modal">
+  <div class="report-title">Report User</div>
+  <div class="report-subtitle">Select a reason for reporting this account. Your report is anonymous.</div>
+  <div class="report-reasons-list">
+    <label class="report-reason-item selected" onclick="selectReportReason(this)">
+      <span>Inappropriate Content or Behavior</span>
+      <input type="radio" name="reportReason" checked>
+    </label>
+    <label class="report-reason-item" onclick="selectReportReason(this)">
+      <span>Harassment or Bullying</span>
+      <input type="radio" name="reportReason">
+    </label>
+    <label class="report-reason-item" onclick="selectReportReason(this)">
+      <span>Spam or Fake Account</span>
+      <input type="radio" name="reportReason">
+    </label>
+    <label class="report-reason-item" onclick="selectReportReason(this)">
+      <span>Intellectual Property Violation</span>
+      <input type="radio" name="reportReason">
+    </label>
+    <label class="report-reason-item" onclick="selectReportReason(this)">
+      <span>Dangerous Activities or Harmful Acts</span>
+      <input type="radio" name="reportReason">
+    </label>
+  </div>
+  <div class="report-actions">
+    <button class="report-cancel-btn" onclick="closeReportModal()">Cancel</button>
+    <button class="report-submit-btn" onclick="submitReportUser()">Submit Report</button>
+  </div>
+</div>
+
+<!-- Block User Bottom Sheet -->
+<div id="blockModal" class="block-modal">
+  <div class="block-title">Block User</div>
+  <div class="block-subtitle">They won't be able to find your profile, posts, or message you.</div>
+  <div class="block-reasons-list">
+    <label class="block-reason-item selected" onclick="selectBlockReason(this)">
+      <span>Block this account and any new accounts they may create</span>
+      <input type="radio" name="blockReason" checked>
+    </label>
+    <label class="block-reason-item" onclick="selectBlockReason(this)">
+      <span>Block only this specific account</span>
+      <input type="radio" name="blockReason">
+    </label>
+  </div>
+  <div class="block-actions">
+    <button class="block-cancel-btn" onclick="closeBlockModal()">Cancel</button>
+    <button class="block-submit-btn" onclick="submitBlockUser()">Block User</button>
   </div>
 </div>
 
@@ -1339,7 +1352,10 @@ input:checked+.slider:before{transform:translateX(20px)}
   <div class="screenHead">
     <button class="close" onclick="closeCreatorProfileModal()">×</button>
     <span id="modalCreatorHeaderName">Creator Profile</span>
-    <span style="width:24px"></span>
+    <div style="display: flex; gap: 8px;">
+      <button onclick="openReportModal()" style="background: none; border: none; color: var(--pink); font-size: 16px; cursor: pointer; padding: 4px;" title="Report User">⚠️</button>
+      <button onclick="openBlockModal()" style="background: none; border: none; color: #ff3333; font-size: 16px; cursor: pointer; padding: 4px;" title="Block User">🚫</button>
+    </div>
   </div>
   <div class="profileBody">
     <div class="profileHeaderInfo">
@@ -1356,8 +1372,6 @@ input:checked+.slider:before{transform:translateX(20px)}
       </div>
       <div style="display:flex; gap:8px; justify-content:center; margin-top:12px;">
         <button class="editProfileBtn" id="modalCreatorFollowBtn" style="margin-top:0; background:var(--pink); border-color:var(--pink); color:#fff;" onclick="toggleModalCreatorFollow()">Follow</button>
-        <button class="editProfileBtn" onclick="promptReportCreator()" style="margin-top:0; border-color:var(--pink); color:var(--pink);">Report</button>
-        <button class="editProfileBtn" onclick="promptBlockCreator()" style="margin-top:0; background:rgba(255,42,95,0.15); border-color:var(--pink); color:var(--pink);">Block</button>
       </div>
     </div>
     <div class="profileSubTabs">
@@ -1413,9 +1427,9 @@ input:checked+.slider:before{transform:translateX(20px)}
         <div class="dmChatStatus" id="dmChatHeaderStatus">Active now</div>
       </div>
     </div>
-    <div style="display:flex; gap:8px; align-items:center;">
-      <button onclick="promptReportActiveChat()" style="background:none; border:none; color:var(--muted); font-size:14px; font-weight:700; cursor:pointer;" title="Report User">Report</button>
-      <button onclick="promptBlockActiveChat()" style="background:none; border:none; color:var(--pink); font-size:14px; font-weight:700; cursor:pointer;" title="Block User">Block</button>
+    <div style="display: flex; gap: 8px;">
+      <button onclick="openReportModal()" style="background: none; border: none; color: var(--pink); font-size: 16px; cursor: pointer; padding: 4px;" title="Report User">⚠️</button>
+      <button onclick="openBlockModal()" style="background: none; border: none; color: #ff3333; font-size: 16px; cursor: pointer; padding: 4px;" title="Block User">🚫</button>
     </div>
   </div>
 
@@ -1629,6 +1643,7 @@ input:checked+.slider:before{transform:translateX(20px)}
     <div style="display:flex; gap:8px; justify-content:center; margin-top:12px;">
       <button class="editProfileBtn" id="editProfileBtn" style="margin-top:0;">Edit Profile</button>
       <button class="editProfileBtn" onclick="openReportModal()" style="margin-top:0; border-color:var(--pink); color:var(--pink);">Report User</button>
+      <button class="editProfileBtn" onclick="openBlockModal()" style="margin-top:0; border-color:#ff3333; color:#ff3333;">Block User</button>
     </div>
   </div>
 
@@ -1719,62 +1734,12 @@ let hashtagsDirectory = [
   { name: "#goldenhour", count: "450K views", postsCount: 520 }
 ];
 
-// Simple Confirmation Popup Controller
-function showConfirmPopup(title, desc, onConfirm) {
-  const overlay = document.getElementById('confirmPopupOverlay');
-  document.getElementById('confirmPopupTitle').textContent = title;
-  document.getElementById('confirmPopupDesc').textContent = desc;
-  
-  const confirmBtn = document.getElementById('confirmPopupConfirmBtn');
-  const newConfirmBtn = confirmBtn.cloneNode(true);
-  confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
-  
-  const cancelBtnEl = document.getElementById('confirmPopupCancelBtn');
-  const newCancelBtn = cancelBtnEl.cloneNode(true);
-  cancelBtnEl.parentNode.replaceChild(newCancelBtn, cancelBtnEl);
-
-  newConfirmBtn.onclick = () => {
-    overlay.classList.remove('open');
-    if(onConfirm) onConfirm();
-  };
-
-  newCancelBtn.onclick = () => {
-    overlay.classList.remove('open');
-  };
-
-  overlay.classList.add('open');
-}
-
-function promptReportCreator() {
-  showConfirmPopup("Report User", "Are you sure you want to report this user for violating community guidelines?", () => {
-    showToast("User reported. Thank you for keeping VIBE safe 🛡️");
-  });
-}
-
-function promptBlockCreator() {
-  showConfirmPopup("Block User", "Are you sure you want to block this user? You will no longer see their content or receive messages from them.", () => {
-    showToast("User blocked successfully 🚫");
-    closeCreatorProfileModal();
-  });
-}
-
-function promptReportActiveChat() {
-  showConfirmPopup("Report Conversation", "Are you sure you want to report this conversation?", () => {
-    showToast("Conversation reported successfully 🛡️");
-  });
-}
-
-function promptBlockActiveChat() {
-  showConfirmPopup("Block Contact", "Are you sure you want to block this contact?", () => {
-    showToast("Contact blocked successfully 🚫");
-    closeDMChat();
-  });
-}
-
+// Post Editor Extra State: Location, Cover, Drafts
 let selectedPostLocation = "";
 let selectedCoverMediaIndex = 0;
 let userDrafts = [];
 
+// App Settings & Preferences State
 let userSettings = {
   privateAccount: false,
   dmPreference: 'everyone',
@@ -1785,6 +1750,7 @@ let userSettings = {
   liveNotifs: true
 };
 
+// DM Conversations Data Store
 let dmConversations = [
   {
     id: 1,
@@ -1806,15 +1772,106 @@ let dmConversations = [
     messages: [
       { sender: "them", text: "Let's collaborate on a clip soon.", time: "Yesterday" }
     ]
+  },
+  {
+    id: 3,
+    name: "Marcus Vance",
+    handle: "@marcus_v",
+    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150",
+    isRequest: true,
+    messages: [
+      { sender: "them", text: "Hey! Saw your camera setup video, wanted to ask a quick question about lighting.", time: "2h ago" }
+    ]
+  },
+  {
+    id: 4,
+    name: "Chloe Bennett",
+    handle: "@chloe_b",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
+    isRequest: true,
+    messages: [
+      { sender: "them", text: "Hi there! Let's connect and review brand deals together.", time: "5h ago" }
+    ]
   }
 ];
 
 let activeInboxTab = 'messages';
 let activeDMConversation = null;
+
 let myProfile={username:"@creator_vibe",bio:"Short-form content creator & explorer ✨",avatar:"https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150"};
 let activeVideo=null, muted=true, mediaStream=null, recorder=null, chunks=[], recording=false, recordSeconds=0, timerInterval=null, facing="user", selectedMediaList=[];
-let selectedSound="Original Audio";
+let pressTimer=null, isLongPress=false, selectedSound="Original Audio";
+let activeTabKey = 'home';
+let searchFilterType = 'all';
+let currentActiveCreator = null;
 
+// Report User Popup Logic
+function openReportModal() {
+  document.getElementById('modalBackdrop').classList.add('open');
+  document.getElementById('reportModal').classList.add('open');
+}
+
+function closeReportModal() {
+  document.getElementById('reportModal').classList.remove('open');
+  // Only close backdrop if block modal isn't open either
+  if (!document.getElementById('blockModal').classList.contains('open')) {
+    document.getElementById('modalBackdrop').classList.remove('open');
+  }
+}
+
+function selectReportReason(item) {
+  document.querySelectorAll('.report-reason-item').forEach(el => {
+    el.classList.remove('selected');
+    el.querySelector('input').checked = false;
+  });
+  item.classList.add('selected');
+  item.querySelector('input').checked = true;
+}
+
+function submitReportUser() {
+  const selectedRadio = document.querySelector('input[name="reportReason"]:checked');
+  const reasonText = selectedRadio ? selectedRadio.parentElement.querySelector('span').textContent : 'Inappropriate Content';
+  closeReportModal();
+  showToast(`Report submitted successfully (${reasonText}). Thank you for keeping VIBE safe 🛡️`);
+}
+
+// Block User Popup Logic
+function openBlockModal() {
+  document.getElementById('modalBackdrop').classList.add('open');
+  document.getElementById('blockModal').classList.add('open');
+}
+
+function closeBlockModal() {
+  document.getElementById('blockModal').classList.remove('open');
+  // Only close backdrop if report modal isn't open either
+  if (!document.getElementById('reportModal').classList.contains('open')) {
+    document.getElementById('modalBackdrop').classList.remove('open');
+  }
+}
+
+function selectBlockReason(item) {
+  document.querySelectorAll('.block-reason-item').forEach(el => {
+    el.classList.remove('selected');
+    el.querySelector('input').checked = false;
+  });
+  item.classList.add('selected');
+  item.querySelector('input').checked = true;
+}
+
+function submitBlockUser() {
+  closeBlockModal();
+  showToast('User blocked successfully. 🚫');
+  // Close any active modal/profile screens if appropriate
+  closeCreatorProfileModal();
+}
+
+// Backdrop click closes any open modals
+document.getElementById('modalBackdrop').onclick = () => {
+  closeReportModal();
+  closeBlockModal();
+};
+
+// Settings & Privacy Navigation & Management
 function openSettingsScreen() {
   document.getElementById('settingPrivateAccount').checked = userSettings.privateAccount;
   document.getElementById('settingDMPreference').value = userSettings.dmPreference;
@@ -1823,6 +1880,7 @@ function openSettingsScreen() {
   document.getElementById('settingPushNotifs').checked = userSettings.pushNotifs;
   document.getElementById('settingDMNotifs').checked = userSettings.dmNotifs;
   document.getElementById('settingLiveNotifs').checked = userSettings.liveNotifs;
+
   document.getElementById('settingsScreen').classList.add('open');
 }
 
@@ -1874,16 +1932,17 @@ function requestAccountDataExport() {
 }
 
 function confirmLogout() {
-  showConfirmPopup("Log Out", "Are you sure you want to sign out of @creator_vibe?", () => {
+  if(confirm("Are you sure you want to log out of VIBE?")) {
     showToast('Logged out successfully.');
     closeSettingsScreen();
-  });
+  }
 }
 
 function openPrivacyPolicy() {
   showToast('Opening VIBE Privacy Policy...');
 }
 
+// Location Selector Logic
 function openLocationSelector() { document.getElementById('locationModal').classList.add('open'); }
 function closeLocationSelector() { document.getElementById('locationModal').classList.remove('open'); }
 function selectLocation(loc) {
@@ -1899,6 +1958,7 @@ function selectLocation(loc) {
   closeLocationSelector();
 }
 
+// Cover/Thumbnail Selector Logic
 function openCoverSelector() {
   if(!selectedMediaList || selectedMediaList.length === 0) {
     showToast('No media selected for cover');
@@ -1928,6 +1988,7 @@ function openCoverSelector() {
 }
 function closeCoverSelector() { document.getElementById('coverModal').classList.remove('open'); }
 
+// Drafts Management Logic
 function openDraftsModal() {
   const container = document.getElementById('draftsListContainer');
   container.innerHTML = '';
@@ -1999,247 +2060,244 @@ function loadDraft(index) {
 
 function deleteDraft(e, index) {
   e.stopPropagation();
-  showConfirmPopup("Delete Draft", "Are you sure you want to delete this saved draft?", () => {
-    userDrafts.splice(index, 1);
-    document.getElementById('draftsCountBadge').textContent = `(${userDrafts.length})`;
-    openDraftsModal();
-    showToast('Draft deleted');
+  userDrafts.splice(index, 1);
+  document.getElementById('draftsCountBadge').textContent = `(${userDrafts.length})`;
+  openDraftsModal();
+  showToast('Draft deleted');
+}
+
+// Inbox & DM Renderer
+function renderInboxList() {
+  const container = document.getElementById('inboxContentContainer');
+  container.innerHTML = '';
+
+  const filtered = dmConversations.filter(c => activeInboxTab === 'requests' ? c.isRequest : !c.isRequest);
+  
+  const reqCount = dmConversations.filter(c => c.isRequest).length;
+  const badge = document.getElementById('inboxRequestsBadge');
+  if(badge) badge.textContent = reqCount;
+
+  if(filtered.length === 0) {
+    container.innerHTML = `<div style="text-align:center; color:var(--muted); padding:40px; font-size:13px;">No ${activeInboxTab} found</div>`;
+    return;
+  }
+
+  filtered.forEach(chat => {
+    const item = document.createElement('div');
+    item.className = 'messageItem';
+    const lastMsg = chat.messages[chat.messages.length - 1];
+    
+    let actionsHtml = '';
+    if (chat.isRequest) {
+      actionsHtml = `
+        <div class="dm-request-actions">
+          <button class="dm-accept-btn" onclick="acceptDMRequest(event, ${chat.id})">Accept</button>
+          <button class="dm-decline-btn" onclick="declineDMRequest(event, ${chat.id})">Decline</button>
+        </div>`;
+    }
+
+    item.innerHTML = `
+      <img class="messageAvatar" src="${chat.avatar}">
+      <div class="messageContent">
+        <div class="messageName">${chat.name}</div>
+        <div class="messageSnippet">${lastMsg ? lastMsg.text : ''}</div>
+        ${actionsHtml}
+      </div>
+      ${!chat.isRequest ? '<span style="color:var(--muted); font-size:14px;">›</span>' : ''}
+    `;
+
+    item.onclick = (e) => {
+      if(e.target.tagName === 'BUTTON') return;
+      openDMChat(chat.id);
+    };
+    container.appendChild(item);
   });
 }
 
-// ----------------------------------------------------
-// FIXED TEXT EDITOR & DRAGGABLE OVERLAY IMPLEMENTATION
-// ----------------------------------------------------
-function makeElementDraggable(elm) {
-  let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-  elm.onmousedown = dragMouseDown;
-  elm.ontouchstart = dragTouchStart;
+document.querySelectorAll('.inboxSubTab').forEach(tab => {
+  tab.onclick = () => {
+    document.querySelectorAll('.inboxSubTab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    activeInboxTab = tab.getAttribute('data-inbox-tab');
+    renderInboxList();
+  };
+});
 
-  function dragMouseDown(e) {
-    e = e || window.event;
-    e.preventDefault();
-    pos3 = e.clientX;
-    pos4 = e.clientY;
-    document.onmouseup = closeDragElement;
-    document.onmousemove = elementDrag;
-  }
+function openDMChat(chatId) {
+  activeDMConversation = dmConversations.find(c => c.id === chatId);
+  if(!activeDMConversation) return;
 
-  function elementDrag(e) {
-    e = e || window.event;
-    e.preventDefault();
-    pos1 = pos3 - e.clientX;
-    pos2 = pos4 - e.clientY;
-    pos3 = e.clientX;
-    pos4 = e.clientY;
-    elm.style.top = (elm.offsetTop - pos2) + "px";
-    elm.style.left = (elm.offsetLeft - pos1) + "px";
-  }
+  document.getElementById('dmChatHeaderName').textContent = activeDMConversation.name;
+  document.getElementById('dmChatHeaderAvatar').src = activeDMConversation.avatar;
+  document.getElementById('dmChatHeaderStatus').textContent = activeDMConversation.isRequest ? 'Message Request' : 'Active now';
 
-  function dragTouchStart(e) {
-    if (e.touches.length === 1) {
-      pos3 = e.touches[0].clientX;
-      pos4 = e.touches[0].clientY;
-      document.ontouchend = closeDragElement;
-      document.ontouchmove = elementTouchDrag;
-    }
-  }
-
-  function elementTouchDrag(e) {
-    if (e.touches.length === 1) {
-      pos1 = pos3 - e.touches[0].clientX;
-      pos2 = pos4 - e.touches[0].clientY;
-      pos3 = e.touches[0].clientX;
-      pos4 = e.touches[0].clientY;
-      elm.style.top = (elm.offsetTop - pos2) + "px";
-      elm.style.left = (elm.offsetLeft - pos1) + "px";
-    }
-  }
-
-  function closeDragElement() {
-    document.onmouseup = null;
-    document.onmousemove = null;
-    document.ontouchend = null;
-    document.ontouchmove = null;
-  }
+  renderDMMessages();
+  document.getElementById('dmChatScreen').classList.add('open');
 }
 
-function commitEditorText() {
-  const input = document.getElementById('editorTextInputField');
-  const textVal = input.value.trim();
-  if(!textVal) return;
-  
-  const layer = document.getElementById('editorOverlaysLayer');
-  const overlayEl = document.createElement('div');
-  overlayEl.className = 'editorOverlayElement text-element';
-  overlayEl.textContent = textVal;
-  overlayEl.style.top = '40%';
-  overlayEl.style.left = '30%';
-  
-  makeElementDraggable(overlayEl);
-  layer.appendChild(overlayEl);
-  
+function closeDMChat() {
+  document.getElementById('dmChatScreen').classList.remove('open');
+  activeDMConversation = null;
+  renderInboxList();
+}
+
+function renderDMMessages() {
+  const container = document.getElementById('dmChatMessagesList');
+  container.innerHTML = '';
+
+  if(!activeDMConversation) return;
+
+  activeDMConversation.messages.forEach(msg => {
+    const row = document.createElement('div');
+    row.className = `chat-bubble-row ${msg.sender === 'me' ? 'outgoing' : 'incoming'}`;
+    row.innerHTML = `
+      <div class="chat-bubble">${msg.text}</div>
+      <div class="chat-timestamp">${msg.time}</div>
+    `;
+    container.appendChild(row);
+  });
+  container.scrollTop = container.scrollHeight;
+}
+
+document.getElementById('dmSendMsgBtn').onclick = () => {
+  const input = document.getElementById('dmMessageInputField');
+  const text = input.value.trim();
+  if(!text || !activeDMConversation) return;
+
+  const newMsg = {
+    sender: 'me',
+    text: text,
+    time: 'Just now'
+  };
+
+  activeDMConversation.messages.push(newMsg);
   input.value = '';
-  closeEditorDrawers();
-  showToast('Text added to media ✨');
-}
+  renderDMMessages();
+};
 
-function addStickerToCanvas(stickerEmoji) {
-  const layer = document.getElementById('editorOverlaysLayer');
-  const overlayEl = document.createElement('div');
-  overlayEl.className = 'editorOverlayElement';
-  overlayEl.textContent = stickerEmoji;
-  overlayEl.style.top = '45%';
-  overlayEl.style.left = '40%';
-  
-  makeElementDraggable(overlayEl);
-  layer.appendChild(overlayEl);
-  closeEditorDrawers();
-  showToast('Sticker added ✨');
-}
-
-function addMentionToCanvas(mentionText) {
-  const layer = document.getElementById('editorOverlaysLayer');
-  const overlayEl = document.createElement('div');
-  overlayEl.className = 'editorOverlayElement text-element';
-  overlayEl.textContent = mentionText;
-  overlayEl.style.top = '50%';
-  overlayEl.style.left = '30%';
-  
-  makeElementDraggable(overlayEl);
-  layer.appendChild(overlayEl);
-  closeEditorDrawers();
-  showToast('Mention added ✨');
-}
-
-function applyEditorFilter(filterStyle, btn) {
-  document.querySelectorAll('.editorFilterChip').forEach(c => c.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  const container = document.getElementById('editorCanvasContainer');
-  const mediaElms = container.querySelectorAll('video, img');
-  mediaElms.forEach(m => m.style.filter = filterStyle);
-}
-// ----------------------------------------------------
-
-function setupPostPreview() {
-  const previewBox = document.getElementById('previewBox');
-  previewBox.innerHTML = '';
-  if(!selectedMediaList || selectedMediaList.length === 0) {
-    previewBox.innerHTML = `<div style="color:#777">Choose a video or picture</div>`;
-    return;
+document.getElementById('dmMessageInputField').onkeypress = (e) => {
+  if(e.key === 'Enter') {
+    document.getElementById('dmSendMsgBtn').click();
   }
-  if(selectedMediaList.length > 1) {
-    previewBox.className = 'previewBox multi-item';
-    selectedMediaList.forEach(m => {
-      if(m.type === 'video') {
-        const v = document.createElement('video');
-        v.src = m.url; v.muted = true; v.playsInline = true; v.autoplay = true; v.loop = true;
-        previewBox.appendChild(v);
-      } else {
-        const img = document.createElement('img');
-        img.src = m.url;
-        previewBox.appendChild(img);
-      }
-    });
-  } else {
-    previewBox.className = 'previewBox';
-    const m = selectedMediaList[0];
-    if(m.type === 'video') {
-      const v = document.createElement('video');
-      v.src = m.url; v.muted = true; v.playsInline = true; v.autoplay = true; v.loop = true;
-      previewBox.appendChild(v);
-    } else {
-      const img = document.createElement('img');
-      img.src = m.url;
-      previewBox.appendChild(img);
-    }
+};
+
+function acceptDMRequest(e, chatId) {
+  e.stopPropagation();
+  const chat = dmConversations.find(c => c.id === chatId);
+  if(chat) {
+    chat.isRequest = false;
+    showToast(`Accepted message request from ${chat.name} ✨`);
+    renderInboxList();
   }
 }
 
+function declineDMRequest(e, chatId) {
+  e.stopPropagation();
+  dmConversations = dmConversations.filter(c => c.id !== chatId);
+  showToast('Message request declined');
+  renderInboxList();
+}
+
+// Toast Notification
 function showToast(msg) {
   toast.textContent = msg;
   toast.classList.add('show');
-  setTimeout(() => { toast.classList.remove('show'); }, 2200);
+  setTimeout(() => { toast.classList.remove('show'); }, 2500);
 }
 
-// Initialization and Event Listeners
-document.getElementById('closeEditorBtn').onclick = () => {
-  editorScreen.classList.remove('open');
-};
-
-document.getElementById('editorQuickPostBtn').onclick = () => {
-  editorScreen.classList.remove('open');
-  postScreen.classList.add('open');
-  setupPostPreview();
-};
-
-function toggleEditorDrawer(drawerId) {
-  const drawer = document.getElementById(drawerId);
-  const isOpen = drawer.classList.contains('open');
-  closeEditorDrawers();
-  if(!isOpen) drawer.classList.add('open');
-}
-
-function closeEditorDrawers() {
-  document.querySelectorAll('.editor-tool-drawer').forEach(d => d.classList.remove('open'));
-}
-
-function selectEditorMusic(title, artist, index) {
-  selectedSound = title;
-  document.getElementById('drawerSelectedSongTitle').textContent = title;
-  document.getElementById('drawerSelectedSongArtist').textContent = artist;
-  document.querySelectorAll('.music-list-row').forEach(r => r.classList.remove('active'));
-  document.querySelectorAll('.select-track-btn').forEach(b => {
-    b.textContent = 'Select';
-    b.classList.remove('selected');
-  });
-  const row = document.getElementById(`track-row-${index}`);
-  if(row) {
-    row.classList.add('active');
-    const btn = row.querySelector('.select-track-btn');
-    if(btn) {
-      btn.textContent = 'Selected';
-      btn.classList.add('selected');
+// Basic navigation tab switcher
+document.querySelectorAll('.nav button').forEach(btn => {
+  btn.onclick = () => {
+    const tabKey = btn.getAttribute('data-tab');
+    if(tabKey === 'create') {
+      studio.classList.add('open');
+      appContainer.classList.add('hide-nav-for-create');
+      startCamera();
+      return;
     }
-  }
-  showToast(`Track updated: ${title} 🎵`);
+    document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // Close all screens first
+    discover.classList.remove('open');
+    inbox.classList.remove('open');
+    profile.classList.remove('open');
+
+    if(tabKey === 'discover') {
+      discover.classList.add('open');
+    } else if(tabKey === 'inbox') {
+      inbox.classList.add('open');
+      renderInboxList();
+    } else if(tabKey === 'profile') {
+      profile.classList.add('open');
+    }
+  };
+});
+
+document.querySelectorAll('.close').forEach(btn => {
+  btn.onclick = () => {
+    const targetClose = btn.getAttribute('data-close');
+    if(targetClose === 'discover') discover.classList.remove('open');
+    if(targetClose === 'inbox') inbox.classList.remove('open');
+    if(targetClose === 'profile') profile.classList.remove('open');
+    studio.classList.remove('open');
+    editorScreen.classList.remove('open');
+    postScreen.classList.remove('open');
+    appContainer.classList.remove('hide-nav-for-create');
+  };
+});
+
+function startCamera() {
+  navigator.mediaDevices?.getUserMedia({ video: { facingMode: facing }, audio: true })
+    .then(stream => {
+      mediaStream = stream;
+      camera.srcObject = stream;
+    }).catch(err => {
+      console.log("Camera access error:", err);
+    });
 }
 
-document.getElementById('closePost').onclick = () => {
-  postScreen.classList.remove('open');
-  appContainer.classList.remove('hide-nav-for-create');
-};
+function closeCreatorProfileModal() {
+  document.getElementById('creatorProfileModal').classList.remove('open');
+}
 
-document.getElementById('publishBtn').onclick = () => {
-  const captionText = document.getElementById('captionInput').value.trim() || document.getElementById('editorCaptionInput').value.trim();
-  if(!selectedMediaList.length) {
-    showToast('Please attach at least one video or photo.');
-    return;
-  }
-  const newReel = {
-    id: Date.now(),
-    author: "You (@creator_vibe)",
-    handle: "@creator_vibe",
-    caption: captionText || "Shared via VIBE 🚀",
-    songName: selectedSound,
-    artist: "Creator VIBE",
-    likes: 1,
-    commentsCount: 0,
-    shares: 0,
-    views: "1",
-    avatar: myProfile.avatar,
-    mediaList: [...selectedMediaList],
-    isTagged: false,
-    location: selectedPostLocation,
-    commentsList: []
-  };
-  feedData.unshift(newReel);
-  renderFeed();
-  postScreen.classList.remove('open');
-  appContainer.classList.remove('hide-nav-for-create');
-  updateNavActiveState('home');
-  showToast('Posted to feed successfully! 🎉');
-};
+function closeHashtagModal() {
+  document.getElementById('hashtagModal').classList.remove('open');
+}
+
+// Render Feed initially
+function renderFeed() {
+  feed.innerHTML = '';
+  feedData.forEach(item => {
+    const reel = document.createElement('div');
+    reel.className = 'reel';
+    reel.innerHTML = `
+      <div class="reel-media-slider">
+        <div class="reel-media-slide">
+          <video src="${item.mediaList[0].url}" loop playsinline autoplay muted></video>
+        </div>
+      </div>
+      <div class="overlay">
+        <div class="info">
+          <div class="author">
+            <img class="avatar" src="${item.avatar}">
+            <span class="name">${item.author}</span>
+            <button class="follow">Follow</button>
+          </div>
+          <div class="caption">${item.caption}</div>
+          <div class="audio">♫ <span class="song-title">${item.songName}</span> - <span class="song-artist">${item.artist}</span></div>
+        </div>
+        <div class="actions">
+          <button class="action liked"><div class="circle">♥</div><div class="count">${item.likes}</div></button>
+          <button class="action"><div class="circle">💬</div><div class="count">${item.commentsCount}</div></button>
+          <button class="action saved"><div class="circle">💾</div><div class="count">${item.shares}</div></button>
+        </div>
+      </div>
+    `;
+    feed.appendChild(reel);
+  });
+}
+renderFeed();
 </script>
 </body>
 </html>
- 
