@@ -70,17 +70,17 @@ button{font:inherit}
 
 .overlay{position:absolute;left:0;right:0;bottom:var(--nav);padding:22px 18px 16px;display:flex;justify-content:space-between;align-items:flex-end;background:linear-gradient(transparent,rgba(0,0,0,.82));z-index:5;pointer-events:auto}
 .info{max-width:73%}.author{display:flex;align-items:center;gap:9px;margin-bottom:8px}.avatar{width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid var(--pink)}
-.name{font-weight:800;font-size:15px}.follow{border:0;border-radius:18px;padding:5px 11px;background:var(--pink);color:#fff;font-size:12px;font-weight:700}
+.name{font-weight:800;font-size:15px}.follow{border:0;border-radius:18px;padding:5px 11px;background:var(--pink);color:#fff;font-size:12px;font-weight:700;cursor:pointer;pointer-events:auto;}
 .caption{font-size:14px;line-height:1.4;margin-bottom:8px; color:#fff}.caption span{color:var(--cyan);font-weight:700;cursor:pointer}
-.audio{font-size:12px;color:#ddd;display:flex;align-items:center;gap:6px;cursor:pointer;width:fit-content;padding:3px 8px;background:rgba(255,255,255,0.1);border-radius:12px;backdrop-filter:blur(4px);transition:background 0.2s}
+.audio{font-size:12px;color:#ddd;display:flex;align-items:center;gap:6px;cursor:pointer;width:fit-content;padding:3px 8px;background:rgba(255,255,255,0.1);border-radius:12px;backdrop-filter:blur(4px);transition:background 0.2s;pointer-events:auto;}
 .audio:hover{background:rgba(255,255,255,0.2)}
 .audio .song-title{font-weight:700;color:#fff}
 .audio .song-artist{color:var(--cyan)}
 
 .actions{display:flex;flex-direction:column;align-items:center;gap:15px;position:relative}
-.action{background:none;border:0;color:#fff;text-align:center}.circle{width:45px;height:45px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#ffffff22;backdrop-filter:blur(8px);font-size:23px}.count{font-size:11px;font-weight:700;margin-top:3px; color:#fff}.liked .circle{color:var(--pink)}.saved .circle{color:var(--cyan)}
+.action{background:none;border:0;color:#fff;text-align:center;cursor:pointer;pointer-events:auto;}.circle{width:45px;height:45px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#ffffff22;backdrop-filter:blur(8px);font-size:23px}.count{font-size:11px;font-weight:700;margin-top:3px; color:#fff}.liked .circle{color:var(--pink)}.saved .circle{color:var(--cyan)}
 
-.mute{position:absolute;top:68px;right:16px;z-index:7;width:40px;height:40px;border:0;border-radius:50%;background:#0008;color:#fff;font-size:19px;cursor:pointer;}
+.mute{position:absolute;top:68px;right:16px;z-index:7;width:40px;height:40px;border:0;border-radius:50%;background:#0008;color:#fff;font-size:19px;cursor:pointer;pointer-events:auto;}
 
 /* Video Duration Indicator Style */
 .video-duration-indicator {
@@ -177,12 +177,12 @@ button{font:inherit}
 
 .controls{height:205px;background:var(--bg);padding:14px 0;display:flex;flex-direction:column;justify-content:space-between;align-items:center}
 .filters{width:100%;display:flex;gap:10px;overflow:auto;padding:0 15px}
-.filter{white-space:nowrap;padding:7px 13px;border:1px solid #ffffff12;border-radius:18px;background:var(--surface);color:var(--muted);cursor:pointer}
+.filter{white-space:nowrap;padding:7px 13px;border:1px solid #ffffff12;border-radius:18px;background:var(--surface);color:var(--muted);cursor:pointer;pointer-events:auto;}
 .filter.active{background:var(--pink);color:#fff}
 .studioTopRow{width:100%;display:flex;justify-content:space-between;padding:0 20px}
 .controlRow{width:100%;display:flex;justify-content:space-around;align-items:center;padding:0 15px}
-.textBtn{border:0;background:none;color:var(--text);font-weight:800;cursor:pointer;font-size:13px}
-.shutter{width:72px;height:72px;border:4px solid var(--cyan);border-radius:50%;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;-webkit-user-select:none;box-shadow:0 0 15px rgba(0,242,254,0.4)}
+.textBtn{border:0;background:none;color:var(--text);font-weight:800;cursor:pointer;font-size:13px;pointer-events:auto;}
+.shutter{width:72px;height:72px;border:4px solid var(--cyan);border-radius:50%;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;-webkit-user-select:none;box-shadow:0 0 15px rgba(0,242,254,0.4);pointer-events:auto;}
 .inner{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--cyan));transition:.2s}
 .shutter.recording .inner{width:34px;height:34px;border-radius:9px;background:#f33}
 
@@ -209,6 +209,7 @@ button{font:inherit}
   border-radius: 16px;
   cursor: pointer;
   font-size: 12px;
+  pointer-events: auto;
 }
 
 .topTextEditorBar {
@@ -249,6 +250,7 @@ button{font:inherit}
   border-radius: 20px;
   cursor: pointer;
   font-size: 13px;
+  pointer-events: auto;
 }
 
 .bottom-edit-toolbar {
@@ -299,11 +301,12 @@ button{font:inherit}
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 20px;
   padding: 16px;
-  z-index: 25;
+  z-index: 250;
   display: none;
   flex-direction: column;
   gap: 12px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+  pointer-events: auto !important;
 }
 .editor-tool-drawer.open { display: flex; }
 .drawer-header {
@@ -333,6 +336,7 @@ button{font:inherit}
   cursor: pointer;
   padding: 8px;
   transition: transform 0.2s;
+  pointer-events: auto;
 }
 .sticker-item:hover { transform: scale(1.1); background: rgba(255,255,255,0.15); }
 
@@ -344,7 +348,7 @@ button{font:inherit}
 .captionBoxContainer{margin-top:12px;margin-bottom:12px}
 .postPanel textarea{width:100%;height:75px;background:var(--surface);color:var(--text);border:1px solid #ffffff15;border-radius:14px;padding:12px;resize:none;font-size:14px;outline:none}
 .postBottomActionSheet{display:flex;flex-direction:column;gap:8px;background:var(--surface);padding:12px;border-radius:16px;border:1px solid #ffffff10}
-.postBtn{width:100%;padding:13px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--pink),var(--cyan));color:#fff;font-weight:800;cursor:pointer;font-size:14px}
+.postBtn{width:100%;padding:13px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--pink),var(--cyan));color:#fff;font-weight:800;cursor:pointer;font-size:14px;pointer-events:auto;}
 
 .editor-caption-wrapper {
   padding: 10px 16px;
@@ -377,26 +381,26 @@ button{font:inherit}
 .searchIcon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--muted);pointer-events:none}
 .discoverTabs{display:flex;gap:8px;border-bottom:1px solid #ffffff10;padding-bottom:8px;overflow-x:auto;scrollbar-width:none}
 .discoverTabs::-webkit-scrollbar{display:none}
-.discoverTab{background:var(--surface);border:1px solid #ffffff10;color:var(--muted);padding:6px 14px;border-radius:16px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:background 0.2s,color 0.2s}
+.discoverTab{background:var(--surface);border:1px solid #ffffff10;color:var(--muted);padding:6px 14px;border-radius:16px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:background 0.2s,color 0.2s;pointer-events:auto;}
 .discoverTab.active{background:var(--pink);color:#fff;border-color:var(--pink)}
 
 .discoverSectionTitle{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-top:4px}
 .discoverGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-.discoverGridItem{aspect-ratio:9/16;background:#222;position:relative;overflow:hidden;border-radius:8px;cursor:pointer}
+.discoverGridItem{aspect-ratio:9/16;background:#222;position:relative;overflow:hidden;border-radius:8px;cursor:pointer;pointer-events:auto;}
 .discoverGridItem img, .discoverGridItem video{width:100%;height:100%;object-fit:cover}
 
 .creatorsListContainer{display:flex;flex-direction:column;gap:8px}
-.creatorSearchRow{display:flex;align-items:center;justify-content:space-between;background:var(--surface);padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.06);cursor:pointer;transition:background 0.2s}
+.creatorSearchRow{display:flex;align-items:center;justify-content:space-between;background:var(--surface);padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.06);cursor:pointer;transition:background 0.2s;pointer-events:auto;}
 .creatorSearchRow:hover{background:rgba(255,255,255,0.08)}
 .creatorSearchInfo{display:flex;align-items:center;gap:12px;flex:1}
 .creatorSearchAvatar{width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid var(--pink)}
 .creatorSearchMeta .name{font-size:14px;font-weight:800; color:var(--text)}
 .creatorSearchMeta .handle{font-size:12px;color:var(--muted)}
-.creatorFollowBtn{background:var(--pink);border:none;color:#fff;font-weight:700;padding:6px 14px;border-radius:16px;font-size:12px;cursor:pointer}
+.creatorFollowBtn{background:var(--pink);border:none;color:#fff;font-weight:700;padding:6px 14px;border-radius:16px;font-size:12px;cursor:pointer;pointer-events:auto;}
 .creatorFollowBtn.following{background:transparent;border:1px solid rgba(255,255,255,0.2);color:var(--muted)}
 
 .hashtagsListContainer{display:flex;flex-direction:column;gap:8px}
-.hashtagSearchRow{display:flex;align-items:center;justify-content:space-between;background:var(--surface);padding:12px 16px;border-radius:12px;border:1px solid rgba(255,255,255,0.06);cursor:pointer;transition:background 0.2s}
+.hashtagSearchRow{display:flex;align-items:center;justify-content:space-between;background:var(--surface);padding:12px 16px;border-radius:12px;border:1px solid rgba(255,255,255,0.06);cursor:pointer;transition:background 0.2s;pointer-events:auto;}
 .hashtagSearchRow:hover{background:rgba(255,255,255,0.08)}
 .hashtagSymbol{font-size:18px;font-weight:900;color:var(--cyan);background:rgba(0,242,254,0.1);width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-right:12px}
 .hashtagDetails{flex:1;display:flex;flex-direction:column;gap:2px}
@@ -405,29 +409,29 @@ button{font:inherit}
 
 .inboxBody{flex:1;overflow-y:auto;padding:15px}
 .inboxSubTabs{display:flex;gap:15px;margin-bottom:15px;border-bottom:1px solid #ffffff10;padding-bottom:10px}
-.inboxSubTab{font-weight:700;color:var(--muted);cursor:pointer}.inboxSubTab.active{color:var(--text)}
-.messageItem{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #ffffff0a}
+.inboxSubTab{font-weight:700;color:var(--muted);cursor:pointer;pointer-events:auto;}.inboxSubTab.active{color:var(--text)}
+.messageItem{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #ffffff0a;cursor:pointer;pointer-events:auto;}
 .messageAvatar{width:45px;height:45px;border-radius:50%;object-fit:cover}
 .messageContent{flex:1}.messageName{font-weight:700;font-size:14px;margin-bottom:3px; color:var(--text)}.messageSnippet{font-size:12px;color:var(--muted)}
 
 .profileBody{flex:1;overflow-y:auto;padding:20px 15px}
 .profileHeaderInfo{display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:15px}
 
-.avatarWrapper{position:relative;width:76px;height:76px;margin-bottom:10px;cursor:pointer}
+.avatarWrapper{position:relative;width:76px;height:76px;margin-bottom:10px;cursor:pointer;pointer-events:auto;}
 .profileBigAvatar{width:100%;height:100%;border-radius:50%;border:2px solid var(--pink);object-fit:cover}
 .profileBigAvatar.has-story{border:3px solid var(--cyan)}
 .addStoryBadge{position:absolute;bottom:0;right:0;width:22px;height:22px;background:var(--cyan);color:#000;border-radius:50%;font-size:14px;font-weight:900;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg)}
 
 .profileStats{display:flex;gap:25px;margin-top:12px;font-size:13px; color:var(--text)}
 .profileStats div span{display:block;font-weight:700;font-size:15px}
-.editProfileBtn{margin-top:12px;padding:6px 20px;border-radius:16px;border:1px solid #ffffff30;background:transparent;color:var(--text);font-weight:700;cursor:pointer;font-size:12px}
+.editProfileBtn{margin-top:12px;padding:6px 20px;border-radius:16px;border:1px solid #ffffff30;background:transparent;color:var(--text);font-weight:700;cursor:pointer;font-size:12px;pointer-events:auto;}
 
 .profileSubTabs{display:flex;justify-content:space-around;border-bottom:1px solid #ffffff10;margin-bottom:4px}
-.profileSubTab{padding:10px 0;font-weight:700;color:var(--muted);cursor:pointer;flex:1;text-align:center;font-size:12px}
+.profileSubTab{padding:10px 0;font-weight:700;color:var(--muted);cursor:pointer;flex:1;text-align:center;font-size:12px;pointer-events:auto;}
 .profileSubTab.active{color:var(--text);border-bottom:2px solid var(--pink)}
 
 .userPostsGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-.userPostThumb{aspect-ratio:9/16;background:#222;position:relative;cursor:pointer;border-radius:8px;overflow:hidden}
+.userPostThumb{aspect-ratio:9/16;background:#222;position:relative;cursor:pointer;border-radius:8px;overflow:hidden;pointer-events:auto;}
 .userPostThumb img, .userPostThumb video{width:100%;height:100%;object-fit:cover}
 .profile-view-badge {
   position: absolute;
@@ -461,6 +465,7 @@ button{font:inherit}
   font-weight: 700;
   color: var(--text);
   transition: background 0.2s;
+  pointer-events: auto;
 }
 .settings-item:hover { background: rgba(255, 255, 255, 0.08); }
 .settings-item-left { display: flex; align-items: center; gap: 12px; color: var(--text); }
@@ -496,6 +501,7 @@ button{font:inherit}
   padding: 10px 14px;
   border-radius: 12px;
   transition: border-color 0.2s;
+  pointer-events: auto;
 }
 .music-list-row.active { border-color: var(--pink); background: rgba(255, 42, 95, 0.06); }
 .music-details { display: flex; flex-direction: column; gap: 2px; }
@@ -508,6 +514,7 @@ button{font:inherit}
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
+  pointer-events: auto;
 }
 .select-track-btn.selected { background: var(--pink); border-color: var(--pink); color: #fff; }
 
@@ -523,7 +530,7 @@ button{font:inherit}
 .commentText{font-size:13px;line-height:1.4; color:var(--text)}
 .commentInputArea{padding:12px 15px;background:var(--bg);display:flex;gap:10px;align-items:center;border-top:1px solid #ffffff10}
 .commentInputField{flex:1;background:var(--surface);border:1px solid #ffffff15;border-radius:20px;padding:10px 14px;color:var(--text);font-size:13px;outline:none}
-.commentSendBtn{background:var(--pink);border:0;color:#fff;font-weight:700;padding:8px 16px;border-radius:20px;cursor:pointer}
+.commentSendBtn{background:var(--pink);border:0;color:#fff;font-weight:700;padding:8px 16px;border-radius:20px;cursor:pointer;pointer-events:auto;}
 
 /* Report User Bottom Sheet Styles */
 .report-modal {
@@ -560,12 +567,13 @@ button{font:inherit}
   font-size: 14px;
   font-weight: 600;
   color: var(--text);
+  pointer-events: auto;
 }
 .report-reason-item input[type="radio"] { accent-color: var(--pink); transform: scale(1.2); cursor: pointer; }
 .report-reason-item.selected { border-color: var(--pink); background: rgba(255, 42, 95, 0.08); }
 .report-actions { display: flex; gap: 10px; }
-.report-submit-btn { flex: 1; background: linear-gradient(135deg, var(--pink), var(--cyan)); border: none; color: #fff; font-weight: 800; padding: 12px; border-radius: 14px; cursor: pointer; font-size: 14px; }
-.report-cancel-btn { flex: 1; background: var(--bg); border: 1px solid rgba(255, 255, 255, 0.15); color: var(--text); font-weight: 700; padding: 12px; border-radius: 14px; cursor: pointer; font-size: 14px; }
+.report-submit-btn { flex: 1; background: linear-gradient(135deg, var(--pink), var(--cyan)); border: none; color: #fff; font-weight: 800; padding: 12px; border-radius: 14px; cursor: pointer; font-size: 14px; pointer-events: auto; }
+.report-cancel-btn { flex: 1; background: var(--bg); border: 1px solid rgba(255, 255, 255, 0.15); color: var(--text); font-weight: 700; padding: 12px; border-radius: 14px; cursor: pointer; font-size: 14px; pointer-events: auto; }
 
 /* Sub-screen / Modal Content Wrapper for Settings Panels */
 .settings-subpanel {
@@ -583,7 +591,7 @@ button{font:inherit}
   transform: translateX(0);
 }
 
-.switch{position:relative;display:inline-block;width:44px;height:24px}
+.switch{position:relative;display:inline-block;width:44px;height:24px;pointer-events:auto;}
 .switch input{opacity:0;width:0;height:0}
 .slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background-color:#333;transition:.3s;border-radius:24px}
 .slider:before{position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background-color:white;transition:.3s;border-radius:50%}
@@ -591,7 +599,7 @@ input:checked+.slider{background-color:var(--pink)}
 input:checked+.slider:before{transform:translateX(20px)}
 
 .studioModeTabs { display: flex; gap: 10px; background: var(--surface); padding: 4px; border-radius: 20px; margin-bottom: 8px; }
-.studioModeTab { background: transparent; border: none; color: var(--muted); padding: 6px 16px; font-weight: 700; font-size: 13px; border-radius: 16px; cursor: pointer; }
+.studioModeTab { background: transparent; border: none; color: var(--muted); padding: 6px 16px; font-weight: 700; font-size: 13px; border-radius: 16px; cursor: pointer; pointer-events: auto; }
 .studioModeTab.active { background: var(--pink); color: #fff; }
 .liveOverlayInfo { position: absolute; top: 16px; left: 16px; display: flex; gap: 8px; align-items: center; z-index: 10; }
 .liveBadge { background: var(--pink); color: #fff; font-size: 11px; font-weight: 900; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; animation: pulse 1s infinite; }
@@ -623,8 +631,17 @@ input:checked+.slider:before{transform:translateX(20px)}
 
 .liveInputRow { display: flex; gap: 8px; align-items: center; width: 100%; padding: 0 15px; }
 .liveInputField { flex: 1; background: var(--surface); border: 1px solid #ffffff15; border-radius: 20px; padding: 10px 14px; color: var(--text); font-size: 13px; outline: none; }
-.liveSendBtn { background: var(--pink); border: 0; color: #fff; font-weight: 700; padding: 10px 16px; border-radius: 20px; cursor: pointer; }
-.liveHeartBtn { background: rgba(255,255,255,0.15); border: 0; font-size: 20px; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.liveSendBtn { background: var(--pink); border: 0; color: #fff; font-weight: 700; padding: 10px 16px; border-radius: 20px; cursor: pointer; pointer-events: auto; }
+.liveHeartBtn { background: rgba(255,255,255,0.15); border: 0; font-size: 20px; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; pointer-events: auto; }
+
+.screenHead button.close {
+  cursor: pointer;
+  pointer-events: auto;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 22px;
+}
 </style>
 </head>
 <body>
@@ -741,7 +758,7 @@ input:checked+.slider:before{transform:translateX(20px)}
 <div id="editorMusicDrawer" class="editor-tool-drawer">
   <div class="drawer-header">
     <span>Background Track Selection</span>
-    <button class="close" onclick="closeEditorDrawers()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">×</button>
+    <button class="close" onclick="closeEditorDrawers()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;pointer-events:auto;">×</button>
   </div>
   
   <div class="selected-music-display">
@@ -787,7 +804,7 @@ input:checked+.slider:before{transform:translateX(20px)}
 
 <!-- Stickers Drawer -->
 <div id="editorStickersDrawer" class="editor-tool-drawer">
-  <div class="drawer-header"><span>Choose a Sticker</span><button class="close" onclick="closeEditorDrawers()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">×</button></div>
+  <div class="drawer-header"><span>Choose a Sticker</span><button class="close" onclick="closeEditorDrawers()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;pointer-events:auto;">×</button></div>
   <div class="sticker-grid">
     <div class="sticker-item" onclick="addStickerToCanvas('🔥')">🔥</div>
     <div class="sticker-item" onclick="addStickerToCanvas('✨')">✨</div>
@@ -802,7 +819,7 @@ input:checked+.slider:before{transform:translateX(20px)}
 
 <!-- Text Input Drawer -->
 <div id="editorTextDrawer" class="editor-tool-drawer">
-  <div class="drawer-header"><span>Add Custom Text</span><button class="close" onclick="closeEditorDrawers()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">×</button></div>
+  <div class="drawer-header"><span>Add Custom Text</span><button class="close" onclick="closeEditorDrawers()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;pointer-events:auto;">×</button></div>
   <div style="display:flex; gap:8px;">
     <input type="text" id="editorTextInputField" class="topTextEditorInput" placeholder="Type text overlay..." autocomplete="off">
     <button class="topTextEditorDoneBtn" onclick="commitEditorText()">Add</button>
@@ -811,7 +828,7 @@ input:checked+.slider:before{transform:translateX(20px)}
 
 <!-- Effects Drawer -->
 <div id="editorEffectsDrawer" class="editor-tool-drawer">
-  <div class="drawer-header"><span>Visual Effects</span><button class="close" onclick="closeEditorDrawers()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">×</button></div>
+  <div class="drawer-header"><span>Visual Effects</span><button class="close" onclick="closeEditorDrawers()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;pointer-events:auto;">×</button></div>
   <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:4px;">
     <button class="editorFilterChip active" onclick="applyEditorFilter('', this)">Normal</button>
     <button class="editorFilterChip" onclick="applyEditorFilter('sepia(0.7) contrast(1.2)', this)">Vintage</button>
@@ -823,7 +840,7 @@ input:checked+.slider:before{transform:translateX(20px)}
 
 <!-- Mention Drawer -->
 <div id="editorMentionDrawer" class="editor-tool-drawer">
-  <div class="drawer-header"><span>Mention a Creator</span><button class="close" onclick="closeEditorDrawers()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">×</button></div>
+  <div class="drawer-header"><span>Mention a Creator</span><button class="close" onclick="closeEditorDrawers()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;pointer-events:auto;">×</button></div>
   <div style="display:flex; flex-direction:column; gap:6px; max-height:150px; overflow-y:auto;">
     <div class="messageItem" onclick="addMentionToCanvas('@elena_rostova')" style="cursor:pointer; padding:6px 0;">
       <img class="messageAvatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" style="width:32px;height:32px;">
@@ -987,8 +1004,8 @@ input:checked+.slider:before{transform:translateX(20px)}
 <div class="screenHead">
   <span>My Profile</span>
   <div style="display: flex; align-items: center; gap: 8px;">
-    <button onclick="openPrivateInfoScreen()" style="background: none; border: none; color: var(--text); font-size: 18px; cursor: pointer; padding: 4px 6px;" title="Private Information">🔒</button>
-    <button onclick="openSettingsScreen()" style="background: none; border: none; color: var(--text); font-size: 18px; cursor: pointer; padding: 4px 6px;" title="Settings">⚙️</button>
+    <button onclick="openPrivateInfoScreen()" style="background: none; border: none; color: var(--text); font-size: 18px; cursor: pointer; padding: 4px 6px; pointer-events: auto;" title="Private Information">🔒</button>
+    <button onclick="openSettingsScreen()" style="background: none; border: none; color: var(--text); font-size: 18px; cursor: pointer; padding: 4px 6px; pointer-events: auto;" title="Settings">⚙️</button>
     <button class="close" data-close="profile" style="position: static; font-size: 24px;">×</button>
   </div>
 </div>
@@ -1294,7 +1311,7 @@ input:checked+.slider:before{transform:translateX(20px)}
 <div id="commentModal" class="commentModal">
   <div class="commentHeader">
     <span id="commentModalTitle">Comments</span>
-    <button class="close" id="closeCommentModal" style="position:absolute;right:16px;top:10px;font-size:22px;">×</button>
+    <button class="close" id="closeCommentModal" style="position:absolute;right:16px;top:10px;font-size:22px;pointer-events:auto;">×</button>
   </div>
   <div class="commentList" id="commentListContainer"></div>
   <div class="commentInputArea">
@@ -1551,9 +1568,10 @@ function setupObserver() {
   document.querySelectorAll('.reel').forEach(reel => observer.observe(reel));
 }
 
-// Navigation & Screens
+// Navigation & Screens with robust event binding
 document.querySelectorAll('.nav button').forEach(btn => {
-  btn.addEventListener('click', () => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
     const tab = btn.getAttribute('data-tab');
     if(!tab) return;
     document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
@@ -1593,7 +1611,8 @@ function closeAllScreens() {
 }
 
 document.querySelectorAll('.screenHead .close').forEach(btn => {
-  btn.addEventListener('click', () => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
     const targetId = btn.getAttribute('data-close');
     if(targetId) {
       closeScreen(document.getElementById(targetId));
@@ -1604,11 +1623,20 @@ document.querySelectorAll('.screenHead .close').forEach(btn => {
 });
 
 // Robust touch handler binding for editor toolbar buttons to trigger every time without disappearing
-document.getElementById('toolMusicBtn').addEventListener('click', (e) => { e.stopPropagation(); toggleEditorDrawer('editorMusicDrawer'); });
-document.getElementById('toolStickersBtn').addEventListener('click', (e) => { e.stopPropagation(); toggleEditorDrawer('editorStickersDrawer'); });
-document.getElementById('toolCustomTextBtn').addEventListener('click', (e) => { e.stopPropagation(); toggleEditorDrawer('editorTextDrawer'); });
-document.getElementById('toolEffectsBtn').addEventListener('click', (e) => { e.stopPropagation(); toggleEditorDrawer('editorEffectsDrawer'); });
-document.getElementById('toolMentionBtn').addEventListener('click', (e) => { e.stopPropagation(); toggleEditorDrawer('editorMentionDrawer'); });
+['toolMusicBtn', 'toolStickersBtn', 'toolCustomTextBtn', 'toolEffectsBtn', 'toolMentionBtn'].forEach(btnId => {
+  const el = document.getElementById(btnId);
+  if(el) {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      let drawerId = 'editorMusicDrawer';
+      if(btnId === 'toolStickersBtn') drawerId = 'editorStickersDrawer';
+      else if(btnId === 'toolCustomTextBtn') drawerId = 'editorTextDrawer';
+      else if(btnId === 'toolEffectsBtn') drawerId = 'editorEffectsDrawer';
+      else if(btnId === 'toolMentionBtn') drawerId = 'editorMentionDrawer';
+      toggleEditorDrawer(drawerId);
+    });
+  }
+});
 
 function toggleEditorDrawer(drawerId) {
   const drawer = document.getElementById(drawerId);
@@ -1628,7 +1656,8 @@ const searchInput = document.getElementById('searchInput');
 const discoverResultsContainer = document.getElementById('discoverResultsContainer');
 
 document.querySelectorAll('.discoverTab').forEach(tab => {
-  tab.addEventListener('click', () => {
+  tab.addEventListener('click', (e) => {
+    e.stopPropagation();
     document.querySelectorAll('.discoverTab').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
     currentSearchFilter = tab.getAttribute('data-search-filter');
@@ -1794,7 +1823,8 @@ function closeHashtagModal() {
 
 // Profile Sub-tabs rendering
 document.querySelectorAll('.profileSubTab').forEach(tab => {
-  tab.addEventListener('click', () => {
+  tab.addEventListener('click', (e) => {
+    e.stopPropagation();
     document.querySelectorAll('.profileSubTab').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
     const tabName = tab.getAttribute('data-profile-tab');
@@ -1904,7 +1934,8 @@ function openSoundModal(song, artist) {
   grid.innerHTML = html;
   document.getElementById('soundModal').classList.add('open');
 }
-document.getElementById('closeSoundModal').addEventListener('click', () => {
+document.getElementById('closeSoundModal').addEventListener('click', (e) => {
+  e.stopPropagation();
   document.getElementById('soundModal').classList.remove('open');
 });
 
@@ -1931,7 +1962,8 @@ function openComments(id) {
   container.innerHTML = html;
   document.getElementById('commentModal').classList.add('open');
 }
-document.getElementById('closeCommentModal').addEventListener('click', () => {
+document.getElementById('closeCommentModal').addEventListener('click', (e) => {
+  e.stopPropagation();
   document.getElementById('commentModal').classList.remove('open');
 });
 
@@ -1947,7 +1979,8 @@ async function openStudio() {
   }
 }
 
-document.getElementById('closeStudio').addEventListener('click', () => {
+document.getElementById('closeStudio').addEventListener('click', (e) => {
+  e.stopPropagation();
   closeScreen(studio);
   if(mediaStream) {
     mediaStream.getTracks().forEach(track => track.stop());
