@@ -160,11 +160,9 @@ button{font:inherit}
 .nav{position:absolute;bottom:0;left:0;right:0;height:var(--nav);z-index:100;display:flex;justify-content:space-around;align-items:center;background:var(--surface);backdrop-filter:blur(16px);border-top:1px solid #ffffff12;pointer-events:auto;transition:transform .3s ease}
 .nav button{background:none;border:0;color:var(--muted);font-size:10px;display:flex;flex-direction:column;align-items:center;gap:4px;width:20%;cursor:pointer;pointer-events:auto}.nav button.active{color:var(--text)}.nav .plus{width:42px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--pink),var(--cyan));color:#fff;font-size:22px;line-height:1}
 
+/* Global utility class to hide navigation and header when a screen/post editor is open */
 #app.hide-nav-for-create .nav { transform: translateY(100%); pointer-events: none; }
 #app.hide-nav-for-create .header { transform: translateY(-100%); pointer-events: none; }
-
-/* Hide navigation when Post screen is open */
-#app.hide-nav-for-post .nav { transform: translateY(100%); pointer-events: none; }
 
 .screen{position:absolute;top:0;left:0;right:0;bottom:0;z-index:40;background:var(--bg);transform:translateY(100%);transition:.3s;display:flex;flex-direction:column}
 .screen.open{transform:translateY(0)}
@@ -646,7 +644,7 @@ input:checked+.slider:before{transform:translateX(20px)}
 <button data-tab="discover" id="navDiscoverBtn">⌕<span>Discover</span></button>
 <button data-tab="create" id="navCreateBtn"><span class="plus">+</span><span>Create</span></button>
 <button data-tab="inbox" id="navInboxBtn">♡<span>Inbox</span></button>
-<button data-tab="profile" id="navProfileBtn">◎<span>Profile</span></button>
+<button data-tab="profile" id="navProfileBtn">◎<span>Me</span></button>
 </nav>
 
 <!-- Studio Screen -->
@@ -1576,32 +1574,28 @@ document.querySelectorAll('.nav button').forEach(btn => {
 
 function openScreen(el) {
   el.classList.add('open');
-  // Hide main navigation buttons when Post screen is open
-  if(el === postScreen) {
-    appContainer.classList.add('hide-nav-for-post');
-  }
+  // Automatically hide header and navigation when any screen (like Post screen) opens
+  appContainer.classList.add('hide-nav-for-create');
 }
 function closeScreen(el) {
   el.classList.remove('open');
-  // Show main navigation buttons when Post screen is closed
-  if(el === postScreen) {
-    appContainer.classList.remove('hide-nav-for-post');
+  // Bring back navigation and header when all main screens are closed
+  if (!document.querySelector('.screen.open')) {
+    appContainer.classList.remove('hide-nav-for-create');
   }
 }
 function closeAllScreens() {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('open'));
-  appContainer.classList.remove('hide-nav-for-post');
+  appContainer.classList.remove('hide-nav-for-create');
 }
 
 document.querySelectorAll('.screenHead .close').forEach(btn => {
   btn.addEventListener('click', () => {
     const targetId = btn.getAttribute('data-close');
     if(targetId) {
-      const targetScreen = document.getElementById(targetId);
-      closeScreen(targetScreen);
+      closeScreen(document.getElementById(targetId));
     } else {
-      const parentScreen = btn.closest('.screen');
-      closeScreen(parentScreen);
+      closeScreen(btn.closest('.screen'));
     }
   });
 });
@@ -1913,7 +1907,7 @@ function openComments(id) {
   }
   container.innerHTML = html;
   document.getElementById('commentModal').classList.add('open');
-});
+}
 document.getElementById('closeCommentModal').addEventListener('click', () => {
   document.getElementById('commentModal').classList.remove('open');
 });
@@ -1921,7 +1915,6 @@ document.getElementById('closeCommentModal').addEventListener('click', () => {
 // Studio & Camera Control Placeholders
 let mediaStream = null;
 async function openStudio() {
-  appContainer.classList.add('hide-nav-for-create');
   openScreen(studio);
   try {
     mediaStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
@@ -1932,13 +1925,13 @@ async function openStudio() {
 }
 
 document.getElementById('closeStudio').addEventListener('click', () => {
-  appContainer.classList.remove('hide-nav-for-create');
   closeScreen(studio);
   if(mediaStream) {
     mediaStream.getTracks().forEach(track => track.stop());
   }
 });
 
+// Initial load
 renderFeed();
 </script>
 </body>
