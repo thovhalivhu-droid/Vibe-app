@@ -748,7 +748,6 @@ input:checked+.slider:before{transform:translateX(20px)}
   <input id="videoFileInput" class="hidden" type="file" accept="video/*" multiple>
   <input id="photoFileInput" class="hidden" type="file" accept="image/*" multiple>
   
-  <!-- Working Camera Shutter Button with Click for Photo, Hold/Click for Video Toggle -->
   <button class="shutter" id="shutter" title="Tap for Photo, Hold or Record Video"><span class="inner"></span></button>
   <button class="textBtn" id="flipBtn">Flip ⟳</button>
   <div style="width:50px"></div>
@@ -787,7 +786,6 @@ input:checked+.slider:before{transform:translateX(20px)}
   <button id="editorMuteBtn" class="mute" title="Mute/Unmute Video">🔊</button>
 </div>
 
-<!-- Added Editor Caption Box -->
 <div class="editor-caption-wrapper">
   <textarea id="editorCaptionInput" class="editor-caption-input" placeholder="Write a caption with #hashtags before posting..."></textarea>
 </div>
@@ -853,7 +851,6 @@ input:checked+.slider:before{transform:translateX(20px)}
   </div>
 </div>
 
-<!-- Custom Bottom Editing Toolbar -->
 <div class="bottom-edit-toolbar">
   <button class="edit-tool-btn" id="toolMusicBtn" onclick="toggleEditorDrawer('editorMusicDrawer')">
     <span class="tool-icon">🎵</span>
@@ -1269,7 +1266,6 @@ document.getElementById('flipBtn').onclick = () => {
 
 const shutterBtn = document.getElementById('shutter');
 
-// Tap for Photo, Hold for Video Recording
 shutterBtn.onmousedown = () => {
   isLongPress = false;
   pressTimer = setTimeout(() => {
@@ -1426,7 +1422,6 @@ function closePrivacyPolicy() {
   document.getElementById('privacyPolicyScreen').classList.remove('open');
 }
 
-// File Inputs Handling for Multiple Photos / Videos
 videoFileInput.onchange = (e) => {
   const files = Array.from(e.target.files);
   if(!files.length) return;
@@ -1541,7 +1536,7 @@ document.getElementById('publishBtn').onclick = () => {
 
   feedData.unshift(newPost);
   postScreen.classList.remove('open');
-  appContainer.classList.remove('hide-nav-for-create'); // Restore nav when leaving Create flow
+  appContainer.classList.remove('hide-nav-for-create');
   updateNavActiveState('home');
   renderFeed();
   showToast('Posted successfully to VIBE! 🎉');
@@ -1699,12 +1694,70 @@ function renderFeed(filteredList){
   </div></div>`;
   feed.appendChild(card);
   
-  card.querySelector('.audio').onclick = (e) => {
-    e.stopPropagation();
-    openAudioModal(item);
+  // TAP TO PAUSE / PLAY & DOUBLE-TAP TO LIKE LOGIC
+  const likeBtn = card.querySelector('.like');
+  const triggerLikeAction = (clientX, clientY) => {
+    if (!item.isLiked) {
+      item.isLiked = true;
+      item.likes += 1;
+      likeBtn.classList.add('liked');
+      likeBtn.querySelector('.circle').textContent = '♥';
+      likeBtn.querySelector('.count').textContent = formatCount(item.likes);
+    }
+    
+    // Create and trigger floating heart animation
+    const heart = document.createElement('div');
+    heart.className = 'double-tap-heart';
+    heart.innerHTML = '❤️';
+    
+    const rect = card.getBoundingClientRect();
+    const x = clientX ? clientX - rect.left : rect.width / 2;
+    const y = clientY ? clientY - rect.top : rect.height / 2;
+    
+    heart.style.left = `${x}px`;
+    heart.style.top = `${y}px`;
+    card.appendChild(heart);
+    setTimeout(() => heart.remove(), 800);
   };
 
-  card.querySelectorAll('.reel-video').forEach((v, vIdx, vArr) => {
+  let lastTapTime = 0;
+  const mediaInteractionContainers = card.querySelectorAll('video, img, .reel-media-slide');
+  mediaInteractionContainers.forEach(container => {
+    container.style.cursor = 'pointer';
+    container.addEventListener('click', (e) => {
+      const currentTime = new Date().getTime();
+      const tapLength = currentTime - lastTapTime;
+      
+      if (tapLength < 300 && tapLength > 0) {
+        // Double Tap Detected -> Like & Heart Animation
+        triggerLikeAction(e.clientX, e.clientY);
+        e.preventDefault();
+      } else {
+        // Single Tap Detected -> Toggle Play/Pause for Video
+        setTimeout(() => {
+          if (new Date().getTime() - currentTime >= 300) {
+            const activeVideoEl = card.querySelector('video') || card.querySelector('.reel-media-slide video');
+            if (activeVideoEl) {
+              const controlOverlay = card.querySelector('.video-control-overlay');
+              const pauseBtn = card.querySelector('.custom-pause-btn');
+              if (activeVideoEl.paused) {
+                activeVideoEl.play().catch(()=>{});
+                if(controlOverlay) controlOverlay.classList.remove('show');
+                if(pauseBtn) pauseBtn.textContent = '⏸';
+              } else {
+                activeVideoEl.pause();
+                if(controlOverlay) controlOverlay.classList.add('show');
+                if(pauseBtn) pauseBtn.textContent = '▶';
+              }
+            }
+          }
+        }, 300);
+      }
+      lastTapTime = currentTime;
+    });
+  });
+
+  card.querySelectorAll('.reel-video').forEach((v) => {
     v.onended = () => {
       const slider = card.querySelector('.reel-media-slider');
       if (slider) {
@@ -1740,9 +1793,11 @@ function renderFeed(filteredList){
         if(v.paused) {
           v.play().catch(()=>{});
           pauseBtn.textContent = '⏸';
+          if(controlOverlay) controlOverlay.classList.remove('show');
         } else {
           v.pause();
           pauseBtn.textContent = '▶';
+          if(controlOverlay) controlOverlay.classList.add('show');
         }
       };
     }
@@ -1777,7 +1832,6 @@ function renderFeed(filteredList){
     };
   }
 
-  const likeBtn=card.querySelector('.like');
   const commentActionBtn=card.querySelector('.commentBtn');
   const saveBtn=card.querySelector('.saveBtn');
   const shareBtn=card.querySelector('.shareBtn');
@@ -1799,6 +1853,11 @@ function renderFeed(filteredList){
    likeBtn.classList.toggle('liked', item.isLiked);
    likeBtn.querySelector('.circle').textContent = item.isLiked ? '♥' : '♡';
    likeBtn.querySelector('.count').textContent = formatCount(item.likes);
+  };
+
+  card.querySelector('.audio').onclick = (e) => {
+    e.stopPropagation();
+    openAudioModal(item);
   };
 
   commentActionBtn.onclick=e=>{
@@ -2001,7 +2060,7 @@ document.getElementById('navDiscoverBtn').onclick=()=>{ updateNavActiveState('di
 document.getElementById('navCreateBtn').onclick=()=>{ 
   updateNavActiveState('create'); 
   studio.classList.add('open'); 
-  appContainer.classList.add('hide-nav-for-create'); /* Hides Home, Discover, Inbox, Profile & Create nav */
+  appContainer.classList.add('hide-nav-for-create');
   discover.classList.remove('open'); 
   inbox.classList.remove('open'); 
   profile.classList.remove('open'); 
@@ -2021,7 +2080,7 @@ document.querySelectorAll('.screenHead .close[data-close]').forEach(btn=>{
 
 document.getElementById('closeStudio').onclick=()=>{ 
   studio.classList.remove('open'); 
-  appContainer.classList.remove('hide-nav-for-create'); /* Shows navigation buttons again */
+  appContainer.classList.remove('hide-nav-for-create');
   stopCamera(); 
   updateNavActiveState('home'); 
 };
