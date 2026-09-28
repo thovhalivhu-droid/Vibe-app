@@ -193,7 +193,7 @@ button{font:inherit}
 .editorCanvasContainer.multi-item video, .editorCanvasContainer.multi-item img {flex: 0 0 100%; scroll-snap-align: start; width:100%; height:100%; object-fit:contain;}
 #editorDrawingCanvas{position:absolute;inset:0;pointer-events:auto;cursor:crosshair;z-index:5}
 #editorOverlaysLayer{position:absolute;inset:0;pointer-events:none;z-index:6}
-.editorOverlayElement{position:absolute;cursor:move;user-select:none;padding:6px 10px;font-size:22px;border:1px dashed transparent;transition:border .2s;pointer-events:auto;touch-action: none;}
+.editorOverlayElement{position:absolute;cursor:move;user-select:none;padding:6px 10px;font-size:22px;border:1px dashed transparent;transition:border .2s;pointer-events:auto}
 .editorOverlayElement:hover{border-color:rgba(255,255,255,0.4)}
 .editorOverlayElement.text-element{font-size:20px;font-weight:700;color:#fff;background:rgba(0,0,0,0.5);border-radius:8px;backdrop-filter:blur(4px);padding:8px 12px;text-shadow:0 2px 4px rgba(0,0,0,0.5)}
 
@@ -208,6 +208,46 @@ button{font:inherit}
   border-radius: 16px;
   cursor: pointer;
   font-size: 12px;
+}
+
+.topTextEditorBar {
+  position: absolute;
+  top: 58px;
+  left: 0;
+  right: 0;
+  background: rgba(20, 21, 28, 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 100;
+  transform: translateY(-100%);
+  transition: transform 0.3s ease;
+}
+.topTextEditorBar.open { transform: translateY(0); }
+.topTextEditorInput {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 10px 16px;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 700;
+  outline: none;
+}
+.topTextEditorInput::placeholder { color: var(--muted); font-weight: normal; }
+.topTextEditorDoneBtn {
+  background: var(--pink);
+  border: 0;
+  color: #fff;
+  font-weight: 800;
+  padding: 10px 18px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 13px;
 }
 
 .bottom-edit-toolbar {
@@ -292,39 +332,6 @@ button{font:inherit}
 }
 .sticker-item:hover { transform: scale(1.1); background: rgba(255,255,255,0.15); }
 
-/* Text & Thumbnail Customization Controls */
-.text-style-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-.color-picker-btn {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 2px solid rgba(255,255,255,0.3);
-  cursor: pointer;
-}
-.color-picker-btn.active { border-color: var(--cyan); transform: scale(1.1); }
-.thumbnail-strip {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding: 6px 0;
-}
-.thumbnail-option {
-  width: 60px;
-  height: 90px;
-  border-radius: 8px;
-  overflow: hidden;
-  border: 2px solid transparent;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-.thumbnail-option.active { border-color: var(--pink); }
-.thumbnail-option img, .thumbnail-option video { width: 100%; height: 100%; object-fit: cover; }
-
 .postPanel{padding:16px;display:flex;flex-direction:column;flex:1;overflow:hidden;position:relative}
 .previewBox{width:100%;flex:1;background:#000;border-radius:16px;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;gap:4px}
 .previewBox.multi-item {display:flex; overflow-x:auto; scroll-snap-type: x mandatory;}
@@ -375,7 +382,7 @@ button{font:inherit}
 .discoverGridItem img, .discoverGridItem video{width:100%;height:100%;object-fit:cover}
 
 .creatorsListContainer{display:flex;flex-direction:column;gap:8px}
-.creatorSearchRow{display:flex;align-items:center;justify-content:between;background:var(--surface);padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.06);cursor:pointer;transition:background 0.2s}
+.creatorSearchRow{display:flex;align-items:center;justify-content:space-between;background:var(--surface);padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.06);cursor:pointer;transition:background 0.2s}
 .creatorSearchRow:hover{background:rgba(255,255,255,0.08)}
 .creatorSearchInfo{display:flex;align-items:center;gap:12px;flex:1}
 .creatorSearchAvatar{width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid var(--pink)}
@@ -712,7 +719,7 @@ input:checked+.slider:before{transform:translateX(20px)}
 <section id="editorScreen" class="screen">
 <div class="screenHead">
   <button class="close" id="closeEditorBtn">×</button>
-  <span>Edit Media & Cover</span>
+  <span>Edit Media</span>
   <button class="editor-quick-post-btn" id="editorQuickPostBtn">Post</button>
 </div>
 
@@ -789,41 +796,25 @@ input:checked+.slider:before{transform:translateX(20px)}
   </div>
 </div>
 
-<!-- Text Input & Style Drawer -->
+<!-- Text Input Drawer -->
 <div id="editorTextDrawer" class="editor-tool-drawer">
-  <div class="drawer-header"><span>Add Text & Styles</span><button class="close" onclick="closeEditorDrawers()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">×</button></div>
+  <div class="drawer-header"><span>Add Custom Text</span><button class="close" onclick="closeEditorDrawers()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">×</button></div>
   <div style="display:flex; gap:8px;">
     <input type="text" id="editorTextInputField" class="topTextEditorInput" placeholder="Type text overlay..." autocomplete="off">
     <button class="topTextEditorDoneBtn" onclick="commitEditorText()">Add</button>
   </div>
-  <div class="text-style-row" style="margin-top:8px;">
-    <span style="font-size:12px; color:var(--muted); font-weight:700;">Color:</span>
-    <div class="color-picker-btn active" style="background:#ffffff;" onclick="setEditorTextColor('#ffffff', this)"></div>
-    <div class="color-picker-btn" style="background:#ff2a5f;" onclick="setEditorTextColor('#ff2a5f', this)"></div>
-    <div class="color-picker-btn" style="background:#00f2fe;" onclick="setEditorTextColor('#00f2fe', this)"></div>
-    <div class="color-picker-btn" style="background:#ffd700;" onclick="setEditorTextColor('#ffd700', this)"></div>
-    <div class="color-picker-btn" style="background:#00ff7f;" onclick="setEditorTextColor('#00ff7f', this)"></div>
-  </div>
-  <div class="text-style-row" style="margin-top:4px;">
-    <span style="font-size:12px; color:var(--muted); font-weight:700;">Style:</span>
-    <button class="filter active" onclick="setEditorTextStyle('bubble', this)" style="padding:4px 10px; font-size:11px;">Bubble</button>
-    <button class="filter" onclick="setEditorTextStyle('neon', this)" style="padding:4px 10px; font-size:11px;">Neon Glow</button>
-    <button class="filter" onclick="setEditorTextStyle('plain', this)" style="padding:4px 10px; font-size:11px;">Plain</button>
-  </div>
 </div>
 
-<!-- Effects & Cover Thumbnail Drawer -->
+<!-- Effects Drawer -->
 <div id="editorEffectsDrawer" class="editor-tool-drawer">
-  <div class="drawer-header"><span>Filters & Cover Thumbnail</span><button class="close" onclick="closeEditorDrawers()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">×</button></div>
-  <div style="font-size:12px; color:var(--muted); font-weight:700; margin-bottom:4px;">Visual Filters</div>
-  <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:8px;">
-    <button class="editorFilterChip active" onclick="applyEditorFilter('', this)" style="padding:4px 10px; border-radius:12px; background:var(--surface); color:#fff; border:none; cursor:pointer;">Normal</button>
-    <button class="editorFilterChip" onclick="applyEditorFilter('sepia(0.7) contrast(1.2)', this)" style="padding:4px 10px; border-radius:12px; background:var(--surface); color:#fff; border:none; cursor:pointer;">Vintage</button>
-    <button class="editorFilterChip" onclick="applyEditorFilter('grayscale(1)', this)" style="padding:4px 10px; border-radius:12px; background:var(--surface); color:#fff; border:none; cursor:pointer;">B&W</button>
-    <button class="editorFilterChip" onclick="applyEditorFilter('hue-rotate(90deg) saturate(1.8)', this)" style="padding:4px 10px; border-radius:12px; background:var(--surface); color:#fff; border:none; cursor:pointer;">Neon</button>
+  <div class="drawer-header"><span>Visual Effects</span><button class="close" onclick="closeEditorDrawers()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">×</button></div>
+  <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:4px;">
+    <button class="editorFilterChip active" onclick="applyEditorFilter('', this)">Normal</button>
+    <button class="editorFilterChip" onclick="applyEditorFilter('sepia(0.7) contrast(1.2)', this)">Vintage</button>
+    <button class="editorFilterChip" onclick="applyEditorFilter('grayscale(1)', this)">B&W</button>
+    <button class="editorFilterChip" onclick="applyEditorFilter('hue-rotate(90deg) saturate(1.8)', this)">Neon</button>
+    <button class="editorFilterChip" onclick="applyEditorFilter('brightness(1.3) contrast(1.4)', this)">Vivid</button>
   </div>
-  <div style="font-size:12px; color:var(--muted); font-weight:700; margin-top:6px; margin-bottom:4px;">Select Cover / Thumbnail</div>
-  <div class="thumbnail-strip" id="editorThumbnailStrip"></div>
 </div>
 
 <!-- Mention Drawer -->
@@ -856,7 +847,7 @@ input:checked+.slider:before{transform:translateX(20px)}
   </button>
   <button class="edit-tool-btn" id="toolEffectsBtn" onclick="toggleEditorDrawer('editorEffectsDrawer')">
     <span class="tool-icon">✨</span>
-    <span class="tool-label">Cover & FX</span>
+    <span class="tool-label">Effects</span>
   </button>
   <button class="edit-tool-btn" id="toolMentionBtn" onclick="toggleEditorDrawer('editorMentionDrawer')">
     <span class="tool-icon">@</span>
@@ -868,6 +859,11 @@ input:checked+.slider:before{transform:translateX(20px)}
 <!-- Post Screen -->
 <section id="postScreen" class="screen">
 <div class="screenHead"><button class="close" id="closePost">×</button><span>Post to VIBE</span><span style="width:24px"></span></div>
+
+<div id="topTextEditorBar" class="topTextEditorBar">
+  <input type="text" id="topTextEditorInput" class="topTextEditorInput" placeholder="Type your text here..." autocomplete="off">
+  <button id="topTextEditorDoneBtn" class="topTextEditorDoneBtn">Done</button>
+</div>
 
 <div class="postPanel">
   <div id="previewBox" class="previewBox" title="Tap to expand preview">
@@ -1321,13 +1317,6 @@ const photoFileInput=document.getElementById('photoFileInput');
 const timer=document.getElementById('timer');
 const timerText=document.getElementById('timerText');
 
-let userPrivacySettings = {
-  privateAccount: false,
-  allowDm: true,
-  commentsFilter: true,
-  activityStatus: true
-};
-
 let feedData=[
 {
  id:1, author:"Elena Rostova", handle:"@elena_rostova", caption:"Golden hour tones hitting different today ✨ #goldenhour #VIBE", songName:"Golden Hour Vibe", artist:"Elena Rostova", likes:24500, commentsCount:2, shares:1200, views:"112K", avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150", 
@@ -1356,230 +1345,358 @@ let feedData=[
 
 let creatorsDirectory = [
   { name: "Elena Rostova", handle: "@elena_rostova", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150", bio: "Cinematic creator & golden hour lover ✨", followers: "24.5K", following: 180, likes: "150K", isFollowing: false },
-  { name: "Liam Chen", handle: "@liam_chen", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150", bio: "Tech enthusiast & late-night coder 💻", followers: "42.1K", following: 210, likes: "320K", isFollowing: false },
-  { name: "Sophia Taylor", handle: "@sophia_taylor", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150", bio: "Dance, travel, and good vibes only 🌊", followers: "89.3K", following: 340, likes: "890K", isFollowing: true }
+  { name: "Liam Chen", handle: "@liam_chen", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150", bio: "Tech builder, developer & coffee enthusiast 💻", followers: "42.1K", following: 210, likes: "310K", isFollowing: true },
+  { name: "Sophia Taylor", handle: "@sophia_taylor", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150", bio: "Dance, lifestyle & beach content creator 🌊", followers: "89.3K", following: 95, likes: "940K", isFollowing: false }
 ];
 
 let hashtagsDirectory = [
-  { name: "#VIBE", count: "1.2M views", postsCount: 1420 },
-  { name: "#goldenhour", count: "450K views", postsCount: 520 },
-  { name: "#coding", count: "210K views", postsCount: 310 },
-  { name: "#tech", count: "380K views", postsCount: 450 },
-  { name: "#dance", count: "890K views", postsCount: 980 },
-  { name: "#sunset", count: "620K views", postsCount: 710 }
+  { name: "#VIBE", count: "1.2M posts", views: "45.2M views" },
+  { name: "#goldenhour", count: "340K posts", views: "12.8M views" },
+  { name: "#coding", count: "180K posts", views: "6.4M views" },
+  { name: "#dance", count: "890K posts", views: "31.1M views" }
 ];
 
-let myProfile={username:"@creator_vibe",bio:"Short-form content creator & explorer ✨",avatar:"https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150"};
-let activeVideo=null, muted=true, mediaStream=null, recorder=null, chunks=[], recording=false, recordSeconds=0, timerInterval=null, facing="user", selectedMediaList=[];
-let pressTimer=null, isLongPress=false, selectedSound="Original Audio";
-let activeCommentPostId=null;
-let profileActiveTab = 'posts';
-let activeTabKey = 'home';
-let searchFilterType = 'all';
-let currentActiveCreator = null;
+let userPosts = [
+  { id: 101, type: "video", url: "https://assets.mixkit.co/videos/preview/mixkit-tree-branches-in-the-breeze-1195-large.mp4", views: "1.4K", caption: "Nature walking session 🌿 #VIBE" }
+];
 
-// Text styling & Cover state
-let currentTextColor = '#ffffff';
-let currentTextStyle = 'bubble';
-let selectedCoverMediaIndex = 0;
+let savedPosts = [
+  { id: 1, type: "video", url: "https://assets.mixkit.co/videos/preview/mixkit-woman-filming-herself-with-a-smartphone-41270-large.mp4" }
+];
 
-// Settings Sub-panel Navigators & Handlers
-function openPrivateInfoScreen() {
-  document.getElementById('privateInfoScreen').classList.add('open');
-}
-function closePrivateInfoScreen() {
-  document.getElementById('privateInfoScreen').classList.remove('open');
-}
-function openSettingsScreen() {
-  document.getElementById('settingsScreen').classList.add('open');
-}
-function closeSettingsScreen() {
-  document.getElementById('settingsScreen').classList.remove('open');
-}
-function openAccountSettings() {
-  document.getElementById('accountSettingsSubPanel').classList.add('open');
-}
-function openReferenceSettings() {
-  document.getElementById('referenceSettingsSubPanel').classList.add('open');
-}
-function openPushNotificationsSettings() {
-  document.getElementById('pushNotificationsSubPanel').classList.add('open');
-}
-function openVideoPlaybackSettings() {
-  document.getElementById('videoPlaybackSubPanel').classList.add('open');
-}
-function closeSubPanel(panelId) {
-  document.getElementById(panelId).classList.remove('open');
+let currentSearchFilter = 'all';
+
+function showToast(msg) {
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2200);
 }
 
-// Dark Theme Toggle Logic
-function toggleDarkThemeSetting() {
-  const checkbox = document.getElementById('darkThemeCheckbox');
-  if(checkbox) {
-    checkbox.checked = !checkbox.checked;
-    handleDarkThemeToggle(checkbox);
+function renderFeed() {
+  feed.innerHTML = '';
+  feedData.forEach((item, index) => {
+    const reel = document.createElement('div');
+    reel.className = 'reel';
+    if(item.mediaList && item.mediaList[0].type === 'image') reel.classList.add('image');
+    
+    let mediaHTML = '';
+    if (item.mediaList && item.mediaList.length > 1) {
+      mediaHTML = `<div class="reel-media-slider" id="slider-${item.id}">`;
+      item.mediaList.forEach(m => {
+        mediaHTML += `<div class="reel-media-slide">`;
+        if(m.type === 'video') mediaHTML += `<video src="${m.url}" loop playsinline preload="auto"></video>`;
+        else mediaHTML += `<img src="${m.url}">`;
+        mediaHTML += `</div>`;
+      });
+      mediaHTML += `</div><div class="carousel-dots" id="dots-${item.id}">`;
+      item.mediaList.forEach((_, mi) => {
+        mediaHTML += `<div class="carousel-dot ${mi===0?'active':''}"></div>`;
+      });
+      mediaHTML += `</div>`;
+    } else {
+      const m = item.mediaList ? item.mediaList[0] : {type:'video', url:item.videoUrl};
+      if(m.type === 'video') mediaHTML = `<video src="${m.url}" loop playsinline preload="auto"></video>`;
+      else mediaHTML = `<img src="${m.url}">`;
+    }
+
+    reel.innerHTML = `
+      ${mediaHTML}
+      <button class="mute" onclick="toggleMute(this, event)">🔊</button>
+      <div class="video-duration-indicator" id="durationBadge-${item.id}">0:15 / 0:15</div>
+      <div class="video-control-overlay" id="controlOverlay-${item.id}">
+        <button class="custom-pause-btn" onclick="togglePlayPauseExplicit(${item.id}, event)">▶</button>
+      </div>
+      <div class="overlay">
+        <div class="info">
+          <div class="author">
+            <img class="avatar" src="${item.avatar}">
+            <span class="name" onclick="openCreatorProfile('${item.author}')" style="cursor:pointer">${item.author}</span>
+            <button class="follow" onclick="showToast('Followed ${item.author}')">Follow</button>
+          </div>
+          <div class="caption">${formatCaption(item.caption)}</div>
+          <div class="audio" onclick="openSoundModal('${item.songName}', '${item.artist}')">
+            <span>♫</span>
+            <span class="song-title">${item.songName}</span> - <span class="song-artist">${item.artist}</span>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="action ${item.isLiked?'liked':''}" onclick="toggleLike(${item.id}, this)">
+            <div class="circle">♥</div>
+            <div class="count">${formatCount(item.likes)}</div>
+          </button>
+          <button class="action" onclick="openComments(${item.id})">
+            <div class="circle">💬</div>
+            <div class="count">${formatCount(item.commentsCount)}</div>
+          </button>
+          <button class="action ${item.isSaved?'saved':''}" onclick="toggleSave(${item.id}, this)">
+            <div class="circle">⭐</div>
+            <div class="count">Save</div>
+          </button>
+          <button class="action" onclick="showToast('Share link copied to clipboard!')">
+            <div class="circle">↗</div>
+            <div class="count">${formatCount(item.shares)}</div>
+          </button>
+        </div>
+      </div>
+    `;
+    
+    const vid = reel.querySelector('video');
+    if(vid) {
+      vid.muted = true;
+      reel.addEventListener('click', (e) => {
+        if(e.target.closest('.actions') || e.target.closest('.author') || e.target.closest('.audio')) return;
+        togglePlayPause(vid, item.id);
+      });
+      reel.addEventListener('dblclick', (e) => {
+        triggerDoubleTapHeart(e, reel, item.id);
+      });
+    }
+    
+    feed.appendChild(reel);
+  });
+  setupObserver();
+}
+
+function formatCaption(text) {
+  return text.replace(/(#\w+)/g, '<span>$1</span>');
+}
+
+function formatCount(num) {
+  if(num >= 1000) return (num/1000).toFixed(1) + 'K';
+  return num;
+}
+
+function toggleMute(btn, e) {
+  e.stopPropagation();
+  const reel = btn.closest('.reel');
+  const vid = reel.querySelector('video');
+  if(vid) {
+    vid.muted = !vid.muted;
+    btn.textContent = vid.muted ? '🔇' : '🔊';
   }
 }
-function handleDarkThemeToggle(checkbox) {
-  if(checkbox.checked) {
-    document.documentElement.classList.add('light-theme');
-    showToast('Light Theme Activated');
+
+function togglePlayPause(vid, id) {
+  const overlay = document.getElementById(`controlOverlay-${id}`);
+  const btn = overlay.querySelector('.custom-pause-btn');
+  if(vid.paused) {
+    vid.play();
+    overlay.classList.remove('show');
   } else {
-    document.documentElement.classList.remove('light-theme');
-    showToast('Dark Theme Activated');
+    vid.pause();
+    btn.textContent = '▶';
+    overlay.classList.add('show');
   }
 }
 
-// Video Quality Setting Handler
-function selectVideoQuality(qualityName) {
-  document.getElementById('currentQualityLabel').textContent = qualityName + ' ›';
-  showToast(`Streaming quality set to ${qualityName}`);
+function togglePlayPauseExplicit(id, e) {
+  e.stopPropagation();
+  const reel = feed.children[feedData.findIndex(f => f.id === id)];
+  const vid = reel.querySelector('video');
+  if(vid) togglePlayPause(vid, id);
 }
 
-// Discover & Search State & Execution
+function triggerDoubleTapHeart(e, reel, id) {
+  const heart = document.createElement('div');
+  heart.className = 'double-tap-heart';
+  heart.innerHTML = '♥';
+  const rect = reel.getBoundingClientRect();
+  heart.style.left = `${e.clientX - rect.left}px`;
+  heart.style.top = `${e.clientY - rect.top}px`;
+  reel.appendChild(heart);
+  setTimeout(() => heart.remove(), 800);
+  
+  const item = feedData.find(f => f.id === id);
+  if(!item.isLiked) {
+    item.isLiked = true;
+    item.likes++;
+    renderFeed();
+  }
+}
+
+function toggleLike(id, btn) {
+  const item = feedData.find(f => f.id === id);
+  item.isLiked = !item.isLiked;
+  item.likes += item.isLiked ? 1 : -1;
+  btn.classList.toggle('liked', item.isLiked);
+  btn.querySelector('.count').textContent = formatCount(item.likes);
+}
+
+function toggleSave(id, btn) {
+  const item = feedData.find(f => f.id === id);
+  item.isSaved = !item.isSaved;
+  btn.classList.toggle('saved', item.isSaved);
+  showToast(item.isSaved ? 'Video saved to favorites' : 'Removed from favorites');
+}
+
+function setupObserver() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const vid = entry.target.querySelector('video');
+      if(vid) {
+        if(entry.isIntersecting) {
+          vid.currentTime = 0;
+          vid.play().catch(() => {});
+        } else {
+          vid.pause();
+        }
+      }
+    });
+  }, {threshold: 0.6});
+  
+  document.querySelectorAll('.reel').forEach(reel => observer.observe(reel));
+}
+
+// Navigation & Screens
+document.querySelectorAll('.nav button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.getAttribute('data-tab');
+    if(!tab) return;
+    document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    
+    if(tab === 'home') {
+      closeAllScreens();
+    } else if(tab === 'discover') {
+      openScreen(discover);
+      renderDiscoverResults('');
+    } else if(tab === 'create') {
+      openStudio();
+    } else if(tab === 'inbox') {
+      openScreen(inbox);
+    } else if(tab === 'profile') {
+      openScreen(profile);
+      renderUserProfilePosts('posts');
+    }
+  });
+});
+
+function openScreen(el) {
+  el.classList.add('open');
+}
+function closeScreen(el) {
+  el.classList.remove('open');
+}
+function closeAllScreens() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('open'));
+}
+
+document.querySelectorAll('.screenHead .close').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const targetId = btn.getAttribute('data-close');
+    if(targetId) {
+      closeScreen(document.getElementById(targetId));
+    } else {
+      btn.closest('.screen').classList.remove('open');
+    }
+  });
+});
+
+// Discover & Search Engine Logic
 const searchInput = document.getElementById('searchInput');
 const discoverResultsContainer = document.getElementById('discoverResultsContainer');
 
 document.querySelectorAll('.discoverTab').forEach(tab => {
-  tab.onclick = () => {
+  tab.addEventListener('click', () => {
     document.querySelectorAll('.discoverTab').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
-    searchFilterType = tab.getAttribute('data-search-filter');
-    executeSearch(searchInput.value.trim());
-  };
+    currentSearchFilter = tab.getAttribute('data-search-filter');
+    renderDiscoverResults(searchInput.value.trim());
+  });
 });
 
-searchInput.oninput = (e) => {
-  executeSearch(e.target.value.trim());
-};
+searchInput.addEventListener('input', (e) => {
+  renderDiscoverResults(e.target.value.trim());
+});
 
-function executeSearch(query) {
+function renderDiscoverResults(query) {
+  let html = '';
   const q = query.toLowerCase();
-  discoverResultsContainer.innerHTML = '';
 
-  const matchedPosts = feedData.filter(p => 
-    p.caption.toLowerCase().includes(q) || 
-    p.author.toLowerCase().includes(q) ||
-    (p.handle && p.handle.toLowerCase().includes(q)) ||
-    p.songName.toLowerCase().includes(q)
-  );
+  // Filter Creators
+  const matchedCreators = creatorsDirectory.filter(c => c.name.toLowerCase().includes(q) || c.handle.toLowerCase().includes(q));
+  // Filter Hashtags
+  const matchedHashtags = hashtagsDirectory.filter(h => h.name.toLowerCase().includes(q));
+  // Filter Posts
+  const matchedPosts = feedData.filter(p => p.caption.toLowerCase().includes(q) || p.author.toLowerCase().includes(q));
 
-  const matchedCreators = creatorsDirectory.filter(c =>
-    c.name.toLowerCase().includes(q) || c.handle.toLowerCase().includes(q) || c.bio.toLowerCase().includes(q)
-  );
-
-  const matchedHashtags = hashtagsDirectory.filter(h =>
-    h.name.toLowerCase().includes(q)
-  );
-
-  if (searchFilterType === 'all' || searchFilterType === 'posts') {
-    if (matchedPosts.length > 0) {
-      const sectionHeader = document.createElement('div');
-      sectionHeader.className = 'discoverSectionTitle';
-      sectionHeader.textContent = 'Posts (' + matchedPosts.length + ')';
-      discoverResultsContainer.appendChild(sectionHeader);
-
-      const grid = document.createElement('div');
-      grid.className = 'discoverGrid';
-      matchedPosts.forEach(post => {
-        const item = document.createElement('div');
-        item.className = 'discoverGridItem';
-        const media = post.mediaList && post.mediaList.length > 0 ? post.mediaList[0] : {type:'image', url:''};
-        if(media.type === 'video') {
-          item.innerHTML = `<video src="${media.url}" muted playsinline></video>`;
-        } else {
-          item.innerHTML = `<img src="${media.url}" alt="">`;
-        }
-        item.onclick = () => {
-          discover.classList.remove('open');
-          updateNavActiveState('home');
-          pauseAllFeedVideos();
-          const idx = feedData.findIndex(f => f.id === post.id);
-          if(idx !== -1) { feed.children[idx].scrollIntoView({behavior:'smooth'}); }
-        };
-        grid.appendChild(item);
-      });
-      discoverResultsContainer.appendChild(grid);
-    }
-  }
-
-  if (searchFilterType === 'all' || searchFilterType === 'creators') {
+  if (currentSearchFilter === 'all' || currentSearchFilter === 'creators') {
     if (matchedCreators.length > 0) {
-      const sectionHeader = document.createElement('div');
-      sectionHeader.className = 'discoverSectionTitle';
-      sectionHeader.textContent = 'Creators (' + matchedCreators.length + ')';
-      discoverResultsContainer.appendChild(sectionHeader);
-
-      const list = document.createElement('div');
-      list.className = 'creatorsListContainer';
-      matchedCreators.forEach(creator => {
-        const row = document.createElement('div');
-        row.className = 'creatorSearchRow';
-        row.innerHTML = `
-          <div class="creatorSearchInfo">
-            <img class="creatorSearchAvatar" src="${creator.avatar}">
-            <div class="creatorSearchMeta">
-              <div class="name">${creator.name}</div>
-              <div class="handle">${creator.handle} • ${creator.followers} followers</div>
+      html += `<div class="discoverSectionTitle">Creators</div><div class="creatorsListContainer">`;
+      matchedCreators.forEach(c => {
+        html += `
+          <div class="creatorSearchRow" onclick="openCreatorProfile('${c.name}')">
+            <div class="creatorSearchInfo">
+              <img class="creatorSearchAvatar" src="${c.avatar}">
+              <div class="creatorSearchMeta">
+                <div class="name">${c.name}</div>
+                <div class="handle">${c.handle} • ${c.followers} followers</div>
+              </div>
             </div>
+            <button class="creatorFollowBtn ${c.isFollowing?'following':''}" onclick="event.stopPropagation(); toggleCreatorFollow('${c.handle}', this)">${c.isFollowing?'Following':'Follow'}</button>
           </div>
-          <button class="creatorFollowBtn ${creator.isFollowing ? 'following' : ''}">${creator.isFollowing ? 'Following' : 'Follow'}</button>
         `;
-        row.onclick = (e) => {
-          if(e.target.tagName === 'BUTTON') return;
-          openCreatorProfile(creator);
-        };
-        row.querySelector('button').onclick = (e) => {
-          e.stopPropagation();
-          creator.isFollowing = !creator.isFollowing;
-          e.target.textContent = creator.isFollowing ? 'Following' : 'Follow';
-          e.target.classList.toggle('following', creator.isFollowing);
-          showToast(creator.isFollowing ? `Following ${creator.name} ✨` : `Unfollowed ${creator.name}`);
-        };
-        list.appendChild(row);
       });
-      discoverResultsContainer.appendChild(list);
+      html += `</div>`;
     }
   }
 
-  if (searchFilterType === 'all' || searchFilterType === 'hashtags') {
+  if (currentSearchFilter === 'all' || currentSearchFilter === 'hashtags') {
     if (matchedHashtags.length > 0) {
-      const sectionHeader = document.createElement('div');
-      sectionHeader.className = 'discoverSectionTitle';
-      sectionHeader.textContent = 'Hashtags (' + matchedHashtags.length + ')';
-      discoverResultsContainer.appendChild(sectionHeader);
-
-      const list = document.createElement('div');
-      list.className = 'hashtagsListContainer';
-      matchedHashtags.forEach(tag => {
-        const row = document.createElement('div');
-        row.className = 'hashtagSearchRow';
-        row.innerHTML = `
-          <div style="display:flex; align-items:center;">
-            <div class="hashtagSymbol">#</div>
-            <div class="hashtagDetails">
-              <div class="hashtagName">${tag.name}</div>
-              <div class="hashtagCount">${tag.count} • ${tag.postsCount} posts</div>
+      html += `<div class="discoverSectionTitle">Hashtags</div><div class="hashtagsListContainer">`;
+      matchedHashtags.forEach(h => {
+        html += `
+          <div class="hashtagSearchRow" onclick="openHashtagModal('${h.name}')">
+            <div style="display:flex; align-items:center;">
+              <div class="hashtagSymbol">#</div>
+              <div class="hashtagDetails">
+                <div class="hashtagName">${h.name}</div>
+                <div class="hashtagCount">${h.count}</div>
+              </div>
             </div>
+            <span style="color:var(--muted); font-size:14px;">›</span>
           </div>
-          <span style="font-size:16px; color:var(--muted);">›</span>
         `;
-        row.onclick = () => {
-          openHashtagModal(tag);
-        };
-        list.appendChild(row);
       });
-      discoverResultsContainer.appendChild(list);
+      html += `</div>`;
     }
   }
 
-  if(discoverResultsContainer.innerHTML === '') {
-    discoverResultsContainer.innerHTML = `<div style="text-align:center; color:var(--muted); padding:30px; font-size:14px;">No results found for "${query}"</div>`;
+  if (currentSearchFilter === 'all' || currentSearchFilter === 'posts') {
+    if (matchedPosts.length > 0) {
+      html += `<div class="discoverSectionTitle">Posts</div><div class="discoverGrid">`;
+      matchedPosts.forEach(p => {
+        const media = p.mediaList ? p.mediaList[0] : {type:'video', url:p.videoUrl};
+        html += `
+          <div class="discoverGridItem" onclick="showToast('Opened post by ${p.author}')">
+            ${media.type==='video'?`<video src="${media.url}"></video>`:`<img src="${media.url}">`}
+          </div>
+        `;
+      });
+      html += `</div>`;
+    }
+  }
+
+  if (!html) {
+    html = `<div style="text-align:center; color:var(--muted); padding:30px 0;">No results found for "${query}"</div>`;
+  }
+
+  discoverResultsContainer.innerHTML = html;
+}
+
+function toggleCreatorFollow(handle, btn) {
+  const creator = creatorsDirectory.find(c => c.handle === handle);
+  if(creator) {
+    creator.isFollowing = !creator.isFollowing;
+    btn.classList.toggle('following', creator.isFollowing);
+    btn.textContent = creator.isFollowing ? 'Following' : 'Follow';
+    showToast(creator.isFollowing ? `Following ${creator.name}` : `Unfollowed ${creator.name}`);
   }
 }
 
-function openCreatorProfile(creator) {
-  currentActiveCreator = creator;
+// Creator Profile Modal
+function openCreatorProfile(name) {
+  const creator = creatorsDirectory.find(c => c.name === name) || creatorsDirectory[0];
   document.getElementById('modalCreatorHeaderName').textContent = creator.name;
   document.getElementById('modalCreatorAvatar').src = creator.avatar;
   document.getElementById('modalCreatorName').textContent = creator.name;
@@ -1588,593 +1705,267 @@ function openCreatorProfile(creator) {
   document.getElementById('modalCreatorFollowers').textContent = creator.followers;
   document.getElementById('modalCreatorFollowing').textContent = creator.following;
   document.getElementById('modalCreatorLikes').textContent = creator.likes;
-
+  
   const followBtn = document.getElementById('modalCreatorFollowBtn');
   followBtn.textContent = creator.isFollowing ? 'Following' : 'Follow';
   followBtn.style.background = creator.isFollowing ? 'transparent' : 'var(--pink)';
-  followBtn.style.border = creator.isFollowing ? '1px solid rgba(255,255,255,0.2)' : '1px solid var(--pink)';
+  followBtn.style.borderColor = creator.isFollowing ? 'rgba(255,255,255,0.2)' : 'var(--pink)';
 
   const grid = document.getElementById('modalCreatorPostsGrid');
-  grid.innerHTML = '';
-  const creatorPosts = feedData.filter(p => p.author === creator.name);
-  creatorPosts.forEach(post => {
-    const thumb = document.createElement('div');
-    thumb.className = 'userPostThumb';
-    const media = post.mediaList && post.mediaList.length > 0 ? post.mediaList[0] : {type:'image', url:''};
-    if(media.type === 'video') {
-      thumb.innerHTML = `<video src="${media.url}" muted playsinline></video>`;
-    } else {
-      thumb.innerHTML = `<img src="${media.url}" alt="">`;
-    }
-    thumb.onclick = () => {
-      document.getElementById('creatorProfileModal').classList.remove('open');
-      discover.classList.remove('open');
-      updateNavActiveState('home');
-      pauseAllFeedVideos();
-      const idx = feedData.findIndex(f => f.id === post.id);
-      if(idx !== -1) { feed.children[idx].scrollIntoView({behavior:'smooth'}); }
-    };
-    grid.appendChild(thumb);
+  let gridHtml = '';
+  feedData.filter(f => f.author === creator.name).forEach(p => {
+    const m = p.mediaList ? p.mediaList[0] : {type:'video', url:p.videoUrl};
+    gridHtml += `<div class="userPostThumb">${m.type==='video'?`<video src="${m.url}"></video>`:`<img src="${m.url}">`}</div>`;
   });
+  if(!gridHtml) {
+    gridHtml = `<div style="grid-column:span 3; text-align:center; color:var(--muted); padding:20px;">No posts published yet</div>`;
+  }
+  grid.innerHTML = gridHtml;
 
-  document.getElementById('creatorProfileModal').classList.add('open');
+  openScreen(document.getElementById('creatorProfileModal'));
 }
 
 function closeCreatorProfileModal() {
-  document.getElementById('creatorProfileModal').classList.remove('open');
+  closeScreen(document.getElementById('creatorProfileModal'));
 }
 
 function toggleModalCreatorFollow() {
-  if(!currentActiveCreator) return;
-  currentActiveCreator.isFollowing = !currentActiveCreator.isFollowing;
-  const followBtn = document.getElementById('modalCreatorFollowBtn');
-  followBtn.textContent = currentActiveCreator.isFollowing ? 'Following' : 'Follow';
-  followBtn.style.background = currentActiveCreator.isFollowing ? 'transparent' : 'var(--pink)';
-  followBtn.style.border = currentActiveCreator.isFollowing ? '1px solid rgba(255,255,255,0.2)' : '1px solid var(--pink)';
-  showToast(currentActiveCreator.isFollowing ? `Following ${currentActiveCreator.name} ✨` : `Unfollowed ${currentActiveCreator.name}`);
-  executeSearch(searchInput.value.trim());
+  const name = document.getElementById('modalCreatorName').textContent;
+  const creator = creatorsDirectory.find(c => c.name === name);
+  if(creator) {
+    creator.isFollowing = !creator.isFollowing;
+    const followBtn = document.getElementById('modalCreatorFollowBtn');
+    followBtn.textContent = creator.isFollowing ? 'Following' : 'Follow';
+    followBtn.style.background = creator.isFollowing ? 'transparent' : 'var(--pink)';
+    followBtn.style.borderColor = creator.isFollowing ? 'rgba(255,255,255,0.2)' : 'var(--pink)';
+    showToast(creator.isFollowing ? `Following ${creator.name}` : `Unfollowed ${creator.name}`);
+  }
 }
 
-function openHashtagModal(tag) {
-  document.getElementById('hashtagModalTitle').textContent = tag.name;
-  document.getElementById('hashtagModalName').textContent = tag.name;
-  document.getElementById('hashtagModalViews').textContent = `${tag.count} on platform`;
+// Hashtag Modal
+function openHashtagModal(tagName) {
+  document.getElementById('hashtagModalTitle').textContent = tagName;
+  document.getElementById('hashtagModalName').textContent = tagName;
+  const tagObj = hashtagsDirectory.find(h => h.name === tagName) || {views: "1.2M views"};
+  document.getElementById('hashtagModalViews').textContent = `${tagObj.views} on platform`;
 
   const grid = document.getElementById('hashtagModalPostsGrid');
-  grid.innerHTML = '';
-  const tagPosts = feedData.filter(p => p.caption.toLowerCase().includes(tag.name.toLowerCase()));
-  tagPosts.forEach(post => {
-    const thumb = document.createElement('div');
-    thumb.className = 'userPostThumb';
-    const media = post.mediaList && post.mediaList.length > 0 ? post.mediaList[0] : {type:'image', url:''};
-    if(media.type === 'video') {
-      thumb.innerHTML = `<video src="${media.url}" muted playsinline></video>`;
-    } else {
-      thumb.innerHTML = `<img src="${media.url}" alt="">`;
-    }
-    thumb.onclick = () => {
-      document.getElementById('hashtagModal').classList.remove('open');
-      discover.classList.remove('open');
-      updateNavActiveState('home');
-      pauseAllFeedVideos();
-      const idx = feedData.findIndex(f => f.id === post.id);
-      if(idx !== -1) { feed.children[idx].scrollIntoView({behavior:'smooth'}); }
-    };
-    grid.appendChild(thumb);
+  let html = '';
+  feedData.forEach(p => {
+    const m = p.mediaList ? p.mediaList[0] : {type:'video', url:p.videoUrl};
+    html += `<div class="discoverGridItem">${m.type==='video'?`<video src="${m.url}"></video>`:`<img src="${m.url}">`}</div>`;
   });
+  grid.innerHTML = html;
 
-  document.getElementById('hashtagModal').classList.add('open');
+  openScreen(document.getElementById('hashtagModal'));
 }
 
 function closeHashtagModal() {
-  document.getElementById('hashtagModal').classList.remove('open');
+  closeScreen(document.getElementById('hashtagModal'));
 }
 
-executeSearch('');
-
-// Camera and Recording Logic
-async function startCamera() {
-  try {
-    if (mediaStream) {
-      mediaStream.getTracks().forEach(t => t.stop());
-    }
-    mediaStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: facing },
-      audio: true
-    });
-    camera.srcObject = mediaStream;
-  } catch (err) {
-    console.warn("Camera permission error or not supported:", err);
-    showToast("Camera access unavailable. Using simulated mode.");
-  }
-}
-
-function stopCamera() {
-  if (mediaStream) {
-    mediaStream.getTracks().forEach(t => t.stop());
-    mediaStream = null;
-  }
-}
-
-document.getElementById('flipBtn').onclick = () => {
-  facing = facing === 'user' ? 'environment' : 'user';
-  startCamera();
-};
-
-const shutterBtn = document.getElementById('shutter');
-shutterBtn.onmousedown = () => {
-  isLongPress = false;
-  pressTimer = setTimeout(() => {
-    isLongPress = true;
-    startVideoRecording();
-  }, 500);
-};
-
-shutterBtn.onmouseup = () => {
-  clearTimeout(pressTimer);
-  if (recording) {
-    stopVideoRecording();
-  } else if (!isLongPress) {
-    takeSnapshotPhoto();
-  }
-};
-
-shutterBtn.ontouchstart = (e) => {
-  e.preventDefault();
-  isLongPress = false;
-  pressTimer = setTimeout(() => {
-    isLongPress = true;
-    startVideoRecording();
-  }, 500);
-};
-
-shutterBtn.ontouchend = (e) => {
-  e.preventDefault();
-  clearTimeout(pressTimer);
-  if (recording) {
-    stopVideoRecording();
-  } else if (!isLongPress) {
-    takeSnapshotPhoto();
-  }
-};
-
-function takeSnapshotPhoto() {
-  if (!camera.videoWidth) {
-    showToast('Camera is still loading...');
-    return;
-  }
-  const canvas = document.createElement('canvas');
-  canvas.width = camera.videoWidth;
-  canvas.height = camera.videoHeight;
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(camera, 0, 0);
-  canvas.toBlob(blob => {
-    const photoUrl = URL.createObjectURL(blob);
-    selectedMediaList = [{ type: 'image', url: photoUrl }];
-    openMediaEditor();
-    showToast('Photo captured! 📸');
-  }, 'image/jpeg');
-}
-
-function startVideoRecording() {
-  if (!mediaStream) {
-    showToast('Camera stream active required');
-    return;
-  }
-  chunks = [];
-  try {
-    recorder = new MediaRecorder(mediaStream, { mimeType: 'video/webm' });
-  } catch (e) {
-    try { recorder = new MediaRecorder(mediaStream); } catch(err) {
-      showToast('Video recording not supported');
-      return;
-    }
-  }
-
-  recorder.ondataavailable = e => {
-    if (e.data && e.data.size > 0) chunks.push(e.data);
-  };
-
-  recorder.onstop = () => {
-    const blob = new Blob(chunks, { type: 'video/webm' });
-    const videoUrl = URL.createObjectURL(blob);
-    selectedMediaList = [{ type: 'video', url: videoUrl }];
-    openMediaEditor();
-    showToast('Video recorded successfully! 🎥');
-  };
-
-  recorder.start();
-  recording = true;
-  shutterBtn.classList.add('recording');
-  timer.classList.remove('hidden');
-  recordSeconds = 0;
-  timerText.textContent = '00:00';
-  timerInterval = setInterval(() => {
-    recordSeconds++;
-    const m = Math.floor(recordSeconds / 60);
-    const s = recordSeconds % 60;
-    timerText.textContent = `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
-    if (recordSeconds >= 600) stopVideoRecording();
-  }, 1000);
-}
-
-function stopVideoRecording() {
-  if (!recording || !recorder) return;
-  recorder.stop();
-  recording = false;
-  shutterBtn.classList.remove('recording');
-  timer.classList.add('hidden');
-  clearInterval(timerInterval);
-}
-
-videoFileInput.onchange = (e) => {
-  const files = Array.from(e.target.files);
-  if(!files.length) return;
-  selectedMediaList = files.map(f => ({ type: 'video', url: URL.createObjectURL(f) }));
-  openMediaEditor();
-};
-
-photoFileInput.onchange = (e) => {
-  const files = Array.from(e.target.files);
-  if(!files.length) return;
-  selectedMediaList = files.map(f => ({ type: 'image', url: URL.createObjectURL(f) }));
-  openMediaEditor();
-};
-
-function openMediaEditor() {
-  studio.classList.remove('open');
-  stopCamera();
-  editorScreen.classList.add('open');
-  setupEditorContainer();
-  buildThumbnailStrip();
-}
-
-function setupEditorContainer() {
-  const container = document.getElementById('editorCanvasContainer');
-  const existingMedia = container.querySelectorAll('video, img, .reel-media-slider');
-  existingMedia.forEach(el => el.remove());
-
-  if (selectedMediaList.length === 1) {
-    container.classList.remove('multi-item');
-    const m = selectedMediaList[0];
-    if (m.type === 'video') {
-      const vid = document.createElement('video');
-      vid.src = m.url;
-      vid.autoplay = true;
-      vid.loop = true;
-      vid.muted = false;
-      vid.playsInline = true;
-      vid.id = "editorActiveVideo";
-      container.insertBefore(vid, container.firstChild);
-    } else {
-      const img = document.createElement('img');
-      img.src = m.url;
-      img.id = "editorActiveImage";
-      container.insertBefore(img, container.firstChild);
-    }
-  } else {
-    container.classList.add('multi-item');
-    const slider = document.createElement('div');
-    slider.className = 'reel-media-slider';
-    selectedMediaList.forEach(m => {
-      const slide = document.createElement('div');
-      slide.className = 'reel-media-slide';
-      if (m.type === 'video') {
-        slide.innerHTML = `<video src="${m.url}" loop autoplay playsinline muted></video>`;
-      } else {
-        slide.innerHTML = `<img src="${m.url}" alt="">`;
-      }
-      slider.appendChild(slide);
-    });
-    container.insertBefore(slider, container.firstChild);
-  }
-}
-
-function buildThumbnailStrip() {
-  const strip = document.getElementById('editorThumbnailStrip');
-  if(!strip) return;
-  strip.innerHTML = '';
-  selectedCoverMediaIndex = 0;
-  selectedMediaList.forEach((m, idx) => {
-    const thumb = document.createElement('div');
-    thumb.className = `thumbnail-option ${idx === 0 ? 'active' : ''}`;
-    if(m.type === 'video') {
-      thumb.innerHTML = `<video src="${m.url}" muted></video>`;
-    } else {
-      thumb.innerHTML = `<img src="${m.url}">`;
-    }
-    thumb.onclick = () => {
-      selectedCoverMediaIndex = idx;
-      strip.querySelectorAll('.thumbnail-option').forEach(t => t.classList.remove('active'));
-      thumb.classList.add('active');
-      showToast(`Cover thumbnail set to item #${idx + 1} 🖼️`);
-    };
-    strip.appendChild(thumb);
+// Profile Sub-tabs rendering
+document.querySelectorAll('.profileSubTab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.profileSubTab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const tabName = tab.getAttribute('data-profile-tab');
+    renderUserProfilePosts(tabName);
   });
-}
-
-function closeEditorDrawers() {
-  document.querySelectorAll('.editor-tool-drawer').forEach(d => d.classList.remove('open'));
-  document.querySelectorAll('.edit-tool-btn').forEach(b => b.classList.remove('active'));
-}
-
-function toggleEditorDrawer(drawerId) {
-  const drawer = document.getElementById(drawerId);
-  const isOpen = drawer.classList.contains('open');
-  closeEditorDrawers();
-  if (!isOpen) {
-    drawer.classList.add('open');
-  }
-}
-
-function selectEditorMusic(songTitle, artistName, index) {
-  selectedSound = songTitle;
-  const labelEl = document.getElementById('currentSoundLabel');
-  if(labelEl) labelEl.textContent = songTitle;
-
-  document.getElementById('drawerSelectedSongTitle').textContent = songTitle;
-  document.getElementById('drawerSelectedSongArtist').textContent = artistName;
-
-  document.querySelectorAll('.music-list-row').forEach((row, idx) => {
-    const btn = row.querySelector('.select-track-btn');
-    if (idx === index) {
-      row.classList.add('active');
-      btn.textContent = 'Selected';
-      btn.classList.add('selected');
-    } else {
-      row.classList.remove('active');
-      btn.textContent = 'Select';
-      btn.classList.remove('selected');
-    }
-  });
-
-  showToast(`Track selected: ${songTitle} 🎵`);
-}
-
-function applyEditorFilter(filterStyle, btnEl) {
-  const container = document.getElementById('editorCanvasContainer');
-  container.querySelectorAll('video, img').forEach(el => { el.style.filter = filterStyle; });
-  const drawer = document.getElementById('editorEffectsDrawer');
-  if (drawer) {
-    drawer.querySelectorAll('.editorFilterChip').forEach(chip => chip.classList.remove('active'));
-  }
-  if (btnEl) btnEl.classList.add('active');
-  showToast('Effect applied! ✨');
-}
-
-function setEditorTextColor(colorHex, btnEl) {
-  currentTextColor = colorHex;
-  const row = btnEl.parentElement;
-  row.querySelectorAll('.color-picker-btn').forEach(b => b.classList.remove('active'));
-  btnEl.classList.add('active');
-}
-
-function setEditorTextStyle(styleName, btnEl) {
-  currentTextStyle = styleName;
-  const row = btnEl.parentElement;
-  row.querySelectorAll('.filter').forEach(b => b.classList.remove('active'));
-  btnEl.classList.add('active');
-}
-
-function addStickerToCanvas(emoji) {
-  const layer = document.getElementById('editorOverlaysLayer');
-  const stickerEl = document.createElement('div');
-  stickerEl.className = 'editorOverlayElement';
-  stickerEl.textContent = emoji;
-  stickerEl.style.left = '40%';
-  stickerEl.style.top = '40%';
-  makeElementDraggable(stickerEl);
-  layer.appendChild(stickerEl);
-  closeEditorDrawers();
-  showToast('Sticker added!');
-}
-
-function addMentionToCanvas(mentionText) {
-  const layer = document.getElementById('editorOverlaysLayer');
-  const mentionEl = document.createElement('div');
-  mentionEl.className = 'editorOverlayElement text-element';
-  mentionEl.textContent = mentionText;
-  mentionEl.style.left = '30%';
-  mentionEl.style.top = '50%';
-  applyTextStyleToElement(mentionEl);
-  makeElementDraggable(mentionEl);
-  layer.appendChild(mentionEl);
-  closeEditorDrawers();
-  showToast('Mention added!');
-}
-
-function commitEditorText() {
-  const input = document.getElementById('editorTextInputField');
-  const text = input.value.trim();
-  if(!text) {
-    showToast('Please type some text');
-    return;
-  }
-  const layer = document.getElementById('editorOverlaysLayer');
-  const textEl = document.createElement('div');
-  textEl.className = 'editorOverlayElement text-element';
-  textEl.textContent = text;
-  textEl.style.left = '25%';
-  textEl.style.top = '45%';
-  applyTextStyleToElement(textEl);
-  makeElementDraggable(textEl);
-  layer.appendChild(textEl);
-  input.value = '';
-  closeEditorDrawers();
-  showToast('Text overlay added! ✨');
-}
-
-function applyTextStyleToElement(el) {
-  el.style.color = currentTextColor;
-  if(currentTextStyle === 'bubble') {
-    el.style.background = 'rgba(0,0,0,0.6)';
-    el.style.borderRadius = '12px';
-    el.style.backdropFilter = 'blur(6px)';
-    el.style.textShadow = 'none';
-  } else if(currentTextStyle === 'neon') {
-    el.style.background = 'transparent';
-    el.style.borderRadius = '0';
-    el.style.backdropFilter = 'none';
-    el.style.textShadow = `0 0 10px ${currentTextColor}, 0 0 20px ${currentTextColor}`;
-  } else {
-    el.style.background = 'transparent';
-    el.style.borderRadius = '0';
-    el.style.backdropFilter = 'none';
-    el.style.textShadow = '0 2px 4px rgba(0,0,0,0.8)';
-  }
-}
-
-function makeElementDraggable(elm) {
-  let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-  elm.onmousedown = dragMouseDown;
-  elm.onttouchstart = dragTouchStart;
-
-  function dragMouseDown(e) {
-    e.preventDefault();
-    pos3 = e.clientX;
-    pos4 = e.clientY;
-    document.onmouseup = closeDragElement;
-    document.onmousemove = elementDrag;
-  }
-
-  function elementDrag(e) {
-    e.preventDefault();
-    pos1 = pos3 - e.clientX;
-    pos2 = pos4 - e.clientY;
-    pos3 = e.clientX;
-    pos4 = e.clientY;
-    elm.style.top = (elm.offsetTop - pos2) + "px";
-    elm.style.left = (elm.offsetLeft - pos1) + "px";
-  }
-
-  function closeDragElement() {
-    document.onmouseup = null;
-    document.onmousemove = null;
-  }
-
-  function dragTouchStart(e) {
-    const touch = e.touches[0];
-    pos3 = touch.clientX;
-    pos4 = touch.clientY;
-    document.ontouchend = closeTouchDrag;
-    document.ontouchmove = touchElementDrag;
-  }
-
-  function touchElementDrag(e) {
-    const touch = e.touches[0];
-    pos1 = pos3 - touch.clientX;
-    pos2 = pos4 - touch.clientY;
-    pos3 = touch.clientX;
-    pos4 = touch.clientY;
-    elm.style.top = (elm.offsetTop - pos2) + "px";
-    elm.style.left = (elm.offsetLeft - pos1) + "px";
-  }
-
-  function closeTouchDrag() {
-    document.ontouchend = null;
-    document.ontouchmove = null;
-  }
-}
-
-// Publishing & Main Feed Rendering
-document.getElementById('editorQuickPostBtn').onclick = () => {
-  const caption = document.getElementById('editorCaptionInput').value.trim();
-  publishNewPost(caption);
-};
-
-function publishNewPost(captionText) {
-  if(selectedMediaList.length === 0) {
-    showToast('No media selected to post');
-    return;
-  }
-  const newPost = {
-    id: Date.now(),
-    author: myProfile.username,
-    handle: myProfile.username,
-    caption: captionText || 'New vibe! ✨ #VIBE',
-    songName: selectedSound,
-    artist: 'Creator VIBE',
-    likes: 1,
-    commentsCount: 0,
-    shares: 0,
-    views: '1',
-    avatar: myProfile.avatar,
-    mediaList: selectedMediaList,
-    coverIndex: selectedCoverMediaIndex,
-    isTagged: false,
-    commentsList: []
-  };
-
-  feedData.unshift(newPost);
-  editorScreen.classList.remove('open');
-  renderFeed();
-  showToast('VIBE posted successfully! 🎉');
-  updateNavActiveState('home');
-  feed.scrollTop = 0;
-}
-
-// Basic navigation & feed rendering initialization functions
-function renderFeed() {
-  feed.innerHTML = '';
-  feedData.forEach((post, index) => {
-    const reel = document.createElement('div');
-    reel.className = 'reel';
-    if(post.mediaList && post.mediaList.length > 1) {
-      let sliderHTML = `<div class="reel-media-slider">`;
-      post.mediaList.forEach(m => {
-        if(m.type === 'video') {
-          sliderHTML += `<div class="reel-media-slide"><video src="${m.url}" loop playsinline muted></video></div>`;
-        } else {
-          sliderHTML += `<div class="reel-media-slide"><img src="${m.url}" alt=""></div>`;
-        }
-      });
-      sliderHTML += `</div>`;
-      reel.innerHTML = sliderHTML;
-    } else {
-      const media = post.mediaList && post.mediaList.length > 0 ? post.mediaList[0] : {type:'image', url:''};
-      if(media.type === 'video') {
-        reel.innerHTML = `<video src="${media.url}" loop playsinline muted></video>`;
-      } else {
-        reel.classList.add('image');
-        reel.innerHTML = `<img src="${media.url}" alt="">`;
-      }
-    }
-    feed.appendChild(reel);
-  });
-}
-
-function updateNavActiveState(tabKey) {
-  activeTabKey = tabKey;
-  document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
-  if(tabKey === 'home') document.getElementById('navHomeBtn').classList.add('active');
-  if(tabKey === 'discover') document.getElementById('navDiscoverBtn').classList.add('active');
-  if(tabKey === 'inbox') document.getElementById('navInboxBtn').classList.add('active');
-  if(tabKey === 'profile') document.getElementById('navProfileBtn').classList.add('active');
-}
-
-function showToast(msg) {
-  toast.textContent = msg;
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 2500);
-}
-
-document.getElementById('navHomeBtn').onclick = () => { updateNavActiveState('home'); };
-document.getElementById('navDiscoverBtn').onclick = () => { discover.classList.add('open'); updateNavActiveState('discover'); };
-document.getElementById('navCreateBtn').onclick = () => { studio.classList.add('open'); startCamera(); };
-document.getElementById('navInboxBtn').onclick = () => { inbox.classList.add('open'); updateNavActiveState('inbox'); };
-document.getElementById('navProfileBtn').onclick = () => { profile.classList.add('open'); updateNavActiveState('profile'); };
-
-document.querySelectorAll('.close').forEach(btn => {
-  btn.onclick = (e) => {
-    const parentScreen = btn.closest('.screen');
-    if(parentScreen) parentScreen.classList.remove('open');
-    if(btn.getAttribute('data-close') === 'discover') discover.classList.remove('open');
-    if(btn.getAttribute('data-close') === 'inbox') inbox.classList.remove('open');
-    if(btn.getAttribute('data-close') === 'profile') profile.classList.remove('open');
-    if(parentScreen === studio) stopCamera();
-  };
 });
 
+function renderUserProfilePosts(type) {
+  const grid = document.getElementById('userPostsGrid');
+  let html = '';
+  let dataset = userPosts;
+  if (type === 'saved') dataset = savedPosts;
+  else if (type === 'tagged') dataset = feedData.filter(f => f.isTagged);
+
+  dataset.forEach(item => {
+    const m = item.mediaList ? item.mediaList[0] : {type:item.type||'video', url:item.url||item.videoUrl};
+    html += `
+      <div class="userPostThumb">
+        ${m.type==='video'?`<video src="${m.url}"></video>`:`<img src="${m.url}">`}
+        ${item.views?`<div class="profile-view-badge">▶ ${item.views}</div>`:''}
+      </div>
+    `;
+  });
+
+  if(!html) {
+    html = `<div style="grid-column:span 3; text-align:center; color:var(--muted); padding:30px 0;">No items found</div>`;
+  }
+  grid.innerHTML = html;
+}
+
+// Settings and Sub-panels
+function openSettingsScreen() {
+  openScreen(document.getElementById('settingsScreen'));
+}
+function closeSettingsScreen() {
+  closeScreen(document.getElementById('settingsScreen'));
+}
+function openPrivateInfoScreen() {
+  openScreen(document.getElementById('privateInfoScreen'));
+}
+function closePrivateInfoScreen() {
+  closeScreen(document.getElementById('privateInfoScreen'));
+}
+
+function openAccountSettings() { openScreen(document.getElementById('accountSettingsSubPanel')); }
+function openReferenceSettings() { openScreen(document.getElementById('referenceSettingsSubPanel')); }
+function openPushNotificationsSettings() { openScreen(document.getElementById('pushNotificationsSubPanel')); }
+function openVideoPlaybackSettings() { openScreen(document.getElementById('videoPlaybackSubPanel')); }
+
+function closeSubPanel(id) {
+  closeScreen(document.getElementById(id));
+}
+
+function toggleDarkThemeSetting() {
+  const cb = document.getElementById('darkThemeCheckbox');
+  cb.checked = !cb.checked;
+  handleDarkThemeToggle(cb);
+}
+
+function handleDarkThemeToggle(cb) {
+  if(cb.checked) {
+    document.documentElement.classList.add('light-theme');
+    showToast('Light theme enabled');
+  } else {
+    document.documentElement.classList.remove('light-theme');
+    showToast('Dark theme enabled');
+  }
+}
+
+function selectVideoQuality(qual) {
+  document.getElementById('currentQualityLabel').textContent = qual + ' ›';
+  showToast(`Default streaming quality set to ${qual}`);
+}
+
+// Report User Modal
+function openReportModal() {
+  document.getElementById('reportModal').classList.add('open');
+}
+function closeReportModal() {
+  document.getElementById('reportModal').classList.remove('open');
+}
+function selectReportReason(el) {
+  document.querySelectorAll('.report-reason-item').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+  el.querySelector('input[type="radio"]').checked = true;
+}
+function submitReport() {
+  const selected = document.querySelector('input[name="reportReason"]:checked');
+  if(!selected) {
+    showToast('Please select a reason for reporting');
+    return;
+  }
+  closeReportModal();
+  showToast('Report submitted anonymously. Thank you.');
+}
+
+// Sound modal & Comments
+function openSoundModal(song, artist) {
+  document.getElementById('audioModalSongTitle').textContent = song;
+  document.getElementById('audioModalArtist').textContent = artist;
+  const grid = document.getElementById('audioModalVideosGrid');
+  let html = '';
+  feedData.forEach(p => {
+    const m = p.mediaList ? p.mediaList[0] : {type:'video', url:p.videoUrl};
+    html += `<div class="userPostThumb">${m.type==='video'?`<video src="${m.url}"></video>`:`<img src="${m.url}">`}</div>`;
+  });
+  grid.innerHTML = html;
+  document.getElementById('soundModal').classList.add('open');
+}
+document.getElementById('closeSoundModal').addEventListener('click', () => {
+  document.getElementById('soundModal').classList.remove('open');
+});
+
+function openComments(id) {
+  const item = feedData.find(f => f.id === id);
+  document.getElementById('commentModalTitle').textContent = `${item.commentsCount} Comments`;
+  const container = document.getElementById('commentListContainer');
+  let html = '';
+  if(item.commentsList && item.commentsList.length > 0) {
+    item.commentsList.forEach(c => {
+      html += `
+        <div class="commentRow">
+          <img class="commentAvatar" src="${c.avatar}">
+          <div class="commentBubble">
+            <div class="commentUser">${c.user}</div>
+            <div class="commentText">${c.text}</div>
+          </div>
+        </div>
+      `;
+    });
+  } else {
+    html = `<div style="text-align:center;color:var(--muted);padding:30px;">No comments yet. Be the first!</div>`;
+  }
+  container.innerHTML = html;
+  document.getElementById('commentModal').classList.add('open');
+}
+document.getElementById('closeCommentModal').addEventListener('click', () => {
+  document.getElementById('commentModal').classList.remove('open');
+});
+
+// Studio & Camera Control Placeholders
+let mediaStream = null;
+async function openStudio() {
+  appContainer.classList.add('hide-nav-for-create');
+  openScreen(studio);
+  try {
+    mediaStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
+    camera.srcObject = mediaStream;
+  } catch(e) {
+    showToast('Camera stream initialized in simulation mode');
+  }
+}
+document.getElementById('closeStudio').addEventListener('click', () => {
+  if(mediaStream) mediaStream.getTracks().forEach(t => t.stop());
+  appContainer.classList.remove('hide-nav-for-create');
+  closeScreen(studio);
+});
+
+function switchStudioMode(mode) {
+  document.querySelectorAll('.studioModeTab').forEach(t => t.classList.remove('active'));
+  if(mode === 'video') {
+    document.getElementById('modeVideoTab').classList.add('active');
+    document.getElementById('videoModePanel').classList.remove('hidden');
+    document.getElementById('liveModePanel').classList.add('hidden');
+    document.getElementById('liveStreamOverlayElements').classList.add('hidden');
+  } else {
+    document.getElementById('modeLiveTab').classList.add('active');
+    document.getElementById('videoModePanel').classList.add('hidden');
+    document.getElementById('liveModePanel').classList.remove('hidden');
+    document.getElementById('liveStreamOverlayElements').classList.remove('hidden');
+  }
+}
+
+function toggleLiveStream() {
+  const btn = document.getElementById('startLiveBtn');
+  if(btn.textContent.includes('Now')) {
+    btn.textContent = 'End LIVE';
+    btn.style.background = '#f33';
+    showToast('You are now LIVE streaming!');
+  } else {
+    btn.textContent = 'Go LIVE Now';
+    btn.style.background = 'var(--pink)';
+    showToast('LIVE broadcast ended');
+  }
+}
+
+function toggleLiveMic() {
+  showToast('Microphone toggled');
+}
+
+function openGuestRequestsModal() {
+  showToast('Guest requests drawer opened');
+}
+
+function openLiveSettingsModal() {
+  showToast('LIVE broadcast settings opened');
+}
+
+// Initialization
 renderFeed();
 </script>
 </body>
