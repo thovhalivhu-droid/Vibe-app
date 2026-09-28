@@ -19,7 +19,7 @@ button{font:inherit}
 .reel img{display:none}
 .reel.image video{display:none}.reel.image img{display:block}
 
-/* Carousel / Side-by-Side support */
+/* Carousel / Multi-Media Support */
 .reel-media-slider {
   display: flex;
   width: 100%;
@@ -742,8 +742,8 @@ input:checked+.slider:before{transform:translateX(20px)}
   </div>
   <div class="controlRow">
   <div style="display:flex; gap:8px;">
-    <button class="textBtn" id="uploadVideoBtn">Video (1-3)</button>
-    <button class="textBtn" id="uploadPhotoBtn">Photo (1-3)</button>
+    <button class="textBtn" id="uploadVideoBtn" onclick="document.getElementById('videoFileInput').click()">Video (1-3)</button>
+    <button class="textBtn" id="uploadPhotoBtn" onclick="document.getElementById('photoFileInput').click()">Photo (1-3)</button>
   </div>
   <input id="videoFileInput" class="hidden" type="file" accept="video/*" multiple>
   <input id="photoFileInput" class="hidden" type="file" accept="image/*" multiple>
@@ -1247,8 +1247,6 @@ function closeReportModal() {
 
 function submitReportUser() {
   const selectedReason = document.querySelector('input[name="reportReason"]:checked');
-  const reasonText = selectedReason ? selectedReason.parentElement.querySelector('span').textContent : 'Inappropriate content';
-  
   closeReportModal();
   showToast('Report submitted successfully. Thank you! 🛡️');
 }
@@ -1279,7 +1277,6 @@ function saveSecuritySettings() {
   userPrivacySettings.allowDm = document.getElementById('setting-dm').checked;
   userPrivacySettings.commentsFilter = document.getElementById('setting-comments-filter').checked;
   userPrivacySettings.activityStatus = document.getElementById('setting-activity-status').checked;
-  
   showToast('Privacy & Security settings saved successfully! 🔒');
   closeSecuritySettings();
 }
@@ -1292,19 +1289,138 @@ function closePrivacyPolicy() {
   document.getElementById('privacyPolicyScreen').classList.remove('open');
 }
 
+// File Inputs Handling for Multiple Photos / Videos
+videoFileInput.onchange = (e) => {
+  const files = Array.from(e.target.files);
+  if(!files.length) return;
+  selectedMediaList = files.map(f => ({ type: 'video', url: URL.createObjectURL(f) }));
+  openMediaEditor();
+};
+
+photoFileInput.onchange = (e) => {
+  const files = Array.from(e.target.files);
+  if(!files.length) return;
+  selectedMediaList = files.map(f => ({ type: 'image', url: URL.createObjectURL(f) }));
+  openMediaEditor();
+};
+
+function openMediaEditor() {
+  studio.classList.remove('open');
+  stopCamera();
+  editorScreen.classList.add('open');
+  setupEditorContainer();
+}
+
+function setupEditorContainer() {
+  const container = document.getElementById('editorCanvasContainer');
+  // Clear previous elements except canvas/layers
+  const existingMedia = container.querySelectorAll('video, img, .reel-media-slider');
+  existingMedia.forEach(el => el.remove());
+
+  if (selectedMediaList.length === 1) {
+    container.classList.remove('multi-item');
+    const m = selectedMediaList[0];
+    if (m.type === 'video') {
+      const vid = document.createElement('video');
+      vid.src = m.url;
+      vid.autoplay = true;
+      vid.loop = true;
+      vid.muted = false;
+      vid.playsInline = true;
+      container.insertBefore(vid, container.firstChild);
+    } else {
+      const img = document.createElement('img');
+      img.src = m.url;
+      container.insertBefore(img, container.firstChild);
+    }
+  } else {
+    container.classList.add('multi-item');
+    const slider = document.createElement('div');
+    slider.className = 'reel-media-slider';
+    selectedMediaList.forEach(m => {
+      const slide = document.createElement('div');
+      slide.className = 'reel-media-slide';
+      if (m.type === 'video') {
+        slide.innerHTML = `<video src="${m.url}" loop autoplay playsinline muted></video>`;
+      } else {
+        slide.innerHTML = `<img src="${m.url}" alt="">`;
+      }
+      slider.appendChild(slide);
+    });
+    container.insertBefore(slider, container.firstChild);
+  }
+}
+
+document.getElementById('editorQuickPostBtn').onclick = () => {
+  editorScreen.classList.remove('open');
+  postScreen.classList.add('open');
+  setupPostPreview();
+};
+
+function setupPostPreview() {
+  const previewBox = document.getElementById('previewBox');
+  previewBox.innerHTML = '';
+  if (selectedMediaList.length === 1) {
+    previewBox.classList.remove('multi-item');
+    const m = selectedMediaList[0];
+    if (m.type === 'video') {
+      previewBox.innerHTML = `<video src="${m.url}" autoplay loop muted playsinline></video>`;
+    } else {
+      previewBox.innerHTML = `<img src="${m.url}" alt="">`;
+    }
+  } else {
+    previewBox.classList.add('multi-item');
+    let sliderHtml = `<div class="reel-media-slider">`;
+    selectedMediaList.forEach(m => {
+      if (m.type === 'video') {
+        sliderHtml += `<div class="reel-media-slide"><video src="${m.url}" autoplay loop muted playsinline></video></div>`;
+      } else {
+        sliderHtml += `<div class="reel-media-slide"><img src="${m.url}" alt=""></div>`;
+      }
+    });
+    sliderHtml += `</div>`;
+    previewBox.innerHTML = sliderHtml;
+  }
+}
+
+document.getElementById('publishBtn').onclick = () => {
+  const captionText = document.getElementById('captionInput').value.trim() || 'My new VIBE post ✨ #VIBE';
+  const newPost = {
+    id: Date.now(),
+    author: 'You',
+    caption: captionText,
+    songName: selectedSound,
+    artist: 'Creator VIBE',
+    likes: 1,
+    commentsCount: 0,
+    shares: 0,
+    views: '1',
+    avatar: myProfile.avatar,
+    mediaList: [...selectedMediaList],
+    isLiked: false,
+    isSaved: false,
+    isTagged: false,
+    commentsList: []
+  };
+
+  feedData.unshift(newPost);
+  postScreen.classList.remove('open');
+  updateNavActiveState('home');
+  renderFeed();
+  showToast('Posted successfully to VIBE! 🎉');
+};
+
 function openAudioModal(item) {
   const modal = document.getElementById('soundModal');
   document.getElementById('audioModalSongTitle').textContent = item.songName || 'Original Audio';
   document.getElementById('audioModalArtist').textContent = item.artist || item.author;
-  
   const grid = document.getElementById('audioModalVideosGrid');
   grid.innerHTML = '';
-  
-  const matchingPosts = feedData.filter(p => (p.songName === item.songName) || (p.audio === item.audio));
+  const matchingPosts = feedData.filter(p => (p.songName === item.songName));
   matchingPosts.forEach(p => {
     const thumb = document.createElement('div');
     thumb.className = 'userPostThumb';
-    const firstMedia = p.mediaList && p.mediaList.length > 0 ? p.mediaList[0] : {type: p.video?'video':'image', url: p.video||p.image||''};
+    const firstMedia = p.mediaList && p.mediaList.length > 0 ? p.mediaList[0] : {type: 'image', url: ''};
     if(firstMedia.type === 'image') {
       thumb.innerHTML = `<img src="${firstMedia.url}" style="width:100%;height:100%;object-fit:cover;">`;
     } else {
@@ -1319,21 +1435,12 @@ function openAudioModal(item) {
     };
     grid.appendChild(thumb);
   });
-  
   modal.classList.add('open');
 }
 
 document.getElementById('closeSoundModal').onclick = () => {
   document.getElementById('soundModal').classList.remove('open');
 };
-
-function saveEditorState() {
-  const overlaysHtml = document.getElementById('editorOverlaysLayer').innerHTML;
-  const canvasDataUrl = drawCanvas.toDataURL();
-  const currentFilter = document.querySelector('#editorCanvasContainer video, #editorCanvasContainer img')?.style.filter || '';
-  undoStack.push({ overlaysHtml, canvasDataUrl, filter: currentFilter });
-  redoStack = [];
-}
 
 function updateNavActiveState(tabKey) {
  activeTabKey = tabKey;
@@ -1378,7 +1485,7 @@ function formatCount(num) {
 
 function formatTime(seconds) {
   const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
+  const s = Math.floor(seconds % 60);
   return `${m}:${s < 10 ? '0' : ''}${s}`;
 }
 
@@ -1392,14 +1499,13 @@ function getValidStories(){
 function renderFeed(filteredList){
  const list = filteredList || feedData;
  feed.innerHTML='';
- list.forEach((item, index)=>{
+ list.forEach((item)=>{
   const card=document.createElement('article'); 
   card.className='reel';
   
   let mediaHtml = '';
   let dotsHtml = '';
-  const mediaList = item.mediaList && item.mediaList.length > 0 ? item.mediaList : [{type: item.video ? 'video' : 'image', url: item.video || item.image || ''}];
-  
+  const mediaList = item.mediaList && item.mediaList.length > 0 ? item.mediaList : [{type: 'video', url: ''}];
   const isSinglePhoto = mediaList.length === 1 && mediaList[0].type === 'image';
 
   if(isSinglePhoto) {
@@ -1412,7 +1518,7 @@ function renderFeed(filteredList){
       if(m.type === 'video') {
         mediaHtml += `
           <div class="reel-media-slide" style="position:relative;">
-            <video class="reel-video" src="${m.url}" loop playsinline preload="auto" ${muted?'muted':''}></video>
+            <video class="reel-video" src="${m.url}" playsinline preload="auto" ${muted?'muted':''}></video>
             <div class="video-duration-indicator">0:00</div>
             <div class="video-control-overlay">
               <button class="custom-pause-btn" title="Toggle Play/Pause">⏸</button>
@@ -1433,7 +1539,7 @@ function renderFeed(filteredList){
     const m = mediaList[0];
     if(m.type === 'video') {
       mediaHtml = `
-        <video class="reel-video" src="${m.url}" loop playsinline preload="auto" ${muted?'muted':''}></video>
+        <video class="reel-video" src="${m.url}" playsinline preload="auto" ${muted?'muted':''}></video>
         <div class="video-duration-indicator">0:00</div>
         <div class="video-control-overlay">
           <button class="custom-pause-btn" title="Toggle Play/Pause">⏸</button>
@@ -1468,68 +1574,36 @@ function renderFeed(filteredList){
     openAudioModal(item);
   };
 
-  let lastTapTime = 0;
-  card.addEventListener('click', (e) => {
-    if (e.target.closest('.overlay') || e.target.closest('.mute') || e.target.closest('.video-control-overlay')) return;
-    
-    const currentTime = new Date().getTime();
-    const tapLength = currentTime - lastTapTime;
-    if (tapLength < 300 && tapLength > 0) {
-      if (!item.isLiked) {
-        item.isLiked = true;
-        item.likes += 1;
-        const likeBtnEl = card.querySelector('.like');
-        if(likeBtnEl) {
-          likeBtnEl.classList.add('liked');
-          likeBtnEl.querySelector('.circle').textContent = '♥';
-          likeBtnEl.querySelector('.count').textContent = formatCount(item.likes);
+  // Video Sequential Playback Support (Play one by one in carousel)
+  card.querySelectorAll('.reel-video').forEach((v, vIdx, vArr) => {
+    v.onended = () => {
+      const slider = card.querySelector('.reel-media-slider');
+      if (slider) {
+        const slideWidth = slider.clientWidth || 1;
+        const currentIdx = Math.round(slider.scrollLeft / slideWidth);
+        const nextIdx = currentIdx + 1;
+        const slides = slider.querySelectorAll('.reel-media-slide');
+        if (nextIdx < slides.length) {
+          slider.scrollTo({ left: nextIdx * slideWidth, behavior: 'smooth' });
+          const nextVid = slides[nextIdx].querySelector('video');
+          if (nextVid) {
+            nextVid.currentTime = 0;
+            nextVid.muted = muted;
+            nextVid.play().catch(()=>{});
+          }
         }
       }
-      
-      const rect = card.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      
-      const heart = document.createElement('div');
-      heart.className = 'double-tap-heart';
-      heart.textContent = '❤';
-      heart.style.left = `${x}px`;
-      heart.style.top = `${y}px`;
-      card.appendChild(heart);
-      setTimeout(() => heart.remove(), 800);
-      
-      e.preventDefault();
-    }
-    lastTapTime = currentTime;
-  });
-
-  card.querySelectorAll('.reel-video').forEach(v => {
-    v.currentTime = 0.001;
+    };
 
     const controlOverlay = v.parentElement.querySelector('.video-control-overlay');
     const durationIndicator = v.parentElement.querySelector('.video-duration-indicator');
     const pauseBtn = v.parentElement.querySelector('.custom-pause-btn');
-    let hideControlsTimer = null;
 
     v.addEventListener('loadedmetadata', () => {
       if (durationIndicator && !isNaN(v.duration)) {
-        durationIndicator.textContent = formatTime(Math.floor(v.duration));
+        durationIndicator.textContent = formatTime(v.duration);
       }
     });
-    if (!isNaN(v.duration) && durationIndicator) {
-      durationIndicator.textContent = formatTime(Math.floor(v.duration));
-    }
-
-    const showAndAutoHideControls = () => {
-      if(!controlOverlay || !durationIndicator) return;
-      controlOverlay.classList.add('show');
-      durationIndicator.classList.add('show');
-      clearTimeout(hideControlsTimer);
-      hideControlsTimer = setTimeout(() => {
-        controlOverlay.classList.remove('show');
-        durationIndicator.classList.remove('show');
-      }, 2000);
-    };
 
     if(pauseBtn) {
       pauseBtn.onclick = (e) => {
@@ -1541,54 +1615,25 @@ function renderFeed(filteredList){
           v.pause();
           pauseBtn.textContent = '▶';
         }
-        showAndAutoHideControls();
       };
     }
-
-    let tapTimeout = null;
-    v.parentElement.addEventListener('click', (e) => {
-      if (e.target.closest('.overlay') || e.target.closest('.mute')) return;
-      
-      clearTimeout(tapTimeout);
-      tapTimeout = setTimeout(() => {
-        showAndAutoHideControls();
-        if (v.paused) {
-          v.play().catch(()=>{});
-          if(pauseBtn) pauseBtn.textContent = '⏸';
-        } else {
-          v.pause();
-          if(pauseBtn) pauseBtn.textContent = '▶';
-        }
-      }, 150);
-    });
   });
 
   const slider = card.querySelector('.reel-media-slider');
   if(slider) {
     const dots = card.querySelectorAll('.carousel-dot');
     slider.onscroll = () => {
-      const slideWidth = slider.clientWidth;
+      const slideWidth = slider.clientWidth || 1;
       const activeIdx = Math.round(slider.scrollLeft / slideWidth);
       dots.forEach((d, idx) => {
         d.classList.toggle('active', idx === activeIdx);
       });
 
       card.querySelectorAll('.reel-video').forEach((vSlide, sIdx) => {
-        const slideControlOverlay = vSlide.parentElement.querySelector('.video-control-overlay');
-        const slideDurationIndicator = vSlide.parentElement.querySelector('.video-duration-indicator');
         const slidePauseBtn = vSlide.parentElement.querySelector('.custom-pause-btn');
         if(sIdx === activeIdx && isCardFullyInViewport(card)) {
           if(activeVideo && activeVideo !== vSlide) {
             activeVideo.pause();
-            const prevCard = activeVideo.closest('.reel');
-            if(prevCard) {
-              const prevControlOverlay = prevCard.querySelector('.video-control-overlay');
-              const prevDurationIndicator = prevCard.querySelector('.video-duration-indicator');
-              const prevPauseBtn = prevCard.querySelector('.custom-pause-btn');
-              if(prevControlOverlay) prevControlOverlay.classList.remove('show');
-              if(prevDurationIndicator) prevDurationIndicator.classList.remove('show');
-              if(prevPauseBtn) prevPauseBtn.textContent = '▶';
-            }
           }
           activeVideo = vSlide;
           vSlide.muted = muted;
@@ -1597,8 +1642,6 @@ function renderFeed(filteredList){
           }).catch(()=>{});
         } else {
           vSlide.pause();
-          if(slideControlOverlay) slideControlOverlay.classList.remove('show');
-          if(slideDurationIndicator) slideDurationIndicator.classList.remove('show');
           if(slidePauseBtn) slidePauseBtn.textContent = '▶';
         }
       });
@@ -1609,8 +1652,8 @@ function renderFeed(filteredList){
   const commentActionBtn=card.querySelector('.commentBtn');
   const saveBtn=card.querySelector('.saveBtn');
   const shareBtn=card.querySelector('.shareBtn');
-  
   const muteBtnEl = card.querySelector('.mute');
+  
   if(muteBtnEl) {
     muteBtnEl.onclick=e=>{
       e.stopPropagation();
@@ -1645,10 +1688,6 @@ function renderFeed(filteredList){
 
   shareBtn.onclick = async e => {
    e.stopPropagation();
-   const shareData = { title: 'VIBE Post', text: item.caption, url: window.location.href };
-   if (navigator.share) {
-    try { await navigator.share(shareData); item.shares += 1; shareBtn.querySelector('.count').textContent = formatCount(item.shares); return; } catch (err) {}
-   }
    try {
     await navigator.clipboard.writeText(window.location.href);
     item.shares += 1;
@@ -1658,20 +1697,9 @@ function renderFeed(filteredList){
   };
 
   card.querySelector('.follow').onclick=e=>{e.stopPropagation();e.currentTarget.textContent=e.currentTarget.textContent==='Follow'?'Following':'Follow'};
-  
-  card.querySelectorAll('.hashtag').forEach(tag=>{
-   tag.onclick=(e)=>{
-    e.stopPropagation();
-    const query = tag.textContent;
-    document.getElementById('navDiscoverBtn').click();
-    document.getElementById('searchInput').value = query;
-    filterDiscover(query);
-   };
-  });
  });
 
  setupObserver();
- setupSwipeAutoplayFallback();
  renderDiscoverGrid();
  renderProfileGrid();
 }
@@ -1684,9 +1712,7 @@ function isCardFullyInViewport(card) {
 let feedObserver = null;
 
 function setupObserver(){
- if (feedObserver) {
-   feedObserver.disconnect();
- }
+ if (feedObserver) feedObserver.disconnect();
 
  feedObserver = new IntersectionObserver(entries => {
   entries.forEach(en => {
@@ -1695,7 +1721,6 @@ function setupObserver(){
    
    if (en.isIntersecting && activeTabKey === 'home') {
     pauseAllFeedVideos();
-
     if (slider) {
       const slideWidth = slider.clientWidth || 1;
       const activeIdx = Math.round(slider.scrollLeft / slideWidth);
@@ -1703,20 +1728,14 @@ function setupObserver(){
       if (activeSlideVid) {
         activeVideo = activeSlideVid;
         activeSlideVid.muted = muted;
-        activeSlideVid.play().then(() => {
-          const pauseBtn = activeSlideVid.parentElement.querySelector('.custom-pause-btn');
-          if(pauseBtn) pauseBtn.textContent = '⏸';
-        }).catch(() => {});
+        activeSlideVid.play().catch(() => {});
       }
     } else {
       const v = card.querySelector('video');
       if (v) {
         activeVideo = v;
         v.muted = muted;
-        v.play().then(() => {
-          const pauseBtn = v.parentElement.querySelector('.custom-pause-btn');
-          if(pauseBtn) pauseBtn.textContent = '⏸';
-        }).catch(() => {});
+        v.play().catch(() => {});
       }
     }
    }
@@ -1724,80 +1743,6 @@ function setupObserver(){
  }, { root: feed, threshold: 0.6 });
 
  document.querySelectorAll('.reel').forEach(x => feedObserver.observe(x));
-
- setTimeout(() => {
-   const firstCard = feed.querySelector('.reel');
-   if (firstCard) {
-     const firstVideo = firstCard.querySelector('video');
-     if (firstVideo) {
-       activeVideo = firstVideo;
-       firstVideo.muted = muted;
-       firstVideo.play().then(() => {
-         const pauseBtn = firstVideo.parentElement.querySelector('.custom-pause-btn');
-         if(pauseBtn) pauseBtn.textContent = '⏸';
-       }).catch(() => {});
-     }
-   }
- }, 100);
-}
-
-function setupSwipeAutoplayFallback() {
-  let touchStartY = 0;
-
-  window.addEventListener('touchstart', (e) => {
-    if(e.changedTouches && e.changedTouches.length > 0) {
-      touchStartY = e.changedTouches[0].screenY;
-    }
-  }, { passive: true });
-
-  window.addEventListener('touchend', (e) => {
-    if(activeTabKey !== 'home') return;
-    if(!e.changedTouches || e.changedTouches.length === 0) return;
-    
-    let touchEndY = e.changedTouches[0].screenY;
-    let swipeDistance = touchStartY - touchEndY;
-
-    if (Math.abs(swipeDistance) > 40) {
-      setTimeout(() => {
-        document.querySelectorAll('.reel').forEach(card => {
-          const rect = card.getBoundingClientRect();
-          const isCentered = rect.top >= -20 && rect.top <= 20;
-          const v = card.querySelector('video');
-
-          if (v) {
-            const pauseBtn = card.querySelector('.custom-pause-btn');
-            const controlOverlay = card.querySelector('.video-control-overlay');
-            const durationIndicator = card.querySelector('.video-duration-indicator');
-
-            if (isCentered) {
-              if (activeVideo && activeVideo !== v) {
-                activeVideo.pause();
-                const prevCard = activeVideo.closest('.reel');
-                if (prevCard) {
-                  const prevControl = prevCard.querySelector('.video-control-overlay');
-                  const prevDuration = prevCard.querySelector('.video-duration-indicator');
-                  const prevBtn = prevCard.querySelector('.custom-pause-btn');
-                  if (prevControl) prevControl.classList.remove('show');
-                  if (prevDuration) prevDuration.classList.remove('show');
-                  if (prevBtn) prevBtn.textContent = '▶';
-                }
-              }
-              activeVideo = v;
-              v.muted = muted;
-              v.play().then(() => {
-                if (pauseBtn) pauseBtn.textContent = '⏸';
-              }).catch(() => {});
-            } else {
-              v.pause();
-              if (controlOverlay) controlOverlay.classList.remove('show');
-              if (durationIndicator) durationIndicator.classList.remove('show');
-              if (pauseBtn) pauseBtn.textContent = '▶';
-            }
-          }
-        });
-      }, 150);
-    }
-  }, { passive: true });
 }
 
 function openCommentsModal(item){
@@ -1839,7 +1784,6 @@ document.getElementById('commentSendBtn').onclick=()=>{
  if(targetPost){
   targetPost.commentsList.push({ user: myProfile.username, text: text, avatar: myProfile.avatar });
   input.value = '';
-  document.getElementById('commentModalTitle').textContent = `Comments (${targetPost.commentsList.length})`;
   renderCommentList(targetPost);
   renderFeed();
   showToast('Comment posted!');
@@ -1856,7 +1800,7 @@ function renderDiscoverGrid(filterText=""){
  matches.forEach(item => {
   const cell = document.createElement('div');
   cell.className = 'discoverGridItem';
-  const firstMedia = item.mediaList && item.mediaList.length > 0 ? item.mediaList[0] : {type: item.video?'video':'image', url: item.video||item.image||''};
+  const firstMedia = item.mediaList && item.mediaList.length > 0 ? item.mediaList[0] : {type: 'image', url: ''};
   if(firstMedia.type === 'image') { cell.innerHTML = `<img style="display:block" src="${firstMedia.url}" alt="">`; }
   else { cell.innerHTML = `<video src="${firstMedia.url}" muted playsinline></video>`; }
   cell.onclick = () => {
@@ -1870,8 +1814,7 @@ function renderDiscoverGrid(filterText=""){
  });
 }
 
-function filterDiscover(query){ renderDiscoverGrid(query); }
-document.getElementById('searchInput').oninput=(e)=>{ filterDiscover(e.target.value); };
+document.getElementById('searchInput').oninput=(e)=>{ renderDiscoverGrid(e.target.value); };
 
 document.querySelectorAll('.profileSubTab').forEach(tab=>{
  tab.onclick=()=>{
@@ -1890,17 +1833,6 @@ function renderProfileGrid(){
  document.getElementById('profileBio').textContent = myProfile.bio;
  document.getElementById('profileAvatarImg').src = myProfile.avatar;
 
- const activeStories = getValidStories();
- const avatarImg = document.getElementById('profileAvatarImg');
- const badge = document.getElementById('addStoryBadge');
- if(activeStories.length > 0){
-  avatarImg.classList.add('has-story');
-  badge.textContent = activeStories.length;
- } else {
-  avatarImg.classList.remove('has-story');
-  badge.textContent = '+';
- }
-
  let listToDisplay = [];
  if (profileActiveTab === 'posts') {
    listToDisplay = feedData.filter(i => i.author === 'You');
@@ -1911,29 +1843,19 @@ function renderProfileGrid(){
  }
 
  if(listToDisplay.length === 0){
-  let emptyMsg = 'No posts yet.';
-  if (profileActiveTab === 'saved') emptyMsg = 'No saved videos yet. Tap the star icon on any video to save it here!';
-  if (profileActiveTab === 'tagged') emptyMsg = 'No tagged posts yet.';
-  grid.innerHTML = `<div style="grid-column:span 3;text-align:center;color:var(--muted);padding-top:40px;font-size:13px;">${emptyMsg}</div>`;
+  grid.innerHTML = `<div style="grid-column:span 3;text-align:center;color:var(--muted);padding-top:40px;font-size:13px;">No posts found.</div>`;
   return;
  }
 
  listToDisplay.forEach(item => {
   const cell = document.createElement('div');
   cell.className = 'userPostThumb';
-  const firstMedia = item.mediaList && item.mediaList.length > 0 ? item.mediaList[0] : {type: item.video?'video':'image', url: item.video||item.image||''};
-  
-  let mediaInnerHtml = '';
+  const firstMedia = item.mediaList && item.mediaList.length > 0 ? item.mediaList[0] : {type: 'image', url: ''};
   if(firstMedia.type === 'image') { 
-    mediaInnerHtml = `<img style="display:block" src="${firstMedia.url}" alt="">`; 
+    cell.innerHTML = `<img style="display:block" src="${firstMedia.url}" alt="">`; 
   } else { 
-    mediaInnerHtml = `<video src="${firstMedia.url}" muted playsinline></video>`; 
+    cell.innerHTML = `<video src="${firstMedia.url}" muted playsinline></video>`; 
   }
-
-  const viewCountHtml = `<div class="profile-view-badge">👁 ${item.views || '1'}</div>`;
-
-  cell.innerHTML = mediaInnerHtml + viewCountHtml;
-
   cell.onclick = () => {
    profile.classList.remove('open');
    updateNavActiveState('home');
@@ -1945,11 +1867,11 @@ function renderProfileGrid(){
  });
 }
 
-document.getElementById('navHomeBtn').onclick=()=>{ updateNavActiveState('home'); feed.style.display='block'; discover.classList.remove('open'); inbox.classList.remove('open'); profile.classList.remove('open'); studio.classList.remove('open'); stopCamera(); };
-document.getElementById('navDiscoverBtn').onclick=()=>{ updateNavActiveState('discover'); discover.classList.add('open'); inbox.classList.remove('open'); profile.classList.remove('open'); studio.classList.remove('open'); pauseAllFeedVideos(); stopCamera(); renderDiscoverGrid(); };
-document.getElementById('navCreateBtn').onclick=()=>{ updateNavActiveState('create'); studio.classList.add('open'); discover.classList.remove('open'); inbox.classList.remove('open'); profile.classList.remove('open'); pauseAllFeedVideos(); startCamera(); };
-document.getElementById('navInboxBtn').onclick=()=>{ updateNavActiveState('inbox'); inbox.classList.add('open'); discover.classList.remove('open'); profile.classList.remove('open'); studio.classList.remove('open'); pauseAllFeedVideos(); stopCamera(); };
-document.getElementById('navProfileBtn').onclick=()=>{ updateNavActiveState('profile'); profile.classList.add('open'); discover.classList.remove('open'); inbox.classList.remove('open'); studio.classList.remove('open'); pauseAllFeedVideos(); stopCamera(); renderProfileGrid(); };
+document.getElementById('navHomeBtn').onclick=()=>{ updateNavActiveState('home'); feed.style.display='block'; discover.classList.remove('open'); inbox.classList.remove('open'); profile.classList.remove('open'); studio.classList.remove('open'); };
+document.getElementById('navDiscoverBtn').onclick=()=>{ updateNavActiveState('discover'); discover.classList.add('open'); inbox.classList.remove('open'); profile.classList.remove('open'); studio.classList.remove('open'); pauseAllFeedVideos(); renderDiscoverGrid(); };
+document.getElementById('navCreateBtn').onclick=()=>{ updateNavActiveState('create'); studio.classList.add('open'); discover.classList.remove('open'); inbox.classList.remove('open'); profile.classList.remove('open'); pauseAllFeedVideos(); };
+document.getElementById('navInboxBtn').onclick=()=>{ updateNavActiveState('inbox'); inbox.classList.add('open'); discover.classList.remove('open'); profile.classList.remove('open'); studio.classList.remove('open'); pauseAllFeedVideos(); };
+document.getElementById('navProfileBtn').onclick=()=>{ updateNavActiveState('profile'); profile.classList.add('open'); discover.classList.remove('open'); inbox.classList.remove('open'); studio.classList.remove('open'); pauseAllFeedVideos(); renderProfileGrid(); };
 
 document.querySelectorAll('.screenHead .close[data-close]').forEach(btn=>{
  btn.onclick=()=>{
@@ -1959,8 +1881,9 @@ document.querySelectorAll('.screenHead .close[data-close]').forEach(btn=>{
  };
 });
 
-document.getElementById('closeStudio').onclick=()=>{ studio.classList.remove('open'); stopCamera(); updateNavActiveState('home'); };
-document.getElementById('closeEditorBtn').onclick=()=>{ editorScreen.classList.remove('open'); studio.classList.add('open'); startCamera(); };
+document.getElementById('closeStudio').onclick=()=>{ studio.classList.remove('open'); updateNavActiveState('home'); };
+document.getElementById('closeEditorBtn').onclick=()=>{ editorScreen.classList.remove('open'); studio.classList.add('open'); };
+document.getElementById('closePost').onclick=()=>{ postScreen.classList.remove('open'); editorScreen.classList.add('open'); };
 
 renderFeed();
 </script>
