@@ -330,15 +330,106 @@ button{font:inherit}
 }
 .sticker-item:hover { transform: scale(1.1); background: rgba(255,255,255,0.15); }
 
-.postPanel{padding:16px;display:flex;flex-direction:column;flex:1;overflow:hidden;position:relative}
-.previewBox{width:100%;flex:1;background:#000;border-radius:16px;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;gap:4px}
+.postPanel{padding:16px;display:flex;flex-direction:column;flex:1;overflow-y:auto;position:relative}
+.previewBox{width:100%;height:220px;background:#000;border-radius:16px;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;gap:4px;flex-shrink:0}
 .previewBox.multi-item {display:flex; overflow-x:auto; scroll-snap-type: x mandatory;}
 .previewBox.multi-item video, .previewBox.multi-item img {flex: 0 0 100%; scroll-snap-align: start; width:100%; height:100%; object-fit:cover;}
 .previewBox video,.previewBox img{width:100%;height:100%;object-fit:cover}
-.captionBoxContainer{margin-top:12px;margin-bottom:12px}
-.postPanel textarea{width:100%;height:75px;background:#1a1b22;color:#fff;border:1px solid #ffffff15;border-radius:14px;padding:12px;resize:none;font-size:14px;outline:none}
-.postBottomActionSheet{display:flex;flex-direction:column;gap:8px;background:#14151c;padding:12px;border-radius:16px;border:1px solid #ffffff10}
-.postBtn{width:100%;padding:13px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--pink),var(--cyan));color:#fff;font-weight:800;cursor:pointer;font-size:14px}
+.captionBoxContainer{margin-top:10px;margin-bottom:10px}
+.postPanel textarea{width:100%;height:65px;background:#1a1b22;color:#fff;border:1px solid #ffffff15;border-radius:14px;padding:10px;resize:none;font-size:14px;outline:none}
+
+/* Post Editor Options row (Location, Cover, Drafts) */
+.post-options-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.post-options-row::-webkit-scrollbar { display: none; }
+.post-option-chip {
+  background: var(--surface);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text);
+  padding: 8px 14px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.2s, background 0.2s;
+}
+.post-option-chip:hover { border-color: var(--pink); background: rgba(255,42,95,0.06); }
+.post-option-chip .chip-val { color: var(--cyan); font-weight: 600; }
+
+.postBottomActionSheet{display:flex;flex-direction:column;gap:8px;background:#14151c;padding:12px;border-radius:16px;border:1px solid #ffffff10;margin-top:auto;}
+.postBtn{width:100%;padding:12px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--pink),var(--cyan));color:#fff;font-weight:800;cursor:pointer;font-size:14px}
+
+/* Drawers / Modals for Location, Cover, Drafts */
+.post-sub-modal {
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+  z-index: 120;
+  display: none;
+  flex-direction: column;
+}
+.post-sub-modal.open { display: flex; }
+.sub-modal-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.location-item {
+  background: var(--surface);
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.06);
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.location-item:hover { border-color: var(--pink); background: rgba(255,42,95,0.06); }
+
+.thumbnail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.thumbnail-item {
+  aspect-ratio: 9/16;
+  background: #000;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+.thumbnail-item.selected { border-color: var(--pink); }
+.thumbnail-item img, .thumbnail-item video { width: 100%; height: 100%; object-fit: cover; }
+
+.draft-card {
+  background: var(--surface);
+  padding: 12px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.draft-thumb {
+  width: 50px;
+  height: 70px;
+  border-radius: 6px;
+  object-fit: cover;
+  background: #000;
+}
+.draft-info { flex: 1; }
+.draft-caption { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+.draft-date { font-size: 11px; color: var(--muted); }
+.draft-actions { display: flex; gap: 6px; }
 
 .editor-caption-wrapper {
   padding: 10px 16px;
@@ -1001,12 +1092,72 @@ input:checked+.slider:before{transform:translateX(20px)}
   <div id="previewBox" class="previewBox" title="Tap to expand preview">
     <div style="color:#777">Choose a video or picture</div>
   </div>
+
   <div class="captionBoxContainer">
     <textarea id="captionInput" placeholder="Write a clean caption with #hashtags..."></textarea>
   </div>
+
+  <!-- Post Options Row: Location, Cover, Drafts -->
+  <div class="post-options-row">
+    <button class="post-option-chip" onclick="openLocationSelector()">
+      📍 Location: <span class="chip-val" id="selectedLocationLabel">Add location</span>
+    </button>
+    <button class="post-option-chip" onclick="openCoverSelector()">
+      🖼️ Cover: <span class="chip-val" id="selectedCoverLabel">Default</span>
+    </button>
+    <button class="post-option-chip" onclick="openDraftsModal()">
+      📁 Drafts <span class="chip-val" id="draftsCountBadge">(0)</span>
+    </button>
+  </div>
+
   <div class="postBottomActionSheet">
+    <button id="saveDraftBtn" class="postBtn" style="background:var(--surface); border:1px solid rgba(255,255,255,0.15)">Save to Drafts</button>
     <button id="publishBtn" class="postBtn">Post to Feed</button>
     <button id="publishStoryBtn" class="postBtn" style="background:var(--cyan);color:#000">Add as Story (24h)</button>
+  </div>
+</div>
+
+<!-- Location Selector Sub-Modal -->
+<div id="locationModal" class="post-sub-modal">
+  <div class="screenHead">
+    <button class="close" onclick="closeLocationSelector()">×</button>
+    <span>Select Location</span>
+    <span style="width:24px"></span>
+  </div>
+  <div class="sub-modal-body">
+    <div class="location-item" onclick="selectLocation('Johannesburg, South Africa')"><span>Johannesburg, South Africa</span><span>📍</span></div>
+    <div class="location-item" onclick="selectLocation('Cape Town, South Africa')"><span>Cape Town, South Africa</span><span>📍</span></div>
+    <div class="location-item" onclick="selectLocation('Sandton City')"><span>Sandton City</span><span>📍</span></div>
+    <div class="location-item" onclick="selectLocation('Durban Beachfront')"><span>Durban Beachfront</span><span>📍</span></div>
+    <div class="location-item" onclick="selectLocation('Pretoria Central')"><span>Pretoria Central</span><span>📍</span></div>
+    <div class="location-item" onclick="selectLocation('Clear Location')"><span style="color:var(--pink)">Remove Location</span><span>×</span></div>
+  </div>
+</div>
+
+<!-- Cover / Thumbnail Selector Sub-Modal -->
+<div id="coverModal" class="post-sub-modal">
+  <div class="screenHead">
+    <button class="close" onclick="closeCoverSelector()">×</button>
+    <span>Select Cover Thumbnail</span>
+    <span style="width:24px"></span>
+  </div>
+  <div class="sub-modal-body">
+    <div style="font-size:13px; color:var(--muted); margin-bottom:8px;">Choose a frame to represent your video on profiles & discover feeds:</div>
+    <div class="thumbnail-grid" id="coverThumbnailGrid">
+      <!-- Generated dynamically -->
+    </div>
+  </div>
+</div>
+
+<!-- Drafts Manager Sub-Modal -->
+<div id="draftsModal" class="post-sub-modal">
+  <div class="screenHead">
+    <button class="close" onclick="closeDraftsModal()">×</button>
+    <span>Saved Drafts</span>
+    <span style="width:24px"></span>
+  </div>
+  <div class="sub-modal-body" id="draftsListContainer">
+    <!-- Rendered dynamically -->
   </div>
 </div>
 </section>
@@ -1211,6 +1362,7 @@ let feedData=[
  id:1, author:"Elena Rostova", handle:"@elena_rostova", caption:"Golden hour tones hitting different today ✨ #goldenhour #VIBE", songName:"Golden Hour Vibe", artist:"Elena Rostova", likes:24500, commentsCount:2, shares:1200, views:"112K", avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150", 
  mediaList:[{type:"video", url:"https://assets.mixkit.co/videos/preview/mixkit-woman-filming-herself-with-a-smartphone-41270-large.mp4"}],
  isTagged: true,
+ location: "Cape Town, South Africa",
  commentsList:[
   {user:"Liam Chen", text:"Absolute cinematic shots!", avatar:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150"},
   {user:"Sophia Taylor", text:"Where is this spot?? ✨", avatar:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"}
@@ -1220,6 +1372,7 @@ let feedData=[
  id:2, author:"Liam Chen", handle:"@liam_chen", caption:"Late night coding session 💻⚡ #coding #tech #VIBE", songName:"Lofi Chill Beats", artist:"ChillHop Records", likes:58100, commentsCount:1, shares:4500, views:"340K", avatar:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150", 
  mediaList:[{type:"video", url:"https://assets.mixkit.co/videos/preview/mixkit-hands-typing-on-a-laptop-keyboard-close-up-42861-large.mp4"}],
  isTagged: false,
+ location: "Johannesburg, South Africa",
  commentsList:[
   {user:"Elena Rostova", text:"Relatable haha ☕", avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150"}
  ]
@@ -1235,6 +1388,11 @@ let hashtagsDirectory = [
   { name: "#VIBE", count: "1.2M views", postsCount: 1420 },
   { name: "#goldenhour", count: "450K views", postsCount: 520 }
 ];
+
+// Post Editor Extra State: Location, Cover, Drafts
+let selectedPostLocation = "";
+let selectedCoverMediaIndex = 0;
+let userDrafts = [];
 
 // DM Conversations Data Store
 let dmConversations = [
@@ -1290,6 +1448,130 @@ let pressTimer=null, isLongPress=false, selectedSound="Original Audio";
 let activeTabKey = 'home';
 let searchFilterType = 'all';
 let currentActiveCreator = null;
+
+// Location Selector Logic
+function openLocationSelector() { document.getElementById('locationModal').classList.add('open'); }
+function closeLocationSelector() { document.getElementById('locationModal').classList.remove('open'); }
+function selectLocation(loc) {
+  if(loc === 'Clear Location') {
+    selectedPostLocation = "";
+    document.getElementById('selectedLocationLabel').textContent = "Add location";
+    showToast('Location removed');
+  } else {
+    selectedPostLocation = loc;
+    document.getElementById('selectedLocationLabel').textContent = loc;
+    showToast(`Location set: ${loc} 📍`);
+  }
+  closeLocationSelector();
+}
+
+// Cover/Thumbnail Selector Logic
+function openCoverSelector() {
+  if(!selectedMediaList || selectedMediaList.length === 0) {
+    showToast('No media selected for cover');
+    return;
+  }
+  const grid = document.getElementById('coverThumbnailGrid');
+  grid.innerHTML = '';
+  selectedMediaList.forEach((m, idx) => {
+    const item = document.createElement('div');
+    item.className = `thumbnail-item ${idx === selectedCoverMediaIndex ? 'selected' : ''}`;
+    if(m.type === 'video') {
+      item.innerHTML = `<video src="${m.url}" muted playsinline></video>`;
+    } else {
+      item.innerHTML = `<img src="${m.url}" alt="">`;
+    }
+    item.onclick = () => {
+      selectedCoverMediaIndex = idx;
+      document.querySelectorAll('.thumbnail-item').forEach(el => el.classList.remove('selected'));
+      item.classList.add('selected');
+      document.getElementById('selectedCoverLabel').textContent = `Item #${idx + 1}`;
+      showToast(`Cover thumbnail updated 🖼️`);
+      closeCoverSelector();
+    };
+    grid.appendChild(item);
+  });
+  document.getElementById('coverModal').classList.add('open');
+}
+function closeCoverSelector() { document.getElementById('coverModal').classList.remove('open'); }
+
+// Drafts Management Logic
+function openDraftsModal() {
+  const container = document.getElementById('draftsListContainer');
+  container.innerHTML = '';
+  document.getElementById('draftsCountBadge').textContent = `(${userDrafts.length})`;
+
+  if(userDrafts.length === 0) {
+    container.innerHTML = `<div style="text-align:center; color:var(--muted); padding:30px; font-size:13px;">No saved drafts found</div>`;
+  } else {
+    userDrafts.forEach((draft, index) => {
+      const card = document.createElement('div');
+      card.className = 'draft-card';
+      const firstMedia = draft.mediaList[0] || {};
+      let thumbHtml = firstMedia.type === 'video' ? `<video class="draft-thumb" src="${firstMedia.url}"></video>` : `<img class="draft-thumb" src="${firstMedia.url}">`;
+      
+      card.innerHTML = `
+        ${thumbHtml}
+        <div class="draft-info">
+          <div class="draft-caption">${draft.caption || 'Untitled Draft'}</div>
+          <div class="draft-date">${draft.date} • Location: ${draft.location || 'None'}</div>
+        </div>
+        <div class="draft-actions">
+          <button class="select-track-btn selected" onclick="loadDraft(${index})">Load</button>
+          <button class="select-track-btn" onclick="deleteDraft(event, ${index})" style="background:rgba(255,42,95,0.2); border-color:var(--pink);">×</button>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+  }
+  document.getElementById('draftsModal').classList.add('open');
+}
+
+function closeDraftsModal() { document.getElementById('draftsModal').classList.remove('open'); }
+
+document.getElementById('saveDraftBtn').onclick = () => {
+  const captionText = document.getElementById('editorCaptionInput').value.trim() || document.getElementById('captionInput').value.trim();
+  const draft = {
+    caption: captionText,
+    mediaList: [...selectedMediaList],
+    location: selectedPostLocation,
+    coverIndex: selectedCoverMediaIndex,
+    sound: selectedSound,
+    date: new Date().toLocaleDateString()
+  };
+  userDrafts.push(draft);
+  document.getElementById('draftsCountBadge').textContent = `(${userDrafts.length})`;
+  showToast('Saved to drafts successfully! 📁');
+  postScreen.classList.remove('open');
+  appContainer.classList.remove('hide-nav-for-create');
+  updateNavActiveState('home');
+};
+
+function loadDraft(index) {
+  const draft = userDrafts[index];
+  if(!draft) return;
+  selectedMediaList = [...draft.mediaList];
+  selectedPostLocation = draft.location || "";
+  selectedCoverMediaIndex = draft.coverIndex || 0;
+  selectedSound = draft.sound || "Original Audio";
+  
+  document.getElementById('editorCaptionInput').value = draft.caption;
+  document.getElementById('captionInput').value = draft.caption;
+  document.getElementById('selectedLocationLabel').textContent = selectedPostLocation || "Add location";
+  document.getElementById('selectedCoverLabel').textContent = `Item #${selectedCoverMediaIndex + 1}`;
+  
+  closeDraftsModal();
+  setupPostPreview();
+  showToast('Draft loaded successfully ✨');
+}
+
+function deleteDraft(e, index) {
+  e.stopPropagation();
+  userDrafts.splice(index, 1);
+  document.getElementById('draftsCountBadge').textContent = `(${userDrafts.length})`;
+  openDraftsModal();
+  showToast('Draft deleted');
+}
 
 // Inbox & DM Renderer
 function renderInboxList() {
@@ -2004,10 +2286,20 @@ function setupPostPreview() {
     sliderHtml += `</div>`;
     previewBox.innerHTML = sliderHtml;
   }
+  document.getElementById('selectedCoverLabel').textContent = `Item #${selectedCoverMediaIndex + 1}`;
+  document.getElementById('draftsCountBadge').textContent = `(${userDrafts.length})`;
 }
 
 document.getElementById('publishBtn').onclick = () => {
   const captionText = document.getElementById('editorCaptionInput').value.trim() || document.getElementById('captionInput').value.trim() || 'My new VIBE post ✨ #VIBE';
+  
+  // Reorder media list based on selectedCoverMediaIndex so cover is first
+  let orderedMedia = [...selectedMediaList];
+  if(selectedCoverMediaIndex > 0 && selectedCoverMediaIndex < orderedMedia.length) {
+    const coverItem = orderedMedia.splice(selectedCoverMediaIndex, 1)[0];
+    orderedMedia.unshift(coverItem);
+  }
+
   const newPost = {
     id: Date.now(),
     author: 'You',
@@ -2020,7 +2312,8 @@ document.getElementById('publishBtn').onclick = () => {
     shares: 0,
     views: '1',
     avatar: myProfile.avatar,
-    mediaList: [...selectedMediaList],
+    mediaList: orderedMedia,
+    location: selectedPostLocation,
     isLiked: false,
     isSaved: false,
     isTagged: false,
@@ -2129,67 +2422,383 @@ function renderFeed(filteredList){
     }
   }
 
-  const songTitleText = item.songName || 'Original Audio';
-  const songArtistText = item.artist || item.author;
-
   card.innerHTML=`
-  ${mediaHtml}
-  ${dotsHtml}
-  <button class="mute" style="${isSinglePhoto ? 'display:none;' : ''}">${muted?'🔇':'🔊'}</button>
-  <div class="overlay"><div class="info">
-    <div class="author"><img class="avatar" src="${item.avatar}"><span class="name">${item.author}</span><button class="follow">Follow</button></div>
-    <div class="caption">${parseCaptions(item.caption)}</div>
-    <div class="audio" data-post-id="${item.id}">♫ <span class="song-title">${songTitleText}</span> - <span class="song-artist">${songArtistText}</span></div>
-  </div>
-  <div class="actions">
-    <button class="action like ${item.isLiked ? 'liked' : ''}"><div class="circle">${item.isLiked ? '♥' : '♡'}</div><div class="count">${formatCount(item.likes)}</div></button>
-    <button class="action commentBtn"><div class="circle">💬</div><div class="count">${item.commentsList.length}</div></button>
-    <button class="action saveBtn ${item.isSaved ? 'saved' : ''}"><div class="circle">${item.isSaved ? '★' : '☆'}</div><div class="count">Save</div></button>
-    <button class="action shareBtn"><div class="circle">↗</div><div class="count">${formatCount(item.shares)}</div></button>
-  </div></div>`;
+   ${mediaHtml}
+   ${dotsHtml}
+   <button class="mute" title="Mute/Unmute">🔊</button>
+   <div class="overlay">
+    <div class="info">
+     <div class="author">
+      <img class="avatar" src="${item.avatar}">
+      <span class="name">${item.author}</span>
+      <button class="follow">Follow</button>
+     </div>
+     <div class="caption">${parseCaptions(item.caption)} ${item.location ? '<span style="font-size:12px; color:var(--cyan); display:block; margin-top:2px;">📍 ' + item.location + '</span>' : ''}</div>
+     <div class="audio">
+      <span>♫</span>
+      <span class="song-title">${item.songName}</span>
+      <span>•</span>
+      <span class="song-artist">${item.artist}</span>
+     </div>
+    </div>
+    <div class="actions">
+     <button class="action like-action">
+      <div class="circle">♥</div>
+      <span class="count">${formatCount(item.likes)}</span>
+     </button>
+     <button class="action comment-action">
+      <div class="circle">💬</div>
+      <span class="count">${formatCount(item.commentsCount)}</span>
+     </button>
+     <button class="action save-action">
+      <div class="circle">★</div>
+      <span class="count">Save</span>
+     </button>
+     <button class="action share-action">
+      <div class="circle">↗</div>
+      <span class="count">${formatCount(item.shares)}</span>
+     </button>
+    </div>
+   </div>
+  `;
+
+  // Carousel scroll dot listener
+  const slider = card.querySelector('.reel-media-slider');
+  if(slider) {
+    slider.onscroll = () => {
+      const slideWidth = slider.clientWidth;
+      const index = Math.round(slider.scrollLeft / slideWidth);
+      const dots = card.querySelectorAll('.carousel-dot');
+      dots.forEach((dot, dIdx) => {
+        dot.classList.toggle('active', dIdx === index);
+      });
+    };
+  }
+
+  // Like button interaction
+  const likeBtn = card.querySelector('.like-action');
+  likeBtn.onclick = () => {
+    item.isLiked = !item.isLiked;
+    likeBtn.classList.toggle('liked', item.isLiked);
+    item.likes += item.isLiked ? 1 : -1;
+    likeBtn.querySelector('.count').textContent = formatCount(item.likes);
+    showToast(item.isLiked ? 'Liked post ❤️' : 'Unliked post');
+  };
+
+  // Save button interaction
+  const saveBtn = card.querySelector('.save-action');
+  saveBtn.onclick = () => {
+    item.isSaved = !item.isSaved;
+    saveBtn.classList.toggle('saved', item.isSaved);
+    showToast(item.isSaved ? 'Added to Saved Videos ⭐' : 'Removed from Saved');
+  };
+
+  // Comment action button
+  const commentBtn = card.querySelector('.comment-action');
+  commentBtn.onclick = () => {
+    openCommentModal(item);
+  };
+
+  // Audio bar click -> open sound modal
+  const audioBar = card.querySelector('.audio');
+  audioBar.onclick = () => {
+    openSoundModal(item);
+  };
+
+  // Double tap to like animation
+  let lastTapTime = 0;
+  card.onclick = (e) => {
+    if(e.target.closest('.actions') || e.target.closest('.author') || e.target.closest('.audio') || e.target.closest('.mute') || e.target.closest('.custom-pause-btn')) return;
+    const now = Date.now();
+    if(now - lastTapTime < 350) {
+      // Double tap detected
+      if(!item.isLiked) {
+        item.isLiked = true;
+        likeBtn.classList.add('liked');
+        item.likes += 1;
+        likeBtn.querySelector('.count').textContent = formatCount(item.likes);
+      }
+      const heart = document.createElement('div');
+      heart.className = 'double-tap-heart';
+      heart.textContent = '❤️';
+      const rect = card.getBoundingClientRect();
+      heart.style.left = (e.clientX - rect.left) + 'px';
+      heart.style.top = (e.clientY - rect.top) + 'px';
+      card.appendChild(heart);
+      setTimeout(() => heart.remove(), 800);
+      showToast('Double-tap liked! ❤️');
+    } else {
+      // Single tap -> toggle video play/pause
+      const vid = card.querySelector('video');
+      if(vid) {
+        const pauseOverlay = card.querySelector('.video-control-overlay');
+        const pauseBtn = card.querySelector('.custom-pause-btn');
+        if(vid.paused) {
+          vid.play();
+          if(pauseOverlay) pauseOverlay.classList.remove('show');
+          if(pauseBtn) pauseBtn.textContent = '▶';
+        } else {
+          vid.pause();
+          if(pauseOverlay) pauseOverlay.classList.add('show');
+          if(pauseBtn) pauseBtn.textContent = '⏸';
+        }
+      }
+    }
+    lastTapTime = now;
+  };
+
+  // Mute button logic
+  const muteBtn = card.querySelector('.mute');
+  const vidEl = card.querySelector('video');
+  if(vidEl) {
+    muteBtn.onclick = () => {
+      muted = !muted;
+      document.querySelectorAll('video').forEach(v => v.muted = muted);
+      muteBtn.textContent = muted ? '🔊' : '🔈';
+      showToast(muted ? 'Audio muted' : 'Audio unmuted');
+    };
+  } else {
+    muteBtn.style.display = 'none';
+  }
+
   feed.appendChild(card);
  });
+
+ setupObserver();
 }
 
-// Navigation & Screen Switches
-document.querySelectorAll('.nav button').forEach(btn => {
-  btn.onclick = () => {
-    const tab = btn.getAttribute('data-tab');
-    updateNavActiveState(tab);
-    
-    studio.classList.remove('open');
-    discover.classList.remove('open');
-    inbox.classList.remove('open');
-    profile.classList.remove('open');
-    appContainer.classList.remove('hide-nav-for-create');
-    stopCamera();
+function setupObserver(){
+ const observer = new IntersectionObserver((entries)=>{
+  entries.forEach(entry=>{
+   const vid = entry.target.querySelector('video');
+   const durationIndicator = entry.target.querySelector('.video-duration-indicator');
+   if(!vid) return;
+   
+   if(entry.isIntersecting){
+    document.querySelectorAll('.feed video').forEach(v => {
+      if(v !== vid) {
+        v.pause();
+        const cOverlay = v.closest('.reel').querySelector('.video-control-overlay');
+        const dIndicator = v.closest('.reel').querySelector('.video-duration-indicator');
+        if(cOverlay) cOverlay.classList.remove('show');
+        if(dIndicator) dIndicator.classList.remove('show');
+      }
+    });
 
-    if (tab === 'discover') {
-      discover.classList.add('open');
-      executeSearch(searchInput.value.trim());
-    } else if (tab === 'create') {
-      appContainer.classList.add('hide-nav-for-create');
-      studio.classList.add('open');
-      startCamera();
-    } else if (tab === 'inbox') {
-      inbox.classList.add('open');
-      renderInboxList();
-    } else if (tab === 'profile') {
-      profile.classList.add('open');
+    vid.muted = muted;
+    vid.play().then(() => {
+      if(durationIndicator && vid.duration) {
+        const mins = Math.floor(vid.duration / 60);
+        const secs = Math.floor(vid.duration % 60);
+        durationIndicator.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        durationIndicator.classList.add('show');
+        setTimeout(() => durationIndicator.classList.remove('show'), 2500);
+      }
+    }).catch(e => console.log("Autoplay prevented:", e));
+   } else {
+    vid.pause();
+    if(durationIndicator) durationIndicator.classList.remove('show');
+   }
+  });
+ },{threshold:0.6});
+
+ document.querySelectorAll('.feed .reel').forEach(card=>observer.observe(card));
+}
+
+// Navigation Bar Clicks
+document.getElementById('navHomeBtn').onclick = () => {
+  appContainer.classList.remove('hide-nav-for-create');
+  updateNavActiveState('home');
+  closeAllScreens();
+};
+
+document.getElementById('navDiscoverBtn').onclick = () => {
+  appContainer.classList.remove('hide-nav-for-create');
+  updateNavActiveState('discover');
+  closeAllScreens();
+  discover.classList.add('open');
+};
+
+document.getElementById('navCreateBtn').onclick = () => {
+  appContainer.classList.add('hide-nav-for-create');
+  updateNavActiveState('create');
+  closeAllScreens();
+  studio.classList.add('open');
+  startCamera();
+};
+
+document.getElementById('navInboxBtn').onclick = () => {
+  appContainer.classList.remove('hide-nav-for-create');
+  updateNavActiveState('inbox');
+  closeAllScreens();
+  inbox.classList.add('open');
+  renderInboxList();
+};
+
+document.getElementById('navProfileBtn').onclick = () => {
+  appContainer.classList.remove('hide-nav-for-create');
+  updateNavActiveState('profile');
+  closeAllScreens();
+  profile.classList.add('open');
+  renderUserProfileGrid('posts');
+};
+
+function closeAllScreens() {
+  studio.classList.remove('open');
+  editorScreen.classList.remove('open');
+  postScreen.classList.remove('open');
+  discover.classList.remove('open');
+  inbox.classList.remove('open');
+  profile.classList.remove('open');
+  stopCamera();
+}
+
+document.querySelectorAll('.close').forEach(btn => {
+  btn.onclick = (e) => {
+    const parentScreen = btn.closest('.screen');
+    if(parentScreen) parentScreen.classList.remove('open');
+    if(parentScreen === studio || parentScreen === editorScreen || parentScreen === postScreen) {
+      stopCamera();
+      appContainer.classList.remove('hide-nav-for-create');
+      updateNavActiveState('home');
     }
   };
 });
 
-document.querySelectorAll('.screen .close').forEach(btn => {
-  btn.onclick = () => {
-    const screen = btn.closest('.screen');
-    if(screen) screen.classList.remove('open');
-    appContainer.classList.remove('hide-nav-for-create');
-    updateNavActiveState('home');
-    stopCamera();
+// Sound Modal
+function openSoundModal(item) {
+  document.getElementById('audioModalSongTitle').textContent = item.songName;
+  document.getElementById('audioModalArtist').textContent = item.artist;
+  const grid = document.getElementById('audioModalVideosGrid');
+  grid.innerHTML = '';
+  feedData.filter(f => f.songName === item.songName).forEach(f => {
+    const thumb = document.createElement('div');
+    thumb.className = 'userPostThumb';
+    const media = f.mediaList[0] || {};
+    if(media.type === 'video') {
+      thumb.innerHTML = `<video src="${media.url}" muted playsinline></video>`;
+    } else {
+      thumb.innerHTML = `<img src="${media.url}" alt="">`;
+    }
+    thumb.onclick = () => {
+      document.getElementById('soundModal').classList.remove('open');
+      const idx = feedData.findIndex(post => post.id === f.id);
+      if(idx !== -1) { feed.children[idx].scrollIntoView({behavior:'smooth'}); }
+    };
+    grid.appendChild(thumb);
+  });
+  document.getElementById('soundModal').classList.add('open');
+}
+document.getElementById('closeSoundModal').onclick = () => { document.getElementById('soundModal').classList.remove('open'); };
+
+// Comment Drawer Modal
+let currentCommentPost = null;
+function openCommentModal(item) {
+  currentCommentPost = item;
+  document.getElementById('commentModalTitle').textContent = `${item.commentsCount} Comments`;
+  renderCommentsList();
+  document.getElementById('commentModal').classList.add('open');
+}
+
+function renderCommentsList() {
+  const container = document.getElementById('commentListContainer');
+  container.innerHTML = '';
+  if(!currentCommentPost || !currentCommentPost.commentsList || currentCommentPost.commentsList.length === 0) {
+    container.innerHTML = `<div style="text-align:center; color:var(--muted); padding:30px; font-size:13px;">No comments yet. Be the first to comment!</div>`;
+    return;
+  }
+  currentCommentPost.commentsList.forEach(c => {
+    const row = document.createElement('div');
+    row.className = 'commentRow';
+    row.innerHTML = `
+      <img class="commentAvatar" src="${c.avatar}">
+      <div class="commentBubble">
+        <div class="commentUser">${c.user}</div>
+        <div class="commentText">${c.text}</div>
+      </div>
+    `;
+    container.appendChild(row);
+  });
+}
+
+document.getElementById('closeCommentModal').onclick = () => {
+  document.getElementById('commentModal').classList.remove('open');
+};
+
+document.getElementById('commentSendBtn').onclick = () => {
+  const input = document.getElementById('commentInputField');
+  const text = input.value.trim();
+  if(!text || !currentCommentPost) return;
+
+  const newComment = {
+    user: 'You',
+    text: text,
+    avatar: myProfile.avatar
+  };
+
+  currentCommentPost.commentsList.push(newComment);
+  currentCommentPost.commentsCount++;
+  input.value = '';
+  renderCommentsList();
+  document.getElementById('commentModalTitle').textContent = `${currentCommentPost.commentsCount} Comments`;
+  renderFeed();
+  showToast('Comment posted! 💬');
+};
+
+// Profile Sub-tabs & Posts Grid
+document.querySelectorAll('.profileSubTab').forEach(tab => {
+  tab.onclick = () => {
+    document.querySelectorAll('.profileSubTab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    renderUserProfileGrid(tab.getAttribute('data-profile-tab'));
   };
 });
 
+function renderUserProfileGrid(tabType) {
+  const grid = document.getElementById('userPostsGrid');
+  grid.innerHTML = '';
+  
+  let filteredPosts = [];
+  if(tabType === 'posts') {
+    filteredPosts = feedData.filter(p => p.author === 'You');
+  } else if(tabType === 'saved') {
+    filteredPosts = feedData.filter(p => p.isSaved);
+  } else if(tabType === 'tagged') {
+    filteredPosts = feedData.filter(p => p.isTagged);
+  }
+
+  if(filteredPosts.length === 0) {
+    grid.innerHTML = `<div style="grid-column: span 3; text-align:center; color:var(--muted); padding:40px; font-size:13px;">No ${tabType} available</div>`;
+    return;
+  }
+
+  filteredPosts.forEach(post => {
+    const thumb = document.createElement('div');
+    thumb.className = 'userPostThumb';
+    const media = post.mediaList && post.mediaList.length > 0 ? post.mediaList[0] : {type:'image', url:''};
+    if(media.type === 'video') {
+      thumb.innerHTML = `
+        <video src="${media.url}" muted playsinline></video>
+        <div class="profile-view-badge">▶ ${post.views}</div>
+      `;
+    } else {
+      thumb.innerHTML = `
+        <img src="${media.url}" alt="">
+        <div class="profile-view-badge">♥ ${post.likes}</div>
+      `;
+    }
+    thumb.onclick = () => {
+      profile.classList.remove('open');
+      updateNavActiveState('home');
+      pauseAllFeedVideos();
+      const idx = feedData.findIndex(f => f.id === post.id);
+      if(idx !== -1) { feed.children[idx].scrollIntoView({behavior:'smooth'}); }
+    };
+    grid.appendChild(thumb);
+  });
+}
+
+// Initial render
 renderFeed();
 </script>
 </body>
