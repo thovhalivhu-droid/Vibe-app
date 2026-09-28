@@ -452,7 +452,7 @@ button{font:inherit}
 .editor-caption-input::placeholder { color: var(--muted); }
 
 .hidden{display:none!important}
-.toast{position:absolute;z-index:110;top:70px;left:50%;transform:translateX(-50%) translateY(-15px);opacity:0;background:#000e;padding:9px 16px;border-radius:20px;font-size:13px;transition:.2s;pointer-events:none}
+.toast{position:absolute;z-index:200;top:70px;left:50%;transform:translateX(-50%) translateY(-15px);opacity:0;background:#000e;padding:9px 16px;border-radius:20px;font-size:13px;transition:.2s;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%)}
 
 /* Discover & Search Screen Enhanced Styling */
@@ -744,62 +744,65 @@ button{font:inherit}
 .commentInputField{flex:1;background:#1a1b22;border:1px solid #ffffff15;border-radius:20px;padding:10px 14px;color:#fff;font-size:13px;outline:none}
 .commentSendBtn{background:var(--pink);border:0;color:#fff;font-weight:700;padding:8px 16px;border-radius:20px;cursor:pointer}
 
-/* Report & Block Modal Backdrop & Bottom Sheets */
+/* Popup Overlay Backdrop */
 .modal-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(4px);
-  z-index: 150;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(6px);
+  z-index: 250;
   display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
   opacity: 0;
   transition: opacity 0.3s ease;
 }
 .modal-backdrop.open {
-  display: block;
+  display: flex;
   opacity: 1;
 }
 
-.report-modal, .block-modal {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #14151c;
-  z-index: 160;
-  border-top-left-radius: 24px;
-  border-top-right-radius: 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+/* Report & Block Popup Box */
+.popup-box {
+  background: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 360px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  padding: 20px;
-  transform: translateY(100%);
+  gap: 16px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.8);
+  transform: scale(0.95);
   transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
-  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.8);
 }
-.report-modal.open, .block-modal.open { transform: translateY(0); }
-.report-title, .block-title { font-size: 16px; font-weight: 800; text-align: center; margin-bottom: 4px; color: var(--text); }
-.report-subtitle, .block-subtitle { font-size: 12px; color: var(--muted); text-align: center; margin-bottom: 16px; }
-.report-reasons-list, .block-reasons-list { display: flex; flex-direction: column; gap: 8px; max-height: 240px; overflow-y: auto; margin-bottom: 16px; scrollbar-width: none; }
-.report-reasons-list::-webkit-scrollbar, .block-reasons-list::-webkit-scrollbar { display: none; }
-.report-reason-item, .block-reason-item {
+.modal-backdrop.open .popup-box {
+  transform: scale(1);
+}
+.popup-title { font-size: 16px; font-weight: 800; text-align: center; color: var(--text); }
+.popup-subtitle { font-size: 12px; color: var(--muted); text-align: center; line-height: 1.4; }
+.popup-reasons { display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; scrollbar-width: none; }
+.popup-reasons::-webkit-scrollbar { display: none; }
+.popup-reason-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--surface);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 12px 16px;
-  border-radius: 14px;
+  background: #14151c;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 10px 14px;
+  border-radius: 12px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
 }
-.report-reason-item input[type="radio"], .block-reason-item input[type="radio"] { accent-color: var(--pink); transform: scale(1.2); cursor: pointer; }
-.report-reason-item.selected, .block-reason-item.selected { border-color: var(--pink); background: rgba(255, 42, 95, 0.08); }
-.report-actions, .block-actions { display: flex; gap: 10px; }
-.report-submit-btn, .block-submit-btn { flex: 1; background: linear-gradient(135deg, var(--pink), var(--cyan)); border: none; color: #fff; font-weight: 800; padding: 12px; border-radius: 14px; cursor: pointer; font-size: 14px; }
-.report-cancel-btn, .block-cancel-btn { flex: 1; background: var(--surface); border: 1px solid rgba(255, 255, 255, 0.15); color: var(--text); font-weight: 700; padding: 12px; border-radius: 14px; cursor: pointer; font-size: 14px; }
-.block-submit-btn { background: var(--pink); }
+.popup-reason-item input[type="radio"] { accent-color: var(--pink); transform: scale(1.1); cursor: pointer; }
+.popup-reason-item.selected { border-color: var(--pink); background: rgba(255, 42, 95, 0.08); }
+.popup-actions { display: flex; gap: 10px; margin-top: 4px; }
+.popup-btn-cancel { flex: 1; background: #14151c; border: 1px solid rgba(255, 255, 255, 0.15); color: var(--text); font-weight: 700; padding: 12px; border-radius: 14px; cursor: pointer; font-size: 13px; text-align: center; }
+.popup-btn-confirm { flex: 1; background: linear-gradient(135deg, var(--pink), var(--cyan)); border: none; color: #fff; font-weight: 800; padding: 12px; border-radius: 14px; cursor: pointer; font-size: 13px; text-align: center; }
+.popup-btn-danger { flex: 1; background: var(--pink); border: none; color: #fff; font-weight: 800; padding: 12px; border-radius: 14px; cursor: pointer; font-size: 13px; text-align: center; }
 
 /* Settings Screen Styling */
 .settingsScreen {
@@ -960,58 +963,49 @@ input:checked+.slider:before{transform:translateX(20px)}
 <div id="app">
 <div id="toast" class="toast"></div>
 
-<!-- Shared Backdrop for Popups -->
-<div id="modalBackdrop" class="modal-backdrop"></div>
-
-<!-- Report User Bottom Sheet -->
-<div id="reportModal" class="report-modal">
-  <div class="report-title">Report User</div>
-  <div class="report-subtitle">Select a reason for reporting this account. Your report is anonymous.</div>
-  <div class="report-reasons-list">
-    <label class="report-reason-item selected" onclick="selectReportReason(this)">
-      <span>Inappropriate Content or Behavior</span>
-      <input type="radio" name="reportReason" checked>
-    </label>
-    <label class="report-reason-item" onclick="selectReportReason(this)">
-      <span>Harassment or Bullying</span>
-      <input type="radio" name="reportReason">
-    </label>
-    <label class="report-reason-item" onclick="selectReportReason(this)">
-      <span>Spam or Fake Account</span>
-      <input type="radio" name="reportReason">
-    </label>
-    <label class="report-reason-item" onclick="selectReportReason(this)">
-      <span>Intellectual Property Violation</span>
-      <input type="radio" name="reportReason">
-    </label>
-    <label class="report-reason-item" onclick="selectReportReason(this)">
-      <span>Dangerous Activities or Harmful Acts</span>
-      <input type="radio" name="reportReason">
-    </label>
-  </div>
-  <div class="report-actions">
-    <button class="report-cancel-btn" onclick="closeReportModal()">Cancel</button>
-    <button class="report-submit-btn" onclick="submitReportUser()">Submit Report</button>
+<!-- REPORT USER POPUP MODAL -->
+<div id="reportUserModal" class="modal-backdrop">
+  <div class="popup-box">
+    <div class="popup-title">Report User</div>
+    <div class="popup-subtitle">Please select a reason for reporting this account. Your report is anonymous.</div>
+    <div class="popup-reasons" id="reportReasonsList">
+      <label class="popup-reason-item selected">
+        <span>Spam or misleading content</span>
+        <input type="radio" name="reportReason" value="Spam" checked>
+      </label>
+      <label class="popup-reason-item">
+        <span>Harassment or bullying</span>
+        <input type="radio" name="reportReason" value="Harassment">
+      </label>
+      <label class="popup-reason-item">
+        <span>Inappropriate or sensitive content</span>
+        <input type="radio" name="reportReason" value="Inappropriate">
+      </label>
+      <label class="popup-reason-item">
+        <span>Hate speech or symbols</span>
+        <input type="radio" name="reportReason" value="Hate Speech">
+      </label>
+      <label class="popup-reason-item">
+        <span>Fake account or impersonation</span>
+        <input type="radio" name="reportReason" value="Fake Account">
+      </label>
+    </div>
+    <div class="popup-actions">
+      <button class="popup-btn-cancel" onclick="closeReportModal()">Cancel</button>
+      <button class="popup-btn-confirm" onclick="submitReportUser()">Submit Report</button>
+    </div>
   </div>
 </div>
 
-<!-- Block User Bottom Sheet -->
-<div id="blockModal" class="block-modal">
-  <div class="block-title">Block User</div>
-  <div class="block-subtitle">They won't be able to find your profile, posts, or message you.</div>
-  <div class="block-reasons-list">
-    <label class="block-reason-item selected" onclick="selectBlockReason(this)">
-      <span>Block this account and any new accounts they may create</span>
-      <input type="radio" name="blockReason" checked>
-    </label>
-    <label class="block-reason-item" onclick="selectBlockReason(this)">
-      <span>Block only this specific account</span>
-      <input type="radio" name="blockReason">
-    </label>
-  </div>
-  <div class="block-actions">
-    <button class="block-cancel-btn" onclick="closeBlockModal()">Cancel</button>
-    <button class="block-submit-btn" onclick="submitBlockUser()">Block User</button>
+<!-- BLOCK USER POPUP MODAL -->
+<div id="blockUserModal" class="modal-backdrop">
+  <div class="popup-box">
+    <div class="popup-title">Block User?</div>
+    <div class="popup-subtitle">They won't be able to find your profile, posts, or message you. VIBE will not notify them that you blocked them.</div>
+    <div class="popup-actions">
+      <button class="popup-btn-cancel" onclick="closeBlockModal()">Cancel</button>
+      <button class="popup-btn-danger" onclick="confirmBlockUser()">Block</button>
+    </div>
   </div>
 </div>
 
@@ -1352,10 +1346,7 @@ input:checked+.slider:before{transform:translateX(20px)}
   <div class="screenHead">
     <button class="close" onclick="closeCreatorProfileModal()">×</button>
     <span id="modalCreatorHeaderName">Creator Profile</span>
-    <div style="display: flex; gap: 8px;">
-      <button onclick="openReportModal()" style="background: none; border: none; color: var(--pink); font-size: 16px; cursor: pointer; padding: 4px;" title="Report User">⚠️</button>
-      <button onclick="openBlockModal()" style="background: none; border: none; color: #ff3333; font-size: 16px; cursor: pointer; padding: 4px;" title="Block User">🚫</button>
-    </div>
+    <span style="width:24px"></span>
   </div>
   <div class="profileBody">
     <div class="profileHeaderInfo">
@@ -1427,10 +1418,7 @@ input:checked+.slider:before{transform:translateX(20px)}
         <div class="dmChatStatus" id="dmChatHeaderStatus">Active now</div>
       </div>
     </div>
-    <div style="display: flex; gap: 8px;">
-      <button onclick="openReportModal()" style="background: none; border: none; color: var(--pink); font-size: 16px; cursor: pointer; padding: 4px;" title="Report User">⚠️</button>
-      <button onclick="openBlockModal()" style="background: none; border: none; color: #ff3333; font-size: 16px; cursor: pointer; padding: 4px;" title="Block User">🚫</button>
-    </div>
+    <span style="width:24px"></span>
   </div>
 
   <div class="dmChatBody" id="dmChatMessagesList">
@@ -1640,10 +1628,10 @@ input:checked+.slider:before{transform:translateX(20px)}
       <div><span id="statFollowers">1.2K</span>Followers</div>
       <div><span id="statLikes">8.4K</span>Likes</div>
     </div>
-    <div style="display:flex; gap:8px; justify-content:center; margin-top:12px;">
+    <div style="display:flex; gap:8px; justify-content:center; margin-top:12px; flex-wrap:wrap;">
       <button class="editProfileBtn" id="editProfileBtn" style="margin-top:0;">Edit Profile</button>
       <button class="editProfileBtn" onclick="openReportModal()" style="margin-top:0; border-color:var(--pink); color:var(--pink);">Report User</button>
-      <button class="editProfileBtn" onclick="openBlockModal()" style="margin-top:0; border-color:#ff3333; color:#ff3333;">Block User</button>
+      <button class="editProfileBtn" onclick="openBlockModal()" style="margin-top:0; border-color:#ff4d4d; color:#ff4d4d;">Block User</button>
     </div>
   </div>
 
@@ -1805,71 +1793,41 @@ let activeTabKey = 'home';
 let searchFilterType = 'all';
 let currentActiveCreator = null;
 
-// Report User Popup Logic
+// Report User Modal Logic
 function openReportModal() {
-  document.getElementById('modalBackdrop').classList.add('open');
-  document.getElementById('reportModal').classList.add('open');
+  document.getElementById('reportUserModal').classList.add('open');
 }
-
 function closeReportModal() {
-  document.getElementById('reportModal').classList.remove('open');
-  // Only close backdrop if block modal isn't open either
-  if (!document.getElementById('blockModal').classList.contains('open')) {
-    document.getElementById('modalBackdrop').classList.remove('open');
-  }
+  document.getElementById('reportUserModal').classList.remove('open');
 }
-
-function selectReportReason(item) {
-  document.querySelectorAll('.report-reason-item').forEach(el => {
-    el.classList.remove('selected');
-    el.querySelector('input').checked = false;
-  });
-  item.classList.add('selected');
-  item.querySelector('input').checked = true;
-}
-
 function submitReportUser() {
   const selectedRadio = document.querySelector('input[name="reportReason"]:checked');
-  const reasonText = selectedRadio ? selectedRadio.parentElement.querySelector('span').textContent : 'Inappropriate Content';
+  const reason = selectedRadio ? selectedRadio.value : 'General';
   closeReportModal();
-  showToast(`Report submitted successfully (${reasonText}). Thank you for keeping VIBE safe 🛡️`);
+  showToast(`Report submitted (${reason}). Thank you for keeping VIBE safe 🛡️`);
 }
 
-// Block User Popup Logic
+// Block User Modal Logic
 function openBlockModal() {
-  document.getElementById('modalBackdrop').classList.add('open');
-  document.getElementById('blockModal').classList.add('open');
+  document.getElementById('blockUserModal').classList.add('open');
 }
-
 function closeBlockModal() {
-  document.getElementById('blockModal').classList.remove('open');
-  // Only close backdrop if report modal isn't open either
-  if (!document.getElementById('reportModal').classList.contains('open')) {
-    document.getElementById('modalBackdrop').classList.remove('open');
-  }
+  document.getElementById('blockUserModal').classList.remove('open');
 }
-
-function selectBlockReason(item) {
-  document.querySelectorAll('.block-reason-item').forEach(el => {
-    el.classList.remove('selected');
-    el.querySelector('input').checked = false;
-  });
-  item.classList.add('selected');
-  item.querySelector('input').checked = true;
-}
-
-function submitBlockUser() {
+function confirmBlockUser() {
   closeBlockModal();
-  showToast('User blocked successfully. 🚫');
-  // Close any active modal/profile screens if appropriate
-  closeCreatorProfileModal();
+  showToast('User has been blocked successfully 🚫');
 }
 
-// Backdrop click closes any open modals
-document.getElementById('modalBackdrop').onclick = () => {
-  closeReportModal();
-  closeBlockModal();
-};
+// Interactive selection styling for report radio buttons
+document.querySelectorAll('.popup-reason-item').forEach(item => {
+  item.onclick = () => {
+    document.querySelectorAll('.popup-reason-item').forEach(el => el.classList.remove('selected'));
+    item.classList.add('selected');
+    const radio = item.querySelector('input[type="radio"]');
+    if(radio) radio.checked = true;
+  };
+});
 
 // Settings & Privacy Navigation & Management
 function openSettingsScreen() {
@@ -2198,106 +2156,14 @@ function declineDMRequest(e, chatId) {
   renderInboxList();
 }
 
-// Toast Notification
-function showToast(msg) {
-  toast.textContent = msg;
+// Toast notification helper
+function showToast(message) {
+  toast.textContent = message;
   toast.classList.add('show');
-  setTimeout(() => { toast.classList.remove('show'); }, 2500);
+  setTimeout(() => {
+    toast.classList.remove('show');
+  }, 2500);
 }
-
-// Basic navigation tab switcher
-document.querySelectorAll('.nav button').forEach(btn => {
-  btn.onclick = () => {
-    const tabKey = btn.getAttribute('data-tab');
-    if(tabKey === 'create') {
-      studio.classList.add('open');
-      appContainer.classList.add('hide-nav-for-create');
-      startCamera();
-      return;
-    }
-    document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-
-    // Close all screens first
-    discover.classList.remove('open');
-    inbox.classList.remove('open');
-    profile.classList.remove('open');
-
-    if(tabKey === 'discover') {
-      discover.classList.add('open');
-    } else if(tabKey === 'inbox') {
-      inbox.classList.add('open');
-      renderInboxList();
-    } else if(tabKey === 'profile') {
-      profile.classList.add('open');
-    }
-  };
-});
-
-document.querySelectorAll('.close').forEach(btn => {
-  btn.onclick = () => {
-    const targetClose = btn.getAttribute('data-close');
-    if(targetClose === 'discover') discover.classList.remove('open');
-    if(targetClose === 'inbox') inbox.classList.remove('open');
-    if(targetClose === 'profile') profile.classList.remove('open');
-    studio.classList.remove('open');
-    editorScreen.classList.remove('open');
-    postScreen.classList.remove('open');
-    appContainer.classList.remove('hide-nav-for-create');
-  };
-});
-
-function startCamera() {
-  navigator.mediaDevices?.getUserMedia({ video: { facingMode: facing }, audio: true })
-    .then(stream => {
-      mediaStream = stream;
-      camera.srcObject = stream;
-    }).catch(err => {
-      console.log("Camera access error:", err);
-    });
-}
-
-function closeCreatorProfileModal() {
-  document.getElementById('creatorProfileModal').classList.remove('open');
-}
-
-function closeHashtagModal() {
-  document.getElementById('hashtagModal').classList.remove('open');
-}
-
-// Render Feed initially
-function renderFeed() {
-  feed.innerHTML = '';
-  feedData.forEach(item => {
-    const reel = document.createElement('div');
-    reel.className = 'reel';
-    reel.innerHTML = `
-      <div class="reel-media-slider">
-        <div class="reel-media-slide">
-          <video src="${item.mediaList[0].url}" loop playsinline autoplay muted></video>
-        </div>
-      </div>
-      <div class="overlay">
-        <div class="info">
-          <div class="author">
-            <img class="avatar" src="${item.avatar}">
-            <span class="name">${item.author}</span>
-            <button class="follow">Follow</button>
-          </div>
-          <div class="caption">${item.caption}</div>
-          <div class="audio">♫ <span class="song-title">${item.songName}</span> - <span class="song-artist">${item.artist}</span></div>
-        </div>
-        <div class="actions">
-          <button class="action liked"><div class="circle">♥</div><div class="count">${item.likes}</div></button>
-          <button class="action"><div class="circle">💬</div><div class="count">${item.commentsCount}</div></button>
-          <button class="action saved"><div class="circle">💾</div><div class="count">${item.shares}</div></button>
-        </div>
-      </div>
-    `;
-    feed.appendChild(reel);
-  });
-}
-renderFeed();
 </script>
 </body>
 </html>
