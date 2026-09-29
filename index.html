@@ -160,11 +160,7 @@ button{font:inherit}
 .nav{position:absolute;bottom:0;left:0;right:0;height:var(--nav);z-index:1000;display:flex;justify-content:space-around;align-items:center;background:var(--surface);backdrop-filter:blur(16px);border-top:1px solid #ffffff12;pointer-events:auto !important;transition:transform .3s ease}
 .nav button{background:none;border:0;color:var(--muted);font-size:10px;display:flex;flex-direction:column;align-items:center;gap:4px;width:20%;cursor:pointer;pointer-events:auto !important;touch-action:manipulation}.nav button.active{color:var(--text)}.nav .plus{width:42px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--pink),var(--cyan));color:#fff;font-size:22px;line-height:1}
 
-/* Global utility class to hide navigation and header ONLY when Create or Edit Media is open */
-#app.hide-nav-for-create .nav { transform: translateY(100%); pointer-events: none; }
-#app.hide-nav-for-create .header { transform: translateY(-100%); pointer-events: none; }
-
-/* Global utility class to hide navigation ONLY when logout is fully confirmed */
+/* Utility class to hide navigation ONLY when explicitly requested (e.g., Logged Out) */
 #app.hide-nav-completely .nav { transform: translateY(100%); pointer-events: none; }
 
 .screen{position:absolute;top:0;left:0;right:0;bottom:0;z-index:40;background:var(--bg);transform:translateY(100%);transition:.3s;display:flex;flex-direction:column}
@@ -1657,19 +1653,12 @@ document.querySelectorAll('.nav button').forEach(btn => {
 
 function openScreen(el) {
   el.classList.add('open');
-  if (el.id === 'studio' || el.id === 'editorScreen') {
-    appContainer.classList.add('hide-nav-for-create');
-  }
 }
 function closeScreen(el) {
   el.classList.remove('open');
-  if (!document.querySelector('#studio.open') && !document.querySelector('#editorScreen.open')) {
-    appContainer.classList.remove('hide-nav-for-create');
-  }
 }
 function closeAllScreens() {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('open'));
-  appContainer.classList.remove('hide-nav-for-create');
 }
 
 document.querySelectorAll('.screenHead .close').forEach(btn => {
@@ -1931,29 +1920,59 @@ function closePrivateInfoScreen() {
   closeScreen(document.getElementById('privateInfoScreen'));
 }
 
-// Logout Flow Functions
+function openHelpCenter() {
+  openScreen(document.getElementById('helpCenterSubPanel'));
+}
+function openTermsOfService() {
+  openScreen(document.getElementById('termsOfServiceSubPanel'));
+}
+function openAccountSettings() {
+  openScreen(document.getElementById('accountSettingsSubPanel'));
+}
+function openReferenceSettings() {
+  openScreen(document.getElementById('referenceSettingsSubPanel'));
+}
+function openPushNotificationsSettings() {
+  openScreen(document.getElementById('pushNotificationsSubPanel'));
+}
+function openVideoPlaybackSettings() {
+  openScreen(document.getElementById('videoPlaybackSubPanel'));
+}
+function closeSubPanel(panelId) {
+  closeScreen(document.getElementById(panelId));
+}
+
+// Logout and Login Handling (Bottom Navigation Visibility Logic)
 function openLogOutModal() {
-  const modal = document.getElementById('logoutModal');
-  modal.classList.add('open');
-  // Toolbar stays visible when popup opens (no hide classes added)
+  document.getElementById('logoutModal').classList.add('open');
+  // Navigation stays visible while popup opens
 }
 
 function closeLogOutModal() {
-  const modal = document.getElementById('logoutModal');
-  modal.classList.remove('open');
-  // Toolbar remains visible when Cancel is pressed (no hide classes added)
+  document.getElementById('logoutModal').classList.remove('open');
+  // Navigation stays visible when Cancel is pressed
 }
 
 function confirmLogOut() {
-  const modal = document.getElementById('logoutModal');
-  modal.classList.remove('open');
-  // Toolbar completely vanishes only after Log Out is confirmed
-  appContainer.classList.add('hide-nav-completely');
+  document.getElementById('logoutModal').classList.remove('open');
   closeAllScreens();
-  showToast('Successfully logged out of VIBE');
+  
+  // Make the bottom navigation toolbar disappear only when confirmed log out
+  appContainer.classList.add('hide-nav-completely');
+  showToast('Logged out successfully.');
+
+  // Simulate returning to the app later (e.g. clicking anywhere or a simulated login action after 4 seconds)
+  setTimeout(() => {
+    simulateAppReturn();
+  }, 4000);
 }
 
-// Initialize feed on load
+function simulateAppReturn() {
+  // When returning to the app, the toolbar appears again
+  appContainer.classList.remove('hide-nav-completely');
+  showToast('Welcome back to VIBE!');
+}
+
 renderFeed();
 </script>
 </body>
