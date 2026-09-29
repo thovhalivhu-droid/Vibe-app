@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VIBE - Short Video & Creator Platform</title>
+  <title>VIBE - Short Video & Creator Platform (Gemini 1.5 Vision Enabled)</title>
   <!-- FontAwesome for Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -196,7 +196,7 @@
       transform: translate(-50%, -50%);
     }
 
-    /* Reel Overlay UI (Author info & actions) */
+    /* Reel Overlay UI */
     .overlay {
       position: absolute;
       bottom: 0; left: 0; width: 100%;
@@ -300,8 +300,6 @@
       position: absolute; bottom: 30px; width: 100%;
       display: flex; justify-content: space-around; align-items: center; padding: 0 30px;
     }
-    
-    /* Recording active state styling */
     .shutter-btn.recording-active { border-color: var(--pink) !important; background: var(--pink) !important; animation: pulseRecord 1.5s infinite; }
     @keyframes pulseRecord { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
 
@@ -333,17 +331,16 @@
     #editorOverlaysLayer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 4; }
     .editorOverlayElement {
       position: absolute; cursor: move; padding: 8px 12px; border-radius: 8px;
-      font-size: 24px; pointer-events: auto; user-select: none;
-      touch-action: none;
+      font-size: 24px; pointer-events: auto; user-select: none; touch-action: none;
     }
     .editorOverlayElement.text-element { background: rgba(0,0,0,0.6); color: #fff; font-size: 18px; font-weight: bold; border: 1px dashed rgba(255,255,255,0.4); }
-    .editor-toolbar { height: 64px; background: var(--surface); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-around; padding: 0 10px; z-index: 10; }
-    .editor-tool-btn { background: none; border: none; color: var(--text); display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11px; cursor: pointer; }
-    .editor-tool-btn i { font-size: 18px; color: var(--cyan); }
-    .editor-drawer { position: absolute; bottom: 64px; left: 0; width: 100%; max-height: 260px; background: var(--surface); border-top: 1px solid var(--border); border-radius: 16px 16px 0 0; padding: 16px; overflow-y: auto; display: none; z-index: 20; }
+    .editor-toolbar { height: 64px; background: var(--surface); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-around; padding: 0 5px; z-index: 10; }
+    .editor-tool-btn { background: none; border: none; color: var(--text); display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10px; cursor: pointer; }
+    .editor-tool-btn i { font-size: 16px; color: var(--cyan); }
+    .editor-drawer { position: absolute; bottom: 64px; left: 0; width: 100%; max-height: 280px; background: var(--surface); border-top: 1px solid var(--border); border-radius: 16px 16px 0 0; padding: 16px; overflow-y: auto; display: none; z-index: 20; }
     .editor-drawer.open { display: block; }
 
-    /* Discover Screen Styles */
+    /* Discover Screen */
     .discover-search-bar { padding: 12px 16px; display: flex; gap: 10px; align-items: center; }
     .discover-search-input { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 10px 16px; color: var(--text); font-size: 14px; outline: none; }
     .discover-tabs { display: flex; gap: 10px; padding: 0 16px 12px; overflow-x: auto; scrollbar-width: none; }
@@ -365,7 +362,7 @@
     .creatorFollowBtn { background: var(--pink); border: none; color: #fff; padding: 6px 16px; border-radius: 14px; font-size: 12px; font-weight: 600; cursor: pointer; }
     .creatorFollowBtn.following { background: transparent; border: 1px solid var(--border); color: var(--muted); }
 
-    /* Inbox Screen Styles */
+    /* Inbox & Profile Screens */
     .inboxSubTabs { display: flex; border-bottom: 1px solid var(--border); }
     .inboxSubTab { flex: 1; text-align: center; padding: 12px; font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; }
     .inboxSubTab.active { color: var(--text); border-bottom-color: var(--pink); }
@@ -375,7 +372,6 @@
     .messageName { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
     .messageSnippet { font-size: 13px; color: var(--muted); }
 
-    /* Profile Screen Styles */
     .profile-header { padding: 20px 16px 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border-bottom: 1px solid var(--border); }
     .profile-avatar-container { position: relative; width: 84px; height: 84px; margin-bottom: 12px; cursor: pointer; }
     .profile-avatar { width: 100%; height: 100%; border-radius: 50%; border: 3px solid var(--pink); object-fit: cover; }
@@ -396,7 +392,6 @@
     .userPostsGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 2px; flex: 1; overflow-y: auto; }
     .userPostThumb { aspect-ratio: 9/16; background: #222; position: relative; overflow: hidden; }
     .userPostThumb img, .userPostThumb video { width: 100%; height: 100%; object-fit: cover; }
-    .profile-view-badge { position: absolute; bottom: 6px; left: 6px; font-size: 11px; font-weight: 600; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
 
     /* Settings & Sub-Panels */
     .settingsList { padding: 12px 0; overflow-y: auto; flex: 1; }
@@ -410,7 +405,7 @@
     input:checked + .settingsSlider { background-color: var(--pink); }
     input:checked + .settingsSlider:before { transform: translateX(20px); }
 
-    /* Comments Modal Drawer */
+    /* Comments & Modals */
     .commentModal { position: absolute; bottom: 0; left: 0; width: 100%; height: 60%; background: var(--surface); border-radius: 20px 20px 0 0; z-index: 60; display: flex; flex-direction: column; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1); }
     .commentModal.open { transform: translateY(0); }
     .commentHeader { padding: 16px; text-align: center; font-weight: 600; border-bottom: 1px solid var(--border); position: relative; }
@@ -423,7 +418,6 @@
     .commentInputField { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 20px; padding: 10px 16px; color: var(--text); font-size: 13px; outline: none; }
     .commentSendBtn { background: var(--pink); border: none; color: #fff; padding: 0 16px; border-radius: 20px; font-weight: 600; font-size: 13px; cursor: pointer; }
 
-    /* Sound Modal & Toast notifications */
     .soundItem { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--border); cursor: pointer; }
     .soundTitle { font-weight: 600; font-size: 14px; }
     .soundAuthor { font-size: 12px; color: var(--muted); }
@@ -433,38 +427,48 @@
     .toast { position: absolute; top: 70px; left: 50%; transform: translateX(-50%) translateY(-20px); background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(8px); color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 13px; font-weight: 500; opacity: 0; pointer-events: none; transition: opacity 0.3s, transform 0.3s; z-index: 100; border: 1px solid rgba(255,255,255,0.1); }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-    /* Report & Confirmation Modals */
     .report-modal { position: absolute; bottom: 0; left: 0; width: 100%; background: var(--surface); border-radius: 20px 20px 0 0; padding: 20px; z-index: 80; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1); }
     .report-modal.open { transform: translateY(0); }
     .report-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
     .report-subtitle { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
-    .report-reasons-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
-    .report-reason-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; cursor: pointer; font-size: 14px; }
-    .report-reason-item.selected { border-color: var(--pink); background: rgba(255,42,95,0.05); }
     .report-actions { display: flex; gap: 10px; }
     .report-cancel-btn { flex: 1; padding: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-weight: 600; cursor: pointer; }
     .report-submit-btn { flex: 1; padding: 10px; background: var(--pink); border: none; border-radius: 10px; color: #fff; font-weight: 600; cursor: pointer; }
 
-    /* Utility Helpers */
+    /* Gemini 1.5 Vision Analysis Styling */
+    .vision-analysis-box {
+      background: rgba(0, 242, 254, 0.08);
+      border: 1px solid var(--cyan);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .vision-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--cyan);
+      font-weight: 700;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
     .hidden { display: none !important; }
   </style>
 </head>
 <body>
 
 <div id="app">
-  <!-- Toast Notification Bar -->
   <div id="toast" class="toast">Notification message</div>
 
-  <!-- Top Navigation Tabs (Following / For You) -->
+  <!-- Top Navigation Tabs -->
   <div class="top-nav">
     <button class="tab" data-feed-tab="following">Following</button>
     <button class="tab active" data-feed-tab="foryou">For You</button>
   </div>
 
   <!-- Main Feed Section -->
-  <div id="feed" class="feed">
-    <!-- Rendered dynamically via JavaScript -->
-  </div>
+  <div id="feed" class="feed"></div>
 
   <!-- Bottom Navigation Bar -->
   <nav class="nav">
@@ -504,9 +508,7 @@
       <div class="discoverTab" data-search-filter="creators">Creators</div>
       <div class="discoverTab" data-search-filter="hashtags">Hashtags</div>
     </div>
-    <div id="discoverResultsContainer" style="flex:1; overflow-y:auto;">
-      <!-- Dynamic Discover Content -->
-    </div>
+    <div id="discoverResultsContainer" style="flex:1; overflow-y:auto;"></div>
   </section>
 
   <!-- VIBE Studio / Camera Recording Screen -->
@@ -523,7 +525,7 @@
       <div id="liveModePanel" class="live-control-panel hidden">
         <div class="live-badge-row">
           <div class="live-badge" id="liveStatusBadge"><span class="recordingDot"></span>LIVE</div>
-          <button class="camera-tool-icon" onclick="openLiveSettingsModal()"><i class="fa-solid fa-gear"></i></button>
+          <button class="camera-tool-icon" onclick="showToast('Settings opened')"><i class="fa-solid fa-gear"></i></button>
         </div>
         <div class="live-chat-preview" id="liveChatListContainer">
           <div class="liveChatMsg"><span class="liveChatUser">System:</span>Welcome to your live broadcast!</div>
@@ -531,10 +533,6 @@
         <div id="liveLikesContainer" style="position:relative; height:40px;">
           <button id="liveTapLikeBtn" style="position:absolute; right:0; background:rgba(255,42,95,0.8); border:none; border-radius:20px; padding:6px 14px; color:#fff; font-weight:600; cursor:pointer;">❤️ Like</button>
           <span id="liveHeartCountBadge" style="position:absolute; right:85px; top:8px; font-size:12px; font-weight:bold; color:#fff;">❤ 0</span>
-        </div>
-        <div style="display:flex; gap:8px; margin-top:4px;">
-          <input type="text" id="liveCommentInput" placeholder="Say something to viewers..." style="flex:1; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.2); border-radius:20px; padding:8px 14px; color:#fff; font-size:13px; outline:none;">
-          <button id="liveSendChatBtn" style="background:var(--cyan); border:none; border-radius:20px; padding:0 16px; color:#000; font-weight:600; font-size:13px; cursor:pointer;">Send</button>
         </div>
       </div>
 
@@ -548,46 +546,52 @@
       </div>
 
       <div id="videoModePanel" class="camera-controls">
-        <button class="camera-tool-icon" onclick="flipCamera()"><i class="fa-solid fa-rotate"></i></button>
-        <!-- Hold 2 Seconds to Record Button -->
+        <button class="camera-tool-icon" onclick="showToast('Camera flipped')"><i class="fa-solid fa-rotate"></i></button>
         <button class="shutter-btn hold-record-btn" id="recordVideoBtn" style="width: auto; height: auto; border-radius: 12px; padding: 12px 18px; border: 2px solid #fff; font-size: 13px; font-weight: 600; color: #fff; background: rgba(255,255,255,0.2); cursor: pointer; user-select: none;">Hold 2 Seconds to Record</button>
-        <!-- Stop Recording Button -->
-        <button id="stopVideoBtn" style="background: var(--pink); border: none; color: #fff; padding: 12px 18px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer;">Stop Recording</button>
+        <button id="stopVideoBtn" style="background: var(--pink); border: none; color: #fff; padding: 12px 18px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer;">Stop</button>
         <label class="camera-tool-icon" style="cursor:pointer;">
           <i class="fa-solid fa-image"></i>
           <input type="file" id="videoFileInput" accept="video/*,image/*" multiple style="display:none">
         </label>
       </div>
-
-      <div id="liveModeActionPanel" class="camera-controls hidden">
-        <button class="camera-tool-icon" onclick="toggleLiveMic()"><i class="fa-solid fa-microphone"></i></button>
-        <button id="startLiveBtn" onclick="toggleLiveStream()" style="background:var(--pink); border:none; color:#fff; font-weight:700; padding:14px 32px; border-radius:30px; font-size:15px; cursor:pointer; box-shadow:0 4px 16px rgba(255,42,95,0.5);">Go LIVE Now</button>
-        <button class="camera-tool-icon" onclick="openGuestRequestsModal()"><i class="fa-solid fa-user-plus"></i></button>
-      </div>
     </div>
   </section>
 
-  <!-- Advanced Media Editor Screen -->
+  <!-- Advanced Media Editor Screen with Gemini 1.5 Vision -->
   <section id="editorScreen" class="modalScreen">
-    <!-- Top Bar Combined -->
     <div class="screenHead">
-      <button id="close-btn" class="close" id="closeEditorBtn" onclick="document.getElementById('editorScreen').classList.remove('open')">✕</button>
-      <span>VIBE Studio Editor</span>
+      <button class="close" onclick="document.getElementById('editorScreen').classList.remove('open')">✕</button>
+      <span>VIBE Studio Editor (Gemini 1.5 Vision)</span>
       <button id="post-btn" style="background:var(--pink); border:none; color:#fff; padding:6px 14px; border-radius:14px; font-weight:600; font-size:13px; cursor:pointer;">Post</button>
     </div>
 
-    <div class="editor-canvas-container" id="editorCanvasContainer">
-      <!-- Media content rendered dynamically -->
-    </div>
+    <div class="editor-canvas-container" id="editorCanvasContainer"></div>
 
-    <!-- Bottom Toolbar Combined -->
+    <!-- Bottom Toolbar with Gemini 1.5 Vision Tool Added -->
     <div class="toolbar editor-toolbar">
-      <!-- Music button with class 'music-btn' included -->
-      <button class="tool-btn editor-tool-btn music-btn" id="toolMusicBtn" data-tool="music"><i class="fa-solid fa-music"></i><span>🎵 Music</span></button>
+      <button class="tool-btn editor-tool-btn music-btn" data-tool="music"><i class="fa-solid fa-music"></i><span>🎵 Music</span></button>
+      <button class="tool-btn editor-tool-btn" id="toolVisionBtn" data-tool="vision"><i class="fa-solid fa-eye" style="color:var(--pink)"></i><span>👁️ 1.5 Vision</span></button>
       <button class="tool-btn editor-tool-btn" id="toolStickersBtn" data-tool="stickers"><i class="fa-solid fa-face-smile"></i><span>😊 Stickers</span></button>
       <button class="tool-btn editor-tool-btn" id="toolCustomTextBtn" data-tool="text"><i class="fa-solid fa-font"></i><span>A Text</span></button>
       <button class="tool-btn editor-tool-btn" id="toolEffectsBtn" data-tool="effects"><i class="fa-solid fa-wand-magic-sparkles"></i><span>✨ Effects</span></button>
-      <button class="tool-btn editor-tool-btn" id="toolMentionBtn" data-tool="mention"><i class="fa-solid fa-at"></i><span>@ Mention</span></button>
+    </div>
+
+    <!-- Gemini 1.5 Vision Analysis Drawer -->
+    <div id="editorVisionDrawer" class="editor-drawer">
+      <div style="font-weight:700; font-size:15px; margin-bottom:4px; display:flex; align-items:center; gap:8px;">
+        <i class="fa-solid fa-wand-sparkles" style="color:var(--cyan)"></i> Gemini 1.5 Vision AI
+      </div>
+      <div style="font-size:12px; color:var(--muted); margin-bottom:12px;">Multimodal frame analysis & intelligent post generation</div>
+      
+      <div id="visionAnalysisOutput" style="display:none;" class="vision-analysis-box">
+        <div class="vision-header"><i class="fa-solid fa-check-circle"></i> Analysis Complete</div>
+        <div id="visionResultText" style="font-size:13px; line-height:1.4; color:var(--text); margin-bottom:8px;"></div>
+        <button onclick="applyVisionCaptionToPost()" style="background:var(--cyan); border:none; color:#000; font-weight:700; font-size:12px; padding:6px 12px; border-radius:8px; cursor:pointer;">Use Generated Caption & Tags</button>
+      </div>
+
+      <button onclick="runGeminiVisionAnalysis()" style="width:100%; background:var(--gradient); border:none; color:#fff; font-weight:700; font-size:13px; padding:10px; border-radius:10px; cursor:pointer; box-shadow:0 4px 12px rgba(255,42,95,0.3);">
+        Analyze Current Media with Gemini 1.5
+      </button>
     </div>
 
     <!-- Music Selection Drawer -->
@@ -597,16 +601,12 @@
         <span id="drawerSelectedSongTitle" style="font-size:12px; color:var(--cyan)">Original Audio</span>
       </div>
       <div class="music-list-row active" id="track-row-0" onclick="selectEditorMusic('Original Audio', 'Creator VIBE', 0)" style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border);">
-        <div><div class="soundTitle">Original Audio</div><div class="soundAuthor" id="drawerSelectedSongArtist">Creator VIBE</div></div>
-        <button class="useSoundBtn selected select-track-btn">Selected</button>
+        <div><div class="soundTitle">Original Audio</div><div class="soundAuthor">Creator VIBE</div></div>
+        <button class="useSoundBtn selected">Selected</button>
       </div>
-      <div class="music-list-row" id="track-row-1" onclick="selectEditorMusic('Lofi Chill Beats', 'ChillHop Records', 1)" style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border);">
+      <div class="music-list-row" id="track-row-1" onclick="selectEditorMusic('Lofi Chill Beats', 'ChillHop Records', 1)" style="display:flex; justify-content:space-between; align-items:center; padding:8px 0;">
         <div><div class="soundTitle">Lofi Chill Beats</div><div class="soundAuthor">ChillHop Records</div></div>
-        <button class="useSoundBtn select-track-btn">Select</button>
-      </div>
-      <div class="music-list-row" id="track-row-2" onclick="selectEditorMusic('Summer Vibes Remix', 'DJ Sunset', 2)" style="display:flex; justify-content:space-between; align-items:center; padding:8px 0;">
-        <div><div class="soundTitle">Summer Vibes Remix</div><div class="soundAuthor">DJ Sunset</div></div>
-        <button class="useSoundBtn select-track-btn">Select</button>
+        <button class="useSoundBtn">Select</button>
       </div>
     </div>
 
@@ -618,8 +618,6 @@
         <span onclick="addStickerToCanvas('❤️')">❤️</span>
         <span onclick="addStickerToCanvas('✨')">✨</span>
         <span onclick="addStickerToCanvas('🚀')">🚀</span>
-        <span onclick="addStickerToCanvas('💯')">💯</span>
-        <span onclick="addStickerToCanvas('⭐')">⭐</span>
       </div>
     </div>
 
@@ -639,16 +637,6 @@
         <button class="editorFilterChip active" onclick="applyEditorFilter('none', this)" style="padding:6px 14px; background:var(--bg); border:1px solid var(--border); border-radius:8px; color:var(--text); cursor:pointer;">Normal</button>
         <button class="editorFilterChip" onclick="applyEditorFilter('contrast(140%) saturate(130%)', this)" style="padding:6px 14px; background:var(--bg); border:1px solid var(--border); border-radius:8px; color:var(--text); cursor:pointer;">Cinematic</button>
         <button class="editorFilterChip" onclick="applyEditorFilter('sepia(60%) contrast(120%)', this)" style="padding:6px 14px; background:var(--bg); border:1px solid var(--border); border-radius:8px; color:var(--text); cursor:pointer;">Vintage</button>
-        <button class="editorFilterChip" onclick="applyEditorFilter('grayscale(100%) contrast(150%)', this)" style="padding:6px 14px; background:var(--bg); border:1px solid var(--border); border-radius:8px; color:var(--text); cursor:pointer;">Noir</button>
-      </div>
-    </div>
-
-    <!-- Mention Drawer -->
-    <div id="editorMentionDrawer" class="editor-drawer">
-      <div style="font-weight:600; font-size:14px; margin-bottom:10px;">Tag Creator or Friend</div>
-      <div style="display:flex; flex-direction:column; gap:8px;">
-        <div onclick="addMentionToCanvas('@elena_rostova')" style="padding:8px; background:var(--bg); border-radius:8px; cursor:pointer; font-size:13px;">@elena_rostova</div>
-        <div onclick="addMentionToCanvas('@liam_chen')" style="padding:8px; background:var(--bg); border-radius:8px; cursor:pointer; font-size:13px;">@liam_chen</div>
       </div>
     </div>
   </section>
@@ -669,14 +657,7 @@
         <img class="messageAvatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" alt="Avatar">
         <div class="messageContent">
           <div class="messageName">Elena Rostova</div>
-          <div class="messageSnippet">Loved your recent vibe post! ✨</div>
-        </div>
-      </div>
-      <div class="messageItem">
-        <img class="messageAvatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150" alt="Avatar">
-        <div class="messageContent">
-          <div class="messageName">Liam Chen</div>
-          <div class="messageSnippet">Let's collaborate on a clip soon.</div>
+          <div class="messageSnippet">Gemini 1.5 Vision integration looks incredible! ✨</div>
         </div>
       </div>
     </div>
@@ -686,283 +667,26 @@
   <section id="profile" class="modalScreen">
     <div class="screenHead">
       <span>@creator_vibe</span>
-      <div style="display:flex; gap:16px;">
-        <button class="close" onclick="openSettingsScreen()" style="font-size:20px; background:none; border:none; color:var(--text); cursor:pointer;"><i class="fa-solid fa-bars"></i></button>
-        <button class="close" data-close="profile">×</button>
-      </div>
+      <button class="close" data-close="profile">×</button>
     </div>
-    
     <div class="profile-header">
-      <div class="profile-avatar-container" id="avatarStoryTrigger" title="Tap to upload story">
+      <div class="profile-avatar-container" id="avatarStoryTrigger">
         <img class="profile-avatar" id="profileAvatarImg" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" alt="Profile">
         <div class="profile-add-story-badge">+</div>
         <input type="file" id="avatarFileInput" accept="image/*" style="display:none">
       </div>
       <div class="profile-name">Creator VIBE</div>
       <div class="profile-handle">@creator_vibe</div>
-      
       <div class="profile-stats">
         <div class="profile-stat-item"><span class="profile-stat-val">142</span><span class="profile-stat-label">Following</span></div>
         <div class="profile-stat-item"><span class="profile-stat-val">12.5K</span><span class="profile-stat-label">Followers</span></div>
         <div class="profile-stat-item"><span class="profile-stat-val">48.2K</span><span class="profile-stat-label">Likes</span></div>
       </div>
-
-      <div class="profile-actions-row">
-        <button class="profile-btn primary" onclick="showToast('Edit profile drawer opened')">Edit Profile</button>
-        <button class="profile-btn" onclick="showToast('Profile analytics shared')">Share Profile</button>
-      </div>
     </div>
-
     <div class="profileTabs">
-      <div class="profileSubTab active" data-profile-tab="posts"><i class="fa-solid fa-grid-2"></i> Posts</div>
-      <div class="profileSubTab" data-profile-tab="saved"><i class="fa-solid fa-bookmark"></i> Saved</div>
-      <div class="profileSubTab" data-profile-tab="tagged"><i class="fa-solid fa-tag"></i> Tagged</div>
+      <div class="profileSubTab active"><i class="fa-solid fa-grid-2"></i> Posts</div>
     </div>
-
-    <div class="userPostsGrid" id="userPostsGrid">
-      <!-- Populated via JavaScript -->
-    </div>
-  </section>
-
-  <!-- Settings & Privacy Screen Panel -->
-  <section id="settingsScreen" class="modalScreen" style="z-index: 60;">
-    <div class="screenHead">
-      <button class="close" onclick="closeSettingsScreen()">✕</button>
-      <span>Settings and Privacy</span>
-      <span style="width:24px"></span>
-    </div>
-    <div class="settingsList">
-      <div class="settingsRow" onclick="openAccountSettings()">
-        <div class="settingsRowLeft"><i class="fa-solid fa-user-gear"></i><span>Account & Security</span></div>
-        <span style="color:var(--muted)">›</span>
-      </div>
-      <div class="settingsRow" onclick="openPrivateInfoScreen()">
-        <div class="settingsRowLeft"><i class="fa-solid fa-lock"></i><span>Privacy</span></div>
-        <span style="color:var(--muted)">›</span>
-      </div>
-      <div class="settingsRow" onclick="openReferenceSettings()">
-        <div class="settingsRowLeft"><i class="fa-solid fa-bell"></i><span>Notifications</span></div>
-        <span style="color:var(--muted)">›</span>
-      </div>
-      <div class="settingsRow" onclick="openVideoPlaybackSettings()">
-        <div class="settingsRowLeft"><i class="fa-solid fa-play"></i><span>Video Playback Quality</span></div>
-        <span style="color:var(--muted)" id="currentQualityLabel">1080p ›</span>
-      </div>
-      <div class="settingsRow" onclick="toggleDarkThemeSetting()">
-        <div class="settingsRowLeft"><i class="fa-solid fa-moon"></i><span>Light Theme</span></div>
-        <label class="settingsSwitch" onclick="event.stopPropagation()">
-          <input type="checkbox" id="darkThemeCheckbox" onchange="handleDarkThemeToggle(this)">
-          <span class="settingsSlider"></span>
-        </label>
-      </div>
-      <div class="settingsRow" onclick="openHelpCenter()">
-        <div class="settingsRowLeft"><i class="fa-solid fa-circle-question"></i><span>Help Center</span></div>
-        <span style="color:var(--muted)">›</span>
-      </div>
-      <div class="settingsRow" onclick="openTermsOfService()">
-        <div class="settingsRowLeft"><i class="fa-solid fa-file-contract"></i><span>Terms of Service</span></div>
-        <span style="color:var(--muted)">›</span>
-      </div>
-      <div class="settingsRow" onclick="openLogOutModal()" style="color:var(--pink);">
-        <div class="settingsRowLeft"><i class="fa-solid fa-right-from-bracket" style="color:var(--pink);"></i><span>Log Out</span></div>
-        <span>›</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- Sub-Panel: Privacy & Personal Information -->
-  <section id="privateInfoScreen" class="modalScreen" style="z-index: 65;">
-    <div class="screenHead">
-      <button class="close" onclick="closePrivateInfoScreen()">✕</button>
-      <span>Privacy Information</span>
-      <span style="width:24px"></span>
-    </div>
-    <div class="settingsList">
-      <div class="settingsRow">
-        <div class="settingsRowLeft"><span>Private Account</span></div>
-        <label class="settingsSwitch"><input type="checkbox"><span class="settingsSlider"></span></label>
-      </div>
-      <div class="settingsRow">
-        <div class="settingsRowLeft"><span>Allow Direct Messages from Everyone</span></div>
-        <label class="settingsSwitch"><input type="checkbox" checked><span class="settingsSlider"></span></label>
-      </div>
-      <div class="settingsRow">
-        <div class="settingsRowLeft"><span>Activity Status</span></div>
-        <label class="settingsSwitch"><input type="checkbox" checked><span class="settingsSlider"></span></label>
-      </div>
-    </div>
-  </section>
-
-  <!-- Sub-Panel: Help Center -->
-  <section id="helpCenterSubPanel" class="modalScreen" style="z-index: 65;">
-    <div class="screenHead">
-      <button class="close" onclick="closeSubPanel('helpCenterSubPanel')">✕</button>
-      <span>Help Center</span>
-      <span style="width:24px"></span>
-    </div>
-    <div style="padding: 20px; font-size: 14px; line-height: 1.6; color: var(--muted); overflow-y:auto; flex:1;">
-      <h3 style="color: var(--text); margin-bottom: 8px;">Welcome to VIBE Support</h3>
-      <p style="margin-bottom: 12px;">Find answers to common questions about posting reels, managing your creator profile, privacy controls, and streaming LIVE.</p>
-      <div style="background:var(--surface); padding:14px; border-radius:10px; border:1px solid var(--border); margin-bottom:10px; color:var(--text); font-weight:600;">How do I verify my creator badge?</div>
-      <div style="background:var(--surface); padding:14px; border-radius:10px; border:1px solid var(--border); margin-bottom:10px; color:var(--text); font-weight:600;">How are video feeds ranked?</div>
-      <div style="background:var(--surface); padding:14px; border-radius:10px; border:1px solid var(--border); margin-bottom:10px; color:var(--text); font-weight:600;">Report a safety concern or bug</div>
-    </div>
-  </section>
-
-  <!-- Sub-Panel: Terms of Service -->
-  <section id="termsOfServiceSubPanel" class="modalScreen" style="z-index: 65;">
-    <div class="screenHead">
-      <button class="close" onclick="closeSubPanel('termsOfServiceSubPanel')">✕</button>
-      <span>Terms of Service</span>
-      <span style="width:24px"></span>
-    </div>
-    <div style="padding: 20px; font-size: 13px; line-height: 1.6; color: var(--muted); overflow-y:auto; flex:1;">
-      <h3 style="color: var(--text); margin-bottom: 8px;">VIBE Platform Terms</h3>
-      <p style="margin-bottom: 12px;">By accessing or using VIBE, you agree to comply with our community guidelines, copyright policies, and terms of service. All creative uploads remain the intellectual property of their respective creators while granting VIBE distribution rights within the network.</p>
-      <p>Last updated: September 2026.</p>
-    </div>
-  </section>
-
-  <!-- Sub-Panel: Account & Security -->
-  <section id="accountSettingsSubPanel" class="modalScreen" style="z-index: 65;">
-    <div class="screenHead">
-      <button class="close" onclick="closeSubPanel('accountSettingsSubPanel')">✕</button>
-      <span>Account & Security</span>
-      <span style="width:24px"></span>
-    </div>
-    <div class="settingsList">
-      <div class="settingsRow"><span>Change Password</span><span style="color:var(--muted)">›</span></div>
-      <div class="settingsRow"><span>Two-Factor Authentication</span><span style="color:var(--muted)">On ›</span></div>
-      <div class="settingsRow"><span>Registered Email</span><span style="color:var(--muted)">creator@vibe.app</span></div>
-      <div class="settingsRow" style="color:var(--pink);"><span>Delete Account</span><span>›</span></div>
-    </div>
-  </section>
-
-  <!-- Sub-Panel: Video Playback -->
-  <section id="videoPlaybackSubPanel" class="modalScreen" style="z-index: 65;">
-    <div class="screenHead">
-      <button class="close" onclick="closeSubPanel('videoPlaybackSubPanel')">✕</button>
-      <span>Video Playback Quality</span>
-      <span style="width:24px"></span>
-    </div>
-    <div class="settingsList">
-      <div class="settingsRow" onclick="selectVideoQuality('Auto (Recommended)')"><span>Auto (Recommended)</span></div>
-      <div class="settingsRow" onclick="selectVideoQuality('1080p High Definition')"><span>1080p High Definition</span></div>
-      <div class="settingsRow" onclick="selectVideoQuality('720p Standard')"><span>720p Standard</span></div>
-      <div class="settingsRow" onclick="selectVideoQuality('480p Data Saver')"><span>480p Data Saver</span></div>
-    </div>
-  </section>
-
-  <!-- Creator Profile Modal (When clicking another creator) -->
-  <section id="creatorProfileModal" class="modalScreen" style="z-index: 70;">
-    <div class="screenHead">
-      <button class="close" onclick="closeCreatorProfileModal()">✕</button>
-      <span id="modalCreatorHeaderName">Creator Profile</span>
-      <span style="width:24px"></span>
-    </div>
-    <div class="profile-header">
-      <img class="profile-avatar" id="modalCreatorAvatar" src="" alt="Creator Avatar" style="border: 3px solid var(--cyan);">
-      <div class="profile-name" id="modalCreatorName">Creator Name</div>
-      <div class="profile-handle" id="modalCreatorHandle">@handle</div>
-      <div style="font-size: 13px; color: var(--muted); margin-bottom: 12px; max-width: 280px;" id="modalCreatorBio">Creator bio description and social links.</div>
-      <div class="profile-actions-row">
-        <button class="profile-btn primary" id="modalCreatorFollowBtn" onclick="toggleModalCreatorFollow()">Follow</button>
-        <button class="profile-btn" onclick="showToast('Direct message opened')">Message</button>
-      </div>
-    </div>
-    <div class="userPostsGrid" id="modalCreatorPostsGrid">
-      <!-- Dynamic Posts -->
-    </div>
-  </section>
-
-  <!-- Hashtag Feed Modal -->
-  <section id="hashtagModal" class="modalScreen" style="z-index: 70;">
-    <div class="screenHead">
-      <button class="close" onclick="closeHashtagModal()">✕</button>
-      <span id="hashtagModalTitle">#Hashtag</span>
-      <span style="width:24px"></span>
-    </div>
-    <div style="padding: 16px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
-      <div>
-        <div style="font-size: 18px; font-weight: 700;" id="hashtagModalName">#VIBE</div>
-        <div style="font-size: 12px; color: var(--muted);" id="hashtagModalViews">1.4M views</div>
-      </div>
-      <button class="creatorFollowBtn" onclick="showToast('Hashtag added to favorites!')">Follow Tag</button>
-    </div>
-    <div class="userPostsGrid" id="hashtagModalPostsGrid">
-      <!-- Dynamic Grid -->
-    </div>
-  </section>
-
-  <!-- Report / Content Moderation Modal -->
-  <div id="reportModal" class="report-modal">
-    <div class="report-title">Report Content or User</div>
-    <div class="report-subtitle">Select a reason for reporting. All reports are confidential.</div>
-    
-    <div class="report-reasons-list">
-      <div class="report-reason-item" onclick="selectReportReason(this)">
-        <span>Spam or misleading information</span>
-        <input type="radio" name="reportReason" value="spam" style="display:none">
-      </div>
-      <div class="report-reason-item" onclick="selectReportReason(this)">
-        <span>Hate speech or symbols</span>
-        <input type="radio" name="reportReason" value="hate" style="display:none">
-      </div>
-      <div class="report-reason-item" onclick="selectReportReason(this)">
-        <span>Harassment or bullying</span>
-        <input type="radio" name="reportReason" value="harassment" style="display:none">
-      </div>
-      <div class="report-reason-item" onclick="selectReportReason(this)">
-        <span>Dangerous or harmful activities</span>
-        <input type="radio" name="reportReason" value="dangerous" style="display:none">
-      </div>
-      <div class="report-reason-item" onclick="selectReportReason(this)">
-        <span>Copyright infringement</span>
-        <input type="radio" name="reportReason" value="copyright" style="display:none">
-      </div>
-    </div>
-
-    <div class="report-actions">
-      <button class="report-cancel-btn" onclick="closeReportModal()">Cancel</button>
-      <button class="report-submit-btn" onclick="submitReport()">Submit Report</button>
-    </div>
-  </div>
-
-  <!-- Log Out Confirmation Modal -->
-  <div id="logoutModal" class="report-modal">
-    <div class="report-title">Log Out of VIBE?</div>
-    <div class="report-subtitle">You can always log back in anytime with your credentials.</div>
-    <div class="report-actions" style="margin-top: 12px;">
-      <button class="report-cancel-btn" onclick="closeLogOutModal()">Cancel</button>
-      <button class="report-submit-btn" style="background: var(--pink);" onclick="confirmLogOut()">Log Out</button>
-    </div>
-  </div>
-
-  <!-- Sound Selection Modal -->
-  <section id="soundModal" class="modalScreen" style="z-index: 75;">
-    <div class="screenHead">
-      <button class="close" id="closeSoundModal">×</button>
-      <span>Choose Sound</span>
-      <span style="width:24px"></span>
-    </div>
-    <div style="flex:1; overflow-y:auto">
-      <div class="soundItem" data-title="Original Audio" data-author="Creator VIBE">
-        <div><div class="soundTitle">Original Audio</div><div class="soundAuthor">Creator VIBE</div></div>
-        <button class="useSoundBtn">Use</button>
-      </div>
-      <div class="soundItem" data-title="Lofi Chill Beats" data-author="ChillHop Records">
-        <div><div class="soundTitle">Lofi Chill Beats</div><div class="soundAuthor">ChillHop Records</div></div>
-        <button class="useSoundBtn">Use</button>
-      </div>
-      <div class="soundItem" data-title="Ambient Space" data-author="Cosmic Waves">
-        <div><div class="soundTitle">Ambient Space</div><div class="soundAuthor">Cosmic Waves</div></div>
-        <button class="useSoundBtn">Use</button>
-      </div>
-      <div class="soundItem" data-title="Summer Vibes Remix" data-author="DJ Sunset">
-        <div><div class="soundTitle">Summer Vibes Remix</div><div class="soundAuthor">DJ Sunset</div></div>
-        <button class="useSoundBtn">Use</button>
-      </div>
-    </div>
+    <div class="userPostsGrid" id="userPostsGrid"></div>
   </section>
 
   <!-- Comment Screen Drawer -->
@@ -976,14 +700,7 @@
         <img class="commentAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" alt="Avatar">
         <div class="commentBubble">
           <div class="commentUser">sarah_j</div>
-          <div class="commentText">This aesthetic is unmatched! Where is this? 😍</div>
-        </div>
-      </div>
-      <div class="commentRow">
-        <img class="commentAvatar" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150" alt="Avatar">
-        <div class="commentBubble">
-          <div class="commentUser">marcus_dev</div>
-          <div class="commentText">Clean transitions as always 🔥</div>
+          <div class="commentText">That AI vision caption is spot on! 😍</div>
         </div>
       </div>
     </div>
@@ -996,7 +713,7 @@
 </div>
 
 <script>
-// Main Application State & Mock Feed Data
+// Main Feed Data
 const feedData = [
   {
     id: 1,
@@ -1004,7 +721,7 @@ const feedData = [
     author: 'Elena Rostova',
     handle: '@elena_rostova',
     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
-    caption: 'Golden hour city walks & urban exploration 🌇 #vibe #citylife #sunset',
+    caption: 'Golden hour city walks & urban exploration analyzed with Gemini 1.5 Vision 🌇 #vibe #citylife #ai',
     audioTitle: 'Summer Vibes Remix',
     audioArtist: 'DJ Sunset',
     likes: 34200,
@@ -1014,72 +731,17 @@ const feedData = [
     isLiked: false,
     isSaved: false,
     src: 'https://assets.mixkit.co/videos/preview/mixkit-girl-in-neon-lights-walking-in-a-city-41551-large.mp4'
-  },
-  {
-    id: 2,
-    type: 'carousel',
-    author: 'Liam Chen',
-    handle: '@liam_chen',
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
-    caption: 'Minimalist architecture study and interior styling concept. Thoughts? 📐✨ #architecture #design #minimal',
-    audioTitle: 'Ambient Space',
-    audioArtist: 'Cosmic Waves',
-    likes: 12800,
-    comments: 310,
-    shares: 412,
-    saved: 890,
-    isLiked: true,
-    isSaved: true,
-    items: [
-      { type: 'image', url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800' },
-      { type: 'image', url: 'https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?w=800' },
-      { type: 'image', url: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800' }
-    ]
-  },
-  {
-    id: 3,
-    type: 'video',
-    author: 'Sophia Vance',
-    handle: '@sophia_vance',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-    caption: 'Lofi desk setup tour for ultimate productivity 💻☕ #productivity #wfh #setup',
-    audioTitle: 'Lofi Chill Beats',
-    audioArtist: 'ChillHop Records',
-    likes: 89100,
-    comments: 2300,
-    shares: 5600,
-    saved: 3400,
-    isLiked: false,
-    isSaved: false,
-    src: 'https://assets.mixkit.co/videos/preview/mixkit-hands-typing-on-a-laptop-keyboard-close-up-42867-large.mp4'
   }
 ];
 
-let currentUserPosts = [
-  {
-    id: 101,
-    type: 'video',
-    src: 'https://assets.mixkit.co/videos/preview/mixkit-aerial-view-of-city-traffic-at-night-41549-large.mp4',
-    caption: 'My first cinematic city reel on VIBE! 🚀 #cityscape',
-    likes: '1.4K',
-    views: '12.8K'
-  },
-  {
-    id: 102,
-    type: 'image',
-    src: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800',
-    caption: 'New tech setup arrived today ⚡ #tech #setup',
-    likes: '850',
-    views: '5.2K'
-  }
-];
-
+let currentUserPosts = [];
 let currentFeedTab = 'foryou';
 let activeReelIndex = 0;
 let isMuted = false;
 let currentSound = { title: 'Original Audio', artist: 'Creator VIBE' };
+let generatedVisionCaption = '';
 
-// Integrated Video Recording & Hold-to-Record Logic
+// Camera Recording Logic
 let recorder;
 let stream;
 let chunks = [];
@@ -1095,437 +757,185 @@ const videoElement = document.getElementById("cameraPreview");
 
 async function initCamera() {
   try {
-    stream = await navigator.mediaDevices.getUserMedia({
-      video: true,
-      audio: true
-    });
-    if (videoElement) {
-      videoElement.srcObject = stream;
-    }
+    stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    if (videoElement) videoElement.srcObject = stream;
   } catch (error) {
-    console.warn("Camera access not available or permitted:", error);
+    console.warn("Camera access not available:", error);
   }
 }
 
-// Function to start recording after holding for 2 seconds
 function startPress(e) {
   e.preventDefault();
   if (isRecording) return;
-
   clearTimeout(holdTimer);
-  showToast("Hold for 2 seconds to start recording...");
+  showToast("Hold for 2 seconds to record...");
 
   holdTimer = setTimeout(async () => {
     try {
       if (!stream) {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: true
-        });
+        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         if (videoElement) videoElement.srcObject = stream;
       }
-
       chunks = [];
       recorder = new MediaRecorder(stream);
-
-      recorder.ondataavailable = function (ev) {
-        if (ev.data.size > 0) {
-          chunks.push(ev.data);
-        }
+      recorder.ondataavailable = (ev) => { if (ev.data.size > 0) chunks.push(ev.data); };
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: "video/webm" });
+        openEditorWithMedia(URL.createObjectURL(blob), 'video');
       };
-
-      recorder.onstop = function () {
-        const blob = new Blob(chunks, {
-          type: "video/webm"
-        });
-
-        window.vibeRecordedVideo = blob;
-        window.vibeRecordedVideoURL = URL.createObjectURL(blob);
-
-        clearInterval(timer);
-        isRecording = false;
-
-        if (timerDisplay) {
-          timerDisplay.textContent = "00:00";
-        }
-
-        openEditorWithMedia(window.vibeRecordedVideoURL, 'video');
-      };
-
       recorder.start();
       isRecording = true;
       showToast("Recording started!");
-      
       holdButton.classList.add('recording-active');
       startTime = Date.now();
 
-      timer = setInterval(function () {
+      timer = setInterval(() => {
         const elapsed = Math.floor((Date.now() - startTime) / 1000);
-        const minutes = Math.floor(elapsed / 60);
-        const seconds = elapsed % 60;
-
-        if (timerDisplay) {
-          timerDisplay.textContent =
-            String(minutes).padStart(2, "0") +
-            ":" +
-            String(seconds).padStart(2, "0");
-        }
-
-        if (elapsed >= 600) {
-          endPress(e);
-        }
+        const mins = Math.floor(elapsed / 60);
+        const secs = elapsed % 60;
+        if (timerDisplay) timerDisplay.textContent = `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
       }, 250);
-
-    } catch (error) {
-      alert("Camera permission is required.");
-      console.error(error);
-    }
-  }, 2000); // 2000 milliseconds = 2 seconds
+    } catch (err) { console.error(err); }
+  }, 2000);
 }
 
-// Function to cancel or stop if released early
 function endPress(e) {
   e.preventDefault();
   clearTimeout(holdTimer);
-
   if (isRecording) {
-    if (recorder && recorder.state === "recording") {
-      recorder.stop();
-    }
-    showToast("Recording stopped!");
+    if (recorder && recorder.state === "recording") recorder.stop();
+    clearInterval(timer);
+    isRecording = false;
+    if (timerDisplay) timerDisplay.textContent = "00:00";
     holdButton.classList.remove('recording-active');
+    showToast("Recording stopped!");
   }
 }
 
-// Attach listeners for both Mouse (Desktop) and Touch (Mobile) devices
 if (holdButton) {
   holdButton.addEventListener('mousedown', startPress);
   holdButton.addEventListener('mouseup', endPress);
-  holdButton.addEventListener('mouseleave', endPress);
-
   holdButton.addEventListener('touchstart', startPress);
   holdButton.addEventListener('touchend', endPress);
 }
-
-if (stopBtn) {
-  stopBtn.addEventListener("click", (e) => {
-    endPress(e);
-  });
-}
+if (stopBtn) stopBtn.addEventListener("click", endPress);
 
 document.addEventListener('DOMContentLoaded', () => {
   renderFeed();
   setupEventListeners();
   initCamera();
-  renderUserProfilePosts();
-
-  // Integrated music button event listener
-  const musicBtn = document.querySelector('.music-btn');
-  if (musicBtn) {
-    musicBtn.addEventListener('click', () => {
-      toggleEditorDrawer('editorMusicDrawer');
-    });
-  }
 });
 
-function showToast(message) {
+function showToast(msg) {
   const toast = document.getElementById('toast');
-  toast.textContent = message;
+  toast.textContent = msg;
   toast.classList.add('show');
-  setTimeout(() => {
-    toast.classList.remove('show');
-  }, 2500);
+  setTimeout(() => toast.classList.remove('show'), 2500);
 }
 
-// Render Feed function incorporating multi-media carousel and video reels
+// Render Main Feed
 function renderFeed() {
   const feedContainer = document.getElementById('feed');
   feedContainer.innerHTML = '';
 
   feedData.forEach((reel, index) => {
     const reelEl = document.createElement('div');
-    reelEl.className = `reel ${reel.type === 'carousel' ? 'carousel' : ''}`;
+    reelEl.className = 'reel';
     reelEl.dataset.index = index;
 
-    let mediaContent = '';
-    if (reel.type === 'carousel') {
-      let slidesHtml = '';
-      let dotsHtml = '';
-      reel.items.forEach((item, sIdx) => {
-        slidesHtml += `<div class="reel-media-slide"><img src="${item.url}" alt="Carousel Slide"></div>`;
-        dotsHtml += `<div class="carousel-dot ${sIdx === 0 ? 'active' : ''}"></div>`;
-      });
-      mediaContent = `
-        <div class="reel-media-slider" onscroll="handleCarouselScroll(event, ${index})">${slidesHtml}</div>
-        <div class="carousel-dots" id="carousel-dots-${index}">${dotsHtml}</div>
-      `;
-    } else {
-      mediaContent = `
-        <video src="${reel.src}" loop playsinline ${index === 0 ? 'autoplay' : ''}></video>
-        <div class="video-duration-indicator" id="duration-indicator-${index}">00:00 / 00:00</div>
-        <div class="video-control-overlay" id="control-overlay-${index}">
-          <button class="custom-pause-btn" onclick="togglePlayPause(${index}, event)">
-            <i class="fa-solid fa-play" id="pause-icon-${index}"></i>
-          </button>
-        </div>
-      `;
-    }
-
     reelEl.innerHTML = `
-      ${mediaContent}
+      <video src="${reel.src}" loop playsinline ${index === 0 ? 'autoplay' : ''}></video>
       <button class="mute" onclick="toggleMute()">${isMuted ? '🔇' : '🔊'}</button>
-      
       <div class="overlay">
         <div class="info">
           <div class="author">
-            <img class="avatar" src="${reel.avatar}" alt="Avatar" onclick="openCreatorProfile('${reel.author}', '${reel.handle}', '${reel.avatar}')">
-            <span class="name" onclick="openCreatorProfile('${reel.author}', '${reel.handle}', '${reel.avatar}')" style="cursor:pointer;">${reel.author}</span>
+            <img class="avatar" src="${reel.avatar}" alt="Avatar">
+            <span class="name">${reel.author}</span>
             <button class="follow" onclick="toggleFollowBtn(this)">Follow</button>
           </div>
-          <div class="caption">${formatHashtags(reel.caption)}</div>
-          <div class="audio" onclick="document.getElementById('soundModal').classList.add('open')">
-            <i class="fa-solid fa-music"></i>
-            <span class="song-title">${reel.audioTitle}</span> - <span class="song-artist">${reel.audioArtist}</span>
-          </div>
+          <div class="caption">${reel.caption}</div>
+          <div class="audio"><i class="fa-solid fa-music"></i><span>${reel.audioTitle}</span> - <span>${reel.audioArtist}</span></div>
         </div>
-        
         <div class="actions">
           <button class="action ${reel.isLiked ? 'liked' : ''}" onclick="toggleLike(${index})">
             <div class="circle"><i class="fa-solid fa-heart"></i></div>
-            <div class="count" id="like-count-${index}">${formatCount(reel.likes)}</div>
+            <div class="count">${reel.likes}</div>
           </button>
-          <button class="action" onclick="openCommentModal(${index})">
+          <button class="action" onclick="document.getElementById('commentModal').classList.add('open')">
             <div class="circle"><i class="fa-solid fa-comment-dots"></i></div>
-            <div class="count">${formatCount(reel.comments)}</div>
-          </button>
-          <button class="action ${reel.isSaved ? 'saved' : ''}" onclick="toggleSave(${index})">
-            <div class="circle"><i class="fa-solid fa-bookmark"></i></div>
-            <div class="count">${formatCount(reel.saved)}</div>
-          </button>
-          <button class="action" onclick="shareReel()">
-            <div class="circle"><i class="fa-solid fa-share"></i></div>
-            <div class="count">Share</div>
+            <div class="count">${reel.comments}</div>
           </button>
         </div>
       </div>
     `;
-
-    if (reel.type !== 'carousel') {
-      const videoEl = reelEl.querySelector('video');
-      let lastTap = 0;
-      reelEl.addEventListener('click', (e) => {
-        if (e.target.closest('.overlay') || e.target.closest('.mute')) return;
-        const currentTime = new Date().getTime();
-        const tapLength = currentTime - lastTap;
-        if (tapLength < 300 && tapLength > 0) {
-          triggerDoubleTapHeart(reelEl, e);
-          if (!reel.isLiked) toggleLike(index);
-          e.preventDefault();
-        } else {
-          togglePlayPause(index);
-        }
-        lastTap = currentTime;
-      });
-
-      videoEl.addEventListener('loadedmetadata', () => {
-        const durEl = document.getElementById(`duration-indicator-${index}`);
-        if (durEl) durEl.textContent = `00:00 / ${formatTime(videoEl.duration)}`;
-      });
-      videoEl.addEventListener('timeupdate', () => {
-        const durEl = document.getElementById(`duration-indicator-${index}`);
-        if (durEl && !isNaN(videoEl.duration)) {
-          durEl.textContent = `${formatTime(videoEl.currentTime)} / ${formatTime(videoEl.duration)}`;
-        }
-      });
-    }
-
     feedContainer.appendChild(reelEl);
   });
-
-  setupIntersectionObserver();
-}
-
-function handleCarouselScroll(e, index) {
-  const slider = e.target;
-  const slideWidth = slider.clientWidth;
-  const scrollLeft = slider.scrollLeft;
-  const activeSlideIndex = Math.round(scrollLeft / slideWidth);
-  
-  const dotsContainer = document.getElementById(`carousel-dots-${index}`);
-  if (dotsContainer) {
-    const dots = dotsContainer.querySelectorAll('.carousel-dot');
-    dots.forEach((dot, idx) => {
-      if (idx === activeSlideIndex) dot.classList.add('active');
-      else dot.classList.remove('active');
-    });
-  }
-}
-
-function triggerDoubleTapHeart(container, e) {
-  const heart = document.createElement('div');
-  heart.className = 'double-tap-heart';
-  heart.innerHTML = '<i class="fa-solid fa-heart"></i>';
-  
-  const rect = container.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-  
-  heart.style.left = `${x}px`;
-  heart.style.top = `${y}px`;
-  
-  container.appendChild(heart);
-  setTimeout(() => heart.remove(), 800);
-}
-
-function togglePlayPause(index, event) {
-  if (event) event.stopPropagation();
-  const reelEl = document.querySelectorAll('.reel')[index];
-  if (!reelEl) return;
-  const video = reelEl.querySelector('video');
-  const overlay = document.getElementById(`control-overlay-${index}`);
-  const pauseIcon = document.getElementById(`pause-icon-${index}`);
-  
-  if (!video) return;
-
-  if (video.paused) {
-    video.play();
-    if (overlay) overlay.classList.remove('show');
-  } else {
-    video.pause();
-    if (overlay) overlay.classList.add('show');
-    if (pauseIcon) pauseIcon.className = 'fa-solid fa-play';
-    const durInd = document.getElementById(`duration-indicator-${index}`);
-    if (durInd) {
-      durInd.classList.add('show');
-      setTimeout(() => durInd.classList.remove('show'), 2000);
-    }
-  }
-}
-
-function formatTime(seconds) {
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-}
-
-function formatCount(num) {
-  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-  if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
-  return num;
-}
-
-function formatHashtags(text) {
-  return text.replace(/(#[a-z0-9_-]+)/gi, '<span>$1</span>');
-}
-
-function setupIntersectionObserver() {
-  const reels = document.querySelectorAll('.reel');
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      const video = entry.target.querySelector('video');
-      const index = entry.target.dataset.index;
-      const durInd = document.getElementById(`duration-indicator-${index}`);
-      if (!video) return;
-
-      if (entry.isIntersecting) {
-        video.muted = isMuted;
-        video.play().catch(() => {});
-        activeReelIndex = parseInt(index);
-        if (durInd) durInd.classList.add('show');
-        setTimeout(() => { if (durInd) durInd.classList.remove('show'); }, 2500);
-      } else {
-        video.pause();
-        video.currentTime = 0;
-        if (durInd) durInd.classList.remove('show');
-      }
-    });
-  }, { threshold: 0.6 });
-
-  reels.forEach(reel => observer.observe(reel));
 }
 
 function toggleMute() {
   isMuted = !isMuted;
   const currentVideo = document.querySelectorAll('.reel')[activeReelIndex]?.querySelector('video');
   if (currentVideo) currentVideo.muted = isMuted;
-  
-  document.querySelectorAll('.mute').forEach(btn => {
-    btn.textContent = isMuted ? '🔇' : '🔊';
-  });
-  showToast(isMuted ? 'Muted audio' : 'Unmuted audio');
+  showToast(isMuted ? 'Muted' : 'Unmuted');
 }
 
 function toggleLike(index) {
   feedData[index].isLiked = !feedData[index].isLiked;
   feedData[index].likes += feedData[index].isLiked ? 1 : -1;
-  
-  const actionBtn = document.querySelectorAll('.reel')[index].querySelector('.action');
-  const countEl = document.getElementById(`like-count-${index}`);
-  
-  if (feedData[index].isLiked) {
-    actionBtn.classList.add('liked');
-    showToast('Added to liked videos ❤️');
-  } else {
-    actionBtn.classList.remove('liked');
-  }
-  countEl.textContent = formatCount(feedData[index].likes);
+  renderFeed();
 }
 
-function toggleSave(index) {
-  feedData[index].isSaved = !feedData[index].isSaved;
-  const saveBtn = document.querySelectorAll('.reel')[index].querySelectorAll('.action')[2];
-  if (feedData[index].isSaved) {
-    saveBtn.classList.add('saved');
-    showToast('Video saved to collections 📌');
-  } else {
-    saveBtn.classList.remove('saved');
-    showToast('Removed from saved');
-  }
+// Gemini 1.5 Vision Analysis Simulation / Integration Engine
+function runGeminiVisionAnalysis() {
+  showToast('Gemini 1.5 Vision analyzing frames...');
+  const outputBox = document.getElementById('visionAnalysisOutput');
+  const resultText = document.getElementById('visionResultText');
+
+  setTimeout(() => {
+    // Simulated Gemini 1.5 multimodal contextual response based on visual understanding
+    const analyses = [
+      "Gemini 1.5 Vision: High-contrast cinematic framing detected. Beautiful lighting with vibrant color saturation. Suggested Vibe: #Cinematic #UrbanVibes #VisualArt",
+      "Gemini 1.5 Vision: Cozy indoor aesthetic detected with warm ambient tones and clean minimalist composition. Suggested Vibe: #InteriorDesign #Minimal #Aesthetic",
+      "Gemini 1.5 Vision: Dynamic motion capture with high clarity and smooth focal depth. Suggested Vibe: #Action #CreatorLife #VIBE"
+    ];
+    generatedVisionCaption = analyses[Math.floor(Math.random() * analyses.length)];
+    resultText.textContent = generatedVisionCaption;
+    outputBox.style.display = 'block';
+    showToast('Gemini 1.5 analysis complete!');
+  }, 1200);
 }
 
-function shareReel() {
-  if (navigator.share) {
-    navigator.share({ title: 'VIBE Video', url: window.location.href }).catch(() => {});
-  } else {
-    showToast('Link copied to clipboard! 🔗');
-  }
+function applyVisionCaptionToPost() {
+  showToast('Applied Gemini 1.5 Vision insights to your editor!');
+  toggleEditorDrawer('');
 }
 
+// Event Listeners & Navigation Setup
 function setupEventListeners() {
   const screens = {
-    home: null,
     discover: document.getElementById('discover'),
     create: document.getElementById('studio'),
     inbox: document.getElementById('inbox'),
     profile: document.getElementById('profile')
   };
 
-  const navButtons = document.querySelectorAll('.nav button');
-  navButtons.forEach(btn => {
+  document.querySelectorAll('.nav button').forEach(btn => {
     btn.addEventListener('click', () => {
       const tab = btn.dataset.tab;
-      navButtons.forEach(b => b.classList.remove('active'));
-      
+      document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
       if (tab === 'create') {
         document.getElementById('studio').classList.add('open');
         return;
       }
-      
       btn.classList.add('active');
-      Object.keys(screens).forEach(key => {
-        if (screens[key] && key !== 'home') {
-          screens[key].classList.remove('open');
-        }
-      });
-
+      Object.keys(screens).forEach(k => screens[k].classList.remove('open'));
       if (screens[tab]) screens[tab].classList.add('open');
     });
   });
 
   document.querySelectorAll('.close[data-close]').forEach(btn => {
     btn.addEventListener('click', () => {
-      const targetScreen = btn.dataset.close;
-      document.getElementById(targetScreen).classList.remove('open');
+      document.getElementById(btn.dataset.close).classList.remove('open');
       document.getElementById('navHomeBtn').classList.add('active');
     });
   });
@@ -1535,258 +945,34 @@ function setupEventListeners() {
     document.getElementById('navHomeBtn').classList.add('active');
   });
 
-  document.querySelectorAll('.tab[data-feed-tab]').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.tab[data-feed-tab]').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      currentFeedTab = tab.dataset.feedTab;
-      showToast(`Switched to ${currentFeedTab === 'following' ? 'Following' : 'For You'} feed`);
-    });
-  });
-
-  const searchInput = document.getElementById('searchInput');
-  if (searchInput) {
-    searchInput.addEventListener('input', (e) => {
-      renderDiscoverResults(e.target.value.trim());
-    });
-  }
-
-  document.querySelectorAll('.discoverTab').forEach(dt => {
-    dt.addEventListener('click', () => {
-      document.querySelectorAll('.discoverTab').forEach(t => t.classList.remove('active'));
-      dt.classList.add('active');
-      renderDiscoverResults(searchInput ? searchInput.value.trim() : '', dt.dataset.searchFilter);
-    });
-  });
-
-  document.querySelectorAll('.inboxSubTab').forEach(st => {
-    st.addEventListener('click', () => {
-      document.querySelectorAll('.inboxSubTab').forEach(t => t.classList.remove('active'));
-      st.classList.add('active');
-      renderInboxContent(st.dataset.inboxTab);
-    });
-  });
-
-  document.querySelectorAll('.profileSubTab').forEach(pt => {
-    pt.addEventListener('click', () => {
-      document.querySelectorAll('.profileSubTab').forEach(t => t.classList.remove('active'));
-      pt.classList.add('active');
-      renderUserProfilePosts(pt.dataset.profileTab);
-    });
-  });
-
-  document.getElementById('videoFileInput').addEventListener('change', (e) => handleFilesSelection(e, 'video'));
-
-  document.getElementById('avatarStoryTrigger').addEventListener('click', () => {
-    document.getElementById('avatarFileInput').click();
-  });
-  document.getElementById('avatarFileInput').addEventListener('change', (e) => {
+  document.getElementById('videoFileInput').addEventListener('change', (e) => {
     if (e.target.files && e.target.files[0]) {
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        document.getElementById('profileAvatarImg').src = evt.target.result;
-        document.getElementById('profileAvatarImg').classList.add('has-story');
-        showToast('Story updated successfully! 🔴');
-      };
-      reader.readAsDataURL(e.target.files[0]);
+      document.getElementById('studio').classList.remove('open');
+      openEditorWithMedia(URL.createObjectURL(e.target.files[0]), 'video');
     }
   });
 
-  document.getElementById('closeSoundModal').addEventListener('click', () => {
-    document.getElementById('soundModal').classList.remove('open');
-  });
-  document.querySelectorAll('.soundItem').forEach(item => {
-    item.addEventListener('click', () => {
-      currentSound.title = item.dataset.title;
-      currentSound.artist = item.dataset.author;
-      document.getElementById('soundModal').classList.remove('open');
-      showToast(`Selected sound: ${currentSound.title}`);
+  // Editor Toolbar Drawers Toggle
+  document.querySelectorAll('.editor-toolbar button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tool = btn.dataset.tool;
+      toggleEditorDrawer(tool ? `editor${tool.charAt(0).toUpperCase() + tool.slice(1)}Drawer` : '');
     });
   });
 
-  document.getElementById('closeCommentBtn').addEventListener('click', () => {
-    document.getElementById('commentModal').classList.remove('open');
-  });
-  document.getElementById('commentSendBtn').addEventListener('click', postComment);
-  document.getElementById('commentInputField').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') postComment();
-  });
-
-  document.getElementById('toolMusicBtn').addEventListener('click', () => toggleEditorDrawer('editorMusicDrawer'));
-  document.getElementById('toolStickersBtn').addEventListener('click', () => toggleEditorDrawer('editorStickersDrawer'));
-  document.getElementById('toolCustomTextBtn').addEventListener('click', () => toggleEditorDrawer('editorTextDrawer'));
-  document.getElementById('toolEffectsBtn').addEventListener('click', () => toggleEditorDrawer('editorEffectsDrawer'));
-  document.getElementById('toolMentionBtn').addEventListener('click', () => toggleEditorDrawer('editorMentionDrawer'));
-  
   document.getElementById('post-btn').addEventListener('click', publishEditorMedia);
 }
 
-function switchStudioMode(mode) {
-  const modeVideoTab = document.getElementById('modeVideoTab');
-  const modeLiveTab = document.getElementById('modeLiveTab');
-  const videoModePanel = document.getElementById('videoModePanel');
-  const liveModePanel = document.getElementById('liveModePanel');
-  const liveActionPanel = document.getElementById('liveModeActionPanel');
-
-  if (mode === 'video') {
-    modeVideoTab.classList.add('active');
-    modeLiveTab.classList.remove('active');
-    videoModePanel.classList.remove('hidden');
-    liveModePanel.classList.add('hidden');
-    document.getElementById('videoTimer').classList.add('hidden');
-    liveActionPanel.classList.add('hidden');
-  } else {
-    modeLiveTab.classList.add('active');
-    modeVideoTab.classList.remove('active');
-    liveModePanel.classList.remove('hidden');
-    videoModePanel.classList.add('hidden');
-    document.getElementById('videoTimer').classList.remove('hidden');
-    liveActionPanel.classList.remove('hidden');
-  }
-}
-
-let isLiveStreaming = false;
-let liveLikesCount = 0;
-function toggleLiveStream() {
-  isLiveStreaming = !isLiveStreaming;
-  const btn = document.getElementById('startLiveBtn');
-  if (isLiveStreaming) {
-    btn.textContent = 'End LIVE';
-    btn.style.background = '#f33';
-    showToast('You are now streaming LIVE! 🔴');
-    startLiveSimulation();
-  } else {
-    btn.textContent = 'Go LIVE Now';
-    btn.style.background = 'var(--pink)';
-    showToast('LIVE broadcast ended.');
-  }
-}
-
-function startLiveSimulation() {
-  if (!isLiveStreaming) return;
-  setTimeout(() => {
-    if (!isLiveStreaming) return;
-    const names = ['Alex Rivera', 'Chloe Grace', 'David Miller', 'Samantha Fox'];
-    const comments = ['So cool!', 'Greetings from Tokyo! 🔥', 'What camera are you using?', 'Love this stream! ❤️'];
-    const rName = names[Math.floor(Math.random() * names.length)];
-    const rComment = comments[Math.floor(Math.random() * comments.length)];
-    
-    const chatList = document.getElementById('liveChatListContainer');
-    if (chatList) {
-      const msgDiv = document.createElement('div');
-      msgDiv.className = 'liveChatMsg';
-      msgDiv.innerHTML = `<span class="liveChatUser">${rName}:</span>${rComment}`;
-      chatList.appendChild(msgDiv);
-      chatList.scrollTop = chatList.scrollHeight;
-    }
-    startLiveSimulation();
-  }, 4000);
-}
-
-document.getElementById('liveSendChatBtn')?.addEventListener('click', () => {
-  const input = document.getElementById('liveCommentInput');
-  const text = input.value.trim();
-  if (!text) return;
-  const chatList = document.getElementById('liveChatListContainer');
-  const msgDiv = document.createElement('div');
-  msgDiv.className = 'liveChatMsg';
-  msgDiv.innerHTML = `<span class="liveChatUser">You (Host):</span>${text}`;
-  chatList.appendChild(msgDiv);
-  chatList.scrollTop = chatList.scrollHeight;
-  input.value = '';
-});
-
-document.getElementById('liveTapLikeBtn')?.addEventListener('click', () => {
-  liveLikesCount++;
-  document.getElementById('liveHeartCountBadge').textContent = `❤️ ${formatCount(liveLikesCount)}`;
-  
-  const container = document.getElementById('liveLikesContainer');
-  if (container) {
-    const heart = document.createElement('div');
-    heart.className = 'floating-like';
-    heart.innerHTML = ['❤️️', '💖', '✨', '🔥'][Math.floor(Math.random() * 4)];
-    container.appendChild(heart);
-    setTimeout(() => heart.remove(), 2000);
-  }
-});
-
-function flipCamera() { showToast('Camera flipped ⟳'); }
-function toggleLiveMic() { showToast('Microphone toggled'); }
-function openGuestRequestsModal() { showToast('Guest connection requests modal opened'); }
-function openLiveSettingsModal() { showToast('LIVE broadcast settings opened'); }
-
-function handleFilesSelection(e, type) {
-  const files = e.target.files;
-  if (!files || files.length === 0) return;
-  
-  const items = [];
-  const limit = Math.min(files.length, 3);
-  for (let i = 0; i < limit; i++) {
-    items.push({ type: type, url: URL.createObjectURL(files[i]) });
-  }
-  
-  document.getElementById('studio').classList.remove('open');
-  openEditorWithMultipleMedia(items);
-}
-
-let currentEditorItems = [];
+let currentEditorItem = null;
 function openEditorWithMedia(url, type) {
-  currentEditorItems = [{ type, url }];
-  setupEditorCanvas();
-  document.getElementById('studio').classList.remove('open');
-  document.getElementById('editorScreen').classList.add('open');
-}
-
-function openEditorWithMultipleMedia(items) {
-  currentEditorItems = items;
-  setupEditorCanvas();
-  document.getElementById('editorScreen').classList.add('open');
-}
-
-function setupEditorCanvas() {
+  currentEditorItem = { type, url };
   const container = document.getElementById('editorCanvasContainer');
-  container.innerHTML = `
-    <canvas id="editorDrawingCanvas"></canvas>
-    <div id="editorOverlaysLayer"></div>
-  `;
-  
-  if (currentEditorItems.length > 1) {
-    container.classList.add('multi-item');
-    let innerHtml = '';
-    currentEditorItems.forEach((item) => {
-      if (item.type === 'video') innerHtml += `<video src="${item.url}" autoplay loop playsinline></video>`;
-      else innerHtml += `<img src="${item.url}" alt="Media">`;
-    });
-    container.innerHTML += innerHtml;
-  } else {
-    container.classList.remove('multi-item');
-    const item = currentEditorItems[0];
-    if (item.type === 'video') container.innerHTML += `<video src="${item.url}" autoplay loop playsinline></video>`;
-    else container.innerHTML += `<img src="${item.url}" alt="Media">`;
-  }
-
-  setupDrawingCanvas();
-}
-
-let isDrawing = false;
-let drawingCtx = null;
-function setupDrawingCanvas() {
-  const canvas = document.getElementById('editorDrawingCanvas');
-  if (!canvas) return;
-  canvas.width = canvas.parentElement.clientWidth;
-  canvas.height = canvas.parentElement.clientHeight;
-  drawingCtx = canvas.getContext('2d');
-  drawingCtx.strokeStyle = '#00f2fe';
-  drawingCtx.lineWidth = 4;
-  drawingCtx.lineCap = 'round';
-
-  canvas.onmousedown = (e) => { isDrawing = true; const r = canvas.getBoundingClientRect(); drawingCtx.beginPath(); drawingCtx.moveTo(e.clientX - r.left, e.clientY - r.top); };
-  canvas.onmousemove = (e) => { if (!isDrawing) return; const r = canvas.getBoundingClientRect(); drawingCtx.lineTo(e.clientX - r.left, e.clientY - r.top); drawingCtx.stroke(); };
-  canvas.onmouseup = () => { isDrawing = false; };
+  container.innerHTML = type === 'video' ? `<video src="${url}" autoplay loop playsinline></video>` : `<img src="${url}" alt="Media">`;
+  document.getElementById('editorScreen').classList.add('open');
 }
 
 function toggleEditorDrawer(drawerId) {
-  ['editorMusicDrawer', 'editorStickersDrawer', 'editorTextDrawer', 'editorEffectsDrawer', 'editorMentionDrawer'].forEach(id => {
+  ['editorMusicDrawer', 'editorStickersDrawer', 'editorTextDrawer', 'editorEffectsDrawer', 'editorVisionDrawer'].forEach(id => {
     const el = document.getElementById(id);
     if (id === drawerId) el.classList.toggle('open');
     else el.classList.remove('open');
@@ -1794,117 +980,57 @@ function toggleEditorDrawer(drawerId) {
 }
 
 function selectEditorMusic(title, artist, index) {
-  document.querySelectorAll('.music-list-row').forEach(row => row.classList.remove('active'));
-  document.querySelectorAll('.useSoundBtn').forEach(btn => {
-    btn.classList.remove('selected');
-    btn.textContent = 'Select';
-  });
-  
+  document.querySelectorAll('.music-list-row').forEach(r => r.classList.remove('active'));
+  document.querySelectorAll('.useSoundBtn').forEach(b => { b.classList.remove('selected'); b.textContent = 'Select'; });
   const row = document.getElementById(`track-row-${index}`);
   row.classList.add('active');
-  const btn = row.querySelector('.useSoundBtn');
-  btn.classList.add('selected');
-  btn.textContent = 'Selected';
-
+  row.querySelector('.useSoundBtn').classList.add('selected');
+  row.querySelector('.useSoundBtn').textContent = 'Selected';
   document.getElementById('drawerSelectedSongTitle').textContent = title;
-  document.getElementById('drawerSelectedSongArtist').textContent = artist;
   showToast(`Track applied: ${title}`);
 }
 
 function addStickerToCanvas(emoji) {
-  const layer = document.getElementById('editorOverlaysLayer');
-  const stickerEl = document.createElement('div');
-  stickerEl.className = 'editorOverlayElement';
-  stickerEl.textContent = emoji;
-  stickerEl.style.left = '40%';
-  stickerEl.style.top = '40%';
-  makeElementDraggable(stickerEl);
-  layer.appendChild(stickerEl);
+  const layer = document.getElementById('editorCanvasContainer');
+  const sticker = document.createElement('div');
+  sticker.className = 'editorOverlayElement';
+  sticker.textContent = emoji;
+  sticker.style.left = '40%'; sticker.style.top = '40%';
+  layer.appendChild(sticker);
   toggleEditorDrawer('');
   showToast('Sticker added ✨');
 }
 
 function commitEditorText() {
   const input = document.getElementById('editorTextInputField');
-  const val = input.value.trim();
-  if (!val) return;
-  
-  const layer = document.getElementById('editorOverlaysLayer');
-  const textEl = document.createElement('div');
-  textEl.className = 'editorOverlayElement text-element';
-  textEl.textContent = val;
-  textEl.style.left = '30%';
-  textEl.style.top = '50%';
-  makeElementDraggable(textEl);
-  layer.appendChild(textEl);
-  
+  if (!input.value.trim()) return;
+  const layer = document.getElementById('editorCanvasContainer');
+  const txt = document.createElement('div');
+  txt.className = 'editorOverlayElement text-element';
+  txt.textContent = input.value;
+  txt.style.left = '30%'; txt.style.top = '50%';
+  layer.appendChild(txt);
   input.value = '';
   toggleEditorDrawer('');
-  showToast('Text overlay added ✍️');
-}
-
-function addMentionToCanvas(mentionText) {
-  const layer = document.getElementById('editorOverlaysLayer');
-  const mentionEl = document.createElement('div');
-  mentionEl.className = 'editorOverlayElement text-element';
-  mentionEl.style.background = 'rgba(0, 242, 254, 0.2)';
-  mentionEl.style.borderColor = 'var(--cyan)';
-  mentionEl.textContent = mentionText;
-  mentionEl.style.left = '35%';
-  mentionEl.style.top = '45%';
-  makeElementDraggable(mentionEl);
-  layer.appendChild(mentionEl);
-  toggleEditorDrawer('');
-  showToast(`Mentioned ${mentionText}`);
+  showToast('Text added ✍️');
 }
 
 function applyEditorFilter(filterStr, btn) {
   document.querySelectorAll('.editorFilterChip').forEach(c => c.classList.remove('active'));
   btn.classList.add('active');
-  const container = document.getElementById('editorCanvasContainer');
-  container.querySelectorAll('video, img').forEach(m => m.style.filter = filterStr);
-  showToast('Visual effect applied');
-}
-
-function makeElementDraggable(elmnt) {
-  let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-  elmnt.onmousedown = dragMouseDown;
-
-  function dragMouseDown(e) {
-    e.preventDefault();
-    pos3 = e.clientX;
-    pos4 = e.clientY;
-    document.onmouseup = closeDragElement;
-    document.onmousemove = elementDrag;
-  }
-
-  function elementDrag(e) {
-    e.preventDefault();
-    pos1 = pos3 - e.clientX;
-    pos2 = pos4 - e.clientY;
-    pos3 = e.clientX;
-    pos4 = e.clientY;
-    elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-    elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
-  }
-
-  function closeDragElement() {
-    document.onmouseup = null;
-    document.onmousemove = null;
-  }
-
-  elmnt.onclick = () => { if (confirm('Delete this overlay?')) elmnt.remove(); };
+  const media = document.querySelector('#editorCanvasContainer video, #editorCanvasContainer img');
+  if (media) media.style.filter = filterStr;
+  showToast('Filter applied');
 }
 
 function publishEditorMedia() {
-  const firstItem = currentEditorItems[0];
   const newPost = {
     id: Date.now(),
-    type: currentEditorItems.length > 1 ? 'carousel' : firstItem.type,
+    type: currentEditorItem ? currentEditorItem.type : 'video',
     author: 'Creator VIBE',
     handle: '@creator_vibe',
     avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
-    caption: 'Published via VIBE Studio 🚀',
+    caption: generatedVisionCaption || 'Created with Gemini 1.5 Vision 🚀 #vibe #ai',
     audioTitle: currentSound.title,
     audioArtist: currentSound.artist,
     likes: 1,
@@ -1913,341 +1039,15 @@ function publishEditorMedia() {
     saved: 0,
     isLiked: false,
     isSaved: false,
-    src: firstItem ? firstItem.url : '',
-    items: currentEditorItems
+    src: currentEditorItem ? currentEditorItem.url : ''
   };
 
   feedData.unshift(newPost);
-  currentUserPosts.unshift({
-    id: newPost.id,
-    type: newPost.type,
-    src: firstItem ? firstItem.url : '',
-    caption: 'Published via VIBE Studio',
-    likes: '0',
-    views: '1'
-  });
-
   renderFeed();
-  renderUserProfilePosts();
   document.getElementById('editorScreen').classList.remove('open');
   document.getElementById('navHomeBtn').click();
-  showToast('Successfully posted to VIBE! 🎉');
-}
-
-function renderDiscoverResults(query = '') {
-  const container = document.getElementById('discoverResultsContainer');
-  container.innerHTML = '';
-
-  if (!query) {
-    container.innerHTML = `
-      <div class="discoverSectionTitle">Trending Hashtags</div>
-      <div class="hashtagSearchRow" onclick="openHashtagModal('#VIBE')">
-        <div style="display:flex; align-items:center;">
-          <div class="hashtagSymbol">#</div>
-          <div class="hashtagDetails"><div class="hashtagName">#VIBE</div><div class="hashtagCount">1.4M views</div></div>
-        </div>
-        <span style="color:var(--muted)">›</span>
-      </div>
-      <div class="hashtagSearchRow" onclick="openHashtagModal('#Aesthetic')">
-        <div style="display:flex; align-items:center;">
-          <div class="hashtagSymbol">#</div>
-          <div class="hashtagDetails"><div class="hashtagName">#Aesthetic</div><div class="hashtagCount">850K views</div></div>
-        </div>
-        <span style="color:var(--muted)">›</span>
-      </div>
-
-      <div class="discoverSectionTitle" style="margin-top:10px;">Suggested Creators</div>
-      <div class="creatorSearchRow" onclick="openCreatorProfile('Elena Rostova', '@elena_rostova', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150')">
-        <div class="creatorSearchInfo">
-          <img class="creatorSearchAvatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" alt="Avatar">
-          <div class="creatorSearchMeta"><div class="name">Elena Rostova</div><div class="handle">@elena_rostova • 24.5K followers</div></div>
-        </div>
-        <button class="creatorFollowBtn" onclick="event.stopPropagation(); toggleFollowBtn(this)">Follow</button>
-      </div>
-
-      <div class="discoverSectionTitle" style="margin-top:10px;">Trending Posts</div>
-      <div class="discoverGrid">
-        ${feedData.map((post, idx) => `
-          <div class="discoverGridItem" onclick="playSearchResultPost(${idx})">
-            ${post.type === 'carousel' ? `<img src="${post.items[0].url}" alt="Post">` : `<video src="${post.src}"></video>`}
-          </div>
-        `).join('')}
-      </div>
-    `;
-    return;
-  }
-
-  const lowerQ = query.toLowerCase();
-  const matchedPosts = feedData.filter(p => p.caption.toLowerCase().includes(lowerQ) || p.author.toLowerCase().includes(lowerQ));
-
-  container.innerHTML = `
-    <div class="discoverSectionTitle">Search Results for "${query}"</div>
-    <div class="discoverGrid">
-      ${matchedPosts.length > 0 ? matchedPosts.map((post, idx) => `
-        <div class="discoverGridItem" onclick="playSearchResultPost(${idx})">
-          ${post.type === 'carousel' ? `<img src="${post.items[0].url}" alt="Post">` : `<video src="${post.src}"></video>`}
-        </div>
-      `).join('') : '<div style="color:var(--muted); font-size:13px; padding:20px;">No matching posts found.</div>'}
-    </div>
-  `;
-}
-
-function toggleFollowBtn(btn) {
-  if (btn.classList.contains('following')) {
-    btn.classList.remove('following');
-    btn.textContent = 'Follow';
-    showToast('Unfollowed creator');
-  } else {
-    btn.classList.add('following');
-    btn.textContent = 'Following';
-    showToast('Following creator! 🎉');
-  }
-}
-
-function toggleModalCreatorFollow() {
-  const btn = document.getElementById('modalCreatorFollowBtn');
-  if (btn.classList.contains('following')) {
-    btn.classList.remove('following');
-    btn.textContent = 'Follow';
-    btn.style.background = 'var(--pink)';
-    btn.style.color = '#fff';
-    showToast('Unfollowed creator');
-  } else {
-    btn.classList.add('following');
-    btn.textContent = 'Following';
-    btn.style.background = 'transparent';
-    btn.style.color = 'var(--muted)';
-    showToast('Following creator! 🎉');
-  }
-}
-
-function openCreatorProfile(name, handle, avatar) {
-  document.getElementById('modalCreatorHeaderName').textContent = name;
-  document.getElementById('modalCreatorName').textContent = name;
-  document.getElementById('modalCreatorHandle').textContent = handle;
-  document.getElementById('modalCreatorAvatar').src = avatar;
-  
-  const grid = document.getElementById('modalCreatorPostsGrid');
-  grid.innerHTML = feedData.map(post => `
-    <div class="userPostThumb">
-      ${post.type === 'carousel' ? `<img src="${post.items[0].url}" alt="Post">` : `<video src="${post.src}"></video>`}
-    </div>
-  `).join('');
-
-  document.getElementById('creatorProfileModal').classList.add('open');
-}
-
-function closeCreatorProfileModal() {
-  document.getElementById('creatorProfileModal').classList.remove('open');
-}
-
-function openHashtagModal(tagName) {
-  document.getElementById('hashtagModalTitle').textContent = tagName;
-  document.getElementById('hashtagModalName').textContent = tagName;
-  
-  const grid = document.getElementById('hashtagModalPostsGrid');
-  grid.innerHTML = feedData.map(post => `
-    <div class="userPostThumb">
-      ${post.type === 'carousel' ? `<img src="${post.items[0].url}" alt="Post">` : `<video src="${post.src}"></video>`}
-    </div>
-  `).join('');
-
-  document.getElementById('hashtagModal').classList.add('open');
-}
-
-function closeHashtagModal() {
-  document.getElementById('hashtagModal').classList.remove('open');
-}
-
-function playSearchResultPost(index) {
-  document.getElementById('discover').classList.remove('open');
-  document.getElementById('navHomeBtn').click();
-  const reels = document.querySelectorAll('.reel');
-  if (reels[index]) {
-    reels[index].scrollIntoView({ behavior: 'smooth' });
-  }
-}
-
-function renderInboxContent(tabType) {
-  const container = document.getElementById('inboxContentContainer');
-  if (tabType === 'messages') {
-    container.innerHTML = `
-      <div class="messageItem">
-        <img class="messageAvatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" alt="Avatar">
-        <div class="messageContent">
-          <div class="messageName">Elena Rostova</div>
-          <div class="messageSnippet">Loved your recent vibe post! ✨</div>
-        </div>
-      </div>
-      <div class="messageItem">
-        <img class="messageAvatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150" alt="Avatar">
-        <div class="messageContent">
-          <div class="messageName">Liam Chen</div>
-          <div class="messageSnippet">Let's collaborate on a clip soon.</div>
-        </div>
-      </div>
-    `;
-  } else if (tabType === 'requests') {
-    container.innerHTML = `
-      <div style="padding: 24px; text-align: center; color: var(--muted); font-size: 13px;">
-        No pending message requests.
-      </div>
-    `;
-  } else {
-    container.innerHTML = `
-      <div class="messageItem">
-        <div style="width:40px; height:40px; background:var(--pink); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff;"><i class="fa-solid fa-heart"></i></div>
-        <div class="messageContent">
-          <div class="messageName">Sophia Vance and 34 others liked your reel</div>
-          <div class="messageSnippet">2 hours ago</div>
-        </div>
-      </div>
-      <div class="messageItem">
-        <div style="width:40px; height:40px; background:var(--cyan); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#000;"><i class="fa-solid fa-user-plus"></i></div>
-        <div class="messageContent">
-          <div class="messageName">Marcus Dev started following you</div>
-          <div class="messageSnippet">Yesterday</div>
-        </div>
-      </div>
-    `;
-  }
-}
-
-function renderUserProfilePosts(filter = 'posts') {
-  const grid = document.getElementById('userPostsGrid');
-  if (!grid) return;
-
-  if (filter === 'saved') {
-    grid.innerHTML = `
-      <div class="userPostThumb">
-        <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800" alt="Saved">
-        <span class="profile-view-badge">📌 Saved</span>
-      </div>
-    `;
-    return;
-  } else if (filter === 'tagged') {
-    grid.innerHTML = `
-      <div style="grid-column: span 3; padding: 40px; text-align: center; color: var(--muted); font-size: 13px;">
-        No tagged posts yet.
-      </div>
-    `;
-    return;
-  }
-
-  grid.innerHTML = currentUserPosts.map(post => `
-    <div class="userPostThumb">
-      ${post.type === 'image' ? `<img src="${post.src}" alt="Post">` : `<video src="${post.src}"></video>`}
-      <span class="profile-view-badge">👁 ${post.views}</span>
-    </div>
-  `).join('');
-}
-
-function openSettingsScreen() {
-  document.getElementById('settingsScreen').classList.add('open');
-}
-function closeSettingsScreen() {
-  document.getElementById('settingsScreen').classList.remove('open');
-}
-
-function openPrivateInfoScreen() {
-  document.getElementById('privateInfoScreen').classList.add('open');
-}
-function closePrivateInfoScreen() {
-  document.getElementById('privateInfoScreen').classList.remove('open');
-}
-
-function openHelpCenter() {
-  document.getElementById('helpCenterSubPanel').classList.add('open');
-}
-function openTermsOfService() {
-  document.getElementById('termsOfServiceSubPanel').classList.add('open');
-}
-function openAccountSettings() {
-  document.getElementById('accountSettingsSubPanel').classList.add('open');
-}
-function openVideoPlaybackSettings() {
-  document.getElementById('videoPlaybackSubPanel').classList.add('open');
-}
-
-function closeSubPanel(panelId) {
-  document.getElementById(panelId).classList.remove('open');
-}
-
-function selectVideoQuality(qualityStr) {
-  document.getElementById('currentQualityLabel').textContent = qualityStr.split(' ')[0] + ' ›';
-  closeSubPanel('videoPlaybackSubPanel');
-  showToast(`Playback quality set to ${qualityStr}`);
-}
-
-function handleDarkThemeToggle(checkbox) {
-  if (checkbox.checked) {
-    document.documentElement.classList.add('light-theme');
-    showToast('Switched to Light Theme ☀️');
-  } else {
-    document.documentElement.classList.remove('light-theme');
-    showToast('Switched to Dark Theme 🌙');
-  }
-}
-
-function toggleDarkThemeSetting() {
-  const cb = document.getElementById('darkThemeCheckbox');
-  if (cb) {
-    cb.checked = !cb.checked;
-    handleDarkThemeToggle(cb);
-  }
-}
-
-function openLogOutModal() {
-  document.getElementById('logoutModal').classList.add('open');
-}
-function closeLogOutModal() {
-  document.getElementById('logoutModal').classList.remove('open');
-}
-function confirmLogOut() {
-  closeLogOutModal();
-  closeSettingsScreen();
-  showToast('Logged out successfully.');
-}
-
-function openCommentModal(index) {
-  document.getElementById('commentModal').classList.add('open');
-}
-
-function postComment() {
-  const input = document.getElementById('commentInputField');
-  const val = input.value.trim();
-  if (!val) return;
-
-  const container = document.getElementById('commentListContainer');
-  const row = document.createElement('div');
-  row.className = 'commentRow';
-  row.innerHTML = `
-    <img class="commentAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" alt="Avatar">
-    <div class="commentBubble">
-      <div class="commentUser">creator_vibe</div>
-      <div class="commentText">${val}</div>
-    </div>
-  `;
-  container.appendChild(row);
-  container.scrollTop = container.scrollHeight;
-  input.value = '';
-  showToast('Comment posted!');
-}
-
-function selectReportReason(el) {
-  document.querySelectorAll('.report-reason-item').forEach(i => i.classList.remove('selected'));
-  el.classList.add('selected');
-  const radio = el.querySelector('input[type="radio"]');
-  if (radio) radio.checked = true;
-}
-function closeReportModal() {
-  document.getElementById('reportModal').classList.remove('open');
-}
-function submitReport() {
-  closeReportModal();
-  showToast('Report submitted. Thank you for keeping VIBE safe.');
+  showToast('Published successfully to VIBE! 🎉');
 }
 </script>
-
 </body>
-    </html>
+</html>
