@@ -530,7 +530,7 @@
         </div>
         <div id="liveLikesContainer" style="position:relative; height:40px;">
           <button id="liveTapLikeBtn" style="position:absolute; right:0; background:rgba(255,42,95,0.8); border:none; border-radius:20px; padding:6px 14px; color:#fff; font-weight:600; cursor:pointer;">❤️ Like</button>
-          <span id="liveHeartCountBadge" style="position:absolute; right:85px; top:8px; font-size:12px; font-weight:bold; color:#fff;">❤️️ 0</span>
+          <span id="liveHeartCountBadge" style="position:absolute; right:85px; top:8px; font-size:12px; font-weight:bold; color:#fff;">❤ 0</span>
         </div>
         <div style="display:flex; gap:8px; margin-top:4px;">
           <input type="text" id="liveCommentInput" placeholder="Say something to viewers..." style="flex:1; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.2); border-radius:20px; padding:8px 14px; color:#fff; font-size:13px; outline:none;">
@@ -569,23 +569,24 @@
 
   <!-- Advanced Media Editor Screen -->
   <section id="editorScreen" class="modalScreen">
+    <!-- Top Bar Combined -->
     <div class="screenHead">
-      <button class="close" id="closeEditorBtn">✕</button>
+      <button id="close-btn" class="close" id="closeEditorBtn" onclick="document.getElementById('editorScreen').classList.remove('open')">✕</button>
       <span>VIBE Studio Editor</span>
-      <button id="editorQuickPostBtn" style="background:var(--pink); border:none; color:#fff; padding:6px 14px; border-radius:14px; font-weight:600; font-size:13px; cursor:pointer;">Post</button>
+      <button id="post-btn" style="background:var(--pink); border:none; color:#fff; padding:6px 14px; border-radius:14px; font-weight:600; font-size:13px; cursor:pointer;">Post</button>
     </div>
 
     <div class="editor-canvas-container" id="editorCanvasContainer">
       <!-- Media content rendered dynamically -->
     </div>
 
-    <!-- Bottom Editing Tools Toolbar -->
-    <div class="editor-toolbar">
-      <button class="editor-tool-btn" id="toolMusicBtn"><i class="fa-solid fa-music"></i><span>Music</span></button>
-      <button class="editor-tool-btn" id="toolStickersBtn"><i class="fa-solid fa-face-smile"></i><span>Stickers</span></button>
-      <button class="editor-tool-btn" id="toolCustomTextBtn"><i class="fa-solid fa-font"></i><span>Text</span></button>
-      <button class="editor-tool-btn" id="toolEffectsBtn"><i class="fa-solid fa-wand-magic-sparkles"></i><span>Effects</span></button>
-      <button class="editor-tool-btn" id="toolMentionBtn"><i class="fa-solid fa-at"></i><span>Mention</span></button>
+    <!-- Bottom Toolbar Combined -->
+    <div class="toolbar editor-toolbar">
+      <button class="tool-btn editor-tool-btn" id="toolMusicBtn" data-tool="music"><i class="fa-solid fa-music"></i><span>🎵 Music</span></button>
+      <button class="tool-btn editor-tool-btn" id="toolStickersBtn" data-tool="stickers"><i class="fa-solid fa-face-smile"></i><span>😊 Stickers</span></button>
+      <button class="tool-btn editor-tool-btn" id="toolCustomTextBtn" data-tool="text"><i class="fa-solid fa-font"></i><span>A Text</span></button>
+      <button class="tool-btn editor-tool-btn" id="toolEffectsBtn" data-tool="effects"><i class="fa-solid fa-wand-magic-sparkles"></i><span>✨ Effects</span></button>
+      <button class="tool-btn editor-tool-btn" id="toolMentionBtn" data-tool="mention"><i class="fa-solid fa-at"></i><span>@ Mention</span></button>
     </div>
 
     <!-- Music Selection Drawer -->
@@ -1532,10 +1533,6 @@ function setupEventListeners() {
     document.getElementById('navHomeBtn').classList.add('active');
   });
 
-  document.getElementById('closeEditorBtn').addEventListener('click', () => {
-    document.getElementById('editorScreen').classList.remove('open');
-  });
-
   document.querySelectorAll('.tab[data-feed-tab]').forEach(tab => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.tab[data-feed-tab]').forEach(t => t.classList.remove('active'));
@@ -1619,7 +1616,7 @@ function setupEventListeners() {
   document.getElementById('toolEffectsBtn').addEventListener('click', () => toggleEditorDrawer('editorEffectsDrawer'));
   document.getElementById('toolMentionBtn').addEventListener('click', () => toggleEditorDrawer('editorMentionDrawer'));
   
-  document.getElementById('editorQuickPostBtn').addEventListener('click', publishEditorMedia);
+  document.getElementById('post-btn').addEventListener('click', publishEditorMedia);
 }
 
 function switchStudioMode(mode) {
