@@ -160,7 +160,7 @@ button{font:inherit}
 .nav{position:absolute;bottom:0;left:0;right:0;height:var(--nav);z-index:1000;display:flex;justify-content:space-around;align-items:center;background:var(--surface);backdrop-filter:blur(16px);border-top:1px solid #ffffff12;pointer-events:auto !important;transition:transform .3s ease}
 .nav button{background:none;border:0;color:var(--muted);font-size:10px;display:flex;flex-direction:column;align-items:center;gap:4px;width:20%;cursor:pointer;pointer-events:auto !important;touch-action:manipulation}.nav button.active{color:var(--text)}.nav .plus{width:42px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--pink),var(--cyan));color:#fff;font-size:22px;line-height:1}
 
-/* Utility class to hide navigation ONLY when explicitly requested (e.g., Logged Out) */
+/* Global utility class to hide navigation ONLY when logout is fully confirmed */
 #app.hide-nav-completely .nav { transform: translateY(100%); pointer-events: none; }
 
 .screen{position:absolute;top:0;left:0;right:0;bottom:0;z-index:40;background:var(--bg);transform:translateY(100%);transition:.3s;display:flex;flex-direction:column}
@@ -1826,7 +1826,7 @@ function openCreatorProfile(name) {
     gridHtml += `<div class="userPostThumb">${m.type==='video'?`<video src="${m.url}"></video>`:`<img src="${m.url}">`}</div>`;
   });
   if(!gridHtml) {
-    gridHtml = `<div style="grid-column:span 3; text-align:center; color:var(--muted); padding:20px;">No posts published yet</div>`;
+    gridHtml = `<div style="grid-column:span 3; text-align:center; color:var(--muted); padding:25px;">No posts published yet</div>`;
   }
   grid.innerHTML = gridHtml;
 
@@ -1938,41 +1938,43 @@ function openPushNotificationsSettings() {
 function openVideoPlaybackSettings() {
   openScreen(document.getElementById('videoPlaybackSubPanel'));
 }
+
 function closeSubPanel(panelId) {
   closeScreen(document.getElementById(panelId));
 }
 
-// Logout and Login Handling (Bottom Navigation Visibility Logic)
+// Logout & Report modals
 function openLogOutModal() {
   document.getElementById('logoutModal').classList.add('open');
-  // Navigation stays visible while popup opens
 }
-
 function closeLogOutModal() {
   document.getElementById('logoutModal').classList.remove('open');
-  // Navigation stays visible when Cancel is pressed
 }
-
 function confirmLogOut() {
-  document.getElementById('logoutModal').classList.remove('open');
-  closeAllScreens();
-  
-  // Make the bottom navigation toolbar disappear only when confirmed log out
+  closeLogOutModal();
+  closeSettingsScreen();
   appContainer.classList.add('hide-nav-completely');
-  showToast('Logged out successfully.');
-
-  // Simulate returning to the app later (e.g. clicking anywhere or a simulated login action after 4 seconds)
-  setTimeout(() => {
-    simulateAppReturn();
-  }, 4000);
+  showToast('Logged out successfully');
 }
 
-function simulateAppReturn() {
-  // When returning to the app, the toolbar appears again
-  appContainer.classList.remove('hide-nav-completely');
-  showToast('Welcome back to VIBE!');
+function openReportModal() {
+  document.getElementById('reportModal').classList.add('open');
+}
+function closeReportModal() {
+  document.getElementById('reportModal').classList.remove('open');
+}
+function selectReportReason(item) {
+  document.querySelectorAll('.report-reason-item').forEach(i => i.classList.remove('selected'));
+  item.classList.add('selected');
+  const radio = item.querySelector('input[type="radio"]');
+  if(radio) radio.checked = true;
+}
+function submitReport() {
+  closeReportModal();
+  showToast('Report submitted anonymously. Thank you.');
 }
 
+// Initialization
 renderFeed();
 </script>
 </body>
