@@ -550,7 +550,7 @@
       <div id="videoModePanel" class="camera-controls">
         <button class="camera-tool-icon" onclick="flipCamera()"><i class="fa-solid fa-rotate"></i></button>
         <!-- Hold 2 Seconds to Record Button -->
-        <button class="shutter-btn hold-record-btn" id="recordVideoBtn" style="width: auto; height: auto; border-radius: 12px; padding: 12px 18px; border: 2px solid #fff; font-size: 13px; font-weight: 600; color: #fff; background: rgba(255,255,255,0.2);">Hold 2 Seconds to Record</button>
+        <button class="shutter-btn hold-record-btn" id="recordVideoBtn" style="width: auto; height: auto; border-radius: 12px; padding: 12px 18px; border: 2px solid #fff; font-size: 13px; font-weight: 600; color: #fff; background: rgba(255,255,255,0.2); cursor: pointer; user-select: none;">Hold 2 Seconds to Record</button>
         <!-- Stop Recording Button -->
         <button id="stopVideoBtn" style="background: var(--pink); border: none; color: #fff; padding: 12px 18px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer;">Stop Recording</button>
         <label class="camera-tool-icon" style="cursor:pointer;">
@@ -1103,21 +1103,18 @@ async function initCamera() {
       videoElement.srcObject = stream;
     }
   } catch (error) {
-    alert("Camera permission is required.");
-    console.error(error);
+    console.warn("Camera access not available or permitted:", error);
   }
 }
 
 // Function to start recording after holding for 2 seconds
 function startPress(e) {
-  e.preventDefault(); // Prevents default text selection or context menus on mobile
-  
+  e.preventDefault();
   if (isRecording) return;
 
-  // Clear any existing timer just in case
   clearTimeout(holdTimer);
+  showToast("Hold for 2 seconds to start recording...");
 
-  // Wait for 2 seconds of holding before starting the record function
   holdTimer = setTimeout(async () => {
     try {
       if (!stream) {
@@ -1152,13 +1149,12 @@ function startPress(e) {
           timerDisplay.textContent = "00:00";
         }
 
-        // Automatically transition to editor with the recorded video blob URL
         openEditorWithMedia(window.vibeRecordedVideoURL, 'video');
       };
 
       recorder.start();
       isRecording = true;
-      console.log("Recording started!");
+      showToast("Recording started!");
       
       holdButton.classList.add('recording-active');
       startTime = Date.now();
@@ -1190,16 +1186,13 @@ function startPress(e) {
 // Function to cancel or stop if released early
 function endPress(e) {
   e.preventDefault();
-  
-  // If the user let go before the 2 seconds were up, cancel the timer
   clearTimeout(holdTimer);
 
-  // If it was already recording, stop it upon release
   if (isRecording) {
     if (recorder && recorder.state === "recording") {
       recorder.stop();
     }
-    console.log("Recording stopped!");
+    showToast("Recording stopped!");
     holdButton.classList.remove('recording-active');
   }
 }
@@ -1208,7 +1201,7 @@ function endPress(e) {
 if (holdButton) {
   holdButton.addEventListener('mousedown', startPress);
   holdButton.addEventListener('mouseup', endPress);
-  holdButton.addEventListener('mouseleave', endPress); // Cancels if user drags finger/mouse off the button
+  holdButton.addEventListener('mouseleave', endPress);
 
   holdButton.addEventListener('touchstart', startPress);
   holdButton.addEventListener('touchend', endPress);
@@ -1227,9 +1220,12 @@ document.addEventListener('DOMContentLoaded', () => {
   renderUserProfilePosts();
 
   // Integrated music button event listener
-  document.querySelector('.music-btn').addEventListener('click', () => {
+  const musicBtn = document.querySelector('.music-btn');
+  if (musicBtn) {
+    musicBtn.addEventListener('click', () => {
       toggleEditorDrawer('editorMusicDrawer');
-  });
+    });
+  }
 });
 
 function showToast(message) {
