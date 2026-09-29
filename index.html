@@ -1704,7 +1704,7 @@ document.getElementById('liveTapLikeBtn')?.addEventListener('click', () => {
   if (container) {
     const heart = document.createElement('div');
     heart.className = 'floating-like';
-    heart.innerHTML = ['❤️', '💖', '✨', '🔥'][Math.floor(Math.random() * 4)];
+    heart.innerHTML = ['❤️️', '💖', '✨', '🔥'][Math.floor(Math.random() * 4)];
     container.appendChild(heart);
     setTimeout(() => heart.remove(), 2000);
   }
@@ -2031,7 +2031,6 @@ function openCreatorProfile(name, handle, avatar) {
   grid.innerHTML = feedData.map(post => `
     <div class="userPostThumb">
       ${post.type === 'carousel' ? `<img src="${post.items[0].url}" alt="Post">` : `<video src="${post.src}"></video>`}
-      <div class="profile-view-badge">❤️ ${formatCount(post.likes)}</div>
     </div>
   `).join('');
 
@@ -2050,7 +2049,6 @@ function openHashtagModal(tagName) {
   grid.innerHTML = feedData.map(post => `
     <div class="userPostThumb">
       ${post.type === 'carousel' ? `<img src="${post.items[0].url}" alt="Post">` : `<video src="${post.src}"></video>`}
-      <div class="profile-view-badge">❤️ ${formatCount(post.likes)}</div>
     </div>
   `).join('');
 
@@ -2061,31 +2059,195 @@ function closeHashtagModal() {
   document.getElementById('hashtagModal').classList.remove('open');
 }
 
-function renderUserProfilePosts(tab = 'posts') {
+function playSearchResultPost(index) {
+  document.getElementById('discover').classList.remove('open');
+  document.getElementById('navHomeBtn').click();
+  const reels = document.querySelectorAll('.reel');
+  if (reels[index]) {
+    reels[index].scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+function renderInboxContent(tabType) {
+  const container = document.getElementById('inboxContentContainer');
+  if (tabType === 'messages') {
+    container.innerHTML = `
+      <div class="messageItem">
+        <img class="messageAvatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" alt="Avatar">
+        <div class="messageContent">
+          <div class="messageName">Elena Rostova</div>
+          <div class="messageSnippet">Loved your recent vibe post! ✨</div>
+        </div>
+      </div>
+      <div class="messageItem">
+        <img class="messageAvatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150" alt="Avatar">
+        <div class="messageContent">
+          <div class="messageName">Liam Chen</div>
+          <div class="messageSnippet">Let's collaborate on a clip soon.</div>
+        </div>
+      </div>
+    `;
+  } else if (tabType === 'requests') {
+    container.innerHTML = `
+      <div style="padding: 24px; text-align: center; color: var(--muted); font-size: 13px;">
+        No pending message requests.
+      </div>
+    `;
+  } else {
+    container.innerHTML = `
+      <div class="messageItem">
+        <div style="width:40px; height:40px; background:var(--pink); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff;"><i class="fa-solid fa-heart"></i></div>
+        <div class="messageContent">
+          <div class="messageName">Sophia Vance and 34 others liked your reel</div>
+          <div class="messageSnippet">2 hours ago</div>
+        </div>
+      </div>
+      <div class="messageItem">
+        <div style="width:40px; height:40px; background:var(--cyan); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#000;"><i class="fa-solid fa-user-plus"></i></div>
+        <div class="messageContent">
+          <div class="messageName">Marcus Dev started following you</div>
+          <div class="messageSnippet">Yesterday</div>
+        </div>
+      </div>
+    `;
+  }
+}
+
+function renderUserProfilePosts(filter = 'posts') {
   const grid = document.getElementById('userPostsGrid');
   if (!grid) return;
-  
+
+  if (filter === 'saved') {
+    grid.innerHTML = `
+      <div class="userPostThumb">
+        <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800" alt="Saved">
+        <span class="profile-view-badge">📌 Saved</span>
+      </div>
+    `;
+    return;
+  } else if (filter === 'tagged') {
+    grid.innerHTML = `
+      <div style="grid-column: span 3; padding: 40px; text-align: center; color: var(--muted); font-size: 13px;">
+        No tagged posts yet.
+      </div>
+    `;
+    return;
+  }
+
   grid.innerHTML = currentUserPosts.map(post => `
     <div class="userPostThumb">
-      ${post.type === 'image' ? `<img src="${post.src}" alt="Thumb">` : `<video src="${post.src}"></video>`}
-      <div class="profile-view-badge">❤️ ${post.likes}</div>
+      ${post.type === 'image' ? `<img src="${post.src}" alt="Post">` : `<video src="${post.src}"></video>`}
+      <span class="profile-view-badge">👁 ${post.views}</span>
     </div>
   `).join('');
 }
 
-function openSettingsScreen() { document.getElementById('settingsScreen').classList.add('open'); }
-function closeSettingsScreen() { document.getElementById('settingsScreen').classList.remove('open'); }
-function openPrivateInfoScreen() { document.getElementById('privateInfoScreen').classList.add('open'); }
-function closePrivateInfoScreen() { document.getElementById('privateInfoScreen').classList.remove('open'); }
-function openHelpCenter() { document.getElementById('helpCenterSubPanel').classList.add('open'); }
-function openTermsOfService() { document.getElementById('termsOfServiceSubPanel').classList.add('open'); }
-function openAccountSettings() { document.getElementById('accountSettingsSubPanel').classList.add('open'); }
-function openVideoPlaybackSettings() { document.getElementById('videoPlaybackSubPanel').classList.add('open'); }
-function closeSubPanel(id) { document.getElementById(id).classList.remove('open'); }
-function selectVideoQuality(qual) {
-  document.getElementById('currentQualityLabel').textContent = qual + ' ›';
+function openSettingsScreen() {
+  document.getElementById('settingsScreen').classList.add('open');
+}
+function closeSettingsScreen() {
+  document.getElementById('settingsScreen').classList.remove('open');
+}
+
+function openPrivateInfoScreen() {
+  document.getElementById('privateInfoScreen').classList.add('open');
+}
+function closePrivateInfoScreen() {
+  document.getElementById('privateInfoScreen').classList.remove('open');
+}
+
+function openHelpCenter() {
+  document.getElementById('helpCenterSubPanel').classList.add('open');
+}
+function openTermsOfService() {
+  document.getElementById('termsOfServiceSubPanel').classList.add('open');
+}
+function openAccountSettings() {
+  document.getElementById('accountSettingsSubPanel').classList.add('open');
+}
+function openVideoPlaybackSettings() {
+  document.getElementById('videoPlaybackSubPanel').classList.add('open');
+}
+
+function closeSubPanel(panelId) {
+  document.getElementById(panelId).classList.remove('open');
+}
+
+function selectVideoQuality(qualityStr) {
+  document.getElementById('currentQualityLabel').textContent = qualityStr.split(' ')[0] + ' ›';
   closeSubPanel('videoPlaybackSubPanel');
+  showToast(`Playback quality set to ${qualityStr}`);
+}
+
+function handleDarkThemeToggle(checkbox) {
+  if (checkbox.checked) {
+    document.documentElement.classList.add('light-theme');
+    showToast('Switched to Light Theme ☀️');
+  } else {
+    document.documentElement.classList.remove('light-theme');
+    showToast('Switched to Dark Theme 🌙');
+  }
+}
+
+function toggleDarkThemeSetting() {
+  const cb = document.getElementById('darkThemeCheckbox');
+  if (cb) {
+    cb.checked = !cb.checked;
+    handleDarkThemeToggle(cb);
+  }
+}
+
+function openLogOutModal() {
+  document.getElementById('logoutModal').classList.add('open');
+}
+function closeLogOutModal() {
+  document.getElementById('logoutModal').classList.remove('open');
+}
+function confirmLogOut() {
+  closeLogOutModal();
+  closeSettingsScreen();
+  showToast('Logged out successfully.');
+}
+
+function openCommentModal(index) {
+  document.getElementById('commentModal').classList.add('open');
+}
+
+function postComment() {
+  const input = document.getElementById('commentInputField');
+  const val = input.value.trim();
+  if (!val) return;
+
+  const container = document.getElementById('commentListContainer');
+  const row = document.createElement('div');
+  row.className = 'commentRow';
+  row.innerHTML = `
+    <img class="commentAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" alt="Avatar">
+    <div class="commentBubble">
+      <div class="commentUser">creator_vibe</div>
+      <div class="commentText">${val}</div>
+    </div>
+  `;
+  container.appendChild(row);
+  container.scrollTop = container.scrollHeight;
+  input.value = '';
+  showToast('Comment posted!');
+}
+
+function selectReportReason(el) {
+  document.querySelectorAll('.report-reason-item').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+  const radio = el.querySelector('input[type="radio"]');
+  if (radio) radio.checked = true;
+}
+function closeReportModal() {
+  document.getElementById('reportModal').classList.remove('open');
+}
+function submitReport() {
+  closeReportModal();
+  showToast('Report submitted. Thank you for keeping VIBE safe.');
 }
 </script>
+
 </body>
 </html>
