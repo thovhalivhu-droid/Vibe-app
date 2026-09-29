@@ -293,6 +293,52 @@
     }
     .screenHead .close { background: none; border: none; color: var(--text); font-size: 22px; cursor: pointer; }
 
+    /* Edit Profile Screen Styles */
+    #editProfileScreen {
+      padding: 16px;
+      overflow-y: auto;
+      z-index: 70;
+    }
+    #editProfileScreen h2 {
+      font-size: 18px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    #editProfileScreen input, #editProfileScreen textarea {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      color: var(--text);
+      font-size: 14px;
+      margin-bottom: 14px;
+      outline: none;
+    }
+    #editProfileScreen textarea {
+      resize: none;
+      height: 90px;
+    }
+    #editProfileScreen button {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      border: none;
+      margin-bottom: 10px;
+    }
+    #editProfileScreen button:first-of-type {
+      background: var(--pink);
+      color: #fff;
+    }
+    #editProfileScreen button:last-of-type {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
     /* Studio Camera Screen */
     .camera-viewport { flex: 1; position: relative; background: #000; overflow: hidden; display: flex; align-items: center; justify-content: center; }
     .camera-viewport video { width: 100%; height: 100%; object-fit: cover; }
@@ -685,7 +731,7 @@
   <!-- Profile Screen -->
   <section id="profile" class="modalScreen">
     <div class="screenHead">
-      <span>@creator_vibe</span>
+      <span id="profileScreenHandleDisplay">@creator_vibe</span>
       <div style="display:flex; gap:16px;">
         <button class="close" onclick="openSettingsScreen()" style="font-size:20px; background:none; border:none; color:var(--text); cursor:pointer;"><i class="fa-solid fa-bars"></i></button>
         <button class="close" data-close="profile">×</button>
@@ -698,8 +744,9 @@
         <div class="profile-add-story-badge">+</div>
         <input type="file" id="avatarFileInput" accept="image/*" style="display:none">
       </div>
-      <div class="profile-name">Creator VIBE</div>
-      <div class="profile-handle">@creator_vibe</div>
+      <div class="profile-name" id="profileScreenNameDisplay">Creator VIBE</div>
+      <div class="profile-handle" id="profileScreenHandleSubDisplay">@creator_vibe</div>
+      <div style="font-size: 13px; color: var(--muted); margin-bottom: 12px; max-width: 280px;" id="profileScreenBioDisplay"></div>
       
       <div class="profile-stats">
         <div class="profile-stat-item"><span class="profile-stat-val">142</span><span class="profile-stat-label">Following</span></div>
@@ -708,7 +755,7 @@
       </div>
 
       <div class="profile-actions-row">
-        <button class="profile-btn primary" onclick="showToast('Edit profile drawer opened')">Edit Profile</button>
+        <button class="profile-btn primary" onclick="openEditProfile()">Edit Profile</button>
         <button class="profile-btn" onclick="showToast('Profile analytics shared')">Share Profile</button>
       </div>
     </div>
@@ -721,6 +768,24 @@
 
     <div class="userPostsGrid" id="userPostsGrid">
       <!-- Populated via JavaScript -->
+    </div>
+  </section>
+
+  <!-- Edit Profile Screen Panel -->
+  <section id="editProfileScreen" class="modalScreen" style="z-index: 70;">
+    <div class="screenHead">
+      <span>Edit Profile</span>
+      <button class="close" onclick="closeEditProfile()">×</button>
+    </div>
+    <div style="padding: 16px; overflow-y: auto; flex: 1;">
+      <input id="editName" placeholder="Name">
+      <input id="editUsername" placeholder="@username">
+      <textarea id="editBio" placeholder="Bio"></textarea>
+
+      <input type="file" id="editAvatar" accept="image/*">
+
+      <button onclick="saveProfile()">Save</button>
+      <button onclick="closeEditProfile()">Cancel</button>
     </div>
   </section>
 
@@ -996,6 +1061,90 @@
 </div>
 
 <script>
+// Global Profile State
+let profile = {
+  name: "Creator VIBE",
+  username: "creator_vibe",
+  bio: "Creating short-form cinematic vibes ✨",
+  avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150"
+};
+
+// Load profile from localStorage if available
+try {
+  const savedProfile = localStorage.getItem("vibeProfile");
+  if (savedProfile) {
+    profile = JSON.parse(savedProfile);
+  }
+} catch(e) {
+  console.warn("Could not load local profile storage", e);
+}
+
+function openEditProfile(){
+  const screen = document.getElementById("editProfileScreen");
+  if(screen) screen.classList.add("open");
+  
+  const nameInput = document.getElementById("editName");
+  const usernameInput = document.getElementById("editUsername");
+  const bioInput = document.getElementById("editBio");
+  
+  if(nameInput) nameInput.value = profile.name || "";
+  if(usernameInput) usernameInput.value = profile.username || "";
+  if(bioInput) bioInput.value = profile.bio || "";
+}
+
+function closeEditProfile(){
+  const screen = document.getElementById("editProfileScreen");
+  if(screen) screen.classList.remove("open");
+}
+
+function saveProfile(){
+  const nameInput = document.getElementById("editName");
+  const usernameInput = document.getElementById("editUsername");
+  const bioInput = document.getElementById("editBio");
+  const avatarInput = document.getElementById("editAvatar");
+
+  profile.name = nameInput ? nameInput.value.trim() || "Creator VIBE" : "Creator VIBE";
+  profile.username = usernameInput ? usernameInput.value.trim().replace("@","") : "creator_vibe";
+  profile.bio = bioInput ? bioInput.value.trim() : "";
+
+  const file = avatarInput && avatarInput.files ? avatarInput.files[0] : null;
+
+  if(file){
+    const reader = new FileReader();
+    reader.onload = e => {
+      profile.avatar = e.target.result;
+      try {
+        localStorage.setItem("vibeProfile", JSON.stringify(profile));
+      } catch(err) {}
+      renderProfileUI();
+      closeEditProfile();
+      showToast("Profile updated successfully!");
+    };
+    reader.readAsDataURL(file);
+  } else {
+    try {
+      localStorage.setItem("vibeProfile", JSON.stringify(profile));
+    } catch(err) {}
+    renderProfileUI();
+    closeEditProfile();
+    showToast("Profile updated successfully!");
+  }
+}
+
+function renderProfileUI() {
+  const avatarImg = document.getElementById("profileAvatarImg");
+  const nameDisplay = document.getElementById("profileScreenNameDisplay");
+  const handleDisplay = document.getElementById("profileScreenHandleDisplay");
+  const handleSubDisplay = document.getElementById("profileScreenHandleSubDisplay");
+  const bioDisplay = document.getElementById("profileScreenBioDisplay");
+
+  if(avatarImg) avatarImg.src = profile.avatar;
+  if(nameDisplay) nameDisplay.textContent = profile.name;
+  if(handleDisplay) handleDisplay.textContent = "@" + profile.username;
+  if(handleSubDisplay) handleSubDisplay.textContent = "@" + profile.username;
+  if(bioDisplay) bioDisplay.textContent = profile.bio;
+}
+
 function handleToolTap(toolName) {
     try {
         if (toolName === "Music") {
@@ -1015,7 +1164,7 @@ function handleToolTap(toolName) {
         }
 
         else if (toolName === "Mention") {
-            alert("@ Mention\Mention another VIBE user.");
+            alert("@ Mention\nMention another VIBE user.");
         }
 
         else {
@@ -1295,6 +1444,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupEventListeners();
   initCamera();
   renderUserProfilePosts();
+  renderProfileUI();
 
   // Integrated music button event listener
   const musicBtn = document.querySelector('.music-btn');
@@ -1957,9 +2107,9 @@ function publishEditorMedia() {
   const newPost = {
     id: Date.now(),
     type: currentEditorItems.length > 1 ? 'carousel' : firstItem.type,
-    author: 'Creator VIBE',
-    handle: '@creator_vibe',
-    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
+    author: profile.name,
+    handle: '@' + profile.username,
+    avatar: profile.avatar,
     caption: 'Published via VIBE Studio 🚀',
     audioTitle: currentSound.title,
     audioArtist: currentSound.artist,
@@ -2181,53 +2331,69 @@ function renderUserProfilePosts(tabType = 'posts') {
   } else if (tabType === 'saved') {
     grid.innerHTML = `
       <div style="grid-column: span 3; text-align: center; padding: 40px; color: var(--muted); font-size: 13px;">
-        Your saved posts collections appear here.
+        Your saved posts
       </div>
     `;
   } else {
     grid.innerHTML = `
       <div style="grid-column: span 3; text-align: center; padding: 40px; color: var(--muted); font-size: 13px;">
-        Posts you are tagged in appear here.
+        Tagged posts
       </div>
     `;
   }
 }
 
-function openSettingsScreen() { document.getElementById('settingsScreen').classList.add('open'); }
-function closeSettingsScreen() { document.getElementById('settingsScreen').classList.remove('open'); }
-
-function openAccountSettings() { document.getElementById('accountSettingsSubPanel').classList.add('open'); }
-function openPrivateInfoScreen() { document.getElementById('privateInfoScreen').classList.add('open'); }
-function closePrivateInfoScreen() { document.getElementById('privateInfoScreen').classList.remove('open'); }
-function openReferenceSettings() { showToast('Notification preferences opened'); }
-function openVideoPlaybackSettings() { document.getElementById('videoPlaybackSubPanel').classList.add('open'); }
-function openHelpCenter() { document.getElementById('helpCenterSubPanel').classList.add('open'); }
-function openTermsOfService() { document.getElementById('termsOfServiceSubPanel').classList.add('open'); }
-
-function closeSubPanel(id) { document.getElementById(id).classList.remove('open'); }
-
-function selectVideoQuality(qualityName) {
-  document.getElementById('currentQualityLabel').textContent = qualityName.split(' ')[0] + ' ›';
-  closeSubPanel('videoPlaybackSubPanel');
-  showToast(`Playback quality set to ${qualityName}`);
+function openSettingsScreen() {
+  document.getElementById('settingsScreen').classList.add('open');
 }
-
+function closeSettingsScreen() {
+  document.getElementById('settingsScreen').classList.remove('open');
+}
+function openPrivateInfoScreen() {
+  document.getElementById('privateInfoScreen').classList.add('open');
+}
+function closePrivateInfoScreen() {
+  document.getElementById('privateInfoScreen').classList.remove('open');
+}
+function openAccountSettings() {
+  document.getElementById('accountSettingsSubPanel').classList.add('open');
+}
+function openReferenceSettings() {
+  showToast('Notification settings opened');
+}
+function openVideoPlaybackSettings() {
+  document.getElementById('videoPlaybackSubPanel').classList.add('open');
+}
+function selectVideoQuality(quality) {
+  document.getElementById('currentQualityLabel').textContent = quality + ' ›';
+  document.getElementById('videoPlaybackSubPanel').classList.remove('open');
+  showToast(`Playback quality set to ${quality}`);
+}
 function toggleDarkThemeSetting() {
-  const cb = document.getElementById('darkThemeCheckbox');
-  cb.checked = !cb.checked;
-  handleDarkThemeToggle(cb);
-}
-
-function handleDarkThemeToggle(cb) {
-  if (cb.checked) {
-    document.body.classList.add('light-theme');
-    showToast('Light theme enabled ☀️');
-  } else {
-    document.body.classList.remove('light-theme');
-    showToast('Dark theme enabled 🌙');
+  const checkbox = document.getElementById('darkThemeCheckbox');
+  if (checkbox) {
+    checkbox.checked = !checkbox.checked;
+    handleDarkThemeToggle(checkbox);
   }
 }
-
+function handleDarkThemeToggle(checkbox) {
+  if (checkbox.checked) {
+    document.body.classList.add('light-theme');
+    showToast('Light theme enabled');
+  } else {
+    document.body.classList.remove('light-theme');
+    showToast('Dark theme enabled');
+  }
+}
+function openHelpCenter() {
+  document.getElementById('helpCenterSubPanel').classList.add('open');
+}
+function openTermsOfService() {
+  document.getElementById('termsOfServiceSubPanel').classList.add('open');
+}
+function closeSubPanel(id) {
+  document.getElementById(id).classList.remove('open');
+}
 function openLogOutModal() {
   document.getElementById('logoutModal').classList.add('open');
 }
@@ -2239,30 +2405,27 @@ function confirmLogOut() {
   closeSettingsScreen();
   showToast('Logged out successfully.');
 }
-
 function openCommentModal(index) {
   document.getElementById('commentModal').classList.add('open');
 }
-
 function postComment() {
   const input = document.getElementById('commentInputField');
-  const text = input.value.trim();
-  if (!text) return;
-
+  const val = input.value.trim();
+  if(!val) return;
   const container = document.getElementById('commentListContainer');
-  const commentRow = document.createElement('div');
-  commentRow.className = 'commentRow';
-  commentRow.innerHTML = `
-    <img class="commentAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" alt="Avatar">
+  const row = document.createElement('div');
+  row.className = 'commentRow';
+  row.innerHTML = `
+    <img class="commentAvatar" src="${profile.avatar}" alt="Avatar">
     <div class="commentBubble">
-      <div class="commentUser">creator_vibe</div>
-      <div class="commentText">${text}</div>
+      <div class="commentUser">${profile.username}</div>
+      <div class="commentText">${val}</div>
     </div>
   `;
-  container.appendChild(commentRow);
+  container.appendChild(row);
   container.scrollTop = container.scrollHeight;
   input.value = '';
-  showToast('Comment posted! 💬');
+  showToast('Comment posted');
 }
 </script>
 </body>
