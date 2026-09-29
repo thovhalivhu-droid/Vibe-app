@@ -1079,6 +1079,24 @@ let activeReelIndex = 0;
 let isMuted = false;
 let currentSound = { title: 'Original Audio', artist: 'Creator VIBE' };
 
+// Integrated Intersection Observer for automatic video playback
+const videos = document.querySelectorAll("video");
+
+const videoObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        const video = entry.target;
+
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
+            video.muted = isMuted;
+            video.play().catch(() => {});
+        } else {
+            video.pause();
+        }
+    });
+}, {
+    threshold: [0, 0.6, 1]
+});
+
 // Integrated Video Recording & Hold-to-Record Logic
 let recorder;
 let stream;
@@ -1261,7 +1279,7 @@ function renderFeed() {
       `;
     } else {
       mediaContent = `
-        <video src="${reel.src}" loop playsinline ${index === 0 ? 'autoplay' : ''}></video>
+        <video src="${reel.src}" loop playsinline></video>
         <div class="video-duration-indicator" id="duration-indicator-${index}">00:00 / 00:00</div>
         <div class="video-control-overlay" id="control-overlay-${index}">
           <button class="custom-pause-btn" onclick="togglePlayPause(${index}, event)">
@@ -1419,29 +1437,11 @@ function formatHashtags(text) {
 }
 
 function setupIntersectionObserver() {
-  const reels = document.querySelectorAll('.reel');
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      const video = entry.target.querySelector('video');
-      const index = entry.target.dataset.index;
-      const durInd = document.getElementById(`duration-indicator-${index}`);
-      if (!video) return;
-
-      if (entry.isIntersecting) {
-        video.muted = isMuted;
-        video.play().catch(() => {});
-        activeReelIndex = parseInt(index);
-        if (durInd) durInd.classList.add('show');
-        setTimeout(() => { if (durInd) durInd.classList.remove('show'); }, 2500);
-      } else {
-        video.pause();
-        video.currentTime = 0;
-        if (durInd) durInd.classList.remove('show');
-      }
-    });
-  }, { threshold: 0.6 });
-
-  reels.forEach(reel => observer.observe(reel));
+  // Select all dynamic feed videos and observe them via the IntersectionObserver instance
+  const feedVideos = document.querySelectorAll('.feed video');
+  feedVideos.forEach(video => {
+      videoObserver.observe(video);
+  });
 }
 
 function toggleMute() {
@@ -1464,7 +1464,7 @@ function toggleLike(index) {
   
   if (feedData[index].isLiked) {
     actionBtn.classList.add('liked');
-    showToast('Added to liked videos ❤️');
+    showToast('Added to liked videos ❤️️');
   } else {
     actionBtn.classList.remove('liked');
   }
@@ -2125,99 +2125,7 @@ function renderUserProfilePosts(filter = 'posts') {
       </div>
     `;
     return;
-  } else if (filter === 'tagged') {
-    grid.innerHTML = `
-      <div style="grid-column: span 3; padding: 40px; text-align: center; color: var(--muted); font-size: 13px;">
-        No tagged posts yet.
-      </div>
-    `;
-    return;
   }
-
-  grid.innerHTML = currentUserPosts.map(post => `
-    <div class="userPostThumb">
-      ${post.type === 'image' ? `<img src="${post.src}" alt="Post">` : `<video src="${post.src}"></video>`}
-      <span class="profile-view-badge">👁️ ${post.views}</span>
-    </div>
-  `).join('');
-}
-
-function openSettingsScreen() { document.getElementById('settingsScreen').classList.add('open'); }
-function closeSettingsScreen() { document.getElementById('settingsScreen').classList.remove('open'); }
-function openPrivateInfoScreen() { document.getElementById('privateInfoScreen').classList.add('open'); }
-function closePrivateInfoScreen() { document.getElementById('privateInfoScreen').classList.remove('open'); }
-function openHelpCenter() { document.getElementById('helpCenterSubPanel').classList.add('open'); }
-function openTermsOfService() { document.getElementById('termsOfServiceSubPanel').classList.add('open'); }
-function openAccountSettings() { document.getElementById('accountSettingsSubPanel').classList.add('open'); }
-function openVideoPlaybackSettings() { document.getElementById('videoPlaybackSubPanel').classList.add('open'); }
-function closeSubPanel(id) { document.getElementById(id).classList.remove('open'); }
-function selectVideoQuality(qualityStr) {
-  document.getElementById('currentQualityLabel').textContent = qualityStr + ' ›';
-  closeSubPanel('videoPlaybackSubPanel');
-  showToast(`Playback quality set to ${qualityStr}`);
-}
-function handleDarkThemeToggle(checkbox) {
-  if (checkbox.checked) {
-    document.body.classList.add('light-theme');
-    showToast('Switched to Light Theme ☀️');
-  } else {
-    document.body.classList.remove('light-theme');
-    showToast('Switched to Dark Theme 🌙');
-  }
-}
-function toggleDarkThemeSetting() {
-  const cb = document.getElementById('darkThemeCheckbox');
-  cb.checked = !cb.checked;
-  handleDarkThemeToggle(cb);
-}
-function openLogOutModal() { document.getElementById('logoutModal').classList.add('open'); }
-function closeLogOutModal() { document.getElementById('logoutModal').classList.remove('open'); }
-function confirmLogOut() {
-  closeLogOutModal();
-  closeSettingsScreen();
-  showToast('Logged out successfully.');
-}
-
-let activeReportIndex = null;
-function openReportModal(index) {
-  activeReportIndex = index;
-  document.getElementById('reportModal').classList.add('open');
-}
-function closeReportModal() {
-  document.getElementById('reportModal').classList.remove('open');
-}
-function selectReportReason(item) {
-  document.querySelectorAll('.report-reason-item').forEach(i => i.classList.remove('selected'));
-  item.classList.add('selected');
-  const radio = item.querySelector('input[type="radio"]');
-  if (radio) radio.checked = true;
-}
-function submitReport() {
-  closeReportModal();
-  showToast('Report submitted successfully. Thank you for keeping VIBE safe.');
-}
-
-function openCommentModal(index) {
-  document.getElementById('commentModal').classList.add('open');
-}
-function postComment() {
-  const input = document.getElementById('commentInputField');
-  const val = input.value.trim();
-  if (!val) return;
-  const container = document.getElementById('commentListContainer');
-  const row = document.createElement('div');
-  row.className = 'commentRow';
-  row.innerHTML = `
-    <img class="commentAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" alt="Avatar">
-    <div class="commentBubble">
-      <div class="commentUser">creator_vibe</div>
-      <div class="commentText">${val}</div>
-    </div>
-  `;
-  container.appendChild(row);
-  container.scrollTop = container.scrollHeight;
-  input.value = '';
-  showToast('Comment posted! 💬');
 }
 </script>
 </body>
