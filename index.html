@@ -883,15 +883,34 @@ input:checked+.slider:before{transform:translateX(20px)}
 
 <div class="postPanel" id="createPostSection">
   <h2>VIBE Create / Post</h2>
-  <p style="color:var(--muted); font-size:13px; margin: 4px 0 12px;">Choose photos and videos from your gallery.</p>
+  <p style="color:var(--muted); font-size:13px; margin: 4px 0 12px;">Capture a photo or video, or choose from your gallery.</p>
 
-  <input type="file" id="vibeMediaInput"
-         accept="image/*,video/*"
-         multiple hidden>
+  <!-- Camera -->
+  <input
+    type="file"
+    id="vibeCamera"
+    accept="image/*,video/*"
+    capture="environment"
+    hidden
+  >
 
-  <button class="postBtn" style="background:var(--surface); border:1px solid rgba(255,255,255,0.2); margin-bottom:12px;" onclick="document.getElementById('vibeMediaInput').click()">
-    📷 Choose Photos & Videos
-  </button>
+  <!-- Gallery -->
+  <input
+    type="file"
+    id="vibeGallery"
+    accept="image/*,video/*"
+    multiple
+    hidden
+  >
+
+  <div style="display:flex; gap:10px; margin-bottom:12px;">
+    <button class="postBtn" style="background:var(--surface); border:1px solid rgba(255,255,255,0.2);" onclick="document.getElementById('vibeCamera').click()">
+      📸 Capture Photo / Video
+    </button>
+    <button class="postBtn" style="background:var(--surface); border:1px solid rgba(255,255,255,0.2);" onclick="document.getElementById('vibeGallery').click()">
+      🖼️ Choose From Gallery
+    </button>
+  </div>
 
   <div id="vibeMediaPreview" class="previewBox" style="min-height:200px;">
     <div style="color:#777">No media selected</div>
@@ -905,7 +924,7 @@ input:checked+.slider:before{transform:translateX(20px)}
     <button class="postBtn" onclick="vibeCreatePost()">
       🚀 Post to VIBE
     </button>
-    <button id="publishStoryBtn" class="postBtn" style="background:var(--cyan);color:#000">Add as Story (24h)</button>
+    <button id="publishStoryBtn" class="postBtn" style="background:var(--cyan);color:#000" onclick="vibePublishStory()">Add as Story (24h)</button>
   </div>
 </div>
 </section>
@@ -1637,45 +1656,69 @@ function setupObserver() {
   document.querySelectorAll('.reel').forEach(reel => observer.observe(reel));
 }
 
-// --- Integrated VIBE Create & Post Logic ---
-document.getElementById("vibeMediaInput").addEventListener("change", function() {
+// --- VIBE Create / Post Script Integration ---
+function showVibeMedia(files) {
   const preview = document.getElementById("vibeMediaPreview");
   preview.innerHTML = "";
 
-  if (this.files.length > 1) {
+  if (files.length > 1) {
     preview.classList.add('multi-item');
   } else {
     preview.classList.remove('multi-item');
   }
 
-  Array.from(this.files).forEach(file => {
+  Array.from(files).forEach(file => {
     const url = URL.createObjectURL(file);
 
     if (file.type.startsWith("video/")) {
       preview.innerHTML += `
-        <video src="${url}" controls
-        style="width:100%;max-height:300px;margin-top:10px;border-radius:12px;object-fit:cover;"></video>`;
+        <video src="${url}" controls playsinline
+        style="width:100%;height:100%;object-fit:cover;border-radius:12px;"></video>
+      `;
     } else {
       preview.innerHTML += `
         <img src="${url}"
-        style="width:100%;max-height:300px;object-fit:cover;margin-top:10px;border-radius:12px;">`;
+        style="width:100%;height:100%;object-fit:cover;border-radius:12px;">
+      `;
     }
   });
+}
+
+document.getElementById("vibeCamera").addEventListener("change", function() {
+  showVibeMedia(this.files);
+});
+
+document.getElementById("vibeGallery").addEventListener("change", function() {
+  showVibeMedia(this.files);
 });
 
 function vibeCreatePost() {
-  const input = document.getElementById("vibeMediaInput");
-  const caption = document.getElementById("captionInput").value.trim() || "New VIBE post ✨ #VIBE";
+  const cameraInput = document.getElementById("vibeCamera");
+  const galleryInput = document.getElementById("vibeGallery");
 
-  if (!input.files.length) {
-    alert("Please choose photos or videos first.");
+  if (!cameraInput.files.length && !galleryInput.files.length) {
+    alert("Capture a photo/video or choose one from your gallery.");
     return;
   }
 
-  alert("Post ready for VIBE!");
-  showToast("Successfully published to VIBE!");
+  alert("Your VIBE post is ready!");
+  showToast("Successfully posted to VIBE feed!");
+  
+  closeAllScreens();
+  document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('navHomeBtn').classList.add('active');
+}
 
-  // Close create screen and return to Home
+function vibePublishStory() {
+  const cameraInput = document.getElementById("vibeCamera");
+  const galleryInput = document.getElementById("vibeGallery");
+
+  if (!cameraInput.files.length && !galleryInput.files.length) {
+    alert("Capture or choose media for your story.");
+    return;
+  }
+
+  showToast("Added as your 24h Story!");
   closeAllScreens();
   document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
   document.getElementById('navHomeBtn').classList.add('active');
@@ -1725,8 +1768,6 @@ document.querySelectorAll('.screenHead .close').forEach(btn => {
     } else {
       closeScreen(btn.closest('.screen'));
     }
-    document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
-    document.getElementById('navHomeBtn').classList.add('active');
   });
 });
 
