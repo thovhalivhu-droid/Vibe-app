@@ -300,13 +300,9 @@
       position: absolute; bottom: 30px; width: 100%;
       display: flex; justify-content: space-around; align-items: center; padding: 0 30px;
     }
-    .shutter-btn {
-      width: 72px; height: 72px; border-radius: 50%;
-      border: 4px solid #fff; background: rgba(255,255,255,0.3);
-      cursor: pointer; transition: transform 0.1s;
-    }
-    .shutter-btn:active { transform: scale(0.92); }
-    .shutter-btn.recording { border-color: var(--pink); background: var(--pink); animation: pulseRecord 1.5s infinite; }
+    
+    /* Recording active state styling */
+    .shutter-btn.recording-active { border-color: var(--pink) !important; background: var(--pink) !important; animation: pulseRecord 1.5s infinite; }
     @keyframes pulseRecord { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
 
     .camera-tool-icon { background: rgba(0,0,0,0.5); border: none; width: 44px; height: 44px; border-radius: 50%; color: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
@@ -534,7 +530,7 @@
         </div>
         <div id="liveLikesContainer" style="position:relative; height:40px;">
           <button id="liveTapLikeBtn" style="position:absolute; right:0; background:rgba(255,42,95,0.8); border:none; border-radius:20px; padding:6px 14px; color:#fff; font-weight:600; cursor:pointer;">❤️ Like</button>
-          <span id="liveHeartCountBadge" style="position:absolute; right:85px; top:8px; font-size:12px; font-weight:bold; color:#fff;">❤️ 0</span>
+          <span id="liveHeartCountBadge" style="position:absolute; right:85px; top:8px; font-size:12px; font-weight:bold; color:#fff;">❤️️ 0</span>
         </div>
         <div style="display:flex; gap:8px; margin-top:4px;">
           <input type="text" id="liveCommentInput" placeholder="Say something to viewers..." style="flex:1; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.2); border-radius:20px; padding:8px 14px; color:#fff; font-size:13px; outline:none;">
@@ -554,7 +550,7 @@
       <div id="videoModePanel" class="camera-controls">
         <button class="camera-tool-icon" onclick="flipCamera()"><i class="fa-solid fa-rotate"></i></button>
         <!-- Hold 2 Seconds to Record Button -->
-        <button class="shutter-btn" id="recordVideoBtn" style="width: auto; height: auto; border-radius: 12px; padding: 12px 18px; border: 2px solid #fff; font-size: 13px; font-weight: 600; color: #fff; background: rgba(255,255,255,0.2);">Hold 2 Seconds to Record</button>
+        <button class="shutter-btn hold-record-btn" id="recordVideoBtn" style="width: auto; height: auto; border-radius: 12px; padding: 12px 18px; border: 2px solid #fff; font-size: 13px; font-weight: 600; color: #fff; background: rgba(255,255,255,0.2);">Hold 2 Seconds to Record</button>
         <!-- Stop Recording Button -->
         <button id="stopVideoBtn" style="background: var(--pink); border: none; color: #fff; padding: 12px 18px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer;">Stop Recording</button>
         <label class="camera-tool-icon" style="cursor:pointer;">
@@ -807,7 +803,7 @@
       <p style="margin-bottom: 12px;">Find answers to common questions about posting reels, managing your creator profile, privacy controls, and streaming LIVE.</p>
       <div style="background:var(--surface); padding:14px; border-radius:10px; border:1px solid var(--border); margin-bottom:10px; color:var(--text); font-weight:600;">How do I verify my creator badge?</div>
       <div style="background:var(--surface); padding:14px; border-radius:10px; border:1px solid var(--border); margin-bottom:10px; color:var(--text); font-weight:600;">How are video feeds ranked?</div>
-      <div style="background:var(--surface); padding:14px; border-radius:10px; border:1px solid var(--border); color:var(--text); font-weight:600;">Report a safety concern or bug</div>
+      <div style="background:var(--surface); padding:14px; border-radius:10px; border:1px solid var(--border); margin-bottom:10px; color:var(--text); font-weight:600;">Report a safety concern or bug</div>
     </div>
   </section>
 
@@ -1081,16 +1077,16 @@ let activeReelIndex = 0;
 let isMuted = false;
 let currentSound = { title: 'Original Audio', artist: 'Creator VIBE' };
 
-// Integrated Video Recording Script Logic
+// Integrated Video Recording & Hold-to-Record Logic
 let recorder;
 let stream;
 let chunks = [];
 let holdTimer;
-let recording = false;
+let isRecording = false;
 let timer;
 let startTime;
 
-const recordBtn = document.getElementById("recordVideoBtn");
+const holdButton = document.querySelector('.hold-record-btn');
 const stopBtn = document.getElementById("stopVideoBtn");
 const timerDisplay = document.getElementById("videoTimer");
 const videoElement = document.getElementById("cameraPreview");
@@ -1110,98 +1106,116 @@ async function initCamera() {
   }
 }
 
-recordBtn.addEventListener("pointerdown", function () {
-  if (recording) return;
+// Function to start recording after holding for 2 seconds
+function startPress(e) {
+  e.preventDefault(); // Prevents default text selection or context menus on mobile
+  
+  if (isRecording) return;
 
-  holdTimer = setTimeout(startRecording, 2000);
-});
-
-recordBtn.addEventListener("pointerup", function () {
+  // Clear any existing timer just in case
   clearTimeout(holdTimer);
-});
 
-recordBtn.addEventListener("pointercancel", function () {
-  clearTimeout(holdTimer);
-});
+  // Wait for 2 seconds of holding before starting the record function
+  holdTimer = setTimeout(async () => {
+    try {
+      if (!stream) {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: true
+        });
+        if (videoElement) videoElement.srcObject = stream;
+      }
 
-async function startRecording() {
-  if (recording) return;
+      chunks = [];
+      recorder = new MediaRecorder(stream);
 
-  try {
-    if (!stream) {
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true
-      });
-      if (videoElement) videoElement.srcObject = stream;
+      recorder.ondataavailable = function (ev) {
+        if (ev.data.size > 0) {
+          chunks.push(ev.data);
+        }
+      };
+
+      recorder.onstop = function () {
+        const blob = new Blob(chunks, {
+          type: "video/webm"
+        });
+
+        window.vibeRecordedVideo = blob;
+        window.vibeRecordedVideoURL = URL.createObjectURL(blob);
+
+        clearInterval(timer);
+        isRecording = false;
+
+        if (timerDisplay) {
+          timerDisplay.textContent = "00:00";
+        }
+
+        // Automatically transition to editor with the recorded video blob URL
+        openEditorWithMedia(window.vibeRecordedVideoURL, 'video');
+      };
+
+      recorder.start();
+      isRecording = true;
+      console.log("Recording started!");
+      
+      holdButton.classList.add('recording-active');
+      startTime = Date.now();
+
+      timer = setInterval(function () {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const minutes = Math.floor(elapsed / 60);
+        const seconds = elapsed % 60;
+
+        if (timerDisplay) {
+          timerDisplay.textContent =
+            String(minutes).padStart(2, "0") +
+            ":" +
+            String(seconds).padStart(2, "0");
+        }
+
+        if (elapsed >= 600) {
+          endPress(e);
+        }
+      }, 250);
+
+    } catch (error) {
+      alert("Camera permission is required.");
+      console.error(error);
     }
+  }, 2000); // 2000 milliseconds = 2 seconds
+}
 
-    chunks = [];
+// Function to cancel or stop if released early
+function endPress(e) {
+  e.preventDefault();
+  
+  // If the user let go before the 2 seconds were up, cancel the timer
+  clearTimeout(holdTimer);
 
-    recorder = new MediaRecorder(stream);
-
-    recorder.ondataavailable = function (e) {
-      if (e.data.size > 0) {
-        chunks.push(e.data);
-      }
-    };
-
-    recorder.onstop = function () {
-      const blob = new Blob(chunks, {
-        type: "video/webm"
-      });
-
-      window.vibeRecordedVideo = blob;
-      window.vibeRecordedVideoURL = URL.createObjectURL(blob);
-
-      clearInterval(timer);
-      recording = false;
-
-      if (timerDisplay) {
-        timerDisplay.textContent = "00:00";
-      }
-
-      // Automatically transition to editor with the recorded video blob URL
-      openEditorWithMedia(window.vibeRecordedVideoURL, 'video');
-    };
-
-    recorder.start();
-
-    recording = true;
-    startTime = Date.now();
-
-    timer = setInterval(function () {
-      const elapsed = Math.floor(
-        (Date.now() - startTime) / 1000
-      );
-
-      const minutes = Math.floor(elapsed / 60);
-      const seconds = elapsed % 60;
-
-      if (timerDisplay) {
-        timerDisplay.textContent =
-          String(minutes).padStart(2, "0") +
-          ":" +
-          String(seconds).padStart(2, "0");
-      }
-
-      if (elapsed >= 600) {
-        stopRecording();
-      }
-    }, 250);
-
-  } catch (error) {
-    alert("Camera permission is required.");
-    console.error(error);
+  // If it was already recording, stop it upon release
+  if (isRecording) {
+    if (recorder && recorder.state === "recording") {
+      recorder.stop();
+    }
+    console.log("Recording stopped!");
+    holdButton.classList.remove('recording-active');
   }
 }
 
-stopBtn.addEventListener("click", stopRecording);
+// Attach listeners for both Mouse (Desktop) and Touch (Mobile) devices
+if (holdButton) {
+  holdButton.addEventListener('mousedown', startPress);
+  holdButton.addEventListener('mouseup', endPress);
+  holdButton.addEventListener('mouseleave', endPress); // Cancels if user drags finger/mouse off the button
 
-function stopRecording() {
-  if (recorder && recorder.state === "recording") {
-    recorder.stop();
-  }
+  holdButton.addEventListener('touchstart', startPress);
+  holdButton.addEventListener('touchend', endPress);
+}
+
+if (stopBtn) {
+  stopBtn.addEventListener("click", (e) => {
+    endPress(e);
+  });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1293,7 +1307,6 @@ function renderFeed() {
       </div>
     `;
 
-    // Add Double-Tap to Like Event Listener on Video/Carousel Container
     if (reel.type !== 'carousel') {
       const videoEl = reelEl.querySelector('video');
       let lastTap = 0;
@@ -2073,67 +2086,7 @@ function closeSubPanel(id) { document.getElementById(id).classList.remove('open'
 function selectVideoQuality(qual) {
   document.getElementById('currentQualityLabel').textContent = qual + ' ›';
   closeSubPanel('videoPlaybackSubPanel');
-  showToast(`Playback quality set to ${qual}`);
-}
-
-function toggleDarkThemeSetting() {
-  const chk = document.getElementById('darkThemeCheckbox');
-  chk.checked = !chk.checked;
-  handleDarkThemeToggle(chk);
-}
-
-function handleDarkThemeToggle(chk) {
-  if (chk.checked) {
-    document.body.classList.add('light-theme');
-    showToast('Switched to Light Theme ☀️');
-  } else {
-    document.body.classList.remove('light-theme');
-    showToast('Switched to Dark Theme 🌙');
-  }
-}
-
-function openLogOutModal() { document.getElementById('logoutModal').classList.add('open'); }
-function closeLogOutModal() { document.getElementById('logoutModal').classList.remove('open'); }
-function confirmLogOut() {
-  closeLogOutModal();
-  closeSettingsScreen();
-  showToast('Logged out successfully.');
-}
-
-function openCommentModal(index) {
-  document.getElementById('commentModal').classList.add('open');
-}
-
-function postComment() {
-  const input = document.getElementById('commentInputField');
-  const text = input.value.trim();
-  if (!text) return;
-  
-  const container = document.getElementById('commentListContainer');
-  const row = document.createElement('div');
-  row.className = 'commentRow';
-  row.innerHTML = `
-    <img class="commentAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" alt="Avatar">
-    <div class="commentBubble">
-      <div class="commentUser">creator_vibe (You)</div>
-      <div class="commentText">${text}</div>
-    </div>
-  `;
-  container.appendChild(row);
-  container.scrollTop = container.scrollHeight;
-  input.value = '';
-  showToast('Comment posted! 💬');
-}
-
-function playSearchResultPost(index) {
-  document.getElementById('discover').classList.remove('open');
-  document.getElementById('navHomeBtn').click();
-  const reelEl = document.querySelectorAll('.reel')[index];
-  if (reelEl) {
-    reelEl.scrollIntoView({ behavior: 'smooth' });
-  }
 }
 </script>
-
 </body>
 </html>
