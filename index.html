@@ -615,7 +615,7 @@
       <div style="font-weight:600; font-size:14px; margin-bottom:10px;">Tap to add sticker overlay</div>
       <div style="display:flex; gap:12px; font-size:32px; cursor:pointer;">
         <span onclick="addStickerToCanvas('🔥')">🔥</span>
-        <span onclick="addStickerToCanvas('❤️')">❤️</span>
+        <span onclick="addStickerToCanvas('❤️')">❤️️</span>
         <span onclick="addStickerToCanvas('✨')">✨</span>
         <span onclick="addStickerToCanvas('🚀')">🚀</span>
         <span onclick="addStickerToCanvas('💯')">💯</span>
@@ -1110,7 +1110,27 @@ let activeReelIndex = 0;
 let isMuted = false;
 let currentSound = { title: 'Original Audio', artist: 'Creator VIBE' };
 
-// Integrated controlVisibleVideos implementation
+// Integrated Click & Visibility Video Control Logic
+document.addEventListener("click", function(e) {
+  const video = e.target.closest("video");
+
+  if (!video) return;
+
+  if (video.paused) {
+    video.play().catch(() => {});
+  } else {
+    video.pause();
+  }
+});
+
+document.addEventListener("visibilitychange", function() {
+  if (document.hidden) {
+    document.querySelectorAll("video").forEach(video => {
+      video.pause();
+    });
+  }
+});
+
 function controlVisibleVideos() {
   const videos = document.querySelectorAll("video");
 
@@ -1144,14 +1164,6 @@ window.addEventListener("load", () => {
   setTimeout(controlVisibleVideos, 500);
 });
 
-document.addEventListener("visibilitychange", () => {
-  if (document.hidden) {
-    document.querySelectorAll("video").forEach(video => video.pause());
-  } else {
-    controlVisibleVideos();
-  }
-});
-
 // Integrated Video Recording & Hold-to-Record Logic
 let recorder;
 let stream;
@@ -1180,7 +1192,6 @@ async function initCamera() {
   }
 }
 
-// Function to start recording after holding for 2 seconds
 function startPress(e) {
   e.preventDefault();
   if (isRecording) return;
@@ -1253,10 +1264,9 @@ function startPress(e) {
       alert("Camera permission is required.");
       console.error(error);
     }
-  }, 2000); // 2000 milliseconds = 2 seconds
+  }, 2000);
 }
 
-// Function to cancel or stop if released early
 function endPress(e) {
   e.preventDefault();
   clearTimeout(holdTimer);
@@ -1270,7 +1280,6 @@ function endPress(e) {
   }
 }
 
-// Attach listeners for both Mouse (Desktop) and Touch (Mobile) devices
 if (holdButton) {
   holdButton.addEventListener('mousedown', startPress);
   holdButton.addEventListener('mouseup', endPress);
@@ -1292,7 +1301,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initCamera();
   renderUserProfilePosts();
 
-  // Integrated music button event listener
   const musicBtn = document.querySelector('.music-btn');
   if (musicBtn) {
     musicBtn.addEventListener('click', () => {
@@ -1310,7 +1318,6 @@ function showToast(message) {
   }, 2500);
 }
 
-// Render Feed function incorporating multi-media carousel and video reels
 function renderFeed() {
   const feedContainer = document.getElementById('feed');
   feedContainer.innerHTML = '';
@@ -2158,53 +2165,27 @@ function renderUserProfilePosts(tabType = 'posts') {
   if (grid) {
     grid.innerHTML = currentUserPosts.map(post => `
       <div class="userPostThumb">
-        ${post.type === 'carousel' ? `<img src="${post.src}" alt="Post">` : `<video src="${post.src}"></video>`}
+        ${post.type === 'carousel' ? `<img src="${post.src}" alt="User Post">` : `<video src="${post.src}"></video>`}
         <div class="profile-view-badge">▶ ${post.views}</div>
       </div>
     `).join('');
   }
 }
 
-function openCommentModal(index) {
-  document.getElementById('commentModal').classList.add('open');
-}
-
-function postComment() {
-  const input = document.getElementById('commentInputField');
-  const text = input.value.trim();
-  if (!text) return;
-  
-  const container = document.getElementById('commentListContainer');
-  const row = document.createElement('div');
-  row.className = 'commentRow';
-  row.innerHTML = `
-    <img class="commentAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" alt="Avatar">
-    <div class="commentBubble">
-      <div class="commentUser">creator_vibe</div>
-      <div class="commentText">${text}</div>
-    </div>
-  `;
-  container.appendChild(row);
-  container.scrollTop = container.scrollHeight;
-  input.value = '';
-  showToast('Comment posted! 💬');
-}
-
 function openSettingsScreen() { document.getElementById('settingsScreen').classList.add('open'); }
 function closeSettingsScreen() { document.getElementById('settingsScreen').classList.remove('open'); }
 function openPrivateInfoScreen() { document.getElementById('privateInfoScreen').classList.add('open'); }
 function closePrivateInfoScreen() { document.getElementById('privateInfoScreen').classList.remove('open'); }
-function openAccountSettings() { document.getElementById('accountSettingsSubPanel').classList.add('open'); }
-function openReferenceSettings() { showToast('Notification settings opened'); }
-function openVideoPlaybackSettings() { document.getElementById('videoPlaybackSubPanel').classList.add('open'); }
 function openHelpCenter() { document.getElementById('helpCenterSubPanel').classList.add('open'); }
 function openTermsOfService() { document.getElementById('termsOfServiceSubPanel').classList.add('open'); }
+function openAccountSettings() { document.getElementById('accountSettingsSubPanel').classList.add('open'); }
+function openVideoPlaybackSettings() { document.getElementById('videoPlaybackSubPanel').classList.add('open'); }
 function closeSubPanel(id) { document.getElementById(id).classList.remove('open'); }
 
-function selectVideoQuality(quality) {
-  document.getElementById('currentQualityLabel').textContent = quality.split(' ')[0] + ' ›';
+function selectVideoQuality(qualityName) {
+  document.getElementById('currentQualityLabel').textContent = qualityName.split(' ')[0] + ' ›';
   closeSubPanel('videoPlaybackSubPanel');
-  showToast(`Playback quality set to ${quality}`);
+  showToast(`Playback quality set to ${qualityName}`);
 }
 
 function toggleDarkThemeSetting() {
@@ -2216,10 +2197,10 @@ function toggleDarkThemeSetting() {
 function handleDarkThemeToggle(checkbox) {
   if (checkbox.checked) {
     document.body.classList.add('light-theme');
-    showToast('Light theme enabled ☀️');
+    showToast('Switched to Light Theme ☀️');
   } else {
     document.body.classList.remove('light-theme');
-    showToast('Dark theme enabled 🌙');
+    showToast('Switched to Dark Theme 🌙');
   }
 }
 
@@ -2228,7 +2209,32 @@ function closeLogOutModal() { document.getElementById('logoutModal').classList.r
 function confirmLogOut() {
   closeLogOutModal();
   closeSettingsScreen();
-  showToast('Logged out successfully.');
+  showToast('Logged out of VIBE successfully.');
+}
+
+function openCommentModal(index) {
+  document.getElementById('commentModal').classList.add('open');
+}
+
+function postComment() {
+  const input = document.getElementById('commentInputField');
+  const val = input.value.trim();
+  if (!val) return;
+
+  const container = document.getElementById('commentListContainer');
+  const commentRow = document.createElement('div');
+  commentRow.className = 'commentRow';
+  commentRow.innerHTML = `
+    <img class="commentAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" alt="Avatar">
+    <div class="commentBubble">
+      <div class="commentUser">creator_vibe</div>
+      <div class="commentText">${val}</div>
+    </div>
+  `;
+  container.appendChild(commentRow);
+  container.scrollTop = container.scrollHeight;
+  input.value = '';
+  showToast('Comment posted! 💬');
 }
 </script>
 </body>
