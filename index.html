@@ -615,7 +615,7 @@
       <div style="font-weight:600; font-size:14px; margin-bottom:10px;">Tap to add sticker overlay</div>
       <div style="display:flex; gap:12px; font-size:32px; cursor:pointer;">
         <span onclick="addStickerToCanvas('🔥')">🔥</span>
-        <span onclick="addStickerToCanvas('❤️')">❤️️</span>
+        <span onclick="addStickerToCanvas('❤️')">❤️</span>
         <span onclick="addStickerToCanvas('✨')">✨</span>
         <span onclick="addStickerToCanvas('🚀')">🚀</span>
         <span onclick="addStickerToCanvas('💯')">💯</span>
@@ -1110,19 +1110,46 @@ let activeReelIndex = 0;
 let isMuted = false;
 let currentSound = { title: 'Original Audio', artist: 'Creator VIBE' };
 
-// Intersection Observer configuration for auto-playing visible videos and pausing hidden ones
-const videoObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        const video = entry.target;
-        if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
-            video.muted = isMuted;
-            video.play().catch(() => {});
-        } else {
-            video.pause();
-        }
-    });
-}, {
-    threshold: [0, 0.6, 1]
+// Integrated controlVisibleVideos implementation
+function controlVisibleVideos() {
+  const videos = document.querySelectorAll("video");
+
+  let visibleVideo = null;
+
+  videos.forEach(video => {
+    const rect = video.getBoundingClientRect();
+
+    const isVisible =
+      rect.top < window.innerHeight * 0.65 &&
+      rect.bottom > window.innerHeight * 0.35;
+
+    if (isVisible && !visibleVideo) {
+      visibleVideo = video;
+      video.muted = isMuted;
+    } else {
+      video.pause();
+    }
+  });
+
+  if (visibleVideo) {
+    visibleVideo.play().catch(() => {});
+  }
+}
+
+window.addEventListener("scroll", controlVisibleVideos, {
+  passive: true
+});
+
+window.addEventListener("load", () => {
+  setTimeout(controlVisibleVideos, 500);
+});
+
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    document.querySelectorAll("video").forEach(video => video.pause());
+  } else {
+    controlVisibleVideos();
+  }
 });
 
 // Integrated Video Recording & Hold-to-Record Logic
@@ -1388,7 +1415,7 @@ function renderFeed() {
     feedContainer.appendChild(reelEl);
   });
 
-  setupIntersectionObserver();
+  controlVisibleVideos();
 }
 
 function handleCarouselScroll(e, index) {
@@ -1462,13 +1489,6 @@ function formatCount(num) {
 
 function formatHashtags(text) {
   return text.replace(/(#[a-z0-9_-]+)/gi, '<span>$1</span>');
-}
-
-function setupIntersectionObserver() {
-  const feedVideos = document.querySelectorAll('.feed video');
-  feedVideos.forEach(video => {
-      videoObserver.observe(video);
-  });
 }
 
 function toggleMute() {
@@ -2123,10 +2143,92 @@ function renderInboxContent(tabType) {
   } else {
     container.innerHTML = `
       <div class="messageItem">
-        <div style="width:40px; height:40px; background:var(--pink); border-radius:50%; ..."></div>
+        <div style="width:40px; height:40px; background:var(--pink); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff;"><i class="fa-solid fa-heart"></i></div>
+        <div class="messageContent">
+          <div class="messageName">Activity Notification</div>
+          <div class="messageSnippet">Someone liked your video.</div>
+        </div>
       </div>
     `;
   }
+}
+
+function renderUserProfilePosts(tabType = 'posts') {
+  const grid = document.getElementById('userPostsGrid');
+  if (grid) {
+    grid.innerHTML = currentUserPosts.map(post => `
+      <div class="userPostThumb">
+        ${post.type === 'carousel' ? `<img src="${post.src}" alt="Post">` : `<video src="${post.src}"></video>`}
+        <div class="profile-view-badge">▶ ${post.views}</div>
+      </div>
+    `).join('');
+  }
+}
+
+function openCommentModal(index) {
+  document.getElementById('commentModal').classList.add('open');
+}
+
+function postComment() {
+  const input = document.getElementById('commentInputField');
+  const text = input.value.trim();
+  if (!text) return;
+  
+  const container = document.getElementById('commentListContainer');
+  const row = document.createElement('div');
+  row.className = 'commentRow';
+  row.innerHTML = `
+    <img class="commentAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" alt="Avatar">
+    <div class="commentBubble">
+      <div class="commentUser">creator_vibe</div>
+      <div class="commentText">${text}</div>
+    </div>
+  `;
+  container.appendChild(row);
+  container.scrollTop = container.scrollHeight;
+  input.value = '';
+  showToast('Comment posted! 💬');
+}
+
+function openSettingsScreen() { document.getElementById('settingsScreen').classList.add('open'); }
+function closeSettingsScreen() { document.getElementById('settingsScreen').classList.remove('open'); }
+function openPrivateInfoScreen() { document.getElementById('privateInfoScreen').classList.add('open'); }
+function closePrivateInfoScreen() { document.getElementById('privateInfoScreen').classList.remove('open'); }
+function openAccountSettings() { document.getElementById('accountSettingsSubPanel').classList.add('open'); }
+function openReferenceSettings() { showToast('Notification settings opened'); }
+function openVideoPlaybackSettings() { document.getElementById('videoPlaybackSubPanel').classList.add('open'); }
+function openHelpCenter() { document.getElementById('helpCenterSubPanel').classList.add('open'); }
+function openTermsOfService() { document.getElementById('termsOfServiceSubPanel').classList.add('open'); }
+function closeSubPanel(id) { document.getElementById(id).classList.remove('open'); }
+
+function selectVideoQuality(quality) {
+  document.getElementById('currentQualityLabel').textContent = quality.split(' ')[0] + ' ›';
+  closeSubPanel('videoPlaybackSubPanel');
+  showToast(`Playback quality set to ${quality}`);
+}
+
+function toggleDarkThemeSetting() {
+  const checkbox = document.getElementById('darkThemeCheckbox');
+  checkbox.checked = !checkbox.checked;
+  handleDarkThemeToggle(checkbox);
+}
+
+function handleDarkThemeToggle(checkbox) {
+  if (checkbox.checked) {
+    document.body.classList.add('light-theme');
+    showToast('Light theme enabled ☀️');
+  } else {
+    document.body.classList.remove('light-theme');
+    showToast('Dark theme enabled 🌙');
+  }
+}
+
+function openLogOutModal() { document.getElementById('logoutModal').classList.add('open'); }
+function closeLogOutModal() { document.getElementById('logoutModal').classList.remove('open'); }
+function confirmLogOut() {
+  closeLogOutModal();
+  closeSettingsScreen();
+  showToast('Logged out successfully.');
 }
 </script>
 </body>
