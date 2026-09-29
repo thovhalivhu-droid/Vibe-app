@@ -555,6 +555,8 @@
         <button class="camera-tool-icon" onclick="flipCamera()"><i class="fa-solid fa-rotate"></i></button>
         <!-- Hold-to-Record Shutter Button -->
         <button class="shutter-btn" id="recordVideoBtn"></button>
+        <!-- Integrated Stop Recording Button Component -->
+        <button onclick="stopVibeRecording()" style="background: var(--pink); border: none; color: #fff; padding: 10px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;">Stop Recording</button>
         <label class="camera-tool-icon" style="cursor:pointer;">
           <i class="fa-solid fa-image"></i>
           <input type="file" id="videoFileInput" accept="video/*,image/*" multiple style="display:none">
@@ -1203,6 +1205,11 @@ function stopVideoRecording() {
     }
     
     if (captureBtn) captureBtn.classList.remove('recording');
+}
+
+// Explicit handler function mapped to the Stop Recording button markup
+function stopVibeRecording() {
+    stopVideoRecording();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -2099,75 +2106,6 @@ function renderUserProfilePosts(tab = 'posts') {
       <div class="profile-view-badge">❤️ ${post.likes}</div>
     </div>
   `).join('');
-}
-
-function openSettingsScreen() { document.getElementById('settingsScreen').classList.add('open'); }
-function closeSettingsScreen() { document.getElementById('settingsScreen').classList.remove('open'); }
-function openPrivateInfoScreen() { document.getElementById('privateInfoScreen').classList.add('open'); }
-function closePrivateInfoScreen() { document.getElementById('privateInfoScreen').classList.remove('open'); }
-function openAccountSettings() { document.getElementById('accountSettingsSubPanel').classList.add('open'); }
-function openReferenceSettings() { document.getElementById('helpCenterSubPanel').classList.add('open'); }
-function openVideoPlaybackSettings() { document.getElementById('videoPlaybackSubPanel').classList.add('open'); }
-function openHelpCenter() { document.getElementById('helpCenterSubPanel').classList.add('open'); }
-function openTermsOfService() { document.getElementById('termsOfServiceSubPanel').classList.add('open'); }
-function closeSubPanel(id) { document.getElementById(id).classList.remove('open'); }
-function selectVideoQuality(qual) {
-  document.getElementById('currentQualityLabel').textContent = qual.split(' ')[0] + ' ›';
-  closeSubPanel('videoPlaybackSubPanel');
-  showToast(`Playback quality set to ${qual}`);
-}
-function toggleDarkThemeSetting() {
-  const cb = document.getElementById('darkThemeCheckbox');
-  cb.checked = !cb.checked;
-  handleDarkThemeToggle(cb);
-}
-function handleDarkThemeToggle(cb) {
-  if (cb.checked) {
-    document.body.classList.add('light-theme');
-    showToast('Switched to Light Theme ☀️');
-  } else {
-    document.body.classList.remove('light-theme');
-    showToast('Switched to Dark Theme 🌙');
-  }
-}
-function openLogOutModal() { document.getElementById('logoutModal').classList.add('open'); }
-function closeLogOutModal() { document.getElementById('logoutModal').classList.remove('open'); }
-function confirmLogOut() {
-  closeLogOutModal();
-  showToast('Logged out successfully.');
-}
-function openCommentModal(index) {
-  document.getElementById('commentModal').classList.add('open');
-}
-function postComment() {
-  const input = document.getElementById('commentInputField');
-  const text = input.value.trim();
-  if (!text) return;
-  const list = document.getElementById('commentListContainer');
-  const row = document.createElement('div');
-  row.className = 'commentRow';
-  row.innerHTML = `
-    <img class="commentAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" alt="Avatar">
-    <div class="commentBubble">
-      <div class="commentUser">creator_vibe</div>
-      <div class="commentText">${text}</div>
-    </div>
-  `;
-  list.appendChild(row);
-  list.scrollTop = list.scrollHeight;
-  input.value = '';
-  showToast('Comment posted! 💬');
-}
-function selectReportReason(el) {
-  document.querySelectorAll('.report-reason-item').forEach(i => i.classList.remove('selected'));
-  el.classList.add('selected');
-  const radio = el.querySelector('input');
-  if (radio) radio.checked = true;
-}
-function closeReportModal() { document.getElementById('reportModal').classList.remove('open'); }
-function submitReport() {
-  closeReportModal();
-  showToast('Report submitted successfully. Thank you.');
 }
 </script>
 </body>
