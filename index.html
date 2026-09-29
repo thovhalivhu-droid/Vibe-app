@@ -339,8 +339,9 @@ button{font:inherit}
 }
 .sticker-item:hover { transform: scale(1.1); background: rgba(255,255,255,0.15); }
 
-.postPanel{padding:16px;display:flex;flex-direction:column;flex:1;overflow:hidden;position:relative}
-.previewBox{width:100%;flex:1;background:#000;border-radius:16px;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;gap:4px}
+/* VIBE Create / Post Section Styling */
+.postPanel{padding:16px;display:flex;flex-direction:column;flex:1;overflow-y:auto;position:relative}
+.previewBox{width:100%;flex:1;background:#000;border:2px dashed rgba(255,255,255,0.15);border-radius:16px;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;gap:4px;min-height:220px;max-height:350px;}
 .previewBox.multi-item {display:flex; overflow-x:auto; scroll-snap-type: x mandatory;}
 .previewBox.multi-item video, .previewBox.multi-item img {flex: 0 0 100%; scroll-snap-align: start; width:100%; height:100%; object-fit:cover;}
 .previewBox video,.previewBox img{width:100%;height:100%;object-fit:cover}
@@ -876,24 +877,34 @@ input:checked+.slider:before{transform:translateX(20px)}
 </div>
 </section>
 
-<!-- Post Screen -->
+<!-- Post Screen (Integrated VIBE Create / Post Section) -->
 <section id="postScreen" class="screen">
-<div class="screenHead"><button class="close" id="closePost">×</button><span>Post to VIBE</span><span style="width:24px"></span></div>
+<div class="screenHead"><button class="close" id="closePost">×</button><span>VIBE Create / Post</span><span style="width:24px"></span></div>
 
-<div id="topTextEditorBar" class="topTextEditorBar">
-  <input type="text" id="topTextEditorInput" class="topTextEditorInput" placeholder="Type your text here..." autocomplete="off">
-  <button id="topTextEditorDoneBtn" class="topTextEditorDoneBtn">Done</button>
-</div>
+<div class="postPanel" id="createPostSection">
+  <h2>VIBE Create / Post</h2>
+  <p style="color:var(--muted); font-size:13px; margin: 4px 0 12px;">Choose photos and videos from your gallery.</p>
 
-<div class="postPanel">
-  <div id="previewBox" class="previewBox" title="Tap to expand preview">
-    <div style="color:#777">Choose a video or picture</div>
+  <input type="file" id="vibeMediaInput"
+         accept="image/*,video/*"
+         multiple hidden>
+
+  <button class="postBtn" style="background:var(--surface); border:1px solid rgba(255,255,255,0.2); margin-bottom:12px;" onclick="document.getElementById('vibeMediaInput').click()">
+    📷 Choose Photos & Videos
+  </button>
+
+  <div id="vibeMediaPreview" class="previewBox" style="min-height:200px;">
+    <div style="color:#777">No media selected</div>
   </div>
+
   <div class="captionBoxContainer">
     <textarea id="captionInput" placeholder="Write a clean caption with #hashtags..."></textarea>
   </div>
+
   <div class="postBottomActionSheet">
-    <button id="publishBtn" class="postBtn">Post to Feed</button>
+    <button class="postBtn" onclick="vibeCreatePost()">
+      🚀 Post to VIBE
+    </button>
     <button id="publishStoryBtn" class="postBtn" style="background:var(--cyan);color:#000">Add as Story (24h)</button>
   </div>
 </div>
@@ -1626,6 +1637,50 @@ function setupObserver() {
   document.querySelectorAll('.reel').forEach(reel => observer.observe(reel));
 }
 
+// --- Integrated VIBE Create & Post Logic ---
+document.getElementById("vibeMediaInput").addEventListener("change", function() {
+  const preview = document.getElementById("vibeMediaPreview");
+  preview.innerHTML = "";
+
+  if (this.files.length > 1) {
+    preview.classList.add('multi-item');
+  } else {
+    preview.classList.remove('multi-item');
+  }
+
+  Array.from(this.files).forEach(file => {
+    const url = URL.createObjectURL(file);
+
+    if (file.type.startsWith("video/")) {
+      preview.innerHTML += `
+        <video src="${url}" controls
+        style="width:100%;max-height:300px;margin-top:10px;border-radius:12px;object-fit:cover;"></video>`;
+    } else {
+      preview.innerHTML += `
+        <img src="${url}"
+        style="width:100%;max-height:300px;object-fit:cover;margin-top:10px;border-radius:12px;">`;
+    }
+  });
+});
+
+function vibeCreatePost() {
+  const input = document.getElementById("vibeMediaInput");
+  const caption = document.getElementById("captionInput").value.trim() || "New VIBE post ✨ #VIBE";
+
+  if (!input.files.length) {
+    alert("Please choose photos or videos first.");
+    return;
+  }
+
+  alert("Post ready for VIBE!");
+  showToast("Successfully published to VIBE!");
+
+  // Close create screen and return to Home
+  closeAllScreens();
+  document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('navHomeBtn').classList.add('active');
+}
+
 // Navigation & Screens with robust event binding
 document.querySelectorAll('.nav button').forEach(btn => {
   btn.addEventListener('click', (e) => {
@@ -1641,7 +1696,7 @@ document.querySelectorAll('.nav button').forEach(btn => {
       openScreen(discover);
       renderDiscoverResults('');
     } else if(tab === 'create') {
-      openScreen(studio);
+      openScreen(postScreen);
     } else if(tab === 'inbox') {
       openScreen(inbox);
     } else if(tab === 'profile') {
@@ -1670,6 +1725,8 @@ document.querySelectorAll('.screenHead .close').forEach(btn => {
     } else {
       closeScreen(btn.closest('.screen'));
     }
+    document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+    document.getElementById('navHomeBtn').classList.add('active');
   });
 });
 
@@ -1945,30 +2002,25 @@ function closeSubPanel(panelId) {
 // Logout and Login Handling (Bottom Navigation Visibility Logic)
 function openLogOutModal() {
   document.getElementById('logoutModal').classList.add('open');
-  // Navigation stays visible while popup opens
 }
 
 function closeLogOutModal() {
   document.getElementById('logoutModal').classList.remove('open');
-  // Navigation stays visible when Cancel is pressed
 }
 
 function confirmLogOut() {
   document.getElementById('logoutModal').classList.remove('open');
   closeAllScreens();
   
-  // Make the bottom navigation toolbar disappear only when confirmed log out
   appContainer.classList.add('hide-nav-completely');
   showToast('Logged out successfully.');
 
-  // Simulate returning to the app later (e.g. clicking anywhere or a simulated login action after 4 seconds)
   setTimeout(() => {
     simulateAppReturn();
   }, 4000);
 }
 
 function simulateAppReturn() {
-  // When returning to the app, the toolbar appears again
   appContainer.classList.remove('hide-nav-completely');
   showToast('Welcome back to VIBE!');
 }
