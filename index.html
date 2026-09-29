@@ -582,7 +582,8 @@
 
     <!-- Bottom Toolbar Combined -->
     <div class="toolbar editor-toolbar">
-      <button class="tool-btn editor-tool-btn" id="toolMusicBtn" data-tool="music"><i class="fa-solid fa-music"></i><span>🎵 Music</span></button>
+      <!-- Music button with class 'music-btn' included -->
+      <button class="tool-btn editor-tool-btn music-btn" id="toolMusicBtn" data-tool="music"><i class="fa-solid fa-music"></i><span>🎵 Music</span></button>
       <button class="tool-btn editor-tool-btn" id="toolStickersBtn" data-tool="stickers"><i class="fa-solid fa-face-smile"></i><span>😊 Stickers</span></button>
       <button class="tool-btn editor-tool-btn" id="toolCustomTextBtn" data-tool="text"><i class="fa-solid fa-font"></i><span>A Text</span></button>
       <button class="tool-btn editor-tool-btn" id="toolEffectsBtn" data-tool="effects"><i class="fa-solid fa-wand-magic-sparkles"></i><span>✨ Effects</span></button>
@@ -1224,6 +1225,11 @@ document.addEventListener('DOMContentLoaded', () => {
   setupEventListeners();
   initCamera();
   renderUserProfilePosts();
+
+  // Integrated music button event listener
+  document.querySelector('.music-btn').addEventListener('click', () => {
+      toggleEditorDrawer('editorMusicDrawer');
+  });
 });
 
 function showToast(message) {
