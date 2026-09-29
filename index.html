@@ -996,6 +996,37 @@
 </div>
 
 <script>
+function handleToolTap(toolName) {
+    try {
+        if (toolName === "Music") {
+            alert("🎵 Music\nChoose a sound for your video.");
+        }
+
+        else if (toolName === "Stickers") {
+            alert("😊 Stickers\nChoose a sticker to add to your video.");
+        }
+
+        else if (toolName === "Text") {
+            alert("Aa Text\nAdd text to your video.");
+        }
+
+        else if (toolName === "Effects") {
+            alert("✨ Effects\nChoose an effect for your video.");
+        }
+
+        else if (toolName === "Mention") {
+            alert("@ Mention\Mention another VIBE user.");
+        }
+
+        else {
+            console.log("Opening " + toolName);
+        }
+
+    } catch (err) {
+        console.warn("Tool interaction error:", err);
+    }
+}
+
 // Main Application State & Mock Feed Data
 const feedData = [
   {
@@ -1437,7 +1468,6 @@ function formatHashtags(text) {
 }
 
 function setupIntersectionObserver() {
-  // Select all dynamic feed videos and observe them via the IntersectionObserver instance
   const feedVideos = document.querySelectorAll('.feed video');
   feedVideos.forEach(video => {
       videoObserver.observe(video);
@@ -1464,7 +1494,7 @@ function toggleLike(index) {
   
   if (feedData[index].isLiked) {
     actionBtn.classList.add('liked');
-    showToast('Added to liked videos ❤️️');
+    showToast('Added to liked videos ❤');
   } else {
     actionBtn.classList.remove('liked');
   }
@@ -2098,34 +2128,119 @@ function renderInboxContent(tabType) {
       <div class="messageItem">
         <div style="width:40px; height:40px; background:var(--pink); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff;"><i class="fa-solid fa-heart"></i></div>
         <div class="messageContent">
-          <div class="messageName">Sophia Vance and 34 others liked your reel</div>
-          <div class="messageSnippet">2 hours ago</div>
-        </div>
-      </div>
-      <div class="messageItem">
-        <div style="width:40px; height:40px; background:var(--cyan); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#000;"><i class="fa-solid fa-user-plus"></i></div>
-        <div class="messageContent">
-          <div class="messageName">Marcus Dev started following you</div>
-          <div class="messageSnippet">Yesterday</div>
+          <div class="messageName">Activity Notification</div>
+          <div class="messageSnippet">Someone liked your video.</div>
         </div>
       </div>
     `;
   }
 }
 
-function renderUserProfilePosts(filter = 'posts') {
+function renderUserProfilePosts(tabType = 'posts') {
   const grid = document.getElementById('userPostsGrid');
-  if (!grid) return;
-
-  if (filter === 'saved') {
-    grid.innerHTML = `
+  if (tabType === 'posts') {
+    grid.innerHTML = currentUserPosts.map(post => `
       <div class="userPostThumb">
-        <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800" alt="Saved">
-        <span class="profile-view-badge">📌 Saved</span>
+        ${post.type === 'carousel' ? `<img src="${post.items[0].url}" alt="Post">` : `<video src="${post.src}"></video>`}
+        <div class="profile-view-badge">▶ ${post.views}</div>
+      </div>
+    `).join('');
+  } else if (tabType === 'saved') {
+    grid.innerHTML = `
+      <div style="grid-column: span 3; padding: 40px; text-align: center; color: var(--muted); font-size: 13px;">
+        Saved posts collection is empty.
       </div>
     `;
-    return;
+  } else {
+    grid.innerHTML = `
+      <div style="grid-column: span 3; padding: 40px; text-align: center; color: var(--muted); font-size: 13px;">
+        No tagged posts available.
+      </div>
+    `;
   }
+}
+
+function openSettingsScreen() {
+  document.getElementById('settingsScreen').classList.add('open');
+}
+function closeSettingsScreen() {
+  document.getElementById('settingsScreen').classList.remove('open');
+}
+function openAccountSettings() {
+  document.getElementById('accountSettingsSubPanel').classList.add('open');
+}
+function openPrivateInfoScreen() {
+  document.getElementById('privateInfoScreen').classList.add('open');
+}
+function closePrivateInfoScreen() {
+  document.getElementById('privateInfoScreen').classList.remove('open');
+}
+function openReferenceSettings() {
+  showToast('Notification settings drawer opened');
+}
+function openVideoPlaybackSettings() {
+  document.getElementById('videoPlaybackSubPanel').classList.add('open');
+}
+function selectVideoQuality(qualityText) {
+  document.getElementById('currentQualityLabel').textContent = qualityText + ' ›';
+  closeSubPanel('videoPlaybackSubPanel');
+  showToast(`Playback quality set to ${qualityText}`);
+}
+function toggleDarkThemeSetting() {
+  const cb = document.getElementById('darkThemeCheckbox');
+  cb.checked = !cb.checked;
+  handleDarkThemeToggle(cb);
+}
+function handleDarkThemeToggle(checkbox) {
+  if (checkbox.checked) {
+    document.body.classList.add('light-theme');
+    showToast('Switched to Light Theme ☀️');
+  } else {
+    document.body.classList.remove('light-theme');
+    showToast('Switched to Dark Theme 🌙');
+  }
+}
+function openHelpCenter() {
+  document.getElementById('helpCenterSubPanel').classList.add('open');
+}
+function openTermsOfService() {
+  document.getElementById('termsOfServiceSubPanel').classList.add('open');
+}
+function closeSubPanel(panelId) {
+  document.getElementById(panelId).classList.remove('open');
+}
+function openLogOutModal() {
+  document.getElementById('logoutModal').classList.add('open');
+}
+function closeLogOutModal() {
+  document.getElementById('logoutModal').classList.remove('open');
+}
+function confirmLogOut() {
+  closeLogOutModal();
+  closeSettingsScreen();
+  showToast('Logged out successfully.');
+}
+function openCommentModal(index) {
+  document.getElementById('commentModal').classList.add('open');
+}
+function postComment() {
+  const input = document.getElementById('commentInputField');
+  const val = input.value.trim();
+  if (!val) return;
+  const container = document.getElementById('commentListContainer');
+  const row = document.createElement('div');
+  row.className = 'commentRow';
+  row.innerHTML = `
+    <img class="commentAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" alt="Avatar">
+    <div class="commentBubble">
+      <div class="commentUser">creator_vibe</div>
+      <div class="commentText">${val}</div>
+    </div>
+  `;
+  container.appendChild(row);
+  container.scrollTop = container.scrollHeight;
+  input.value = '';
+  showToast('Comment posted! 💬');
 }
 </script>
 </body>
