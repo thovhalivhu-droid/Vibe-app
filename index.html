@@ -1079,7 +1079,132 @@ let activeReelIndex = 0;
 let isMuted = false;
 let currentSound = { title: 'Original Audio', artist: 'Creator VIBE' };
 
-// Initialize App
+// Initialize App & Camera Recording Logic
+let mediaRecorder;
+let recordedChunks = [];
+let isRecording = false;
+const LONG_PRESS_DURATION = 300; // 0.3s long-press for video recording
+
+let pressTimer = null;
+const captureBtn = document.getElementById('recordVideoBtn'); // Linked to VIBE's shutter button
+const videoElement = document.getElementById('cameraPreview'); // Linked to VIBE's camera preview
+
+// --- Initialize Camera and Assign to window.localStream ---
+async function initCamera() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
+    if (videoElement) videoElement.srcObject = stream;
+    window.localStream = stream; // Make it globally accessible for MediaRecorder
+  } catch (err) {
+    console.error('Error accessing media devices.', err);
+    showToast('Camera permission denied or unavailable.');
+  }
+}
+
+// --- Event Listeners for Press Start ---
+if (captureBtn) {
+    captureBtn.addEventListener('mousedown', handlePressStart);
+    captureBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        handlePressStart();
+    });
+
+    // --- Event Listeners for Press End ---
+    captureBtn.addEventListener('mouseup', handlePressEnd);
+    captureBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        handlePressEnd();
+    });
+}
+
+function handlePressStart() {
+    pressTimer = setTimeout(() => {
+        startVideoRecording();
+    }, LONG_PRESS_DURATION);
+}
+
+function handlePressEnd() {
+    if (pressTimer) {
+        clearTimeout(pressTimer);
+        pressTimer = null;
+    }
+
+    if (isRecording) {
+        stopVideoRecording();
+    } else {
+        takePhoto();
+    }
+}
+
+// --- Photo Capture Function ---
+function takePhoto() {
+    if (!videoElement) return;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = videoElement.videoWidth || 1280;
+    canvas.height = videoElement.videoHeight || 720;
+    
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+
+    const photoURL = canvas.toDataURL('image/png');
+    console.log("Photo captured successfully:", photoURL);
+    
+    // Automatically transition to the VIBE editor screen with the captured photo
+    openEditorWithMedia(photoURL, 'image');
+}
+
+// --- Video Recording Functions ---
+function startVideoRecording() {
+    isRecording = true;
+    recordedChunks = [];
+
+    if (!window.localStream) {
+        console.error("Camera stream not found!");
+        isRecording = false;
+        return;
+    }
+
+    try {
+        mediaRecorder = new MediaRecorder(window.localStream, { mimeType: 'video/webm' });
+        
+        mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+                recordedChunks.push(event.data);
+            }
+        };
+
+        mediaRecorder.onstop = () => {
+            const blob = new Blob(recordedChunks, { type: 'video/webm' });
+            const videoURL = URL.createObjectURL(blob);
+            console.log("Video recorded successfully:", videoURL);
+            
+            // Automatically transition to the VIBE editor screen with the recorded video
+            openEditorWithMedia(videoURL, 'video');
+        };
+
+		mediaRecorder.start();
+        console.log("Recording started... Keep holding.");
+        if (captureBtn) captureBtn.classList.add('recording');
+
+    } catch (error) {
+        console.error("Error starting MediaRecorder:", error);
+        isRecording = false;
+    }
+}
+
+function stopVideoRecording() {
+    if (!isRecording) return;
+    isRecording = false;
+
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+        console.log("Recording stopped.");
+    }
+    
+    if (captureBtn) captureBtn.classList.remove('recording');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   renderFeed();
   setupEventListeners();
@@ -1485,22 +1610,11 @@ function setupEventListeners() {
   document.getElementById('editorQuickPostBtn').addEventListener('click', publishEditorMedia);
 }
 
-async function initCamera() {
-  try {
-    const videoEl = document.getElementById('cameraPreview');
-    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
-    videoEl.srcObject = stream;
-  } catch (err) {
-    console.log('Camera access fallback active.');
-  }
-}
-
 function switchStudioMode(mode) {
   const modeVideoTab = document.getElementById('modeVideoTab');
   const modeLiveTab = document.getElementById('modeLiveTab');
   const videoModePanel = document.getElementById('videoModePanel');
   const liveModePanel = document.getElementById('liveModePanel');
-  const timerEl = document.getElementById('timer');
   const liveActionPanel = document.getElementById('liveModeActionPanel');
 
   if (mode === 'video') {
@@ -1976,161 +2090,84 @@ function renderUserProfilePosts(tab = 'posts') {
     return;
   }
   if (tab === 'tagged') {
-    grid.innerHTML = `<div class="userPostThumb"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" alt="Tagged"><div class="profile-view-badge">@ Tagged</div></div>`;
+    grid.innerHTML = `<div class="userPostThumb"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" alt="Tagged"><div class="profile-view-badge">👤 Tagged</div></div>`;
     return;
   }
-
   grid.innerHTML = currentUserPosts.map(post => `
     <div class="userPostThumb">
-      ${post.type === 'carousel' || post.type === 'image' ? `<img src="${post.src}" alt="Post">` : `<video src="${post.src}"></video>`}
+      ${post.type === 'carousel' ? `<img src="${post.src}" alt="Post">` : `<video src="${post.src}"></video>`}
       <div class="profile-view-badge">❤️ ${post.likes}</div>
     </div>
   `).join('');
 }
 
+function openSettingsScreen() { document.getElementById('settingsScreen').classList.add('open'); }
+function closeSettingsScreen() { document.getElementById('settingsScreen').classList.remove('open'); }
+function openPrivateInfoScreen() { document.getElementById('privateInfoScreen').classList.add('open'); }
+function closePrivateInfoScreen() { document.getElementById('privateInfoScreen').classList.remove('open'); }
+function openAccountSettings() { document.getElementById('accountSettingsSubPanel').classList.add('open'); }
+function openReferenceSettings() { document.getElementById('helpCenterSubPanel').classList.add('open'); }
+function openVideoPlaybackSettings() { document.getElementById('videoPlaybackSubPanel').classList.add('open'); }
+function openHelpCenter() { document.getElementById('helpCenterSubPanel').classList.add('open'); }
+function openTermsOfService() { document.getElementById('termsOfServiceSubPanel').classList.add('open'); }
+function closeSubPanel(id) { document.getElementById(id).classList.remove('open'); }
+function selectVideoQuality(qual) {
+  document.getElementById('currentQualityLabel').textContent = qual.split(' ')[0] + ' ›';
+  closeSubPanel('videoPlaybackSubPanel');
+  showToast(`Playback quality set to ${qual}`);
+}
+function toggleDarkThemeSetting() {
+  const cb = document.getElementById('darkThemeCheckbox');
+  cb.checked = !cb.checked;
+  handleDarkThemeToggle(cb);
+}
+function handleDarkThemeToggle(cb) {
+  if (cb.checked) {
+    document.body.classList.add('light-theme');
+    showToast('Switched to Light Theme ☀️');
+  } else {
+    document.body.classList.remove('light-theme');
+    showToast('Switched to Dark Theme 🌙');
+  }
+}
+function openLogOutModal() { document.getElementById('logoutModal').classList.add('open'); }
+function closeLogOutModal() { document.getElementById('logoutModal').classList.remove('open'); }
+function confirmLogOut() {
+  closeLogOutModal();
+  showToast('Logged out successfully.');
+}
 function openCommentModal(index) {
   document.getElementById('commentModal').classList.add('open');
 }
-
 function postComment() {
   const input = document.getElementById('commentInputField');
-  const val = input.value.trim();
-  if (!val) return;
-
+  const text = input.value.trim();
+  if (!text) return;
   const list = document.getElementById('commentListContainer');
   const row = document.createElement('div');
   row.className = 'commentRow';
   row.innerHTML = `
     <img class="commentAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" alt="Avatar">
-    <div class="commentBubble"><div class="commentUser">creator_vibe</div><div class="commentText">${val}</div></div>
+    <div class="commentBubble">
+      <div class="commentUser">creator_vibe</div>
+      <div class="commentText">${text}</div>
+    </div>
   `;
   list.appendChild(row);
-  input.value = '';
   list.scrollTop = list.scrollHeight;
+  input.value = '';
   showToast('Comment posted! 💬');
 }
-
-function openSettingsScreen() { document.getElementById('settingsScreen').classList.add('open'); }
-function closeSettingsScreen() { document.getElementById('settingsScreen').classList.remove('open'); }
-
-// ==========================================
-// VIBE HOLD-TO-RECORD VIDEO IMPLEMENTATION
-// ==========================================
-let vibeRecorder = null;
-let vibeRecordingChunks = [];
-let vibeRecordTimer = null;
-let vibeRecordStartTime = 0;
-let vibeRecordStream = null;
-
-const vibeRecordButton = document.getElementById("recordVideoBtn");
-const vibeRecordTimerDisplay = document.getElementById("videoTimer");
-
-async function startVibeRecording() {
-  if (vibeRecorder && vibeRecorder.state === "recording") return;
-
-  try {
-    vibeRecordStream = await navigator.mediaDevices.getUserMedia({
-      video: true,
-      audio: true
-    });
-
-    vibeRecordingChunks = [];
-    vibeRecorder = new MediaRecorder(vibeRecordStream);
-
-    vibeRecorder.ondataavailable = function(event) {
-      if (event.data.size > 0) {
-        vibeRecordingChunks.push(event.data);
-      }
-    };
-
-    vibeRecorder.onstop = function() {
-      clearInterval(vibeRecordTimer);
-      if (vibeRecordTimerDisplay) vibeRecordTimerDisplay.classList.add("hidden");
-      if (vibeRecordButton) vibeRecordButton.classList.remove("recording");
-
-      const videoBlob = new Blob(vibeRecordingChunks, {
-        type: "video/webm"
-      });
-
-      const videoURL = URL.createObjectURL(videoBlob);
-
-      // Save recorded video for VIBE Editor
-      window.vibeRecordedVideo = videoBlob;
-      window.vibeRecordedVideoURL = videoURL;
-
-      // Stop camera and microphone stream tracks
-      if (vibeRecordStream) {
-        vibeRecordStream.getTracks().forEach(track => track.stop());
-      }
-
-      // Automatically open the video in the VIBE Studio Editor
-      document.getElementById("studio").classList.remove("open");
-      openEditorWithMedia(videoURL, 'video');
-      showToast("Recording completed! 🎥");
-    };
-
-    vibeRecorder.start();
-    vibeRecordStartTime = Date.now();
-    if (vibeRecordButton) vibeRecordButton.classList.add("recording");
-    if (vibeRecordTimerDisplay) vibeRecordTimerDisplay.classList.remove("hidden");
-
-    vibeRecordTimer = setInterval(function() {
-      const elapsed = Math.floor(
-        (Date.now() - vibeRecordStartTime) / 1000
-      );
-
-      const minutes = Math.floor(elapsed / 60);
-      const seconds = elapsed % 60;
-
-      if (vibeRecordTimerDisplay) {
-        vibeRecordTimerDisplay.innerHTML =
-          `<span style="width:8px; height:8px; background:#f33; border-radius:50%; display:inline-block;"></span>` +
-          String(minutes).padStart(2, "0") +
-          ":" +
-          String(seconds).padStart(2, "0");
-      }
-
-      // Maximum = 10 minutes
-      if (elapsed >= 600) {
-        stopVibeRecording();
-      }
-    }, 250);
-
-  } catch (error) {
-    alert("Camera and microphone permission is required.");
-    console.error(error);
-  }
+function selectReportReason(el) {
+  document.querySelectorAll('.report-reason-item').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+  const radio = el.querySelector('input');
+  if (radio) radio.checked = true;
 }
-
-function stopVibeRecording() {
-  if (vibeRecorder && vibeRecorder.state === "recording") {
-    vibeRecorder.stop();
-  }
-  clearInterval(vibeRecordTimer);
-}
-
-// PRESS = START
-if (vibeRecordButton) {
-  vibeRecordButton.addEventListener("pointerdown", function(event) {
-    event.preventDefault();
-    startVibeRecording();
-  });
-
-  // RELEASE = STOP
-  vibeRecordButton.addEventListener("pointerup", function(event) {
-    event.preventDefault();
-    stopVibeRecording();
-  });
-
-  // If finger leaves the button
-  vibeRecordButton.addEventListener("pointerleave", function() {
-    stopVibeRecording();
-  });
-
-  // If the phone/browser cancels the touch
-  vibeRecordButton.addEventListener("pointercancel", function() {
-    stopVibeRecording();
-  });
+function closeReportModal() { document.getElementById('reportModal').classList.remove('open'); }
+function submitReport() {
+  closeReportModal();
+  showToast('Report submitted successfully. Thank you.');
 }
 </script>
 </body>
