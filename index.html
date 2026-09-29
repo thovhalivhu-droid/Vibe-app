@@ -339,14 +339,13 @@ button{font:inherit}
 }
 .sticker-item:hover { transform: scale(1.1); background: rgba(255,255,255,0.15); }
 
-/* VIBE Create / Post Section Styling */
-.postPanel{padding:16px;display:flex;flex-direction:column;flex:1;overflow-y:auto;position:relative}
-.previewBox{width:100%;flex:1;background:#000;border:2px dashed rgba(255,255,255,0.15);border-radius:16px;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;gap:4px;min-height:220px;max-height:350px;}
+.postPanel{padding:16px;display:flex;flex-direction:column;flex:1;overflow:hidden;position:relative}
+.previewBox{width:100%;flex:1;background:#000;border-radius:16px;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;gap:4px}
 .previewBox.multi-item {display:flex; overflow-x:auto; scroll-snap-type: x mandatory;}
 .previewBox.multi-item video, .previewBox.multi-item img {flex: 0 0 100%; scroll-snap-align: start; width:100%; height:100%; object-fit:cover;}
-.previewBox video, .previewBox img{width:100%;height:100%;object-fit:cover}
+.previewBox video,.previewBox img{width:100%;height:100%;object-fit:cover}
 
-/* 300px height cap & rounded corners for preview items */
+/* Improved VIBE Create & Post Preview Items Styling (300px height cap & rounded corners) */
 .previewBox .vibe-preview-item {
   width: 100%;
   max-height: 300px;
@@ -905,22 +904,18 @@ input:checked+.slider:before{transform:translateX(20px)}
 </div>
 
 <div class="postPanel">
-  <p class="instructions">Select multiple photos or videos, preview them seamlessly with memory management, and securely post them to VIBE.</p>
-  
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
-    <!-- "Choose Photos & Videos" camera button -->
-    <button type="button" class="postBtn" id="chooseMediaBtn" style="background: var(--surface); border: 1px solid rgba(255,255,255,0.2); width: auto; padding: 10px 18px; display: flex; align-items: center; gap: 8px;">
+    <button class="postBtn" id="chooseMediaBtn" style="background: var(--surface); border: 1px solid rgba(255,255,255,0.2); width: auto; padding: 10px 18px; display: flex; align-items: center; gap: 8px;">
       <span style="font-size:16px;">📷</span> Choose Photos & Videos
     </button>
     <div style="font-size: 12px; color: var(--muted);" id="mediaCountIndicator">Select media</div>
   </div>
 
   <!-- Hidden multi-file picker for photos and videos -->
-  <input type="file" id="mediaInput" class="hidden" accept="image/*,video/*" multiple>
+  <input type="file" id="hiddenVibeFileInput" class="hidden" accept="image/*,video/*" multiple>
 
-  <!-- Blank preview area -->
-  <div id="previewBox" class="previewBox" title="Blank preview area">
-    <div style="color:#777" id="placeholderText">No photos or videos chosen yet</div>
+  <div id="previewBox" class="previewBox" title="Media preview area">
+    <div style="color:#777">No media selected yet</div>
   </div>
 
   <div class="captionBoxContainer">
@@ -928,9 +923,7 @@ input:checked+.slider:before{transform:translateX(20px)}
   </div>
 
   <div class="postBottomActionSheet">
-    <!-- Form wrapping inputs for real upload simulation -->
     <form id="vibeUploadForm" style="display: flex; flex-direction: column; width: 100%;">
-      <!-- "Post to VIBE" rocket button -->
       <button type="submit" id="postToVibeBtn" class="postBtn" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
         <span>🚀</span> Post to VIBE
       </button>
@@ -1422,85 +1415,35 @@ input:checked+.slider:before{transform:translateX(20px)}
 </div>
 
 <script>
-const appContainer = document.getElementById('app');
-const feed = document.getElementById('feed');
-const toast = document.getElementById('toast');
-const studio = document.getElementById('studio');
-const editorScreen = document.getElementById('editorScreen');
-const postScreen = document.getElementById('postScreen');
-const discover = document.getElementById('discover');
-const inbox = document.getElementById('inbox');
-const profile = document.getElementById('profile');
-
-let feedData = [
-{
- id: 1, 
- author: "Elena Rostova", 
- handle: "@elena_rostova", 
- caption: "Golden hour tones hitting different today ✨ #goldenhour #VIBE", 
- songName: "Golden Hour Vibe", 
- artist: "Elena Rostova", 
- likes: 24500, 
- commentsCount: 2, 
- shares: 1200, 
- views: "112K", 
- avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150", 
- mediaList: [{type: "video", url: "https://assets.mixkit.co/videos/preview/mixkit-woman-filming-herself-with-a-smartphone-41270-large.mp4"}],
- isTagged: true,
- commentsList: [
-  {user: "Liam Chen", text: "Absolute cinematic shots!", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150"},
-  {user: "Sophia Taylor", text: "Where is this spot?? ✨", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"}
- ]
-},
-{
- id: 2, 
- author: "Liam Chen", 
- handle: "@liam_chen", 
- caption: "Late night coding session 💻⚡ #coding #tech #VIBE", 
- songName: "Lofi Chill Beats", 
- artist: "ChillHop Records", 
- likes: 58100, 
- commentsCount: 1, 
- shares: 4500, 
- views: "340K", 
- avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
- mediaList: [{type: "video", url: "https://assets.mixkit.co/videos/preview/mixkit-hands-holding-a-smartphone-with-green-screen-42998-large.mp4"}],
- isTagged: false,
- commentsList: [
-  {user: "Elena Rostova", text: "Clean setup!", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150"}
- ]
-}
-];
-
-// --- Integrated VIBE Create & Post Logic with Improved Flow ---
+// --- Improved VIBE Create & Post Script Logic ---
 const chooseMediaBtn = document.getElementById('chooseMediaBtn');
-const mediaInput = document.getElementById('mediaInput');
-const previewBox = document.getElementById('previewBox');
-const vibeUploadForm = document.getElementById('vibeUploadForm');
+const hiddenVibeFileInput = document.getElementById('hiddenVibeFileInput');
+const vibePreviewBox = document.getElementById('previewBox');
 const postToVibeBtn = document.getElementById('postToVibeBtn');
+const vibeUploadForm = document.getElementById('vibeUploadForm');
 
-let currentBlobUrls = []; // Track temporary browser memory URLs to prevent memory leaks
+let currentBlobUrls = []; // Track created blob URLs to prevent memory leaks
 
-// 1. When the user clicks "Choose Photos & Videos", programmatically trigger hidden file input
+// 1. Programmatically trigger hidden file input when clicking "Choose Photos & Videos"
 chooseMediaBtn.addEventListener('click', () => {
-  mediaInput.click();
+  hiddenVibeFileInput.click();
 });
 
-// 2. When files are selected: clean old URLs, loop through files, create blob URLs, display media (300px height cap & rounded corners)
-mediaInput.addEventListener('change', (e) => {
+// 2. When files are selected: cleanup old URLs, loop through files, create blob URLs, display media (300px height cap & rounded corners)
+hiddenVibeFileInput.addEventListener('change', (e) => {
   const files = e.target.files;
   if (!files || files.length === 0) return;
 
-  // Cleanup old temporary URLs to prevent memory leaks
+  // Cleanup old blob URLs to prevent memory leaks
   currentBlobUrls.forEach(url => URL.revokeObjectURL(url));
   currentBlobUrls = [];
 
   // Clear old previews
-  previewBox.innerHTML = '';
+  vibePreviewBox.innerHTML = '';
   if (files.length > 1) {
-    previewBox.classList.add('multi-item');
+    vibePreviewBox.classList.add('multi-item');
   } else {
-    previewBox.classList.remove('multi-item');
+    vibePreviewBox.classList.remove('multi-item');
   }
 
   // Loop through selected files
@@ -1513,38 +1456,38 @@ mediaInput.addEventListener('change', (e) => {
       vid.src = blobUrl;
       vid.controls = true;
       vid.className = 'vibe-preview-item';
-      previewBox.appendChild(vid);
+      vibePreviewBox.appendChild(vid);
     } else if (file.type.startsWith('image/')) {
       const img = document.createElement('img');
       img.src = blobUrl;
       img.className = 'vibe-preview-item';
-      previewBox.appendChild(img);
+      vibePreviewBox.appendChild(img);
     }
   });
 
   document.getElementById('mediaCountIndicator').textContent = `${files.length} selected`;
 });
 
-// 3. When the user clicks "Post to VIBE": form submission flow with validation, loading state ("Posting..."), and error reset handling
+// 3. When the user clicks "Post to VIBE": form submission flow with validation, loading state, and error reset handling
 vibeUploadForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  const files = mediaInput.files;
+  const files = hiddenVibeFileInput.files;
   if (!files || files.length === 0) {
     alert("Please choose photos or videos first");
     return;
   }
 
-  // Disable button with "Posting..." message during upload
+  // Disable button and show loading state
   postToVibeBtn.disabled = true;
   postToVibeBtn.textContent = "Posting...";
 
   try {
-    // Perform real server upload via FormData
+    // Perform real server upload simulation via FormData
     const formData = new FormData(vibeUploadForm);
-    const captionText = document.getElementById('captionInput').value.trim() || 'New VIBE post ✨ #VIBE';
+    const captionText = document.getElementById('captionInput').value;
     formData.append('caption', captionText);
-
+    
     Array.from(files).forEach((file, index) => {
       formData.append(`media_${index}`, file);
     });
@@ -1552,257 +1495,32 @@ vibeUploadForm.addEventListener('submit', async (e) => {
     // Simulated network upload request
     await new Promise((resolve, reject) => {
       setTimeout(() => {
+        // Simulated success check
         Math.random() > 0.05 ? resolve() : reject(new Error("Upload network failure"));
       }, 1500);
     });
 
     alert("Post ready for VIBE!");
-
-    // Add new post to feed data array for rendering
-    const mediaList = currentBlobUrls.map((url, idx) => ({
-      type: files[idx].type.startsWith('video/') ? 'video' : 'image',
-      url: url
-    }));
-
-    feedData.unshift({
-      id: Date.now(),
-      author: "@creator_vibe",
-      handle: "@creator_vibe",
-      caption: captionText,
-      songName: "Original Audio",
-      artist: "Creator VIBE",
-      likes: 1,
-      commentsCount: 0,
-      shares: 0,
-      views: "1",
-      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150",
-      mediaList: mediaList,
-      isTagged: false,
-      commentsList: []
-    });
-    renderFeed();
-
+    
     // Reset form & state upon success
     vibeUploadForm.reset();
-    previewBox.innerHTML = '<div style="color:#777" id="placeholderText">No photos or videos chosen yet</div>';
-    previewBox.classList.remove('multi-item');
+    vibePreviewBox.innerHTML = '<div style="color:#777">No media selected yet</div>';
+    vibePreviewBox.classList.remove('multi-item');
     document.getElementById('captionInput').value = '';
     document.getElementById('mediaCountIndicator').textContent = 'Select media';
     
-    // Clear blob URL tracker (retaining active feed URLs)
+    // Cleanup blob URLs
+    currentBlobUrls.forEach(url => URL.revokeObjectURL(url));
     currentBlobUrls = [];
-
-    showToast('Successfully published to VIBE Home feed!');
-
-    // Navigate to Home Feed
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('open'));
-    document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
-    document.getElementById('navHomeBtn').classList.add('active');
 
   } catch (error) {
     // Handle errors with reset and alert
     alert("Error uploading post. Please try again.");
-    console.error(error);
   } finally {
     postToVibeBtn.disabled = false;
     postToVibeBtn.innerHTML = '<span>🚀</span> Post to VIBE';
   }
 });
-
-// --- Existing Feed & App Functionality ---
-function renderFeed() {
-  feed.innerHTML = '';
-  feedData.forEach((post) => {
-    const reel = document.createElement('div');
-    reel.className = 'reel';
-    if (post.mediaList && post.mediaList.length > 1) {
-      let sliderHtml = `<div class="reel-media-slider">`;
-      post.mediaList.forEach(m => {
-        if (m.type === 'video') {
-          sliderHtml += `<div class="reel-media-slide"><video src="${m.url}" loop playsinline muted></video></div>`;
-        } else {
-          sliderHtml += `<div class="reel-media-slide"><img src="${m.url}"></div>`;
-        }
-      });
-      sliderHtml += `</div><div class="carousel-dots">`;
-      post.mediaList.forEach((_, dIdx) => {
-        sliderHtml += `<div class="carousel-dot ${dIdx===0?'active':''}"></div>`;
-      });
-      sliderHtml += `</div>`;
-      reel.innerHTML = sliderHtml;
-    } else {
-      const media = post.mediaList[0];
-      if (media.type === 'video') {
-        reel.innerHTML = `<video src="${media.url}" loop playsinline muted></video>`;
-      } else {
-        reel.classList.add('image');
-        reel.innerHTML = `<img src="${media.url}">`;
-      }
-    }
-    
-    reel.innerHTML += `
-      <button class="mute" onclick="toggleMute(this)">🔇</button>
-      <div class="overlay">
-        <div class="info">
-          <div class="author">
-            <img class="avatar" src="${post.avatar}">
-            <span class="name">${post.author}</span>
-            <button class="follow">Follow</button>
-          </div>
-          <div class="caption">${post.caption}</div>
-        </div>
-        <div class="actions">
-          <button class="action" onclick="toggleLike(this)"><div class="circle">♥</div><span class="count">${post.likes}</span></button>
-          <button class="action" onclick="openComments('${post.id}')"><div class="circle">💬</div><span class="count">${post.commentsCount}</span></button>
-        </div>
-      </div>
-    `;
-    feed.appendChild(reel);
-  });
-}
-
-function showToast(msg) {
-  toast.textContent = msg;
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 2500);
-}
-
-function toggleMute(btn) {
-  const reel = btn.closest('.reel');
-  const video = reel.querySelector('video');
-  if (!video) return;
-  video.muted = !video.muted;
-  btn.textContent = video.muted ? '🔇' : '🔊';
-}
-
-function toggleLike(btn) {
-  btn.classList.toggle('liked');
-  const countSpan = btn.querySelector('.count');
-  let count = parseInt(countSpan.textContent);
-  countSpan.textContent = btn.classList.contains('liked') ? count + 1 : count - 1;
-}
-
-function openComments(postId) {
-  const modal = document.getElementById('commentModal');
-  const container = document.getElementById('commentListContainer');
-  const post = feedData.find(p => p.id == postId) || feedData[0];
-  if (!post) return;
-  
-  container.innerHTML = '';
-  if (post.commentsList && post.commentsList.length > 0) {
-    post.commentsList.forEach(c => {
-      container.innerHTML += `
-        <div class="commentRow">
-          <img class="commentAvatar" src="${c.avatar}">
-          <div class="commentBubble">
-            <div class="commentUser">${c.user}</div>
-            <div class="commentText">${c.text}</div>
-          </div>
-        </div>
-      `;
-    });
-  } else {
-    container.innerHTML = '<div style="color:var(--muted); text-align:center; padding:20px;">No comments yet.</div>';
-  }
-  modal.classList.add('open');
-}
-
-document.getElementById('closeCommentModal').addEventListener('click', () => {
-  document.getElementById('commentModal').classList.remove('open');
-});
-
-document.getElementById('commentSendBtn').addEventListener('click', () => {
-  const input = document.getElementById('commentInputField');
-  const text = input.value.trim();
-  if (!text) return;
-  const container = document.getElementById('commentListContainer');
-  container.innerHTML += `
-    <div class="commentRow">
-      <img class="commentAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150">
-      <div class="commentBubble">
-        <div class="commentUser">@creator_vibe</div>
-        <div class="commentText">${text}</div>
-      </div>
-    </div>
-  `;
-  input.value = '';
-  showToast('Comment posted');
-});
-
-// Navigation handling
-document.querySelectorAll('.nav button').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const tab = btn.getAttribute('data-tab');
-    document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    
-    if (tab === 'home') {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('open'));
-    } else if (tab === 'discover') {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('open'));
-      discover.classList.add('open');
-    } else if (tab === 'create') {
-      postScreen.classList.add('open');
-    } else if (tab === 'inbox') {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('open'));
-      inbox.classList.add('open');
-    } else if (tab === 'profile') {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('open'));
-      profile.classList.add('open');
-      renderProfilePosts('posts');
-    }
-  });
-});
-
-document.querySelectorAll('.screenHead .close[data-close], #closePost').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const target = btn.getAttribute('data-close');
-    if (target) {
-      document.getElementById(target).classList.remove('open');
-    } else {
-      postScreen.classList.remove('open');
-    }
-    document.getElementById('navHomeBtn').classList.add('active');
-    document.getElementById('navCreateBtn').classList.remove('active');
-  });
-});
-
-function renderProfilePosts(tab) {
-  const grid = document.getElementById('userPostsGrid');
-  grid.innerHTML = '';
-  feedData.forEach(p => {
-    grid.innerHTML += `
-      <div class="userPostThumb">
-        <video src="${p.mediaList[0].url}" muted></video>
-        <div class="profile-view-badge">▶ ${p.views || '1'}</div>
-      </div>
-    `;
-  });
-}
-
-// Helper settings & modal functions
-function openPrivateInfoScreen() { document.getElementById('privateInfoScreen').classList.add('open'); }
-function closePrivateInfoScreen() { document.getElementById('privateInfoScreen').classList.remove('open'); }
-function openSettingsScreen() { document.getElementById('settingsScreen').classList.add('open'); }
-function closeSettingsScreen() { document.getElementById('settingsScreen').classList.remove('open'); }
-function openHelpCenter() { document.getElementById('helpCenterSubPanel').classList.add('open'); }
-function openTermsOfService() { document.getElementById('termsOfServiceSubPanel').classList.add('open'); }
-function openAccountSettings() { document.getElementById('accountSettingsSubPanel').classList.add('open'); }
-function openReferenceSettings() { document.getElementById('referenceSettingsSubPanel').classList.add('open'); }
-function openPushNotificationsSettings() { document.getElementById('pushNotificationsSubPanel').classList.add('open'); }
-function openVideoPlaybackSettings() { document.getElementById('videoPlaybackSubPanel').classList.add('open'); }
-function closeSubPanel(id) { document.getElementById(id).classList.remove('open'); }
-function openReportModal() { document.getElementById('reportModal').classList.add('open'); }
-function closeReportModal() { document.getElementById('reportModal').classList.remove('open'); }
-function submitReport() { showToast('Report submitted anonymously.'); closeReportModal(); }
-function openLogOutModal() { document.getElementById('logoutModal').classList.add('open'); }
-function closeLogOutModal() { document.getElementById('logoutModal').classList.remove('open'); }
-function confirmLogOut() { showToast('Logged out successfully.'); closeLogOutModal(); }
-
-window.addEventListener('DOMContentLoaded', () => {
-  renderFeed();
-});
 </script>
 </body>
 </html>
- 
