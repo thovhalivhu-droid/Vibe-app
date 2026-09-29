@@ -547,16 +547,16 @@
         <button class="studio-mode-tab" id="modeLiveTab" onclick="switchStudioMode('live')">LIVE</button>
       </div>
 
-      <div id="videoTimer" class="hidden" style="position:absolute; top:20px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.6); padding:6px 14px; border-radius:20px; font-size:13px; font-weight:600; color:#fff; display:flex; align-items:center; gap:6px;">
+      <div id="videoTimer" style="position:absolute; top:20px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.6); padding:6px 14px; border-radius:20px; font-size:13px; font-weight:600; color:#fff; display:flex; align-items:center; gap:6px;">
         <span style="width:8px; height:8px; background:#f33; border-radius:50%; display:inline-block;"></span>00:00
       </div>
 
       <div id="videoModePanel" class="camera-controls">
         <button class="camera-tool-icon" onclick="flipCamera()"><i class="fa-solid fa-rotate"></i></button>
-        <!-- Hold-to-Record Shutter Button -->
-        <button class="shutter-btn" id="recordVideoBtn"></button>
-        <!-- Integrated Stop Recording Button Component -->
-        <button onclick="stopVibeRecording()" style="background: var(--pink); border: none; color: #fff; padding: 10px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;">Stop Recording</button>
+        <!-- Hold 2 Seconds to Record Button -->
+        <button class="shutter-btn" id="recordVideoBtn" style="width: auto; height: auto; border-radius: 12px; padding: 12px 18px; border: 2px solid #fff; font-size: 13px; font-weight: 600; color: #fff; background: rgba(255,255,255,0.2);">Hold 2 Seconds to Record</button>
+        <!-- Stop Recording Button -->
+        <button id="stopVideoBtn" style="background: var(--pink); border: none; color: #fff; padding: 12px 18px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer;">Stop Recording</button>
         <label class="camera-tool-icon" style="cursor:pointer;">
           <i class="fa-solid fa-image"></i>
           <input type="file" id="videoFileInput" accept="video/*,image/*" multiple style="display:none">
@@ -1081,135 +1081,127 @@ let activeReelIndex = 0;
 let isMuted = false;
 let currentSound = { title: 'Original Audio', artist: 'Creator VIBE' };
 
-// Initialize App & Camera Recording Logic
-let mediaRecorder;
-let recordedChunks = [];
-let isRecording = false;
-const LONG_PRESS_DURATION = 300; // 0.3s long-press for video recording
+// Integrated Video Recording Script Logic
+let recorder;
+let stream;
+let chunks = [];
+let holdTimer;
+let recording = false;
+let timer;
+let startTime;
 
-let pressTimer = null;
-const captureBtn = document.getElementById('recordVideoBtn'); // Linked to VIBE's shutter button
-const videoElement = document.getElementById('cameraPreview'); // Linked to VIBE's camera preview
+const recordBtn = document.getElementById("recordVideoBtn");
+const stopBtn = document.getElementById("stopVideoBtn");
+const timerDisplay = document.getElementById("videoTimer");
+const videoElement = document.getElementById("cameraPreview");
 
-// --- Initialize Camera and Assign to window.localStream ---
 async function initCamera() {
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
-    if (videoElement) videoElement.srcObject = stream;
-    window.localStream = stream; // Make it globally accessible for MediaRecorder
-  } catch (err) {
-    console.error('Error accessing media devices.', err);
-    showToast('Camera permission denied or unavailable.');
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: true
+    });
+    if (videoElement) {
+      videoElement.srcObject = stream;
+    }
+  } catch (error) {
+    alert("Camera permission is required.");
+    console.error(error);
   }
 }
 
-// --- Event Listeners for Press Start ---
-if (captureBtn) {
-    captureBtn.addEventListener('mousedown', handlePressStart);
-    captureBtn.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        handlePressStart();
-    });
+recordBtn.addEventListener("pointerdown", function () {
+  if (recording) return;
 
-    // --- Event Listeners for Press End ---
-    captureBtn.addEventListener('mouseup', handlePressEnd);
-    captureBtn.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        handlePressEnd();
-    });
-}
+  holdTimer = setTimeout(startRecording, 2000);
+});
 
-function handlePressStart() {
-    pressTimer = setTimeout(() => {
-        startVideoRecording();
-    }, LONG_PRESS_DURATION);
-}
+recordBtn.addEventListener("pointerup", function () {
+  clearTimeout(holdTimer);
+});
 
-function handlePressEnd() {
-    if (pressTimer) {
-        clearTimeout(pressTimer);
-        pressTimer = null;
+recordBtn.addEventListener("pointercancel", function () {
+  clearTimeout(holdTimer);
+});
+
+async function startRecording() {
+  if (recording) return;
+
+  try {
+    if (!stream) {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true
+      });
+      if (videoElement) videoElement.srcObject = stream;
     }
 
-    if (isRecording) {
-        stopVideoRecording();
-    } else {
-        takePhoto();
-    }
+    chunks = [];
+
+    recorder = new MediaRecorder(stream);
+
+    recorder.ondataavailable = function (e) {
+      if (e.data.size > 0) {
+        chunks.push(e.data);
+      }
+    };
+
+    recorder.onstop = function () {
+      const blob = new Blob(chunks, {
+        type: "video/webm"
+      });
+
+      window.vibeRecordedVideo = blob;
+      window.vibeRecordedVideoURL = URL.createObjectURL(blob);
+
+      clearInterval(timer);
+      recording = false;
+
+      if (timerDisplay) {
+        timerDisplay.textContent = "00:00";
+      }
+
+      // Automatically transition to editor with the recorded video blob URL
+      openEditorWithMedia(window.vibeRecordedVideoURL, 'video');
+    };
+
+    recorder.start();
+
+    recording = true;
+    startTime = Date.now();
+
+    timer = setInterval(function () {
+      const elapsed = Math.floor(
+        (Date.now() - startTime) / 1000
+      );
+
+      const minutes = Math.floor(elapsed / 60);
+      const seconds = elapsed % 60;
+
+      if (timerDisplay) {
+        timerDisplay.textContent =
+          String(minutes).padStart(2, "0") +
+          ":" +
+          String(seconds).padStart(2, "0");
+      }
+
+      if (elapsed >= 600) {
+        stopRecording();
+      }
+    }, 250);
+
+  } catch (error) {
+    alert("Camera permission is required.");
+    console.error(error);
+  }
 }
 
-// --- Photo Capture Function ---
-function takePhoto() {
-    if (!videoElement) return;
+stopBtn.addEventListener("click", stopRecording);
 
-    const canvas = document.createElement('canvas');
-    canvas.width = videoElement.videoWidth || 1280;
-    canvas.height = videoElement.videoHeight || 720;
-    
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-
-    const photoURL = canvas.toDataURL('image/png');
-    console.log("Photo captured successfully:", photoURL);
-    
-    // Automatically transition to the VIBE editor screen with the captured photo
-    openEditorWithMedia(photoURL, 'image');
-}
-
-// --- Video Recording Functions ---
-function startVideoRecording() {
-    isRecording = true;
-    recordedChunks = [];
-
-    if (!window.localStream) {
-        console.error("Camera stream not found!");
-        isRecording = false;
-        return;
-    }
-
-    try {
-        mediaRecorder = new MediaRecorder(window.localStream, { mimeType: 'video/webm' });
-        
-        mediaRecorder.ondataavailable = (event) => {
-            if (event.data.size > 0) {
-                recordedChunks.push(event.data);
-            }
-        };
-
-        mediaRecorder.onstop = () => {
-            const blob = new Blob(recordedChunks, { type: 'video/webm' });
-            const videoURL = URL.createObjectURL(blob);
-            console.log("Video recorded successfully:", videoURL);
-            
-            // Automatically transition to the VIBE editor screen with the recorded video
-            openEditorWithMedia(videoURL, 'video');
-        };
-
-		mediaRecorder.start();
-        console.log("Recording started... Keep holding.");
-        if (captureBtn) captureBtn.classList.add('recording');
-
-    } catch (error) {
-        console.error("Error starting MediaRecorder:", error);
-        isRecording = false;
-    }
-}
-
-function stopVideoRecording() {
-    if (!isRecording) return;
-    isRecording = false;
-
-    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-        mediaRecorder.stop();
-        console.log("Recording stopped.");
-    }
-    
-    if (captureBtn) captureBtn.classList.remove('recording');
-}
-
-// Explicit handler function mapped to the Stop Recording button markup
-function stopVibeRecording() {
-    stopVideoRecording();
+function stopRecording() {
+  if (recorder && recorder.state === "recording") {
+    recorder.stop();
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -2057,56 +2049,91 @@ function closeHashtagModal() {
   document.getElementById('hashtagModal').classList.remove('open');
 }
 
-function playSearchResultPost(index) {
-  document.getElementById('discover').classList.remove('open');
-  document.getElementById('navHomeBtn').click();
-  const reels = document.querySelectorAll('.reel');
-  if (reels[index]) reels[index].scrollIntoView({ behavior: 'smooth' });
-}
-
-function renderInboxContent(tabType) {
-  const container = document.getElementById('inboxContentContainer');
-  if (tabType === 'messages') {
-    container.innerHTML = `
-      <div class="messageItem">
-        <img class="messageAvatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" alt="Avatar">
-        <div class="messageContent"><div class="messageName">Elena Rostova</div><div class="messageSnippet">Loved your recent vibe post! ✨</div></div>
-      </div>
-    `;
-  } else if (tabType === 'requests') {
-    container.innerHTML = `
-      <div class="messageItem">
-        <img class="messageAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" alt="Avatar">
-        <div class="messageContent"><div class="messageName">Sophia Vance</div><div class="messageSnippet">Requested to send you a direct message.</div></div>
-        <button class="creatorFollowBtn" onclick="showToast('Message request accepted!')">Accept</button>
-      </div>
-    `;
-  } else {
-    container.innerHTML = `
-      <div class="messageItem">
-        <div class="messageContent"><div class="messageName">System Notification</div><div class="messageSnippet">Your reel reached over 1,000 views! 🚀</div></div>
-      </div>
-    `;
-  }
-}
-
 function renderUserProfilePosts(tab = 'posts') {
   const grid = document.getElementById('userPostsGrid');
-  if (tab === 'saved') {
-    grid.innerHTML = `<div class="userPostThumb"><img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800" alt="Saved"><div class="profile-view-badge">📌 Saved</div></div>`;
-    return;
-  }
-  if (tab === 'tagged') {
-    grid.innerHTML = `<div class="userPostThumb"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" alt="Tagged"><div class="profile-view-badge">👤 Tagged</div></div>`;
-    return;
-  }
+  if (!grid) return;
+  
   grid.innerHTML = currentUserPosts.map(post => `
     <div class="userPostThumb">
-      ${post.type === 'carousel' ? `<img src="${post.src}" alt="Post">` : `<video src="${post.src}"></video>`}
+      ${post.type === 'image' ? `<img src="${post.src}" alt="Thumb">` : `<video src="${post.src}"></video>`}
       <div class="profile-view-badge">❤️ ${post.likes}</div>
     </div>
   `).join('');
 }
+
+function openSettingsScreen() { document.getElementById('settingsScreen').classList.add('open'); }
+function closeSettingsScreen() { document.getElementById('settingsScreen').classList.remove('open'); }
+function openPrivateInfoScreen() { document.getElementById('privateInfoScreen').classList.add('open'); }
+function closePrivateInfoScreen() { document.getElementById('privateInfoScreen').classList.remove('open'); }
+function openHelpCenter() { document.getElementById('helpCenterSubPanel').classList.add('open'); }
+function openTermsOfService() { document.getElementById('termsOfServiceSubPanel').classList.add('open'); }
+function openAccountSettings() { document.getElementById('accountSettingsSubPanel').classList.add('open'); }
+function openVideoPlaybackSettings() { document.getElementById('videoPlaybackSubPanel').classList.add('open'); }
+function closeSubPanel(id) { document.getElementById(id).classList.remove('open'); }
+function selectVideoQuality(qual) {
+  document.getElementById('currentQualityLabel').textContent = qual + ' ›';
+  closeSubPanel('videoPlaybackSubPanel');
+  showToast(`Playback quality set to ${qual}`);
+}
+
+function toggleDarkThemeSetting() {
+  const chk = document.getElementById('darkThemeCheckbox');
+  chk.checked = !chk.checked;
+  handleDarkThemeToggle(chk);
+}
+
+function handleDarkThemeToggle(chk) {
+  if (chk.checked) {
+    document.body.classList.add('light-theme');
+    showToast('Switched to Light Theme ☀️');
+  } else {
+    document.body.classList.remove('light-theme');
+    showToast('Switched to Dark Theme 🌙');
+  }
+}
+
+function openLogOutModal() { document.getElementById('logoutModal').classList.add('open'); }
+function closeLogOutModal() { document.getElementById('logoutModal').classList.remove('open'); }
+function confirmLogOut() {
+  closeLogOutModal();
+  closeSettingsScreen();
+  showToast('Logged out successfully.');
+}
+
+function openCommentModal(index) {
+  document.getElementById('commentModal').classList.add('open');
+}
+
+function postComment() {
+  const input = document.getElementById('commentInputField');
+  const text = input.value.trim();
+  if (!text) return;
+  
+  const container = document.getElementById('commentListContainer');
+  const row = document.createElement('div');
+  row.className = 'commentRow';
+  row.innerHTML = `
+    <img class="commentAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" alt="Avatar">
+    <div class="commentBubble">
+      <div class="commentUser">creator_vibe (You)</div>
+      <div class="commentText">${text}</div>
+    </div>
+  `;
+  container.appendChild(row);
+  container.scrollTop = container.scrollHeight;
+  input.value = '';
+  showToast('Comment posted! 💬');
+}
+
+function playSearchResultPost(index) {
+  document.getElementById('discover').classList.remove('open');
+  document.getElementById('navHomeBtn').click();
+  const reelEl = document.querySelectorAll('.reel')[index];
+  if (reelEl) {
+    reelEl.scrollIntoView({ behavior: 'smooth' });
+  }
+}
 </script>
+
 </body>
 </html>
