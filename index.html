@@ -48,7 +48,7 @@
 
     .hide-nav-completely .nav { display: none !important; }
 
-    /* Header Navigation Tabs & Notification Button */
+    /* Header Navigation Tabs (Home / For You) */
     .top-nav {
       position: absolute;
       top: 12px;
@@ -56,11 +56,9 @@
       width: 100%;
       display: flex;
       justify-content: center;
-      align-items: center;
       gap: 20px;
       z-index: 20;
       pointer-events: none;
-      padding: 0 16px;
     }
     .top-nav .tab {
       background: none;
@@ -77,26 +75,6 @@
       color: #fff;
       border-bottom: 2px solid var(--pink);
       padding-bottom: 2px;
-    }
-    
-    /* Notification Icon Button Style */
-    .notification-icon-btn {
-      position: absolute;
-      right: 16px;
-      background: none;
-      border: none;
-      color: #fff;
-      cursor: pointer;
-      pointer-events: auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 4px;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.4);
-      transition: opacity 0.2s;
-    }
-    .notification-icon-btn:hover {
-      opacity: 0.8;
     }
 
     /* Feed Container */
@@ -557,6 +535,7 @@
   <!-- VIBE App Icon -->
   <link rel="icon" type="image/png" href="icon.png">
   <link rel="apple-touch-icon" href="icon.png">
+
 </head>
 <body>
 
@@ -564,16 +543,10 @@
   <!-- Toast Notification Bar -->
   <div id="toast" class="toast">Notification message</div>
 
-  <!-- Top Navigation Tabs & Notification Button -->
+  <!-- Top Navigation Tabs (Following / For You) -->
   <div class="top-nav">
     <button class="tab" data-feed-tab="following">Following</button>
     <button class="tab active" data-feed-tab="foryou">For You</button>
-    <button id="notificationBtn" class="notification-icon-btn" aria-label="Notifications" onclick="openInboxNotifications()">
-      <svg class="icon" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-      </svg>
-    </button>
   </div>
 
   <!-- Main Feed Section -->
@@ -664,6 +637,7 @@
 
       <div id="videoModePanel" class="camera-controls">
         <button class="camera-tool-icon" onclick="flipCamera()"><i class="fa-solid fa-rotate"></i></button>
+        <!-- Updated Shutter & Stop Classes for integrated snippet -->
         <button class="shutter-btn vibe-shutter" id="recordVideoBtn" style="width: auto; height: auto; border-radius: 12px; padding: 12px 18px; border: 2px solid #fff; font-size: 13px; font-weight: 600; color: #fff; background: rgba(255,255,255,0.2); cursor: pointer; user-select: none;">Record</button>
         <button class="vibe-stop" id="stopVideoBtn" style="background: var(--pink); border: none; color: #fff; padding: 12px 18px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer;">Stop</button>
         <label class="camera-tool-icon" style="cursor:pointer;">
@@ -683,7 +657,7 @@
   <!-- Advanced Media Editor Screen -->
   <section id="editorScreen" class="modalScreen">
     <div class="screenHead">
-      <button class="close" id="closeEditorBtn" onclick="document.getElementById('editorScreen').classList.remove('open')">✕</button>
+      <button id="close-btn" class="close" id="closeEditorBtn" onclick="document.getElementById('editorScreen').classList.remove('open')">✕</button>
       <span>VIBE Studio Editor</span>
       <button id="post-btn" style="background:var(--pink); border:none; color:#fff; padding:6px 14px; border-radius:14px; font-weight:600; font-size:13px; cursor:pointer;">Post</button>
     </div>
@@ -717,6 +691,48 @@
       <div class="music-list-row" id="track-row-2" onclick="selectEditorMusic('Summer Vibes Remix', 'DJ Sunset', 2)" style="display:flex; justify-content:space-between; align-items:center; padding:8px 0;">
         <div><div class="soundTitle">Summer Vibes Remix</div><div class="soundAuthor">DJ Sunset</div></div>
         <button class="useSoundBtn select-track-btn">Select</button>
+      </div>
+    </div>
+
+    <!-- Stickers Drawer -->
+    <div id="editorStickersDrawer" class="editor-drawer">
+      <div style="font-weight:600; font-size:14px; margin-bottom:10px;">Tap to add sticker overlay</div>
+      <div style="display:flex; gap:12px; font-size:32px; cursor:pointer;">
+        <span onclick="addStickerToCanvas('🔥')">🔥</span>
+        <span onclick="addStickerToCanvas('❤')">❤</span>
+        <span onclick="addStickerToCanvas('✨')">✨</span>
+        <span onclick="addStickerToCanvas('🚀')">🚀</span>
+        <span onclick="addStickerToCanvas('💯')">💯</span>
+        <span onclick="addStickerToCanvas('⭐')">⭐</span>
+      </div>
+    </div>
+
+    <!-- Text Drawer -->
+    <div id="editorTextDrawer" class="editor-drawer">
+      <div style="font-weight:600; font-size:14px; margin-bottom:10px;">Add Custom Text Overlay</div>
+      <div style="display:flex; gap:8px;">
+        <input type="text" id="editorTextInputField" placeholder="Type caption or quote..." style="flex:1; background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:10px; color:var(--text); font-size:14px; outline:none;">
+        <button onclick="commitEditorText()" style="background:var(--pink); border:none; border-radius:10px; padding:0 16px; color:#fff; font-weight:600; cursor:pointer;">Add</button>
+      </div>
+    </div>
+
+    <!-- Effects Drawer -->
+    <div id="editorEffectsDrawer" class="editor-drawer">
+      <div style="font-weight:600; font-size:14px; margin-bottom:10px;">Visual Color Filters</div>
+      <div style="display:flex; gap:10px; overflow-x:auto;">
+        <button class="editorFilterChip active" onclick="applyEditorFilter('none', this)" style="padding:6px 14px; background:var(--bg); border:1px solid var(--border); border-radius:8px; color:var(--text); cursor:pointer;">Normal</button>
+        <button class="editorFilterChip" onclick="applyEditorFilter('contrast(140%) saturate(130%)', this)" style="padding:6px 14px; background:var(--bg); border:1px solid var(--border); border-radius:8px; color:var(--text); cursor:pointer;">Cinematic</button>
+        <button class="editorFilterChip" onclick="applyEditorFilter('sepia(60%) contrast(120%)', this)" style="padding:6px 14px; background:var(--bg); border:1px solid var(--border); border-radius:8px; color:var(--text); cursor:pointer;">Vintage</button>
+        <button class="editorFilterChip" onclick="applyEditorFilter('grayscale(100%) contrast(150%)', this)" style="padding:6px 14px; background:var(--bg); border:1px solid var(--border); border-radius:8px; color:var(--text); cursor:pointer;">Noir</button>
+      </div>
+    </div>
+
+    <!-- Mention Drawer -->
+    <div id="editorMentionDrawer" class="editor-drawer">
+      <div style="font-weight:600; font-size:14px; margin-bottom:10px;">Tag Creator or Friend</div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <div onclick="addMentionToCanvas('@elena_rostova')" style="padding:8px; background:var(--bg); border-radius:8px; cursor:pointer; font-size:13px;">@elena_rostova</div>
+        <div onclick="addMentionToCanvas('@liam_chen')" style="padding:8px; background:var(--bg); border-radius:8px; cursor:pointer; font-size:13px;">@liam_chen</div>
       </div>
     </div>
   </section>
@@ -822,7 +838,9 @@
       <input id="editName" placeholder="Name">
       <input id="editUsername" placeholder="@username">
       <textarea id="editBio" placeholder="Bio"></textarea>
+
       <input type="file" id="editAvatar" accept="image/*">
+
       <button onclick="saveProfile()">Save</button>
       <button onclick="closeEditProfile()">Cancel</button>
     </div>
@@ -836,12 +854,260 @@
       <span style="width:24px"></span>
     </div>
     <div class="settingsList">
+      <div class="settingsRow" onclick="openAccountSettings()">
+        <div class="settingsRowLeft"><i class="fa-solid fa-user-gear"></i><span>Account & Security</span></div>
+        <span style="color:var(--muted)">›</span>
+      </div>
+      <div class="settingsRow" onclick="openPrivateInfoScreen()">
+        <div class="settingsRowLeft"><i class="fa-solid fa-lock"></i><span>Privacy</span></div>
+        <span style="color:var(--muted)">›</span>
+      </div>
+      <div class="settingsRow" onclick="openReferenceSettings()">
+        <div class="settingsRowLeft"><i class="fa-solid fa-bell"></i><span>Notifications</span></div>
+        <span style="color:var(--muted)">›</span>
+      </div>
+      <div class="settingsRow" onclick="openVideoPlaybackSettings()">
+        <div class="settingsRowLeft"><i class="fa-solid fa-play"></i><span>Video Playback Quality</span></div>
+        <span style="color:var(--muted)" id="currentQualityLabel">1080p ›</span>
+      </div>
       <div class="settingsRow" onclick="toggleDarkThemeSetting()">
         <div class="settingsRowLeft"><i class="fa-solid fa-moon"></i><span>Light Theme</span></div>
         <label class="settingsSwitch" onclick="event.stopPropagation()">
           <input type="checkbox" id="darkThemeCheckbox" onchange="handleDarkThemeToggle(this)">
           <span class="settingsSlider"></span>
         </label>
+      </div>
+      <div class="settingsRow" onclick="openHelpCenter()">
+        <div class="settingsRowLeft"><i class="fa-solid fa-circle-question"></i><span>Help Center</span></div>
+        <span style="color:var(--muted)">›</span>
+      </div>
+      <div class="settingsRow" onclick="openTermsOfService()">
+        <div class="settingsRowLeft"><i class="fa-solid fa-file-contract"></i><span>Terms of Service</span></div>
+        <span style="color:var(--muted)">›</span>
+      </div>
+      <div class="settingsRow" onclick="openLogOutModal()" style="color:var(--pink);">
+        <div class="settingsRowLeft"><i class="fa-solid fa-right-from-bracket" style="color:var(--pink);"></i><span>Log Out</span></div>
+        <span>›</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sub-Panel: Privacy & Personal Information -->
+  <section id="privateInfoScreen" class="modalScreen" style="z-index: 65;">
+    <div class="screenHead">
+      <button class="close" onclick="closePrivateInfoScreen()">✕</button>
+      <span>Privacy Information</span>
+      <span style="width:24px"></span>
+    </div>
+    <div class="settingsList">
+      <div class="settingsRow">
+        <div class="settingsRowLeft"><span>Private Account</span></div>
+        <label class="settingsSwitch"><input type="checkbox"><span class="settingsSlider"></span></label>
+      </div>
+      <div class="settingsRow">
+        <div class="settingsRowLeft"><span>Allow Direct Messages from Everyone</span></div>
+        <label class="settingsSwitch"><input type="checkbox" checked><span class="settingsSlider"></span></label>
+      </div>
+      <div class="settingsRow">
+        <div class="settingsRowLeft"><span>Activity Status</span></div>
+        <label class="settingsSwitch"><input type="checkbox" checked><span class="settingsSlider"></span></label>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sub-Panel: Help Center -->
+  <section id="helpCenterSubPanel" class="modalScreen" style="z-index: 65;">
+    <div class="screenHead">
+      <button class="close" onclick="closeSubPanel('helpCenterSubPanel')">✕</button>
+      <span>Help Center</span>
+      <span style="width:24px"></span>
+    </div>
+    <div style="padding: 20px; font-size: 14px; line-height: 1.6; color: var(--muted); overflow-y:auto; flex:1;">
+      <h3 style="color: var(--text); margin-bottom: 8px;">Welcome to VIBE Support</h3>
+      <p style="margin-bottom: 12px;">Find answers to common questions about posting reels, managing your creator profile, privacy controls, and streaming LIVE.</p>
+      <div style="background:var(--surface); padding:14px; border-radius:10px; border:1px solid var(--border); margin-bottom:10px; color:var(--text); font-weight:600;">How do I verify my creator badge?</div>
+      <div style="background:var(--surface); padding:14px; border-radius:10px; border:1px solid var(--border); margin-bottom:10px; color:var(--text); font-weight:600;">How are video feeds ranked?</div>
+      <div style="background:var(--surface); padding:14px; border-radius:10px; border:1px solid var(--border); margin-bottom:10px; color:var(--text); font-weight:600;">Report a safety concern or bug</div>
+    </div>
+  </section>
+
+  <!-- Sub-Panel: Terms of Service -->
+  <section id="termsOfServiceSubPanel" class="modalScreen" style="z-index: 65;">
+    <div class="screenHead">
+      <button class="close" onclick="closeSubPanel('termsOfServiceSubPanel')">✕</button>
+      <span>Terms of Service</span>
+      <span style="width:24px"></span>
+    </div>
+    <div style="padding: 20px; font-size: 13px; line-height: 1.6; color: var(--muted); overflow-y:auto; flex:1;">
+      <h3 style="color: var(--text); margin-bottom: 8px;">VIBE Platform Terms</h3>
+      <p style="margin-bottom: 12px;">By accessing or using VIBE, you agree to comply with our community guidelines, copyright policies, and terms of service. All creative uploads remain the intellectual property of their respective creators while granting VIBE distribution rights within the network.</p>
+      <p>Last updated: September 2026.</p>
+    </div>
+  </section>
+
+  <!-- Sub-Panel: Account & Security -->
+  <section id="accountSettingsSubPanel" class="modalScreen" style="z-index: 65;">
+    <div class="screenHead">
+      <button class="close" onclick="closeSubPanel('accountSettingsSubPanel')">✕</button>
+      <span>Account & Security</span>
+      <span style="width:24px"></span>
+    </div>
+    <div class="settingsList">
+      <div class="settingsRow" onclick="openSecurity('password')">
+        <div class="settingsRowLeft"><i class="fa-solid fa-key"></i><span>Change Password</span></div>
+        <span style="color:var(--muted)">›</span>
+      </div>
+      <div class="settingsRow" onclick="openSecurity('twofa')">
+        <div class="settingsRowLeft"><i class="fa-solid fa-shield-halved"></i><span>Two-Factor Authentication</span></div>
+        <span style="color:var(--muted)">On ›</span>
+      </div>
+      <div class="settingsRow">
+        <div class="settingsRowLeft"><i class="fa-solid fa-envelope"></i><span>Registered Email</span></div>
+        <span style="color:var(--muted)">creator@vibe.app</span>
+      </div>
+      <div class="settingsRow" onclick="openSecurity('delete')" style="color:var(--pink);">
+        <div class="settingsRowLeft"><i class="fa-solid fa-user-xmark" style="color:var(--pink);"></i><span>Delete Account</span></div>
+        <span>›</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Embedded Security Sub-Modal / Drawer -->
+  <div id="securitySubModal" style="display:none; position:absolute; bottom:0; left:0; width:100%; background:var(--surface); border-top:1px solid var(--border); border-radius:20px 20px 0 0; padding:20px; z-index:90;">
+    <h3 id="securityTitle" style="font-size:16px; font-weight:700; margin-bottom:6px;"></h3>
+    <p id="securityText" style="font-size:13px; color:var(--muted); margin-bottom:16px;"></p>
+
+    <input id="securityInput" type="password" placeholder="Enter password" style="width:100%; background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:12px; color:var(--text); font-size:14px; margin-bottom:16px; outline:none;">
+
+    <div style="display:flex; gap:10px;">
+      <button onclick="closeSecuritySub()" style="flex:1; padding:10px; background:var(--bg); border:1px solid var(--border); border-radius:10px; color:var(--text); font-weight:600; cursor:pointer;">Cancel</button>
+      <button id="securityAction" onclick="securityAction()" style="flex:1; padding:10px; background:var(--pink); border:none; border-radius:10px; color:#fff; font-weight:600; cursor:pointer;">Continue</button>
+    </div>
+  </div>
+
+  <!-- Sub-Panel: Video Playback -->
+  <section id="videoPlaybackSubPanel" class="modalScreen" style="z-index: 65;">
+    <div class="screenHead">
+      <button class="close" onclick="closeSubPanel('videoPlaybackSubPanel')">✕</button>
+      <span>Video Playback Quality</span>
+      <span style="width:24px"></span>
+    </div>
+    <div class="settingsList">
+      <div class="settingsRow" onclick="selectVideoQuality('Auto (Recommended)')"><span>Auto (Recommended)</span></div>
+      <div class="settingsRow" onclick="selectVideoQuality('1080p High Definition')"><span>1080p High Definition</span></div>
+      <div class="settingsRow" onclick="selectVideoQuality('720p Standard')"><span>720p Standard</span></div>
+      <div class="settingsRow" onclick="selectVideoQuality('480p Data Saver')"><span>480p Data Saver</span></div>
+    </div>
+  </section>
+
+  <!-- Creator Profile Modal -->
+  <section id="creatorProfileModal" class="modalScreen" style="z-index: 70;">
+    <div class="screenHead">
+      <button class="close" onclick="closeCreatorProfileModal()">✕</button>
+      <span id="modalCreatorHeaderName">Creator Profile</span>
+      <span style="width:24px"></span>
+    </div>
+    <div class="profile-header">
+      <img class="profile-avatar" id="modalCreatorAvatar" src="" alt="Creator Avatar" style="border: 3px solid var(--cyan);">
+      <div class="profile-name" id="modalCreatorName">Creator Name</div>
+      <div class="profile-handle" id="modalCreatorHandle">@handle</div>
+      <div style="font-size: 13px; color: var(--muted); margin-bottom: 12px; max-width: 280px;" id="modalCreatorBio">Creator bio description and social links.</div>
+      <div class="profile-actions-row">
+        <button class="profile-btn primary" id="modalCreatorFollowBtn" onclick="toggleModalCreatorFollow()">Follow</button>
+        <button class="profile-btn" onclick="openDirectMessageFromModal()">Message</button>
+      </div>
+    </div>
+    <div class="userPostsGrid" id="modalCreatorPostsGrid">
+      <!-- Dynamic Posts -->
+    </div>
+  </section>
+
+  <!-- Hashtag Feed Modal -->
+  <section id="hashtagModal" class="modalScreen" style="z-index: 70;">
+    <div class="screenHead">
+      <button class="close" onclick="closeHashtagModal()">✕</button>
+      <span id="hashtagModalTitle">#Hashtag</span>
+      <span style="width:24px"></span>
+    </div>
+    <div style="padding: 16px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
+      <div>
+        <div style="font-size: 18px; font-weight: 700;" id="hashtagModalName">#VIBE</div>
+        <div style="font-size: 12px; color: var(--muted);" id="hashtagModalViews">1.4M views</div>
+      </div>
+      <button class="creatorFollowBtn" onclick="showToast('Hashtag added to favorites!')">Follow Tag</button>
+    </div>
+    <div class="userPostsGrid" id="hashtagModalPostsGrid">
+      <!-- Dynamic Grid -->
+    </div>
+  </section>
+
+  <!-- Report / Content Moderation Modal -->
+  <div id="reportModal" class="report-modal">
+    <div class="report-title">Report Content or User</div>
+    <div class="report-subtitle">Select a reason for reporting. All reports are confidential.</div>
+    
+    <div class="report-reasons-list">
+      <div class="report-reason-item" onclick="selectReportReason(this)">
+        <span>Spam or misleading information</span>
+        <input type="radio" name="reportReason" value="spam" style="display:none">
+      </div>
+      <div class="report-reason-item" onclick="selectReportReason(this)">
+        <span>Hate speech or symbols</span>
+        <input type="radio" name="reportReason" value="hate" style="display:none">
+      </div>
+      <div class="report-reason-item" onclick="selectReportReason(this)">
+        <span>Harassment or bullying</span>
+        <input type="radio" name="reportReason" value="harassment" style="display:none">
+      </div>
+      <div class="report-reason-item" onclick="selectReportReason(this)">
+        <span>Dangerous or harmful activities</span>
+        <input type="radio" name="reportReason" value="dangerous" style="display:none">
+      </div>
+      <div class="report-reason-item" onclick="selectReportReason(this)">
+        <span>Copyright infringement</span>
+        <input type="radio" name="reportReason" value="copyright" style="display:none">
+      </div>
+    </div>
+
+    <div class="report-actions">
+      <button class="report-cancel-btn" onclick="closeReportModal()">Cancel</button>
+      <button class="report-submit-btn" onclick="submitReport()">Submit Report</button>
+    </div>
+  </div>
+
+  <!-- Log Out Confirmation Modal -->
+  <div id="logoutModal" class="report-modal">
+    <div class="report-title">Log Out of VIBE?</div>
+    <div class="report-subtitle">You can always log back in anytime with your credentials.</div>
+    <div class="report-actions" style="margin-top: 12px;">
+      <button class="report-cancel-btn" onclick="closeLogOutModal()">Cancel</button>
+      <button class="report-submit-btn" style="background: var(--pink);" onclick="confirmLogOut()">Log Out</button>
+    </div>
+  </div>
+
+  <!-- Sound Selection Modal -->
+  <section id="soundModal" class="modalScreen" style="z-index: 75;">
+    <div class="screenHead">
+      <button class="close" id="closeSoundModal">×</button>
+      <span>Choose Sound</span>
+      <span style="width:24px"></span>
+    </div>
+    <div style="flex:1; overflow-y:auto">
+      <div class="soundItem" data-title="Original Audio" data-author="Creator VIBE">
+        <div><div class="soundTitle">Original Audio</div><div class="soundAuthor">Creator VIBE</div></div>
+        <button class="useSoundBtn">Use</button>
+      </div>
+      <div class="soundItem" data-title="Lofi Chill Beats" data-author="ChillHop Records">
+        <div><div class="soundTitle">Lofi Chill Beats</div><div class="soundAuthor">ChillHop Records</div></div>
+        <button class="useSoundBtn">Use</button>
+      </div>
+      <div class="soundItem" data-title="Ambient Space" data-author="Cosmic Waves">
+        <div><div class="soundTitle">Ambient Space</div><div class="soundAuthor">Cosmic Waves</div></div>
+        <button class="useSoundBtn">Use</button>
+      </div>
+      <div class="soundItem" data-title="Summer Vibes Remix" data-author="DJ Sunset">
+        <div><div class="soundTitle">Summer Vibes Remix</div><div class="soundAuthor">DJ Sunset</div></div>
+        <button class="useSoundBtn">Use</button>
       </div>
     </div>
   </section>
@@ -860,28 +1126,23 @@
           <div class="commentText">This aesthetic is unmatched! Where is this? 😍</div>
         </div>
       </div>
+      <div class="commentRow">
+        <img class="commentAvatar" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150" alt="Avatar">
+        <div class="commentBubble">
+          <div class="commentUser">marcus_dev</div>
+          <div class="commentText">Clean transitions as always 🔥</div>
+        </div>
+      </div>
     </div>
     <div class="commentInputArea">
       <input type="text" id="commentInputField" class="commentInputField" placeholder="Add a comment..." autocomplete="off">
       <button id="commentSendBtn" class="commentSendBtn">Post</button>
     </div>
   </div>
+
 </div>
 
 <script>
-function openInboxNotifications() {
-  const inboxSection = document.getElementById('inbox');
-  if (inboxSection) {
-    inboxSection.classList.add('open');
-    // Switch to notifications tab automatically
-    document.querySelectorAll('.inboxSubTab').forEach(tab => {
-      if (tab.dataset.inboxTab === 'notifications') {
-        tab.click();
-      }
-    });
-  }
-}
-
 function toggleFollow(button) {
   if (button.classList.contains("following")) {
     button.classList.remove("following");
@@ -892,6 +1153,7 @@ function toggleFollow(button) {
   }
 }
 
+// Global Profile State
 let profile = {
   name: "Creator VIBE",
   username: "creator_vibe",
@@ -904,37 +1166,56 @@ try {
   if (savedProfile) {
     profile = JSON.parse(savedProfile);
   }
-} catch(e) {}
+} catch(e) {
+  console.warn("Could not load local profile storage", e);
+}
 
 function openEditProfile(){
-  document.getElementById("editProfileScreen")?.classList.add("open");
-  document.getElementById("editName").value = profile.name || "";
-  document.getElementById("editUsername").value = profile.username || "";
-  document.getElementById("editBio").value = profile.bio || "";
+  const screen = document.getElementById("editProfileScreen");
+  if(screen) screen.classList.add("open");
+  
+  const nameInput = document.getElementById("editName");
+  const usernameInput = document.getElementById("editUsername");
+  const bioInput = document.getElementById("editBio");
+  
+  if(nameInput) nameInput.value = profile.name || "";
+  if(usernameInput) usernameInput.value = profile.username || "";
+  if(bioInput) bioInput.value = profile.bio || "";
 }
 
 function closeEditProfile(){
-  document.getElementById("editProfileScreen")?.classList.remove("open");
+  const screen = document.getElementById("editProfileScreen");
+  if(screen) screen.classList.remove("open");
 }
 
 function saveProfile(){
-  profile.name = document.getElementById("editName").value.trim() || "Creator VIBE";
-  profile.username = document.getElementById("editUsername").value.trim().replace("@","");
-  profile.bio = document.getElementById("editBio").value.trim();
-  
-  const file = document.getElementById("editAvatar")?.files[0];
+  const nameInput = document.getElementById("editName");
+  const usernameInput = document.getElementById("editUsername");
+  const bioInput = document.getElementById("editBio");
+  const avatarInput = document.getElementById("editAvatar");
+
+  profile.name = nameInput ? nameInput.value.trim() || "Creator VIBE" : "Creator VIBE";
+  profile.username = usernameInput ? usernameInput.value.trim().replace("@","") : "creator_vibe";
+  profile.bio = bioInput ? bioInput.value.trim() : "";
+
+  const file = avatarInput && avatarInput.files ? avatarInput.files[0] : null;
+
   if(file){
     const reader = new FileReader();
     reader.onload = e => {
       profile.avatar = e.target.result;
-      localStorage.setItem("vibeProfile", JSON.stringify(profile));
+      try {
+        localStorage.setItem("vibeProfile", JSON.stringify(profile));
+      } catch(err) {}
       renderProfileUI();
       closeEditProfile();
       showToast("Profile updated successfully!");
     };
     reader.readAsDataURL(file);
   } else {
-    localStorage.setItem("vibeProfile", JSON.stringify(profile));
+    try {
+      localStorage.setItem("vibeProfile", JSON.stringify(profile));
+    } catch(err) {}
     renderProfileUI();
     closeEditProfile();
     showToast("Profile updated successfully!");
@@ -942,36 +1223,72 @@ function saveProfile(){
 }
 
 function renderProfileUI() {
-  document.getElementById("profileAvatarImg").src = profile.avatar;
-  document.getElementById("profileScreenNameDisplay").textContent = profile.name;
-  document.getElementById("profileScreenHandleDisplay").textContent = "@" + profile.username;
-  document.getElementById("profileScreenHandleSubDisplay").textContent = "@" + profile.username;
-  document.getElementById("profileScreenBioDisplay").textContent = profile.bio;
+  const avatarImg = document.getElementById("profileAvatarImg");
+  const nameDisplay = document.getElementById("profileScreenNameDisplay");
+  const handleDisplay = document.getElementById("profileScreenHandleDisplay");
+  const handleSubDisplay = document.getElementById("profileScreenHandleSubDisplay");
+  const bioDisplay = document.getElementById("profileScreenBioDisplay");
+
+  if(avatarImg) avatarImg.src = profile.avatar;
+  if(nameDisplay) nameDisplay.textContent = profile.name;
+  if(handleDisplay) handleDisplay.textContent = "@" + profile.username;
+  if(handleSubDisplay) handleSubDisplay.textContent = "@" + profile.username;
+  if(bioDisplay) bioDisplay.textContent = profile.bio;
 }
 
+// Active DM State & Handlers
 let activeDmUser = { name: "Elena Rostova", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" };
+
+function openMessage() {
+  openDirectMessage(activeDmUser.name, activeDmUser.avatar);
+}
 
 function openDirectMessage(name, avatar) {
   activeDmUser = { name, avatar };
-  document.getElementById("dmHeaderAvatar").src = avatar;
-  document.getElementById("dmHeaderName").textContent = name;
+  const dmScreen = document.getElementById("dmChatScreen");
+  const avatarEl = document.getElementById("dmHeaderAvatar");
+  const nameEl = document.getElementById("dmHeaderName");
+  
+  if(avatarEl) avatarEl.src = avatar;
+  if(nameEl) nameEl.textContent = name;
+  
   renderDmConversation();
-  document.getElementById("dmChatScreen")?.classList.add("open");
+  if(dmScreen) dmScreen.classList.add("open");
 }
 
 function closeDirectMessage() {
-  document.getElementById("dmChatScreen")?.classList.remove("open");
+  const dmScreen = document.getElementById("dmChatScreen");
+  if(dmScreen) dmScreen.classList.remove("open");
+}
+
+function openDirectMessageFromModal() {
+  const modalName = document.getElementById("modalCreatorName")?.textContent || "Creator";
+  const modalAvatar = document.getElementById("modalCreatorAvatar")?.src || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150";
+  document.getElementById("creatorProfileModal")?.classList.remove("open");
+  openDirectMessage(modalName, modalAvatar);
 }
 
 const mockDmConversations = {
-  "Elena Rostova": [{ sender: "incoming", text: "Loved your recent vibe post! ✨" }]
+  "Elena Rostova": [
+    { sender: "incoming", text: "Loved your recent vibe post! ✨" },
+    { sender: "outgoing", text: "Thank you so much Elena! Appreciate it." }
+  ],
+  "Liam Chen": [
+    { sender: "incoming", text: "Let's collaborate on a clip soon." },
+    { sender: "outgoing", text: "Sounds awesome, let's set it up!" }
+  ]
 };
 
 function renderDmConversation() {
   const container = document.getElementById("dmMessagesListContainer");
   if(!container) return;
   container.innerHTML = "";
-  (mockDmConversations[activeDmUser.name] || []).forEach(msg => {
+  
+  const history = mockDmConversations[activeDmUser.name] || [
+    { sender: "incoming", text: "Hey there! Let's connect on VIBE." }
+  ];
+  
+  history.forEach(msg => {
     const bubble = document.createElement("div");
     bubble.className = `dmBubble ${msg.sender}`;
     bubble.textContent = msg.text;
@@ -982,12 +1299,37 @@ function renderDmConversation() {
 
 function sendDirectMessage() {
   const input = document.getElementById("dmInputField");
-  const text = input?.value.trim();
+  if(!input) return;
+  const text = input.value.trim();
   if(!text) return;
-  if(!mockDmConversations[activeDmUser.name]) mockDmConversations[activeDmUser.name] = [];
+  
+  if(!mockDmConversations[activeDmUser.name]) {
+    mockDmConversations[activeDmUser.name] = [];
+  }
+  
   mockDmConversations[activeDmUser.name].push({ sender: "outgoing", text });
   input.value = "";
   renderDmConversation();
+}
+
+function handleToolTap(toolName) {
+    try {
+        if (toolName === "Music") {
+            alert("🎵 Music\nChoose a sound for your video.");
+        } else if (toolName === "Stickers") {
+            alert("😊 Stickers\nChoose a sticker to add to your video.");
+        } else if (toolName === "Text") {
+            alert("Aa Text\nAdd text to your video.");
+        } else if (toolName === "Effects") {
+            alert("✨ Effects\nChoose an effect for your video.");
+        } else if (toolName === "Mention") {
+            alert("@ Mention\Mention another VIBE user.");
+        } else {
+            console.log("Opening " + toolName);
+        }
+    } catch (err) {
+        console.warn("Tool interaction error:", err);
+    }
 }
 
 const feedData = [
@@ -997,7 +1339,7 @@ const feedData = [
     author: 'Liam Chen',
     handle: '@liam_chen',
     avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
-    caption: 'Golden hour city walks & urban exploration 🌇 #vibe #citylife',
+    caption: 'Golden hour city walks & urban exploration 🌇 #vibe #citylife #sunset',
     audioTitle: 'Summer Vibes Remix',
     audioArtist: 'DJ Sunset',
     likes: 34200,
@@ -1007,123 +1349,1245 @@ const feedData = [
     isLiked: false,
     isSaved: false,
     src: 'https://assets.mixkit.co/videos/preview/mixkit-girl-in-neon-lights-walking-in-a-city-41551-large.mp4'
+  },
+  {
+    id: 2,
+    type: 'carousel',
+    author: 'Liam Chen',
+    handle: '@liam_chen',
+    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
+    caption: 'Minimalist architecture study and interior styling concept. Thoughts? 📐✨ #architecture #design #minimal',
+    audioTitle: 'Ambient Space',
+    audioArtist: 'Cosmic Waves',
+    likes: 12800,
+    comments: 310,
+    shares: 412,
+    saved: 890,
+    isLiked: true,
+    isSaved: true,
+    items: [
+      { type: 'image', url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800' },
+      { type: 'image', url: 'https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?w=800' },
+      { type: 'image', url: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800' }
+    ]
+  },
+  {
+    id: 3,
+    type: 'video',
+    author: 'Sophia Vance',
+    handle: '@sophia_vance',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+    caption: 'Lofi desk setup tour for ultimate productivity 💻☕ #productivity #wfh #setup',
+    audioTitle: 'Lofi Chill Beats',
+    audioArtist: 'ChillHop Records',
+    likes: 89100,
+    comments: 2300,
+    shares: 5600,
+    saved: 3400,
+    isLiked: false,
+    isSaved: false,
+    src: 'https://assets.mixkit.co/videos/preview/mixkit-hands-typing-on-a-laptop-keyboard-close-up-42867-large.mp4'
   }
 ];
 
-let isMuted = false;
+let currentUserPosts = [
+  {
+    id: 101,
+    type: 'video',
+    src: 'https://assets.mixkit.co/videos/preview/mixkit-aerial-view-of-city-traffic-at-night-41549-large.mp4',
+    caption: 'My first cinematic city reel on VIBE! 🚀 #cityscape',
+    likes: '1.4K',
+    views: '12.8K'
+  },
+  {
+    id: 102,
+    type: 'image',
+    src: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800',
+    caption: 'New tech setup arrived today ⚡ #tech #setup',
+    likes: '850',
+    views: '5.2K'
+  }
+];
 
+let currentFeedTab = 'foryou';
+let activeReelIndex = 0;
+let isMuted = false;
+let currentSound = { title: 'Original Audio', artist: 'Creator VIBE' };
+
+// Integrated toggleLike function
 function toggleLike(index) {
   if (!feedData[index]) return;
+
   feedData[index].isLiked = !feedData[index].isLiked;
-  feedData[index].likes += feedData[index].isLiked ? 1 : -1;
+
+  if (feedData[index].isLiked) {
+    feedData[index].likes = (feedData[index].likes || 0) + 1;
+  } else {
+    feedData[index].likes = Math.max(0, (feedData[index].likes || 0) - 1);
+  }
+
   renderFeed();
+
+  // Keep only the visible video playing
+  setTimeout(() => {
+    document.querySelectorAll("video").forEach(video => {
+      video.pause();
+    });
+
+    const visibleVideo = document.querySelector(
+      ".reel-media-slider video"
+    );
+
+    if (visibleVideo) {
+      visibleVideo.muted = isMuted;
+      visibleVideo.play().catch(() => {});
+    }
+  }, 50);
 }
 
-function renderFeed() {
-  const feedContainer = document.getElementById('feed');
-  feedContainer.innerHTML = '';
-  feedData.forEach((reel, index) => {
-    const reelEl = document.createElement('div');
-    reelEl.className = 'reel';
-    reelEl.innerHTML = `
-      <video src="${reel.src}" playsinline preload="auto" loop style="width:100%;height:100%;object-fit:cover;"></video>
-      <button class="mute" onclick="toggleMute()">${isMuted ? '🔇' : '🔊'}</button>
-      <div class="overlay">
-        <div class="info">
-          <div style="display:flex;align-items:center;gap:10px; margin-bottom: 8px;">
-            <img src="${reel.avatar}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;">
-            <b style="color: #fff;">${reel.author}</b>
-            <button class="follow" onclick="toggleFollow(this)">Follow</button>
-            <button class="message-btn" onclick="openDirectMessage('${reel.author}', '${reel.avatar}')">Message</button>
-          </div>
-          <div class="caption">${reel.caption}</div>
-        </div>
-        <div class="actions">
-          <button class="action ${reel.isLiked ? 'liked' : ''}" onclick="toggleLike(${index})">
-            <div class="circle"><i class="fa-solid fa-heart"></i></div>
-            <div class="count">${reel.likes}</div>
-          </button>
-        </div>
-      </div>
-    `;
-    feedContainer.appendChild(reelEl);
+function playOnlyVisibleVideo() {
+  const videos = document.querySelectorAll("video");
+  let visibleVideo = null;
+
+  videos.forEach(video => {
+    const rect = video.getBoundingClientRect();
+    const isVisible = rect.top >= 0 && rect.bottom <= window.innerHeight;
+
+    if (isVisible && !visibleVideo) {
+      visibleVideo = video;
+      video.muted = isMuted;
+    } else {
+      video.pause();
+      video.currentTime = 0;
+    }
   });
+
+  if (visibleVideo) {
+    visibleVideo.play().catch(() => {});
+  }
 }
+
+window.addEventListener("scroll", playOnlyVisibleVideo, { passive: true });
+setTimeout(playOnlyVisibleVideo, 500);
+
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    document.querySelectorAll("video").forEach(video => video.pause());
+  } else {
+    playOnlyVisibleVideo();
+  }
+});
+
+let recorder;
+let stream;
+let chunks = [];
+let timer;
+let startTime;
+
+const videoElement = document.getElementById("cameraPreview");
+
+async function initCamera() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    if (videoElement) {
+      videoElement.srcObject = stream;
+    }
+  } catch (error) {
+    console.warn("Camera access not available or permitted:", error);
+  }
+}
+
+// Integrated Recording Functions & Event Listeners
+const vibeShutter = document.querySelector('.vibe-shutter');
+const vibeStop = document.querySelector('.vibe-stop');
+const timerDisplay = document.getElementById("videoTimer");
+
+let vibeRecording = false;
+
+vibeShutter?.addEventListener('click', async () => {
+  if (vibeRecording) return;
+
+  try {
+    if (!stream) {
+      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      if (videoElement) videoElement.srcObject = stream;
+    }
+
+    chunks = [];
+    recorder = new MediaRecorder(stream);
+
+    recorder.ondataavailable = function (ev) {
+      if (ev.data.size > 0) {
+        chunks.push(ev.data);
+      }
+    };
+
+    recorder.onstop = function () {
+      const blob = new Blob(chunks, { type: "video/webm" });
+      window.vibeRecordedVideo = blob;
+      window.vibeRecordedVideoURL = URL.createObjectURL(blob);
+
+      clearInterval(timer);
+      if (timerDisplay) {
+        timerDisplay.textContent = "00:00";
+      }
+
+      openEditorWithMedia(window.vibeRecordedVideoURL, 'video');
+    };
+
+    recorder.start();
+    vibeRecording = true;
+    vibeShutter.classList.add('recording');
+    showToast("Recording started!");
+
+    startTime = Date.now();
+    timer = setInterval(function () {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      const minutes = Math.floor(elapsed / 60);
+      const seconds = elapsed % 60;
+
+      if (timerDisplay) {
+        timerDisplay.textContent = String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
+      }
+
+      if (elapsed >= 600) {
+        if (recorder && recorder.state === "recording") {
+          recorder.stop();
+        }
+      }
+    }, 250);
+
+  } catch (error) {
+    alert("Camera permission is required.");
+    console.error(error);
+  }
+});
+
+vibeStop?.addEventListener('click', () => {
+  if (!vibeRecording) return;
+
+  vibeRecording = false;
+  vibeShutter.classList.remove('recording');
+
+  if (recorder && recorder.state === "recording") {
+    recorder.stop();
+  }
+  showToast("Recording stopped!");
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderFeed();
+  setupEventListeners();
+  initCamera();
+  renderUserProfilePosts();
+  renderProfileUI();
+
+  const musicBtn = document.querySelector('.music-btn');
+  if (musicBtn) {
+    musicBtn.addEventListener('click', () => {
+      toggleEditorDrawer('editorMusicDrawer');
+    });
+  }
+});
 
 function showToast(message) {
   const toast = document.getElementById('toast');
   toast.textContent = message;
   toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 2500);
+  setTimeout(() => {
+    toast.classList.remove('show');
+  }, 2500);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  renderFeed();
-  renderProfileUI();
+function renderFeed() {
+  const feedContainer = document.getElementById('feed');
+  feedContainer.innerHTML = '';
+
+  feedData.forEach((reel, index) => {
+    const reelEl = document.createElement('div');
+    reelEl.className = `reel ${reel.type === 'carousel' ? 'carousel' : ''}`;
+    reelEl.dataset.index = index;
+
+    let mediaHTML = '';
+    if (reel.type === 'carousel') {
+      let slidesHtml = '';
+      let dotsHtml = '';
+      reel.items.forEach((item, sIdx) => {
+        slidesHtml += `<div class="reel-media-slide"><img src="${item.url}" alt="Carousel Slide"></div>`;
+        dotsHtml += `<div class="carousel-dot ${sIdx === 0 ? 'active' : ''}"></div>`;
+      });
+      mediaHTML = `
+        <div class="reel-media-slider" onscroll="handleCarouselScroll(event, ${index})">${slidesHtml}</div>
+        <div class="carousel-dots" id="carousel-dots-${index}">${dotsHtml}</div>
+      `;
+    } else {
+      if (reel.type === "video" && reel.src) {
+        mediaHTML += `
+          <video
+            src="${reel.src}"
+            playsinline
+            preload="auto"
+            loop
+            style="width:100%;height:100%;object-fit:cover;">
+          </video>
+        `;
+      }
+      mediaHTML += `
+        <div class="video-duration-indicator" id="duration-indicator-${index}">00:00 / 00:00</div>
+        <div class="video-control-overlay" id="control-overlay-${index}">
+          <button class="custom-pause-btn" onclick="togglePlayPause(${index}, event)">
+            <i class="fa-solid fa-play" id="pause-icon-${index}"></i>
+          </button>
+        </div>
+      `;
+    }
+
+    reelEl.innerHTML = `
+      ${mediaHTML}
+      <button class="mute" onclick="toggleMute()">${isMuted ? '🔇' : '🔊'}</button>
+      
+      <div class="overlay">
+        <div class="info">
+          <div style="display:flex;align-items:center;gap:10px; margin-bottom: 8px;">
+            <img src="${reel.avatar}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;cursor:pointer;" onclick="openCreatorProfile('${reel.author}', '${reel.handle}', '${reel.avatar}')">
+            <b style="color: #fff; cursor: pointer;" onclick="openCreatorProfile('${reel.author}', '${reel.handle}', '${reel.avatar}')">${reel.author}</b>
+            <button class="follow" onclick="toggleFollow(this)">Follow</button>
+            <button class="message-btn" onclick="openDirectMessage('${reel.author}', '${reel.avatar}')">Message</button>
+          </div>
+          
+          <div class="caption">${formatHashtags(reel.caption)}</div>
+          <div class="audio" onclick="document.getElementById('soundModal').classList.add('open')">
+            <i class="fa-solid fa-music"></i>
+            <span class="song-title">${reel.audioTitle}</span> - <span class="song-artist">${reel.audioArtist}</span>
+          </div>
+        </div>
+        
+        <div class="actions">
+          <button class="action ${reel.isLiked ? 'liked' : ''}" onclick="toggleLike(${index})">
+            <div class="circle"><i class="fa-solid fa-heart"></i></div>
+            <div class="count" id="like-count-${index}">${formatCount(reel.likes)}</div>
+          </button>
+          <button class="action" onclick="openCommentModal(${index})">
+            <div class="circle"><i class="fa-solid fa-comment-dots"></i></div>
+            <div class="count">${formatCount(reel.comments)}</div>
+          </button>
+          <button class="action ${reel.isSaved ? 'saved' : ''}" onclick="toggleSave(${index})">
+            <div class="circle"><i class="fa-solid fa-bookmark"></i></div>
+            <div class="count">${formatCount(reel.saved)}</div>
+          </button>
+          <button class="action" onclick="shareReel()">
+            <div class="circle"><i class="fa-solid fa-share"></i></div>
+            <div class="count">Share</div>
+          </button>
+        </div>
+      </div>
+    `;
+
+    if (reel.type !== 'carousel') {
+      const videoEl = reelEl.querySelector('video');
+      let lastTap = 0;
+      reelEl.addEventListener('click', (e) => {
+        if (e.target.closest('.overlay') || e.target.closest('.mute')) return;
+        const currentTime = new Date().getTime();
+        const tapLength = currentTime - lastTap;
+        if (tapLength < 300 && tapLength > 0) {
+          triggerDoubleTapHeart(reelEl, e);
+          e.preventDefault();
+        } else {
+          togglePlayPause(index);
+        }
+        lastTap = currentTime;
+      });
+
+      if (videoEl) {
+        videoEl.addEventListener('loadedmetadata', () => {
+          const durEl = document.getElementById(`duration-indicator-${index}`);
+          if (durEl) durEl.textContent = `00:00 / ${formatTime(videoEl.duration)}`;
+        });
+        videoEl.addEventListener('timeupdate', () => {
+          const durEl = document.getElementById(`duration-indicator-${index}`);
+          if (durEl && !isNaN(videoEl.duration)) {
+            durEl.textContent = `${formatTime(videoEl.currentTime)} / ${formatTime(videoEl.duration)}`;
+          }
+        });
+      }
+    }
+
+    feedContainer.appendChild(reelEl);
+  });
+
+  playOnlyVisibleVideo();
+}
+
+function handleCarouselScroll(e, index) {
+  const slider = e.target;
+  const slideWidth = slider.clientWidth;
+  const scrollLeft = slider.scrollLeft;
+  const activeSlideIndex = Math.round(scrollLeft / slideWidth);
   
-  document.querySelectorAll('.nav button').forEach(btn => {
+  const dotsContainer = document.getElementById(`carousel-dots-${index}`);
+  if (dotsContainer) {
+    const dots = dotsContainer.querySelectorAll('.carousel-dot');
+    dots.forEach((dot, idx) => {
+      if (idx === activeSlideIndex) dot.classList.add('active');
+      else dot.classList.remove('active');
+    });
+  }
+}
+
+function triggerDoubleTapHeart(container, e) {
+  const heart = document.createElement('div');
+  heart.className = 'double-tap-heart';
+  heart.innerHTML = '<i class="fa-solid fa-heart"></i>';
+  
+  const rect = container.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  
+  heart.style.left = `${x}px`;
+  heart.style.top = `${y}px`;
+  
+  container.appendChild(heart);
+  setTimeout(() => heart.remove(), 800);
+}
+
+function togglePlayPause(index, event) {
+  if (event) event.stopPropagation();
+  const reelEl = document.querySelectorAll('.reel')[index];
+  if (!reelEl) return;
+  const video = reelEl.querySelector('video');
+  const overlay = document.getElementById(`control-overlay-${index}`);
+  const pauseIcon = document.getElementById(`pause-icon-${index}`);
+  
+  if (!video) return;
+
+  if (video.paused) {
+    video.play();
+    if (overlay) overlay.classList.remove('show');
+  } else {
+    video.pause();
+    if (overlay) overlay.classList.add('show');
+    if (pauseIcon) pauseIcon.className = 'fa-solid fa-play';
+    const durInd = document.getElementById(`duration-indicator-${index}`);
+    if (durInd) {
+      durInd.classList.add('show');
+      setTimeout(() => durInd.classList.remove('show'), 2000);
+    }
+  }
+}
+
+function formatTime(seconds) {
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+function formatCount(num) {
+  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+  if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+  return num;
+}
+
+function formatHashtags(text) {
+  return text.replace(/(#[a-z0-9_-]+)/gi, '<span>$1</span>');
+}
+
+function toggleMute() {
+  isMuted = !isMuted;
+  const currentVideo = document.querySelectorAll('.reel')[activeReelIndex]?.querySelector('video');
+  if (currentVideo) currentVideo.muted = isMuted;
+  
+  document.querySelectorAll('.mute').forEach(btn => {
+    btn.textContent = isMuted ? '🔇' : '🔊';
+  });
+  showToast(isMuted ? 'Muted audio' : 'Unmuted audio');
+}
+
+function toggleSave(index) {
+  feedData[index].isSaved = !feedData[index].isSaved;
+  const saveBtn = document.querySelectorAll('.reel')[index].querySelectorAll('.action')[2];
+  if (feedData[index].isSaved) {
+    saveBtn.classList.add('saved');
+    showToast('Video saved to collections 📌');
+  } else {
+    saveBtn.classList.remove('saved');
+    showToast('Removed from saved');
+  }
+}
+
+function shareReel() {
+  if (navigator.share) {
+    navigator.share({ title: 'VIBE Video', url: window.location.href }).catch(() => {});
+  } else {
+    showToast('Link copied to clipboard! 🔗');
+  }
+}
+
+function setupEventListeners() {
+  const screens = {
+    home: null,
+    discover: document.getElementById('discover'),
+    create: document.getElementById('studio'),
+    inbox: document.getElementById('inbox'),
+    profile: document.getElementById('profile')
+  };
+
+  const navButtons = document.querySelectorAll('.nav button');
+  navButtons.forEach(btn => {
     btn.addEventListener('click', () => {
       const tab = btn.dataset.tab;
-      document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+      navButtons.forEach(b => b.classList.remove('active'));
+      
       if (tab === 'create') {
         document.getElementById('studio').classList.add('open');
         return;
       }
+      
       btn.classList.add('active');
-      ['discover', 'studio', 'inbox', 'profile'].forEach(s => {
-        document.getElementById(s)?.classList.remove('open');
+      Object.keys(screens).forEach(key => {
+        if (screens[key] && key !== 'home') {
+          screens[key].classList.remove('open');
+        }
       });
-      if (tab !== 'home') document.getElementById(tab)?.classList.add('open');
+
+      if (screens[tab]) screens[tab].classList.add('open');
     });
   });
 
   document.querySelectorAll('.close[data-close]').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.getElementById(btn.dataset.close)?.classList.remove('open');
+      const targetScreen = btn.dataset.close;
+      document.getElementById(targetScreen).classList.remove('open');
       document.getElementById('navHomeBtn').classList.add('active');
     });
   });
-});
 
-// VIBE: Play only the currently visible video
-(function () {
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      const video = entry.target;
-
-      if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
-        // Pause every other video
-        document.querySelectorAll('video').forEach(v => {
-          if (v !== video) {
-            v.pause();
-          }
-        });
-
-        // Play only the visible video
-        video.play().catch(() => {});
-      } else {
-        video.pause();
-      }
-    });
-  }, {
-    threshold: [0, 0.6, 1]
+  document.getElementById('closeStudio').addEventListener('click', () => {
+    document.getElementById('studio').classList.remove('open');
+    document.getElementById('navHomeBtn').classList.add('active');
   });
 
-  function watchVideos() {
-    document.querySelectorAll('video').forEach(video => {
-      observer.observe(video);
+  document.querySelectorAll('.tab[data-feed-tab]').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab[data-feed-tab]').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      currentFeedTab = tab.dataset.feedTab;
+      showToast(`Switched to ${currentFeedTab === 'following' ? 'Following' : 'For You'} feed`);
+    });
+  });
+
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      renderDiscoverResults(e.target.value.trim());
     });
   }
 
-  // Initial videos
-  watchVideos();
-
-  // Also watch videos added later by renderFeed()
-  new MutationObserver(watchVideos).observe(document.body, {
-    childList: true,
-    subtree: true
+  document.querySelectorAll('.discoverTab').forEach(dt => {
+    dt.addEventListener('click', () => {
+      document.querySelectorAll('.discoverTab').forEach(t => t.classList.remove('active'));
+      dt.classList.add('active');
+      renderDiscoverResults(searchInput ? searchInput.value.trim() : '', dt.dataset.searchFilter);
+    });
   });
-})();
+
+  document.querySelectorAll('.inboxSubTab').forEach(st => {
+    st.addEventListener('click', () => {
+      document.querySelectorAll('.inboxSubTab').forEach(t => t.classList.remove('active'));
+      st.classList.add('active');
+      renderInboxContent(st.dataset.inboxTab);
+    });
+  });
+
+  document.querySelectorAll('.profileSubTab').forEach(pt => {
+    pt.addEventListener('click', () => {
+      document.querySelectorAll('.profileSubTab').forEach(t => t.classList.remove('active'));
+      pt.classList.add('active');
+      renderUserProfilePosts(pt.dataset.profileTab);
+    });
+  });
+
+  document.getElementById('videoFileInput').addEventListener('change', (e) => handleFilesSelection(e, 'video'));
+
+  document.getElementById('avatarStoryTrigger').addEventListener('click', () => {
+    document.getElementById('avatarFileInput').click();
+  });
+  document.getElementById('avatarFileInput').addEventListener('change', (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        document.getElementById('profileAvatarImg').src = evt.target.result;
+        document.getElementById('profileAvatarImg').classList.add('has-story');
+        showToast('Story updated successfully! 🔴');
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    }
+  });
+
+  document.getElementById('closeSoundModal').addEventListener('click', () => {
+    document.getElementById('soundModal').classList.remove('open');
+  });
+  document.querySelectorAll('.soundItem').forEach(item => {
+    item.addEventListener('click', () => {
+      currentSound.title = item.dataset.title;
+      currentSound.artist = item.dataset.author;
+      document.getElementById('soundModal').classList.remove('open');
+      showToast(`Selected sound: ${currentSound.title}`);
+    });
+  });
+
+  document.getElementById('closeCommentBtn').addEventListener('click', () => {
+    document.getElementById('commentModal').classList.remove('open');
+  });
+  document.getElementById('commentSendBtn').addEventListener('click', postComment);
+  document.getElementById('commentInputField').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') postComment();
+  });
+
+  document.getElementById('toolMusicBtn').addEventListener('click', () => toggleEditorDrawer('editorMusicDrawer'));
+  document.getElementById('toolStickersBtn').addEventListener('click', () => toggleEditorDrawer('editorStickersDrawer'));
+  document.getElementById('toolCustomTextBtn').addEventListener('click', () => toggleEditorDrawer('editorTextDrawer'));
+  document.getElementById('toolEffectsBtn').addEventListener('click', () => toggleEditorDrawer('editorEffectsDrawer'));
+  document.getElementById('toolMentionBtn').addEventListener('click', () => toggleEditorDrawer('editorMentionDrawer'));
+  
+  document.getElementById('post-btn').addEventListener('click', publishEditorMedia);
+}
+
+function switchStudioMode(mode) {
+  const modeVideoTab = document.getElementById('modeVideoTab');
+  const modeLiveTab = document.getElementById('modeLiveTab');
+  const videoModePanel = document.getElementById('videoModePanel');
+  const liveModePanel = document.getElementById('liveModePanel');
+  const liveActionPanel = document.getElementById('liveModeActionPanel');
+
+  if (mode === 'video') {
+    modeVideoTab.classList.add('active');
+    modeLiveTab.classList.remove('active');
+    videoModePanel.classList.remove('hidden');
+    liveModePanel.classList.add('hidden');
+    document.getElementById('videoTimer').classList.add('hidden');
+    liveActionPanel.classList.add('hidden');
+  } else {
+    modeLiveTab.classList.add('active');
+    modeVideoTab.classList.remove('active');
+    liveModePanel.classList.remove('hidden');
+    videoModePanel.classList.add('hidden');
+    document.getElementById('videoTimer').classList.remove('hidden');
+    liveActionPanel.classList.remove('hidden');
+  }
+}
+
+let isLiveStreaming = false;
+let liveLikesCount = 0;
+function toggleLiveStream() {
+  isLiveStreaming = !isLiveStreaming;
+  const btn = document.getElementById('startLiveBtn');
+  if (isLiveStreaming) {
+    btn.textContent = 'End LIVE';
+    btn.style.background = '#f33';
+    showToast('You are now streaming LIVE! 🔴');
+    startLiveSimulation();
+  } else {
+    btn.textContent = 'Go LIVE Now';
+    btn.style.background = 'var(--pink)';
+    showToast('LIVE broadcast ended.');
+  }
+}
+
+function startLiveSimulation() {
+  if (!isLiveStreaming) return;
+  setTimeout(() => {
+    if (!isLiveStreaming) return;
+    const names = ['Alex Rivera', 'Chloe Grace', 'David Miller', 'Samantha Fox'];
+    const comments = ['So cool!', 'Greetings from Tokyo! 🔥', 'What camera are you using?', 'Love this stream! ❤️'];
+    const rName = names[Math.floor(Math.random() * names.length)];
+    const rComment = comments[Math.floor(Math.random() * comments.length)];
+    
+    const chatList = document.getElementById('liveChatListContainer');
+    if (chatList) {
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'liveChatMsg';
+      msgDiv.innerHTML = `<span class="liveChatUser">${rName}:</span>${rComment}`;
+      chatList.appendChild(msgDiv);
+      chatList.scrollTop = chatList.scrollHeight;
+    }
+    startLiveSimulation();
+  }, 4000);
+}
+
+document.getElementById('liveSendChatBtn')?.addEventListener('click', () => {
+  const input = document.getElementById('liveCommentInput');
+  const text = input.value.trim();
+  if (!text) return;
+  const chatList = document.getElementById('liveChatListContainer');
+  const msgDiv = document.createElement('div');
+  msgDiv.className = 'liveChatMsg';
+  msgDiv.innerHTML = `<span class="liveChatUser">You (Host):</span>${text}`;
+  chatList.appendChild(msgDiv);
+  chatList.scrollTop = chatList.scrollHeight;
+  input.value = '';
+});
+
+document.getElementById('liveTapLikeBtn')?.addEventListener('click', () => {
+  liveLikesCount++;
+  document.getElementById('liveHeartCountBadge').textContent = `❤️ ${formatCount(liveLikesCount)}`;
+  
+  const container = document.getElementById('liveLikesContainer');
+  if (container) {
+    const heart = document.createElement('div');
+    heart.className = 'floating-like';
+    heart.innerHTML = ['❤', '💖', '✨', '🔥'][Math.floor(Math.random() * 4)];
+    container.appendChild(heart);
+    setTimeout(() => heart.remove(), 2000);
+  }
+});
+
+function flipCamera() { showToast('Camera flipped ⟳'); }
+function toggleLiveMic() { showToast('Microphone toggled'); }
+function openGuestRequestsModal() { showToast('Guest connection requests modal opened'); }
+function openLiveSettingsModal() { showToast('LIVE broadcast settings opened'); }
+
+function handleFilesSelection(e, type) {
+  const files = e.target.files;
+  if (!files || files.length === 0) return;
+  
+  const items = [];
+  const limit = Math.min(files.length, 3);
+  for (let i = 0; i < limit; i++) {
+    items.push({ type: type, url: URL.createObjectURL(files[i]) });
+  }
+  
+  document.getElementById('studio').classList.remove('open');
+  openEditorWithMultipleMedia(items);
+}
+
+let currentEditorItems = [];
+function openEditorWithMedia(url, type) {
+  currentEditorItems = [{ type, url }];
+  setupEditorCanvas();
+  document.getElementById('studio').classList.remove('open');
+  document.getElementById('editorScreen').classList.add('open');
+}
+
+function openEditorWithMultipleMedia(items) {
+  currentEditorItems = items;
+  setupEditorCanvas();
+  document.getElementById('editorScreen').classList.add('open');
+}
+
+function setupEditorCanvas() {
+  const container = document.getElementById('editorCanvasContainer');
+  container.innerHTML = `
+    <canvas id="editorDrawingCanvas"></canvas>
+    <div id="editorOverlaysLayer"></div>
+  `;
+  
+  if (currentEditorItems.length > 1) {
+    container.classList.add('multi-item');
+    let innerHtml = '';
+    currentEditorItems.forEach((item) => {
+      if (item.type === 'video') innerHtml += `<video src="${item.url}" autoplay loop playsinline></video>`;
+      else innerHtml += `<img src="${item.url}" alt="Media">`;
+    });
+    container.innerHTML += innerHtml;
+  } else {
+    container.classList.remove('multi-item');
+    const item = currentEditorItems[0];
+    if (item.type === 'video') container.innerHTML += `<video src="${item.url}" autoplay loop playsinline></video>`;
+    else container.innerHTML += `<img src="${item.url}" alt="Media">`;
+  }
+
+  setupDrawingCanvas();
+}
+
+let isDrawing = false;
+let drawingCtx = null;
+function setupDrawingCanvas() {
+  const canvas = document.getElementById('editorDrawingCanvas');
+  if (!canvas) return;
+  canvas.width = canvas.parentElement.clientWidth;
+  canvas.height = canvas.parentElement.clientHeight;
+  drawingCtx = canvas.getContext('2d');
+  drawingCtx.strokeStyle = '#00f2fe';
+  drawingCtx.lineWidth = 4;
+  drawingCtx.lineCap = 'round';
+
+  canvas.onmousedown = (e) => { isDrawing = true; drawingCtx.beginPath(); drawingCtx.moveTo(e.offsetX, e.offsetY); };
+  canvas.onmousemove = (e) => { if (!isDrawing) return; drawingCtx.lineTo(e.offsetX, e.offsetY); drawingCtx.stroke(); };
+  canvas.onmouseup = () => { isDrawing = false; };
+}
+
+function toggleEditorDrawer(drawerId) {
+  document.querySelectorAll('.editor-drawer').forEach(d => {
+    if (d.id !== drawerId) d.classList.remove('open');
+  });
+  const drawer = document.getElementById(drawerId);
+  if (drawer) drawer.classList.toggle('open');
+}
+
+function selectEditorMusic(title, artist, index) {
+  document.querySelectorAll('.music-list-row').forEach(row => {
+    row.classList.remove('active');
+    const btn = row.querySelector('.useSoundBtn');
+    if (btn) {
+      btn.classList.remove('selected');
+      btn.textContent = 'Select';
+    }
+  });
+  
+  const targetRow = document.getElementById(`track-row-${index}`);
+  if (targetRow) {
+    targetRow.classList.add('active');
+    const btn = targetRow.querySelector('.useSoundBtn');
+    if (btn) {
+      btn.classList.add('selected');
+      btn.textContent = 'Selected';
+    }
+  }
+  
+  const titleEl = document.getElementById('drawerSelectedSongTitle');
+  if (titleEl) titleEl.textContent = title;
+  
+  showToast(`Sound track updated: ${title}`);
+}
+
+function addStickerToCanvas(emoji) {
+  const layer = document.getElementById('editorOverlaysLayer');
+  if (!layer) return;
+  const el = document.createElement('div');
+  el.className = 'editorOverlayElement';
+  el.textContent = emoji;
+  el.style.left = '50%';
+  el.style.top = '40%';
+  el.style.transform = 'translate(-50%, -50%)';
+  makeElementDraggable(el);
+  layer.appendChild(el);
+  showToast('Sticker added');
+}
+
+function commitEditorText() {
+  const input = document.getElementById('editorTextInputField');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) return;
+  
+  const layer = document.getElementById('editorOverlaysLayer');
+  if (!layer) return;
+  const el = document.createElement('div');
+  el.className = 'editorOverlayElement text-element';
+  el.textContent = text;
+  el.style.left = '50%';
+  el.style.top = '50%';
+  el.style.transform = 'translate(-50%, -50%)';
+  makeElementDraggable(el);
+  layer.appendChild(el);
+  
+  input.value = '';
+  document.getElementById('editorTextDrawer').classList.remove('open');
+  showToast('Text overlay added');
+}
+
+function addMentionToCanvas(mention) {
+  const layer = document.getElementById('editorOverlaysLayer');
+  if (!layer) return;
+  const el = document.createElement('div');
+  el.className = 'editorOverlayElement text-element';
+  el.textContent = mention;
+  el.style.left = '50%';
+  el.style.top = '60%';
+  el.style.transform = 'translate(-50%, -50%)';
+  makeElementDraggable(el);
+  layer.appendChild(el);
+  document.getElementById('editorMentionDrawer').classList.remove('open');
+  showToast(`Tagged ${mention}`);
+}
+
+function applyEditorFilter(filterStyle, btn) {
+  document.querySelectorAll('.editorFilterChip').forEach(chip => chip.classList.remove('active'));
+  btn.classList.add('active');
+  const container = document.getElementById('editorCanvasContainer');
+  const media = container.querySelector('video, img');
+  if (media) media.style.filter = filterStyle;
+  showToast('Filter applied');
+}
+
+function makeElementDraggable(elmnt) {
+  let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+  elmnt.onmousedown = dragMouseDown;
+  elmnt.ontouchstart = dragMouseDown;
+
+  function dragMouseDown(e) {
+    e = e || window.event;
+    e.preventDefault();
+    if (e.type === 'touchstart') {
+      pos3 = e.touches[0].clientX;
+      pos4 = e.touches[0].clientY;
+    } else {
+      pos3 = e.clientX;
+      pos4 = e.clientY;
+    }
+    document.onmouseup = closeDragElement;
+    document.onmousemove = elementDrag;
+    document.ontouchend = closeDragElement;
+    document.ontouchmove = elementDrag;
+  }
+
+  function elementDrag(e) {
+    e = e || window.event;
+    e.preventDefault();
+    let clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+    let clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+    
+    pos1 = pos3 - clientX;
+    pos2 = pos4 - clientY;
+    pos3 = clientX;
+    pos4 = clientY;
+    
+    elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+    elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+    elmnt.style.transform = 'none';
+  }
+
+  function closeDragElement() {
+    document.onmouseup = null;
+    document.onmousemove = null;
+    document.ontouchend = null;
+    document.ontouchmove = null;
+  }
+}
+
+function publishEditorMedia() {
+  const newPost = {
+    id: Date.now(),
+    type: currentEditorItems.length > 1 ? 'carousel' : currentEditorItems[0].type,
+    author: profile.name,
+    handle: '@' + profile.username,
+    avatar: profile.avatar,
+    caption: 'My new creation on VIBE! ✨ #vibe #creator',
+    audioTitle: currentSound.title,
+    audioArtist: currentSound.artist,
+    likes: 1,
+    comments: 0,
+    shares: 0,
+    saved: 0,
+    isLiked: false,
+    isSaved: false,
+    src: currentEditorItems[0].url,
+    items: currentEditorItems
+  };
+  
+  feedData.unshift(newPost);
+  currentUserPosts.unshift({
+    id: newPost.id,
+    type: newPost.type,
+    src: newPost.src,
+    caption: newPost.caption,
+    likes: '1',
+    views: '10'
+  });
+  
+  document.getElementById('editorScreen').classList.remove('open');
+  document.getElementById('navHomeBtn').classList.add('active');
+  renderFeed();
+  renderUserProfilePosts();
+  showToast('Successfully published your post! 🎉');
+}
+
+function renderDiscoverResults(query = '', filter = 'all') {
+  const container = document.getElementById('discoverResultsContainer');
+  if (!container) return;
+
+  if (!query && filter === 'all') {
+    container.innerHTML = `
+      <div class="discoverSectionTitle">Trending Hashtags</div>
+      <div class="hashtagSearchRow" onclick="openHashtagFeed('#vibe', '1.4M views')">
+        <div style="display:flex; align-items:center;">
+          <div class="hashtagSymbol">#</div>
+          <div class="hashtagDetails"><div class="hashtagName">#vibe</div><div class="hashtagCount">1.4M views</div></div>
+        </div>
+        <span style="color:var(--muted)">›</span>
+      </div>
+      <div class="hashtagSearchRow" onclick="openHashtagFeed('#citylife', '840K views')">
+        <div style="display:flex; align-items:center;">
+          <div class="hashtagSymbol">#</div>
+          <div class="hashtagDetails"><div class="hashtagName">#citylife</div><div class="hashtagCount">840K views</div></div>
+        </div>
+        <span style="color:var(--muted)">›</span>
+      </div>
+      
+      <div class="discoverSectionTitle">Featured Creators</div>
+      <div class="creatorSearchRow">
+        <div class="creatorSearchInfo" onclick="openCreatorProfile('Liam Chen', '@liam_chen', 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150')">
+          <img class="creatorSearchAvatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150" alt="Avatar">
+          <div class="creatorSearchMeta"><div class="name">Liam Chen</div><div class="handle">@liam_chen</div></div>
+        </div>
+        <button class="creatorFollowBtn" onclick="toggleFollow(this)">Follow</button>
+      </div>
+      
+      <div class="discoverSectionTitle">Trending Feed</div>
+      <div class="discoverGrid">
+        <div class="discoverGridItem"><img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=800" alt="Discover"></div>
+        <div class="discoverGridItem"><img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800" alt="Discover"></div>
+        <div class="discoverGridItem"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800" alt="Discover"></div>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="discoverSectionTitle">Search Results for "${query || filter}"</div>
+    <div class="discoverGrid">
+      <div class="discoverGridItem"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800" alt="Result"></div>
+      <div class="discoverGridItem"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800" alt="Result"></div>
+    </div>
+  `;
+}
+
+function renderInboxContent(tabType) {
+  const container = document.getElementById('inboxContentContainer');
+  if (!container) return;
+  
+  if (tabType === 'messages') {
+    container.innerHTML = `
+      <div class="messageItem" onclick="openDirectMessage('Elena Rostova', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150')">
+        <img class="messageAvatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" alt="Avatar">
+        <div class="messageContent">
+          <div class="messageName">Elena Rostova</div>
+          <div class="messageSnippet">Loved your recent vibe post! ✨</div>
+        </div>
+      </div>
+      <div class="messageItem" onclick="openDirectMessage('Liam Chen', 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150')">
+        <img class="messageAvatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150" alt="Avatar">
+        <div class="messageContent">
+          <div class="messageName">Liam Chen</div>
+          <div class="messageSnippet">Let's collaborate on a clip soon.</div>
+        </div>
+      </div>
+    `;
+  } else if (tabType === 'requests') {
+    container.innerHTML = `
+      <div style="padding: 24px; text-align: center; color: var(--muted); font-size: 14px;">
+        No pending message requests.
+      </div>
+    `;
+  } else {
+    container.innerHTML = `
+      <div class="messageItem">
+        <div class="messageContent">
+          <div class="messageName">System Notification</div>
+          <div class="messageSnippet">Welcome to VIBE version 2.6! Check out new studio filters.</div>
+        </div>
+      </div>
+    `;
+  }
+}
+
+function renderUserProfilePosts(tabType = 'posts') {
+  const container = document.getElementById('userPostsGrid');
+  if (!container) return;
+  container.innerHTML = '';
+
+  if (tabType === 'saved') {
+    container.innerHTML = `
+      <div style="grid-column: span 3; padding: 40px; text-align: center; color: var(--muted); font-size: 13px;">
+        Saved collections and bookmarked clips appear here.
+      </div>
+    `;
+    return;
+  } else if (tabType === 'tagged') {
+    container.innerHTML = `
+      <div style="grid-column: span 3; padding: 40px; text-align: center; color: var(--muted); font-size: 13px;">
+        Videos you've been tagged in will appear here.
+      </div>
+    `;
+    return;
+  }
+
+  currentUserPosts.forEach(post => {
+    const thumb = document.createElement('div');
+    thumb.className = 'userPostThumb';
+    thumb.innerHTML = `
+      <img src="${post.src.includes('.mp4') ? 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800' : post.src}" alt="Post">
+      <div class="profile-view-badge">▶ ${post.views}</div>
+    `;
+    container.appendChild(thumb);
+  });
+}
+
+function openCreatorProfile(name, handle, avatar) {
+  document.getElementById('modalCreatorHeaderName').textContent = name;
+  document.getElementById('modalCreatorName').textContent = name;
+  document.getElementById('modalCreatorHandle').textContent = handle;
+  document.getElementById('modalCreatorAvatar').src = avatar;
+  document.getElementById('creatorProfileModal').classList.add('open');
+  
+  const grid = document.getElementById('modalCreatorPostsGrid');
+  grid.innerHTML = `
+    <div class="userPostThumb"><img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800" alt="Post"></div>
+    <div class="userPostThumb"><img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800" alt="Post"></div>
+  `;
+}
+
+function closeCreatorProfileModal() {
+  document.getElementById('creatorProfileModal').classList.remove('open');
+}
+
+function toggleModalCreatorFollow() {
+  const btn = document.getElementById('modalCreatorFollowBtn');
+  if (btn.classList.contains('following')) {
+    btn.classList.remove('following');
+    btn.textContent = 'Follow';
+    btn.style.background = 'var(--pink)';
+  } else {
+    btn.classList.add('following');
+    btn.textContent = 'Following';
+    btn.style.background = 'transparent';
+  }
+}
+
+function openHashtagFeed(tag, views) {
+  document.getElementById('hashtagModalTitle').textContent = tag;
+  document.getElementById('hashtagModalName').textContent = tag;
+  document.getElementById('hashtagModalViews').textContent = views;
+  document.getElementById('hashtagModal').classList.add('open');
+  
+  const grid = document.getElementById('hashtagModalPostsGrid');
+  grid.innerHTML = `
+    <div class="userPostThumb"><img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=800" alt="Tag Post"></div>
+    <div class="userPostThumb"><img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800" alt="Tag Post"></div>
+    <div class="userPostThumb"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800" alt="Tag Post"></div>
+  `;
+}
+
+function closeHashtagModal() {
+  document.getElementById('hashtagModal').classList.remove('open');
+}
+
+function openSettingsScreen() { document.getElementById('settingsScreen').classList.add('open'); }
+function closeSettingsScreen() { document.getElementById('settingsScreen').classList.remove('open'); }
+function openPrivateInfoScreen() { document.getElementById('privateInfoScreen').classList.add('open'); }
+function closePrivateInfoScreen() { document.getElementById('privateInfoScreen').classList.remove('open'); }
+function openHelpCenter() { document.getElementById('helpCenterSubPanel').classList.add('open'); }
+function openTermsOfService() { document.getElementById('termsOfServiceSubPanel').classList.add('open'); }
+function openAccountSettings() { document.getElementById('accountSettingsSubPanel').classList.add('open'); }
+function openVideoPlaybackSettings() { document.getElementById('videoPlaybackSubPanel').classList.add('open'); }
+
+function closeSubPanel(id) { document.getElementById(id).classList.remove('open'); }
+
+function selectVideoQuality(quality) {
+  document.getElementById('currentQualityLabel').textContent = quality.split(' ')[0] + ' ›';
+  closeSubPanel('videoPlaybackSubPanel');
+  showToast(`Playback quality set to ${quality}`);
+}
+
+function toggleDarkThemeSetting() {
+  const checkbox = document.getElementById('darkThemeCheckbox');
+  if (checkbox) {
+    checkbox.checked = !checkbox.checked;
+    handleDarkThemeToggle(checkbox);
+  }
+}
+
+function handleDarkThemeToggle(checkbox) {
+  if (checkbox.checked) {
+    document.body.classList.add('light-theme');
+    showToast('Switched to Light Theme ☀️');
+  } else {
+    document.body.classList.remove('light-theme');
+    showToast('Switched to Dark Theme 🌙');
+  }
+}
+
+let activeSecurityMode = '';
+function openSecurity(mode) {
+  activeSecurityMode = mode;
+  const subModal = document.getElementById('securitySubModal');
+  const title = document.getElementById('securityTitle');
+  const text = document.getElementById('securityText');
+  
+  if (mode === 'password') {
+    title.textContent = 'Change Account Password';
+    text.textContent = 'Enter your current password to proceed with setting a new secure password.';
+  } else if (mode === 'twofa') {
+    title.textContent = 'Two-Factor Authentication (2FA)';
+    text.textContent = 'Authenticator app verification is currently active. Enter password to modify.';
+  } else {
+    title.textContent = 'Delete VIBE Account';
+    text.textContent = 'This action is permanent and erases all reels, drafts, and profile records. Enter password to confirm.';
+  }
+  
+  subModal.style.display = 'block';
+}
+
+function closeSecuritySub() {
+  document.getElementById('securitySubModal').style.display = 'none';
+  document.getElementById('securityInput').value = '';
+}
+
+function securityAction() {
+  const val = document.getElementById('securityInput').value.trim();
+  if (!val) {
+    showToast('Please enter your password');
+    return;
+  }
+  closeSecuritySub();
+  if (activeSecurityMode === 'delete') {
+    showToast('Account deletion request submitted.');
+  } else {
+    showToast('Security settings updated successfully.');
+  }
+}
+
+function openLogOutModal() { document.getElementById('logoutModal').classList.add('open'); }
+function closeLogOutModal() { document.getElementById('logoutModal').classList.remove('open'); }
+function confirmLogOut() {
+  closeLogOutModal();
+  closeSettingsScreen();
+  showToast('Successfully logged out of VIBE.');
+}
+
+function openCommentModal(index) {
+  document.getElementById('commentModal').classList.add('open');
+}
+
+function postComment() {
+  const input = document.getElementById('commentInputField');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) return;
+  
+  const container = document.getElementById('commentListContainer');
+  const row = document.createElement('div');
+  row.className = 'commentRow';
+  row.innerHTML = `
+    <img class="commentAvatar" src="${profile.avatar}" alt="Avatar">
+    <div class="commentBubble">
+      <div class="commentUser">${profile.username}</div>
+      <div class="commentText">${text}</div>
+    </div>
+  `;
+  container.appendChild(row);
+  input.value = '';
+  container.scrollTop = container.scrollHeight;
+  showToast('Comment posted!');
+}
+
+function selectReportReason(el) {
+  document.querySelectorAll('.report-reason-item').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+  const radio = el.querySelector('input[type="radio"]');
+  if (radio) radio.checked = true;
+}
+
+function closeReportModal() {
+  document.getElementById('reportModal').classList.remove('open');
+}
+
+function submitReport() {
+  closeReportModal();
+  showToast('Report submitted. Thank you for keeping VIBE safe! 🛡️');
+}
 </script>
+
 </body>
 </html>
