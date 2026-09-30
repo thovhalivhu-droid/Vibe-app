@@ -348,7 +348,7 @@
     }
     
     /* Recording active state styling */
-    .shutter-btn.recording-active { border-color: var(--pink) !important; background: var(--pink) !important; animation: pulseRecord 1.5s infinite; }
+    .vibe-shutter.recording { border-color: var(--pink) !important; background: var(--pink) !important; animation: pulseRecord 1.5s infinite; }
     @keyframes pulseRecord { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
 
     .camera-tool-icon { background: rgba(0,0,0,0.5); border: none; width: 44px; height: 44px; border-radius: 50%; color: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
@@ -595,10 +595,9 @@
 
       <div id="videoModePanel" class="camera-controls">
         <button class="camera-tool-icon" onclick="flipCamera()"><i class="fa-solid fa-rotate"></i></button>
-        <!-- Hold 2 Seconds to Record Button -->
-        <button class="shutter-btn hold-record-btn" id="recordVideoBtn" style="width: auto; height: auto; border-radius: 12px; padding: 12px 18px; border: 2px solid #fff; font-size: 13px; font-weight: 600; color: #fff; background: rgba(255,255,255,0.2); cursor: pointer; user-select: none;">Hold 2 Seconds to Record</button>
-        <!-- Stop Recording Button -->
-        <button id="stopVideoBtn" style="background: var(--pink); border: none; color: #fff; padding: 12px 18px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer;">Stop Recording</button>
+        <!-- Updated Shutter & Stop Classes for integrated snippet -->
+        <button class="shutter-btn vibe-shutter" id="recordVideoBtn" style="width: auto; height: auto; border-radius: 12px; padding: 12px 18px; border: 2px solid #fff; font-size: 13px; font-weight: 600; color: #fff; background: rgba(255,255,255,0.2); cursor: pointer; user-select: none;">Record</button>
+        <button class="vibe-stop" id="stopVideoBtn" style="background: var(--pink); border: none; color: #fff; padding: 12px 18px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer;">Stop</button>
         <label class="camera-tool-icon" style="cursor:pointer;">
           <i class="fa-solid fa-image"></i>
           <input type="file" id="videoFileInput" accept="video/*,image/*" multiple style="display:none">
@@ -1177,7 +1176,7 @@ function handleToolTap(toolName) {
         } else if (toolName === "Effects") {
             alert("✨ Effects\nChoose an effect for your video.");
         } else if (toolName === "Mention") {
-            alert("@ Mention\Mention another VIBE user.");
+            alert("@ Mention\nMention another VIBE user.");
         } else {
             console.log("Opening " + toolName);
         }
@@ -1304,14 +1303,9 @@ document.addEventListener("visibilitychange", () => {
 let recorder;
 let stream;
 let chunks = [];
-let holdTimer;
-let isRecording = false;
 let timer;
 let startTime;
 
-const holdButton = document.querySelector('.hold-record-btn');
-const stopBtn = document.getElementById("stopVideoBtn");
-const timerDisplay = document.getElementById("videoTimer");
 const videoElement = document.getElementById("cameraPreview");
 
 async function initCamera() {
@@ -1325,99 +1319,91 @@ async function initCamera() {
   }
 }
 
-function startPress(e) {
-  e.preventDefault();
-  if (isRecording) return;
+// Integrated Recording Functions & Event Listeners
+const vibeShutter = document.querySelector('.vibe-shutter');
+const vibeStop = document.querySelector('.vibe-stop');
+const timerDisplay = document.getElementById("videoTimer");
 
-  clearTimeout(holdTimer);
-  showToast("Hold for 2 seconds to start recording...");
+let vibeRecording = false;
 
-  holdTimer = setTimeout(async () => {
-    try {
-      if (!stream) {
-        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        if (videoElement) videoElement.srcObject = stream;
+vibeShutter?.addEventListener('click', async () => {
+  if (vibeRecording) return;
+
+  try {
+    if (!stream) {
+      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      if (videoElement) videoElement.srcObject = stream;
+    }
+
+    chunks = [];
+    recorder = new MediaRecorder(stream);
+
+    recorder.ondataavailable = function (ev) {
+      if (ev.data.size > 0) {
+        chunks.push(ev.data);
+      }
+    };
+
+    recorder.onstop = function () {
+      const blob = new Blob(chunks, { type: "video/webm" });
+      window.vibeRecordedVideo = blob;
+      window.vibeRecordedVideoURL = URL.createObjectURL(blob);
+
+      clearInterval(timer);
+      if (timerDisplay) {
+        timerDisplay.textContent = "00:00";
       }
 
-      chunks = [];
-      recorder = new MediaRecorder(stream);
+      openEditorWithMedia(window.vibeRecordedVideoURL, 'video');
+    };
 
-      recorder.ondataavailable = function (ev) {
-        if (ev.data.size > 0) {
-          chunks.push(ev.data);
+    recorder.start();
+    vibeRecording = true;
+    vibeShutter.classList.add('recording');
+    showToast("Recording started!");
+
+    startTime = Date.now();
+    timer = setInterval(function () {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      const minutes = Math.floor(elapsed / 60);
+      const seconds = elapsed % 60;
+
+      if (timerDisplay) {
+        timerDisplay.textContent = String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
+      }
+
+      if (elapsed >= 600) {
+        if (recorder && recorder.state === "recording") {
+          recorder.stop();
         }
-      };
+      }
+    }, 250);
 
-      recorder.onstop = function () {
-        const blob = new Blob(chunks, { type: "video/webm" });
-        window.vibeRecordedVideo = blob;
-        window.vibeRecordedVideoURL = URL.createObjectURL(blob);
-
-        clearInterval(timer);
-        isRecording = false;
-
-        if (timerDisplay) {
-          timerDisplay.textContent = "00:00";
-        }
-
-        openEditorWithMedia(window.vibeRecordedVideoURL, 'video');
-      };
-
-      recorder.start();
-      isRecording = true;
-      showToast("Recording started!");
-      
-      holdButton.classList.add('recording-active');
-      startTime = Date.now();
-
-      timer = setInterval(function () {
-        const elapsed = Math.floor((Date.now() - startTime) / 1000);
-        const minutes = Math.floor(elapsed / 60);
-        const seconds = elapsed % 60;
-
-        if (timerDisplay) {
-          timerDisplay.textContent = String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
-        }
-
-        if (elapsed >= 600) {
-          endPress(e);
-        }
-      }, 250);
-
-    } catch (error) {
-      alert("Camera permission is required.");
-      console.error(error);
-    }
-  }, 2000);
-}
-
-function endPress(e) {
-  e.preventDefault();
-  clearTimeout(holdTimer);
-
-  if (isRecording) {
-    if (recorder && recorder.state === "recording") {
-      recorder.stop();
-    }
-    showToast("Recording stopped!");
-    holdButton.classList.remove('recording-active');
+  } catch (error) {
+    alert("Camera permission is required.");
+    console.error(error);
   }
-}
 
-if (holdButton) {
-  holdButton.addEventListener('mousedown', startPress);
-  holdButton.addEventListener('mouseup', endPress);
-  holdButton.addEventListener('mouseleave', endPress);
+  if (typeof startRecording === 'function') {
+    startRecording();
+  }
+});
 
-  holdButton.addEventListener('touchstart', startPress);
-  holdButton.addEventListener('touchend', endPress);
-}
+vibeStop?.addEventListener('click', () => {
+  if (!vibeRecording) return;
 
-if (stopBtn) {
-  stopBtn.addEventListener("click", (e) => {
-    endPress(e);
-  });
-}
+  vibeRecording = false;
+  vibeShutter.classList.remove('recording');
+
+  if (recorder && recorder.state === "recording") {
+    recorder.stop();
+  }
+  showToast("Recording stopped!");
+
+  if (typeof stopRecording === 'function') {
+    stopRecording();
+  }
+});
 
 document.addEventListener('DOMContentLoaded', () => {
   renderFeed();
