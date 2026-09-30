@@ -226,6 +226,23 @@
       border: 1px solid rgba(255, 255, 255, 0.4);
       color: #fff;
     }
+    
+    /* Message Button Styles */
+    .message-btn {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: #fff;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .message-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
     .caption { font-size: 14px; line-height: 1.4; color: #f3f4f6; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .caption span { color: var(--cyan); font-weight: 500; }
     .audio { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #cbd5e1; cursor: pointer; }
@@ -425,6 +442,21 @@
     .messageContent { flex: 1; }
     .messageName { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
     .messageSnippet { font-size: 13px; color: var(--muted); }
+
+    /* Direct Message Chat Modal */
+    #dmChatScreen {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--bg); z-index: 85; display: flex; flex-direction: column;
+      transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
+    }
+    #dmChatScreen.open { transform: translateY(0); }
+    .dmMessagesList { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    .dmBubble { max-width: 75%; padding: 10px 14px; border-radius: 14px; font-size: 14px; line-height: 1.4; word-break: break-word; }
+    .dmBubble.incoming { background: var(--surface); color: var(--text); align-self: flex-start; border-bottom-left-radius: 4px; }
+    .dmBubble.outgoing { background: var(--pink); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+    .dmInputArea { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; gap: 10px; background: var(--surface); }
+    .dmInputField { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 20px; padding: 10px 16px; color: var(--text); font-size: 13px; outline: none; }
+    .dmSendBtn { background: var(--pink); border: none; color: #fff; padding: 0 16px; border-radius: 20px; font-weight: 600; font-size: 13px; cursor: pointer; }
 
     /* Profile Screen Styles */
     .profile-header { padding: 20px 16px 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border-bottom: 1px solid var(--border); }
@@ -662,7 +694,7 @@
       <div style="font-weight:600; font-size:14px; margin-bottom:10px;">Tap to add sticker overlay</div>
       <div style="display:flex; gap:12px; font-size:32px; cursor:pointer;">
         <span onclick="addStickerToCanvas('🔥')">🔥</span>
-        <span onclick="addStickerToCanvas('❤️')">❤️️</span>
+        <span onclick="addStickerToCanvas('❤️')">❤</span>
         <span onclick="addStickerToCanvas('✨')">✨</span>
         <span onclick="addStickerToCanvas('🚀')">🚀</span>
         <span onclick="addStickerToCanvas('💯')">💯</span>
@@ -712,20 +744,39 @@
       <div class="inboxSubTab" data-inbox-tab="notifications">Activity</div>
     </div>
     <div id="inboxContentContainer" style="flex:1; overflow-y:auto;">
-      <div class="messageItem">
+      <div class="messageItem" onclick="openDirectMessage('Elena Rostova', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150')">
         <img class="messageAvatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" alt="Avatar">
         <div class="messageContent">
           <div class="messageName">Elena Rostova</div>
           <div class="messageSnippet">Loved your recent vibe post! ✨</div>
         </div>
       </div>
-      <div class="messageItem">
+      <div class="messageItem" onclick="openDirectMessage('Liam Chen', 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150')">
         <img class="messageAvatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150" alt="Avatar">
         <div class="messageContent">
           <div class="messageName">Liam Chen</div>
           <div class="messageSnippet">Let's collaborate on a clip soon.</div>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- Direct Message Chat Screen -->
+  <section id="dmChatScreen" class="modalScreen" style="z-index: 85;">
+    <div class="screenHead">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <button class="close" onclick="closeDirectMessage()" style="font-size:18px;">←</button>
+        <img id="dmHeaderAvatar" src="" style="width:32px; height:32px; border-radius:50%; object-fit:cover;" alt="Avatar">
+        <span id="dmHeaderName" style="font-size:15px; font-weight:600;">Chat</span>
+      </div>
+      <span style="width:24px"></span>
+    </div>
+    <div class="dmMessagesList" id="dmMessagesListContainer">
+      <!-- Dynamic Chat Messages -->
+    </div>
+    <div class="dmInputArea">
+      <input type="text" id="dmInputField" class="dmInputField" placeholder="Type a message..." autocomplete="off">
+      <button id="dmSendBtn" class="dmSendBtn" onclick="sendDirectMessage()">Send</button>
     </div>
   </section>
 
@@ -958,7 +1009,7 @@
       <div style="font-size: 13px; color: var(--muted); margin-bottom: 12px; max-width: 280px;" id="modalCreatorBio">Creator bio description and social links.</div>
       <div class="profile-actions-row">
         <button class="profile-btn primary" id="modalCreatorFollowBtn" onclick="toggleModalCreatorFollow()">Follow</button>
-        <button class="profile-btn" onclick="showToast('Direct message opened')">Message</button>
+        <button class="profile-btn" onclick="openDirectMessageFromModal()">Message</button>
       </div>
     </div>
     <div class="userPostsGrid" id="modalCreatorPostsGrid">
@@ -1180,6 +1231,82 @@ function renderProfileUI() {
   if(bioDisplay) bioDisplay.textContent = profile.bio;
 }
 
+// Active DM State & Handlers
+let activeDmUser = { name: "Elena Rostova", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" };
+
+function openMessage() {
+  openDirectMessage(activeDmUser.name, activeDmUser.avatar);
+}
+
+function openDirectMessage(name, avatar) {
+  activeDmUser = { name, avatar };
+  const dmScreen = document.getElementById("dmChatScreen");
+  const avatarEl = document.getElementById("dmHeaderAvatar");
+  const nameEl = document.getElementById("dmHeaderName");
+  
+  if(avatarEl) avatarEl.src = avatar;
+  if(nameEl) nameEl.textContent = name;
+  
+  renderDmConversation();
+  if(dmScreen) dmScreen.classList.add("open");
+}
+
+function closeDirectMessage() {
+  const dmScreen = document.getElementById("dmChatScreen");
+  if(dmScreen) dmScreen.classList.remove("open");
+}
+
+function openDirectMessageFromModal() {
+  const modalName = document.getElementById("modalCreatorName")?.textContent || "Creator";
+  const modalAvatar = document.getElementById("modalCreatorAvatar")?.src || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150";
+  document.getElementById("creatorProfileModal")?.classList.remove("open");
+  openDirectMessage(modalName, modalAvatar);
+}
+
+const mockDmConversations = {
+  "Elena Rostova": [
+    { sender: "incoming", text: "Loved your recent vibe post! ✨" },
+    { sender: "outgoing", text: "Thank you so much Elena! Appreciate it." }
+  ],
+  "Liam Chen": [
+    { sender: "incoming", text: "Let's collaborate on a clip soon." },
+    { sender: "outgoing", text: "Sounds awesome, let's set it up!" }
+  ]
+};
+
+function renderDmConversation() {
+  const container = document.getElementById("dmMessagesListContainer");
+  if(!container) return;
+  container.innerHTML = "";
+  
+  const history = mockDmConversations[activeDmUser.name] || [
+    { sender: "incoming", text: "Hey there! Let's connect on VIBE." }
+  ];
+  
+  history.forEach(msg => {
+    const bubble = document.createElement("div");
+    bubble.className = `dmBubble ${msg.sender}`;
+    bubble.textContent = msg.text;
+    container.appendChild(bubble);
+  });
+  container.scrollTop = container.scrollHeight;
+}
+
+function sendDirectMessage() {
+  const input = document.getElementById("dmInputField");
+  if(!input) return;
+  const text = input.value.trim();
+  if(!text) return;
+  
+  if(!mockDmConversations[activeDmUser.name]) {
+    mockDmConversations[activeDmUser.name] = [];
+  }
+  
+  mockDmConversations[activeDmUser.name].push({ sender: "outgoing", text });
+  input.value = "";
+  renderDmConversation();
+}
+
 function handleToolTap(toolName) {
     try {
         if (toolName === "Music") {
@@ -1191,7 +1318,7 @@ function handleToolTap(toolName) {
         } else if (toolName === "Effects") {
             alert("✨ Effects\nChoose an effect for your video.");
         } else if (toolName === "Mention") {
-            alert("@ Mention\nMention another VIBE user.");
+            alert("@ Mention\Mention another VIBE user.");
         } else {
             console.log("Opening " + toolName);
         }
@@ -1398,10 +1525,6 @@ vibeShutter?.addEventListener('click', async () => {
     alert("Camera permission is required.");
     console.error(error);
   }
-
-  if (typeof startRecording === 'function') {
-    startRecording();
-  }
 });
 
 vibeStop?.addEventListener('click', () => {
@@ -1414,10 +1537,6 @@ vibeStop?.addEventListener('click', () => {
     recorder.stop();
   }
   showToast("Recording stopped!");
-
-  if (typeof stopRecording === 'function') {
-    stopRecording();
-  }
 });
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1487,6 +1606,7 @@ function renderFeed() {
             <img src="${reel.avatar}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;cursor:pointer;" onclick="openCreatorProfile('${reel.author}', '${reel.handle}', '${reel.avatar}')">
             <b style="color: #fff; cursor: pointer;" onclick="openCreatorProfile('${reel.author}', '${reel.handle}', '${reel.avatar}')">${reel.author}</b>
             <button class="follow" onclick="toggleFollow(this)">Follow</button>
+            <button class="message-btn" onclick="openDirectMessage('${reel.author}', '${reel.avatar}')">Message</button>
           </div>
           
           <div class="caption">${formatHashtags(reel.caption)}</div>
