@@ -196,7 +196,7 @@
       transform: translate(-50%, -50%);
     }
 
-    /* Reel Overlay UI (Author info & actions) */
+    /* Reel Overlay UI */
     .overlay {
       position: absolute;
       bottom: 0; left: 0; width: 100%;
@@ -615,7 +615,6 @@
 
   <!-- Advanced Media Editor Screen -->
   <section id="editorScreen" class="modalScreen">
-    <!-- Top Bar Combined -->
     <div class="screenHead">
       <button id="close-btn" class="close" id="closeEditorBtn" onclick="document.getElementById('editorScreen').classList.remove('open')">✕</button>
       <span>VIBE Studio Editor</span>
@@ -626,9 +625,7 @@
       <!-- Media content rendered dynamically -->
     </div>
 
-    <!-- Bottom Toolbar Combined -->
     <div class="toolbar editor-toolbar">
-      <!-- Music button with class 'music-btn' included -->
       <button class="tool-btn editor-tool-btn music-btn" id="toolMusicBtn" data-tool="music" onclick="handleToolTap('Music')"><i class="fa-solid fa-music"></i><span>🎵 Music</span></button>
       <button class="tool-btn editor-tool-btn" id="toolStickersBtn" data-tool="stickers" onclick="handleToolTap('Stickers')"><i class="fa-solid fa-face-smile"></i><span>😊 Stickers</span></button>
       <button class="tool-btn editor-tool-btn" id="toolCustomTextBtn" data-tool="text" onclick="handleToolTap('Text')"><i class="fa-solid fa-font"></i><span>A Text</span></button>
@@ -896,12 +893,37 @@
       <span style="width:24px"></span>
     </div>
     <div class="settingsList">
-      <div class="settingsRow"><span>Change Password</span><span style="color:var(--muted)">›</span></div>
-      <div class="settingsRow"><span>Two-Factor Authentication</span><span style="color:var(--muted)">On ›</span></div>
-      <div class="settingsRow"><span>Registered Email</span><span style="color:var(--muted)">creator@vibe.app</span></div>
-      <div class="settingsRow" style="color:var(--pink);"><span>Delete Account</span><span>›</span></div>
+      <div class="settingsRow" onclick="openSecurity('password')">
+        <div class="settingsRowLeft"><i class="fa-solid fa-key"></i><span>Change Password</span></div>
+        <span style="color:var(--muted)">›</span>
+      </div>
+      <div class="settingsRow" onclick="openSecurity('twofa')">
+        <div class="settingsRowLeft"><i class="fa-solid fa-shield-halved"></i><span>Two-Factor Authentication</span></div>
+        <span style="color:var(--muted)">On ›</span>
+      </div>
+      <div class="settingsRow">
+        <div class="settingsRowLeft"><i class="fa-solid fa-envelope"></i><span>Registered Email</span></div>
+        <span style="color:var(--muted)">creator@vibe.app</span>
+      </div>
+      <div class="settingsRow" onclick="openSecurity('delete')" style="color:var(--pink);">
+        <div class="settingsRowLeft"><i class="fa-solid fa-user-xmark" style="color:var(--pink);"></i><span>Delete Account</span></div>
+        <span>›</span>
+      </div>
     </div>
   </section>
+
+  <!-- Embedded Security Sub-Modal / Drawer -->
+  <div id="securitySubModal" style="display:none; position:absolute; bottom:0; left:0; width:100%; background:var(--surface); border-top:1px solid var(--border); border-radius:20px 20px 0 0; padding:20px; z-index:90;">
+    <h3 id="securityTitle" style="font-size:16px; font-weight:700; margin-bottom:6px;"></h3>
+    <p id="securityText" style="font-size:13px; color:var(--muted); margin-bottom:16px;"></p>
+
+    <input id="securityInput" type="password" placeholder="Enter password" style="width:100%; background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:12px; color:var(--text); font-size:14px; margin-bottom:16px; outline:none;">
+
+    <div style="display:flex; gap:10px;">
+      <button onclick="closeSecuritySub()" style="flex:1; padding:10px; background:var(--bg); border:1px solid var(--border); border-radius:10px; color:var(--text); font-weight:600; cursor:pointer;">Cancel</button>
+      <button id="securityAction" onclick="securityAction()" style="flex:1; padding:10px; background:var(--pink); border:none; border-radius:10px; color:#fff; font-weight:600; cursor:pointer;">Continue</button>
+    </div>
+  </div>
 
   <!-- Sub-Panel: Video Playback -->
   <section id="videoPlaybackSubPanel" class="modalScreen" style="z-index: 65;">
@@ -918,7 +940,7 @@
     </div>
   </section>
 
-  <!-- Creator Profile Modal (When clicking another creator) -->
+  <!-- Creator Profile Modal -->
   <section id="creatorProfileModal" class="modalScreen" style="z-index: 70;">
     <div class="screenHead">
       <button class="close" onclick="closeCreatorProfileModal()">✕</button>
@@ -1069,7 +1091,6 @@ let profile = {
   avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150"
 };
 
-// Load profile from localStorage if available
 try {
   const savedProfile = localStorage.getItem("vibeProfile");
   if (savedProfile) {
@@ -1149,34 +1170,22 @@ function handleToolTap(toolName) {
     try {
         if (toolName === "Music") {
             alert("🎵 Music\nChoose a sound for your video.");
-        }
-
-        else if (toolName === "Stickers") {
+        } else if (toolName === "Stickers") {
             alert("😊 Stickers\nChoose a sticker to add to your video.");
-        }
-
-        else if (toolName === "Text") {
+        } else if (toolName === "Text") {
             alert("Aa Text\nAdd text to your video.");
-        }
-
-        else if (toolName === "Effects") {
+        } else if (toolName === "Effects") {
             alert("✨ Effects\nChoose an effect for your video.");
-        }
-
-        else if (toolName === "Mention") {
-            alert("@ Mention\nMention another VIBE user.");
-        }
-
-        else {
+        } else if (toolName === "Mention") {
+            alert("@ Mention\Mention another VIBE user.");
+        } else {
             console.log("Opening " + toolName);
         }
-
     } catch (err) {
         console.warn("Tool interaction error:", err);
     }
 }
 
-// Main Application State & Mock Feed Data
 const feedData = [
   {
     id: 1,
@@ -1259,18 +1268,13 @@ let activeReelIndex = 0;
 let isMuted = false;
 let currentSound = { title: 'Original Audio', artist: 'Creator VIBE' };
 
-// Integrated playOnlyVisibleVideo implementation
 function playOnlyVisibleVideo() {
   const videos = document.querySelectorAll("video");
-
   let visibleVideo = null;
 
   videos.forEach(video => {
     const rect = video.getBoundingClientRect();
-
-    const isVisible =
-      rect.top >= 0 &&
-      rect.bottom <= window.innerHeight;
+    const isVisible = rect.top >= 0 && rect.bottom <= window.innerHeight;
 
     if (isVisible && !visibleVideo) {
       visibleVideo = video;
@@ -1286,26 +1290,17 @@ function playOnlyVisibleVideo() {
   }
 }
 
-// When scrolling
-window.addEventListener("scroll", playOnlyVisibleVideo, {
-  passive: true
-});
-
-// When the feed changes
+window.addEventListener("scroll", playOnlyVisibleVideo, { passive: true });
 setTimeout(playOnlyVisibleVideo, 500);
 
-// When returning to VIBE
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) {
-    document.querySelectorAll("video").forEach(video => {
-      video.pause();
-    });
+    document.querySelectorAll("video").forEach(video => video.pause());
   } else {
     playOnlyVisibleVideo();
   }
 });
 
-// Integrated Video Recording & Hold-to-Record Logic
 let recorder;
 let stream;
 let chunks = [];
@@ -1321,10 +1316,7 @@ const videoElement = document.getElementById("cameraPreview");
 
 async function initCamera() {
   try {
-    stream = await navigator.mediaDevices.getUserMedia({
-      video: true,
-      audio: true
-    });
+    stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
     if (videoElement) {
       videoElement.srcObject = stream;
     }
@@ -1333,7 +1325,6 @@ async function initCamera() {
   }
 }
 
-// Function to start recording after holding for 2 seconds
 function startPress(e) {
   e.preventDefault();
   if (isRecording) return;
@@ -1344,10 +1335,7 @@ function startPress(e) {
   holdTimer = setTimeout(async () => {
     try {
       if (!stream) {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: true
-        });
+        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         if (videoElement) videoElement.srcObject = stream;
       }
 
@@ -1361,10 +1349,7 @@ function startPress(e) {
       };
 
       recorder.onstop = function () {
-        const blob = new Blob(chunks, {
-          type: "video/webm"
-        });
-
+        const blob = new Blob(chunks, { type: "video/webm" });
         window.vibeRecordedVideo = blob;
         window.vibeRecordedVideoURL = URL.createObjectURL(blob);
 
@@ -1391,10 +1376,7 @@ function startPress(e) {
         const seconds = elapsed % 60;
 
         if (timerDisplay) {
-          timerDisplay.textContent =
-            String(minutes).padStart(2, "0") +
-            ":" +
-            String(seconds).padStart(2, "0");
+          timerDisplay.textContent = String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
         }
 
         if (elapsed >= 600) {
@@ -1406,10 +1388,9 @@ function startPress(e) {
       alert("Camera permission is required.");
       console.error(error);
     }
-  }, 2000); // 2000 milliseconds = 2 seconds
+  }, 2000);
 }
 
-// Function to cancel or stop if released early
 function endPress(e) {
   e.preventDefault();
   clearTimeout(holdTimer);
@@ -1423,7 +1404,6 @@ function endPress(e) {
   }
 }
 
-// Attach listeners for both Mouse (Desktop) and Touch (Mobile) devices
 if (holdButton) {
   holdButton.addEventListener('mousedown', startPress);
   holdButton.addEventListener('mouseup', endPress);
@@ -1446,7 +1426,6 @@ document.addEventListener('DOMContentLoaded', () => {
   renderUserProfilePosts();
   renderProfileUI();
 
-  // Integrated music button event listener
   const musicBtn = document.querySelector('.music-btn');
   if (musicBtn) {
     musicBtn.addEventListener('click', () => {
@@ -1464,7 +1443,6 @@ function showToast(message) {
   }, 2500);
 }
 
-// Render Feed function incorporating multi-media carousel and video reels
 function renderFeed() {
   const feedContainer = document.getElementById('feed');
   feedContainer.innerHTML = '';
@@ -1504,10 +1482,8 @@ function renderFeed() {
       
       <div class="overlay">
         <div class="info">
-          <!-- Added User Custom HTML Block -->
           <div style="display:flex;align-items:center;gap:10px; margin-bottom: 8px;">
-            <img src="${reel.avatar}"
-                 style="width:38px;height:38px;border-radius:50%;object-fit:cover;cursor:pointer;" onclick="openCreatorProfile('${reel.author}', '${reel.handle}', '${reel.avatar}')">
+            <img src="${reel.avatar}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;cursor:pointer;" onclick="openCreatorProfile('${reel.author}', '${reel.handle}', '${reel.avatar}')">
             <b style="color: #fff; cursor: pointer;" onclick="openCreatorProfile('${reel.author}', '${reel.handle}', '${reel.avatar}')">${reel.author}</b>
             <button style="background:#fe2c55;color:white;border:0;border-radius:5px;padding:5px 12px;cursor:pointer;" onclick="toggleFollowBtn(this)">
               Follow
@@ -2140,292 +2116,53 @@ function publishEditorMedia() {
   showToast('Successfully posted to VIBE! 🎉');
 }
 
-function renderDiscoverResults(query = '') {
-  const container = document.getElementById('discoverResultsContainer');
-  container.innerHTML = '';
-
-  if (!query) {
-    container.innerHTML = `
-      <div class="discoverSectionTitle">Trending Hashtags</div>
-      <div class="hashtagSearchRow" onclick="openHashtagModal('#VIBE')">
-        <div style="display:flex; align-items:center;">
-          <div class="hashtagSymbol">#</div>
-          <div class="hashtagDetails"><div class="hashtagName">#VIBE</div><div class="hashtagCount">1.4M views</div></div>
-        </div>
-        <span style="color:var(--muted)">›</span>
-      </div>
-      <div class="hashtagSearchRow" onclick="openHashtagModal('#Aesthetic')">
-        <div style="display:flex; align-items:center;">
-          <div class="hashtagSymbol">#</div>
-          <div class="hashtagDetails"><div class="hashtagName">#Aesthetic</div><div class="hashtagCount">850K views</div></div>
-        </div>
-        <span style="color:var(--muted)">›</span>
-      </div>
-
-      <div class="discoverSectionTitle" style="margin-top:10px;">Suggested Creators</div>
-      <div class="creatorSearchRow" onclick="openCreatorProfile('Elena Rostova', '@elena_rostova', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150')">
-        <div class="creatorSearchInfo">
-          <img class="creatorSearchAvatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" alt="Avatar">
-          <div class="creatorSearchMeta"><div class="name">Elena Rostova</div><div class="handle">@elena_rostova • 24.5K followers</div></div>
-        </div>
-        <button class="creatorFollowBtn" onclick="event.stopPropagation(); toggleFollowBtn(this)">Follow</button>
-      </div>
-
-      <div class="discoverSectionTitle" style="margin-top:10px;">Trending Posts</div>
-      <div class="discoverGrid">
-        ${feedData.map((post, idx) => `
-          <div class="discoverGridItem" onclick="playSearchResultPost(${idx})">
-            ${post.type === 'carousel' ? `<img src="${post.items[0].url}" alt="Post">` : `<video src="${post.src}"></video>`}
-          </div>
-        `).join('')}
-      </div>
-    `;
-    return;
-  }
-
-  const lowerQ = query.toLowerCase();
-  const matchedPosts = feedData.filter(p => p.caption.toLowerCase().includes(lowerQ) || p.author.toLowerCase().includes(lowerQ));
-
-  container.innerHTML = `
-    <div class="discoverSectionTitle">Search Results for "${query}"</div>
-    <div class="discoverGrid">
-      ${matchedPosts.length > 0 ? matchedPosts.map((post, idx) => `
-        <div class="discoverGridItem" onclick="playSearchResultPost(${idx})">
-          ${post.type === 'carousel' ? `<img src="${post.items[0].url}" alt="Post">` : `<video src="${post.src}"></video>`}
-        </div>
-      `).join('') : '<div style="color:var(--muted); font-size:13px; padding:20px;">No matching posts found.</div>'}
-    </div>
-  `;
-}
-
-function toggleFollowBtn(btn) {
-  if (btn.classList.contains('following') || btn.style.background === 'transparent') {
-    btn.classList.remove('following');
-    btn.textContent = 'Follow';
-    btn.style.background = '#fe2c55';
-    btn.style.color = '#fff';
-    showToast('Unfollowed creator');
-  } else {
-    btn.classList.add('following');
-    btn.textContent = 'Following';
-    btn.style.background = 'transparent';
-    btn.style.border = '1px solid rgba(255,255,255,0.3)';
-    btn.style.color = '#fff';
-    showToast('Following creator! 🎉');
-  }
-}
-
-function toggleModalCreatorFollow() {
-  const btn = document.getElementById('modalCreatorFollowBtn');
-  if (btn.classList.contains('following')) {
-    btn.classList.remove('following');
-    btn.textContent = 'Follow';
-    btn.style.background = 'var(--pink)';
-    btn.style.color = '#fff';
-    showToast('Unfollowed creator');
-  } else {
-    btn.classList.add('following');
-    btn.textContent = 'Following';
-    btn.style.background = 'transparent';
-    btn.style.color = 'var(--muted)';
-    showToast('Following creator! 🎉');
-  }
-}
-
-function openCreatorProfile(name, handle, avatar) {
-  document.getElementById('modalCreatorHeaderName').textContent = name;
-  document.getElementById('modalCreatorName').textContent = name;
-  document.getElementById('modalCreatorHandle').textContent = handle;
-  document.getElementById('modalCreatorAvatar').src = avatar;
-  
-  const grid = document.getElementById('modalCreatorPostsGrid');
-  grid.innerHTML = feedData.map(post => `
-    <div class="userPostThumb">
-      ${post.type === 'carousel' ? `<img src="${post.items[0].url}" alt="Post">` : `<video src="${post.src}"></video>`}
-    </div>
-  `).join('');
-
-  document.getElementById('creatorProfileModal').classList.add('open');
-}
-
-function closeCreatorProfileModal() {
-  document.getElementById('creatorProfileModal').classList.remove('open');
-}
-
-function openHashtagModal(tagName) {
-  document.getElementById('hashtagModalTitle').textContent = tagName;
-  document.getElementById('hashtagModalName').textContent = tagName;
-  
-  const grid = document.getElementById('hashtagModalPostsGrid');
-  grid.innerHTML = feedData.map(post => `
-    <div class="userPostThumb">
-      ${post.type === 'carousel' ? `<img src="${post.items[0].url}" alt="Post">` : `<video src="${post.src}"></video>`}
-    </div>
-  `).join('');
-
-  document.getElementById('hashtagModal').classList.add('open');
-}
-
-function closeHashtagModal() {
-  document.getElementById('hashtagModal').classList.remove('open');
-}
-
-function playSearchResultPost(index) {
-  document.getElementById('discover').classList.remove('open');
-  document.getElementById('navHomeBtn').click();
-  const reels = document.querySelectorAll('.reel');
-  if (reels[index]) {
-    reels[index].scrollIntoView({ behavior: 'smooth' });
-  }
-}
-
-function renderInboxContent(tabType) {
-  const container = document.getElementById('inboxContentContainer');
-  if (tabType === 'messages') {
-    container.innerHTML = `
-      <div class="messageItem">
-        <img class="messageAvatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" alt="Avatar">
-        <div class="messageContent">
-          <div class="messageName">Elena Rostova</div>
-          <div class="messageSnippet">Loved your recent vibe post! ✨</div>
-        </div>
-      </div>
-      <div class="messageItem">
-        <img class="messageAvatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150" alt="Avatar">
-        <div class="messageContent">
-          <div class="messageName">Liam Chen</div>
-          <div class="messageSnippet">Let's collaborate on a clip soon.</div>
-        </div>
-      </div>
-    `;
-  } else if (tabType === 'requests') {
-    container.innerHTML = `
-      <div style="padding: 24px; text-align: center; color: var(--muted); font-size: 13px;">
-        No pending message requests.
-      </div>
-    `;
-  } else {
-    container.innerHTML = `
-      <div class="messageItem">
-        <div style="width:40px; height:40px; background:var(--pink); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff;"><i class="fa-solid fa-heart"></i></div>
-        <div class="messageContent">
-          <div class="messageName">Activity Notification</div>
-          <div class="messageSnippet">Someone liked your video.</div>
-        </div>
-      </div>
-    `;
-  }
-}
-
-function renderUserProfilePosts(tabType = 'posts') {
-  const grid = document.getElementById('userPostsGrid');
-  if (!grid) return;
-  
-  if (tabType === 'posts') {
-    grid.innerHTML = currentUserPosts.map(post => `
-      <div class="userPostThumb">
-        ${post.type === 'carousel' ? `<img src="${post.src}" alt="Post">` : `<video src="${post.src}"></video>`}
-        <div class="profile-view-badge">▶ ${post.views}</div>
-      </div>
-    `).join('');
-  } else if (tabType === 'saved') {
-    grid.innerHTML = `
-      <div style="grid-column: span 3; text-align: center; padding: 40px; color: var(--muted); font-size: 13px;">
-        Your saved posts
-      </div>
-    `;
-  } else {
-    grid.innerHTML = `
-      <div style="grid-column: span 3; text-align: center; padding: 40px; color: var(--muted); font-size: 13px;">
-        Tagged posts
-      </div>
-    `;
-  }
-}
-
-function openSettingsScreen() {
-  document.getElementById('settingsScreen').classList.add('open');
-}
-function closeSettingsScreen() {
-  document.getElementById('settingsScreen').classList.remove('open');
-}
-function openPrivateInfoScreen() {
-  document.getElementById('privateInfoScreen').classList.add('open');
-}
-function closePrivateInfoScreen() {
-  document.getElementById('privateInfoScreen').classList.remove('open');
-}
+// Security Management Integration Functions
 function openAccountSettings() {
-  document.getElementById('accountSettingsSubPanel').classList.add('open');
+  const panel = document.getElementById("accountSettingsSubPanel");
+  if(panel) panel.classList.add("open");
 }
-function openReferenceSettings() {
-  showToast('Notification settings opened');
-}
-function openVideoPlaybackSettings() {
-  document.getElementById('videoPlaybackSubPanel').classList.add('open');
-}
-function selectVideoQuality(quality) {
-  document.getElementById('currentQualityLabel').textContent = quality + ' ›';
-  document.getElementById('videoPlaybackSubPanel').classList.remove('open');
-  showToast(`Playback quality set to ${quality}`);
-}
-function toggleDarkThemeSetting() {
-  const checkbox = document.getElementById('darkThemeCheckbox');
-  if (checkbox) {
-    checkbox.checked = !checkbox.checked;
-    handleDarkThemeToggle(checkbox);
+
+function openSecurity(type){
+  const subModal = document.getElementById("securitySubModal");
+  if(subModal) subModal.style.display="block";
+
+  const title=document.getElementById("securityTitle");
+  const text=document.getElementById("securityText");
+  const input=document.getElementById("securityInput");
+
+  if(type==="password"){
+    title.textContent="Change Password";
+    text.textContent="Enter your new password.";
+    input.style.display="block";
+    input.value="";
+  }
+
+  if(type==="twofa"){
+    title.textContent="Two-Factor Authentication";
+    text.textContent="Protect your VIBE account with 2FA.";
+    input.style.display="none";
+  }
+
+  if(type==="delete"){
+    title.textContent="Delete Account";
+    text.textContent="This action cannot be undone.";
+    input.style.display="none";
   }
 }
-function handleDarkThemeToggle(checkbox) {
-  if (checkbox.checked) {
-    document.body.classList.add('light-theme');
-    showToast('Light theme enabled');
-  } else {
-    document.body.classList.remove('light-theme');
-    showToast('Dark theme enabled');
-  }
+
+function securityAction(){
+  showToast("VIBE: Action completed successfully.");
+  closeSecuritySub();
 }
-function openHelpCenter() {
-  document.getElementById('helpCenterSubPanel').classList.add('open');
+
+function closeSecuritySub(){
+  const subModal = document.getElementById("securitySubModal");
+  if(subModal) subModal.style.display="none";
 }
-function openTermsOfService() {
-  document.getElementById('termsOfServiceSubPanel').classList.add('open');
-}
-function closeSubPanel(id) {
-  document.getElementById(id).classList.remove('open');
-}
-function openLogOutModal() {
-  document.getElementById('logoutModal').classList.add('open');
-}
-function closeLogOutModal() {
-  document.getElementById('logoutModal').classList.remove('open');
-}
-function confirmLogOut() {
-  closeLogOutModal();
-  closeSettingsScreen();
-  showToast('Logged out successfully.');
-}
-function openCommentModal(index) {
-  document.getElementById('commentModal').classList.add('open');
-}
-function postComment() {
-  const input = document.getElementById('commentInputField');
-  const val = input.value.trim();
-  if(!val) return;
-  const container = document.getElementById('commentListContainer');
-  const row = document.createElement('div');
-  row.className = 'commentRow';
-  row.innerHTML = `
-    <img class="commentAvatar" src="${profile.avatar}" alt="Avatar">
-    <div class="commentBubble">
-      <div class="commentUser">${profile.username}</div>
-      <div class="commentText">${val}</div>
-    </div>
-  `;
-  container.appendChild(row);
-  container.scrollTop = container.scrollHeight;
-  input.value = '';
-  showToast('Comment posted');
+
+function closeSubPanel(panelId) {
+  const panel = document.getElementById(panelId);
+  if(panel) panel.classList.remove('open');
 }
 </script>
 </body>
