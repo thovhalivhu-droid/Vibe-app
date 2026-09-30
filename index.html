@@ -481,6 +481,11 @@
     .userPostThumb img, .userPostThumb video { width: 100%; height: 100%; object-fit: cover; }
     .profile-view-badge { position: absolute; bottom: 6px; left: 6px; font-size: 11px; font-weight: 600; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
 
+    /* Updated class name: .filter-thumb changed to .filter-thumbnail */
+    .filter-thumbnail {
+      /* Add any desired styling for the filter thumbnail here */
+    }
+
     /* Settings & Sub-Panels */
     .settingsList { padding: 12px 0; overflow-y: auto; flex: 1; }
     .settingsRow { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--border); cursor: pointer; font-size: 14px; font-weight: 500; }
@@ -599,8 +604,15 @@
       <button class="close" id="closeStudio">×</button>
     </div>
     
-    <div class="camera-viewport">
-      <video id="cameraPreview" autoplay playsinline muted></video>
+    <div class="camera-viewport vibe-camera-container">
+      <video
+        id="vibe-camera-preview"
+        autoplay
+        muted
+        playsinline>
+      </video>
+
+      <canvas id="vibe-camera-canvas" style="display:none;"></canvas>
 
       <!-- Live Stream Mode Setup Panel -->
       <div id="liveModePanel" class="live-control-panel hidden">
@@ -694,7 +706,7 @@
       <div style="font-weight:600; font-size:14px; margin-bottom:10px;">Tap to add sticker overlay</div>
       <div style="display:flex; gap:12px; font-size:32px; cursor:pointer;">
         <span onclick="addStickerToCanvas('🔥')">🔥</span>
-        <span onclick="addStickerToCanvas('❤️️')">❤</span>
+        <span onclick="addStickerToCanvas('❤')">❤</span>
         <span onclick="addStickerToCanvas('✨')">✨</span>
         <span onclick="addStickerToCanvas('🚀')">🚀</span>
         <span onclick="addStickerToCanvas('💯')">💯</span>
@@ -1448,7 +1460,7 @@ let chunks = [];
 let timer;
 let startTime;
 
-const videoElement = document.getElementById("cameraPreview");
+const videoElement = document.getElementById("vibe-camera-preview");
 
 async function initCamera() {
   try {
@@ -2205,299 +2217,6 @@ function makeElementDraggable(el) {
 function publishEditorMedia() {
   const itemUrl = currentEditorItems[0] ? currentEditorItems[0].url : 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800';
   const itemType = currentEditorItems[0] ? currentEditorItems[0].type : 'image';
-  
-  currentUserPosts.unshift({
-    id: Date.now(),
-    type: itemType,
-    src: itemUrl,
-    caption: 'New creative upload via VIBE Studio ✨ #vibe #creator',
-    likes: '1',
-    views: '15'
-  });
-  
-  document.getElementById('editorScreen').classList.remove('open');
-  renderUserProfilePosts();
-  showToast('Successfully published post! 🎉');
-  document.getElementById('navHomeBtn').click();
-}
-
-function renderUserProfilePosts(tab = 'posts') {
-  const grid = document.getElementById('userPostsGrid');
-  if (!grid) return;
-  grid.innerHTML = '';
-
-  let list = currentUserPosts;
-  if (tab === 'saved') {
-    list = [currentUserPosts[0]];
-  } else if (tab === 'tagged') {
-    list = [];
-  }
-
-  if (list.length === 0) {
-    grid.innerHTML = `<div style="grid-column: span 3; text-align: center; padding: 40px; color: var(--muted); font-size: 13px;">No items to display here yet.</div>`;
-    return;
-  }
-
-  list.forEach(post => {
-    const thumb = document.createElement('div');
-    thumb.className = 'userPostThumb';
-    if (post.type === 'video') {
-      thumb.innerHTML = `
-        <video src="${post.src}" muted playsinline></video>
-        <div class="profile-view-badge"><i class="fa-solid fa-play"></i> ${post.views}</div>
-      `;
-    } else {
-      thumb.innerHTML = `
-        <img src="${post.src}" alt="Post">
-        <div class="profile-view-badge"><i class="fa-solid fa-heart"></i> ${post.likes}</div>
-      `;
-    }
-    grid.appendChild(thumb);
-  });
-}
-
-function openSettingsScreen() {
-  document.getElementById('settingsScreen').classList.add('open');
-}
-function closeSettingsScreen() {
-  document.getElementById('settingsScreen').classList.remove('open');
-}
-function openPrivateInfoScreen() {
-  document.getElementById('privateInfoScreen').classList.add('open');
-}
-function closePrivateInfoScreen() {
-  document.getElementById('privateInfoScreen').classList.remove('open');
-}
-function openVideoPlaybackSettings() {
-  document.getElementById('videoPlaybackSubPanel').classList.add('open');
-}
-function selectVideoQuality(qualityStr) {
-  document.getElementById('currentQualityLabel').textContent = qualityStr.split(' ')[0] + ' ›';
-  document.getElementById('videoPlaybackSubPanel').classList.remove('open');
-  showToast(`Playback quality set to ${qualityStr}`);
-}
-function openHelpCenter() {
-  document.getElementById('helpCenterSubPanel').classList.add('open');
-}
-function openTermsOfService() {
-  document.getElementById('termsOfServiceSubPanel').classList.add('open');
-}
-function closeSubPanel(panelId) {
-  document.getElementById(panelId).classList.remove('open');
-}
-function openAccountSettings() {
-  document.getElementById('accountSettingsSubPanel').classList.add('open');
-}
-let currentSecurityMode = '';
-function openSecurity(mode) {
-  currentSecurityMode = mode;
-  const modal = document.getElementById('securitySubModal');
-  const title = document.getElementById('securityTitle');
-  const text = document.getElementById('securityText');
-  
-  if (mode === 'password') {
-    title.textContent = 'Change Account Password';
-    text.textContent = 'Enter your current password to proceed with setting a new secure passphrase.';
-  } else if (mode === 'twofa') {
-    title.textContent = 'Two-Factor Authentication Settings';
-    text.textContent = 'Enter your password to modify 2FA security tokens.';
-  } else if (mode === 'delete') {
-    title.textContent = 'Permanently Delete Account';
-    text.textContent = 'Warning: This action is irreversible. Enter your password to confirm deletion.';
-  }
-  
-  modal.style.display = 'block';
-}
-function closeSecuritySub() {
-  document.getElementById('securitySubModal').style.display = 'none';
-  document.getElementById('securityInput').value = '';
-}
-function securityAction() {
-  const val = document.getElementById('securityInput').value.trim();
-  if (!val) {
-    showToast('Please enter your password.');
-    return;
-  }
-  closeSecuritySub();
-  if (currentSecurityMode === 'delete') {
-    showToast('Account scheduled for deletion.');
-  } else {
-    showToast('Security settings updated successfully!');
-  }
-}
-function openLogOutModal() {
-  document.getElementById('logoutModal').classList.add('open');
-}
-function closeLogOutModal() {
-  document.getElementById('logoutModal').classList.remove('open');
-}
-function confirmLogOut() {
-  closeLogOutModal();
-  document.getElementById('settingsScreen').classList.remove('open');
-  showToast('Logged out of VIBE securely.');
-}
-function toggleDarkThemeSetting() {
-  const cb = document.getElementById('darkThemeCheckbox');
-  cb.checked = !cb.checked;
-  handleDarkThemeToggle(cb);
-}
-function handleDarkThemeToggle(checkbox) {
-  if (checkbox.checked) {
-    document.documentElement.classList.add('light-theme');
-    showToast('Switched to Light Theme ☀️');
-  } else {
-    document.documentElement.classList.remove('light-theme');
-    showToast('Switched to Dark Theme 🌙');
-  }
-}
-
-function openCreatorProfile(name, handle, avatar) {
-  document.getElementById('modalCreatorHeaderName').textContent = name;
-  document.getElementById('modalCreatorName').textContent = name;
-  document.getElementById('modalCreatorHandle').textContent = handle;
-  document.getElementById('modalCreatorAvatar').src = avatar;
-  document.getElementById('creatorProfileModal').classList.add('open');
-  
-  const grid = document.getElementById('modalCreatorPostsGrid');
-  grid.innerHTML = `
-    <div class="userPostThumb"><img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800" alt="Post"></div>
-    <div class="userPostThumb"><img src="https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?w=800" alt="Post"></div>
-    <div class="userPostThumb"><img src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800" alt="Post"></div>
-  `;
-}
-function closeCreatorProfileModal() {
-  document.getElementById('creatorProfileModal').classList.remove('open');
-}
-function toggleModalCreatorFollow() {
-  const btn = document.getElementById('modalCreatorFollowBtn');
-  if (btn.textContent === 'Follow') {
-    btn.textContent = 'Following';
-    btn.style.background = 'transparent';
-    btn.style.border = '1px solid var(--border)';
-    btn.style.color = 'var(--text)';
-    showToast('Following creator');
-  } else {
-    btn.textContent = 'Follow';
-    btn.style.background = 'var(--pink)';
-    btn.style.border = 'none';
-    btn.style.color = '#fff';
-    showToast('Unfollowed creator');
-  }
-}
-
-function openCommentModal(index) {
-  document.getElementById('commentModal').classList.add('open');
-}
-function postComment() {
-  const input = document.getElementById('commentInputField');
-  const text = input.value.trim();
-  if (!text) return;
-  
-  const container = document.getElementById('commentListContainer');
-  const row = document.createElement('div');
-  row.className = 'commentRow';
-  row.innerHTML = `
-    <img class="commentAvatar" src="${profile.avatar}" alt="Avatar">
-    <div class="commentBubble">
-      <div class="commentUser">@${profile.username}</div>
-      <div class="commentText">${text}</div>
-    </div>
-  `;
-  container.appendChild(row);
-  input.value = '';
-  container.scrollTop = container.scrollHeight;
-  showToast('Comment posted!');
-}
-
-function renderDiscoverResults(query = '', filter = 'all') {
-  const container = document.getElementById('discoverResultsContainer');
-  if (!container) return;
-  
-  if (query === '' && filter === 'all') {
-    container.innerHTML = `
-      <div class="discoverSectionTitle">Trending Hashtags</div>
-      <div class="hashtagSearchRow" onclick="openHashtagModal('#vibe', '1.4M views')">
-        <div style="display:flex; align-items:center;">
-          <div class="hashtagSymbol">#</div>
-          <div class="hashtagDetails"><div class="hashtagName">#vibe</div><div class="hashtagCount">1.4M views</div></div>
-        </div>
-        <span style="color:var(--muted)">›</span>
-      </div>
-      <div class="hashtagSearchRow" onclick="openHashtagModal('#citylife', '840K views')">
-        <div style="display:flex; align-items:center;">
-          <div class="hashtagSymbol">#</div>
-          <div class="hashtagDetails"><div class="hashtagName">#citylife</div><div class="hashtagCount">840K views</div></div>
-        </div>
-        <span style="color:var(--muted)">›</span>
-      </div>
-      <div class="discoverSectionTitle">Featured Creators</div>
-      <div class="creatorSearchRow">
-        <div class="creatorSearchInfo" onclick="openCreatorProfile('Elena Rostova', '@elena_rostova', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150')">
-          <img class="creatorSearchAvatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" alt="Avatar">
-          <div class="creatorSearchMeta"><div class="name">Elena Rostova</div><div class="handle">@elena_rostova</div></div>
-        </div>
-        <button class="creatorFollowBtn" onclick="toggleFollow(this)">Follow</button>
-      </div>
-      <div class="discoverSectionTitle">Trending Feed</div>
-      <div class="discoverGrid">
-        <div class="discoverGridItem"><img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=800" alt="Grid Item"></div>
-        <div class="discoverGridItem"><img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800" alt="Grid Item"></div>
-        <div class="discoverGridItem"><img src="https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?w=800" alt="Grid Item"></div>
-      </div>
-    `;
-  } else {
-    container.innerHTML = `
-      <div class="discoverSectionTitle">Search Results for "${query || filter}"</div>
-      <div class="discoverGrid">
-        <div class="discoverGridItem"><img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=800" alt="Result"></div>
-        <div class="discoverGridItem"><img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800" alt="Result"></div>
-      </div>
-    `;
-  }
-}
-renderDiscoverResults();
-
-function openHashtagModal(tagName, viewsCount) {
-  document.getElementById('hashtagModalTitle').textContent = tagName;
-  document.getElementById('hashtagModalName').textContent = tagName;
-  document.getElementById('hashtagModalViews').textContent = viewsCount;
-  document.getElementById('hashtagModal').classList.add('open');
-  
-  const grid = document.getElementById('hashtagModalPostsGrid');
-  grid.innerHTML = `
-    <div class="userPostThumb"><img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=800" alt="Tag Post"></div>
-    <div class="userPostThumb"><img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800" alt="Tag Post"></div>
-  `;
-}
-function closeHashtagModal() {
-  document.getElementById('hashtagModal').classList.remove('open');
-}
-
-function renderInboxContent(tabName) {
-  const container = document.getElementById('inboxContentContainer');
-  if (!container) return;
-  if (tabName === 'messages') {
-    container.innerHTML = `
-      <div class="messageItem" onclick="openDirectMessage('Elena Rostova', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150')">
-        <img class="messageAvatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" alt="Avatar">
-        <div class="messageContent">
-          <div class="messageName">Elena Rostova</div>
-          <div class="messageSnippet">Loved your recent vibe post! ✨</div>
-        </div>
-      </div>
-    `;
-  } else if (tabName === 'requests') {
-    container.innerHTML = `<div style="padding:40px; text-align:center; color:var(--muted); font-size:13px;">No pending message requests.</div>`;
-  } else {
-    container.innerHTML = `
-      <div class="messageItem">
-        <div class="messageContent">
-          <div class="messageName">System Notification</div>
-          <div class="messageSnippet">Your video reached 1,000 views! 🚀</div>
-        </div>
-      </div>
-    `;
-  }
 }
 </script>
 </body>
