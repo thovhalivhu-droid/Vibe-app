@@ -1082,25 +1082,6 @@
 </div>
 
 <script>
-// Integrated toggleCommentLike function
-window.toggleCommentLike = function (btn) {
-  const countSpan = btn.querySelector('.like-count');
-  const heartSpan = btn.querySelector('span:first-child');
-
-  let count = parseInt(countSpan.textContent, 10) || 0;
-  const isLiked = btn.classList.toggle('liked');
-
-  if (isLiked) {
-    heartSpan.textContent = '❤️';
-    count++;
-  } else {
-    heartSpan.textContent = '🤍';
-    count = Math.max(0, count - 1);
-  }
-
-  countSpan.textContent = count;
-};
-
 // Global Profile State
 let profile = {
   name: "Creator VIBE",
