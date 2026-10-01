@@ -617,7 +617,7 @@
           <div class="liveChatMsg"><span class="liveChatUser">System:</span>Welcome to your live broadcast!</div>
         </div>
         <div id="liveLikesContainer" style="position:relative; height:40px;">
-          <button id="liveTapLikeBtn" style="position:absolute; right:0; background:rgba(255,42,95,0.8); border:none; border-radius:20px; padding:6px 14px; color:#fff; font-weight:600; cursor:pointer;">❤️️ Like</button>
+          <button id="liveTapLikeBtn" style="position:absolute; right:0; background:rgba(255,42,95,0.8); border:none; border-radius:20px; padding:6px 14px; color:#fff; font-weight:600; cursor:pointer;">❤ Like</button>
           <span id="liveHeartCountBadge" style="position:absolute; right:85px; top:8px; font-size:12px; font-weight:bold; color:#fff;">❤ 0</span>
         </div>
         <div style="display:flex; gap:8px; margin-top:4px;">
@@ -2159,20 +2159,23 @@ function selectEditorMusic(title, artist, index) {
       btn.textContent = 'Select';
     }
   });
-  
-  const targetRow = document.getElementById(`track-row-${index}`);
-  if (targetRow) {
-    targetRow.classList.add('active');
-    const btn = targetRow.querySelector('.useSoundBtn');
+
+  const row = document.getElementById(`track-row-${index}`);
+  if (row) {
+    row.classList.add('active');
+    const btn = row.querySelector('.useSoundBtn');
     if (btn) {
       btn.classList.add('selected');
       btn.textContent = 'Selected';
     }
   }
-  
-  const titleEl = document.getElementById('drawerSelectedSongTitle');
-  if (titleEl) titleEl.textContent = title;
-  
+
+  currentSound = { title, artist };
+  const songTitleEl = document.getElementById('drawerSelectedSongTitle');
+  if (songTitleEl) songTitleEl.textContent = title;
+  const songArtistEl = document.getElementById('drawerSelectedSongArtist');
+  if (songArtistEl) songArtistEl.textContent = artist;
+
   showToast(`Sound track updated: ${title}`);
 }
 
@@ -2182,9 +2185,8 @@ function addStickerToCanvas(emoji) {
   const el = document.createElement('div');
   el.className = 'editorOverlayElement';
   el.textContent = emoji;
-  el.style.left = '50%';
+  el.style.left = '40%';
   el.style.top = '40%';
-  el.style.transform = 'translate(-50%, -50%)';
   makeElementDraggable(el);
   layer.appendChild(el);
   showToast('Sticker added');
@@ -2192,31 +2194,34 @@ function addStickerToCanvas(emoji) {
 
 function commitEditorText() {
   const input = document.getElementById('editorTextInputField');
-  if (!input || !input.value.trim()) return;
-  const text = input.value.trim();
-  
+  if (!input) return;
+  const val = input.value.trim();
+  if (!val) return;
+
   const layer = document.getElementById('editorOverlaysLayer');
   if (!layer) return;
   const el = document.createElement('div');
   el.className = 'editorOverlayElement text-element';
-  el.textContent = text;
-  el.style.left = '50%';
+  el.textContent = val;
+  el.style.left = '25%';
   el.style.top = '50%';
-  el.style.transform = 'translate(-50%, -50%)';
   makeElementDraggable(el);
   layer.appendChild(el);
-  
+
   input.value = '';
-  toggleEditorDrawer('');
-  showToast('Text overlay added');
+  document.getElementById('editorTextDrawer')?.classList.remove('open');
+  showToast('Text added');
 }
 
-function applyEditorFilter(filterStyle, chipBtn) {
+function applyEditorFilter(filterStyle, chipEl) {
   document.querySelectorAll('.editorFilterChip').forEach(c => c.classList.remove('active'));
-  chipBtn.classList.add('active');
+  if (chipEl) chipEl.classList.add('active');
+
   const container = document.getElementById('editorCanvasContainer');
-  const media = container.querySelector('img, video');
-  if (media) media.style.filter = filterStyle;
+  const mediaEl = container?.querySelector('video, img');
+  if (mediaEl) {
+    mediaEl.style.filter = filterStyle;
+  }
   showToast('Filter applied');
 }
 
@@ -2225,21 +2230,20 @@ function addMentionToCanvas(handle) {
   if (!layer) return;
   const el = document.createElement('div');
   el.className = 'editorOverlayElement text-element';
-  el.textContent = handle;
   el.style.background = 'rgba(0, 242, 254, 0.8)';
   el.style.color = '#000';
-  el.style.left = '50%';
+  el.textContent = handle;
+  el.style.left = '30%';
   el.style.top = '60%';
-  el.style.transform = 'translate(-50%, -50%)';
   makeElementDraggable(el);
   layer.appendChild(el);
-  toggleEditorDrawer('');
+  document.getElementById('editorMentionDrawer')?.classList.remove('open');
   showToast(`Mentioned ${handle}`);
 }
 
-function makeElementDraggable(element) {
+function makeElementDraggable(el) {
   let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-  element.onpointerdown = dragMouseDown;
+  el.onpointerdown = dragMouseDown;
 
   function dragMouseDown(e) {
     e.preventDefault();
@@ -2255,9 +2259,8 @@ function makeElementDraggable(element) {
     pos2 = pos4 - e.clientY;
     pos3 = e.clientX;
     pos4 = e.clientY;
-    element.style.top = (element.offsetTop - pos2) + "px";
-    element.style.left = (element.offsetLeft - pos1) + "px";
-    element.style.transform = 'none';
+    el.style.top = (el.offsetTop - pos2) + "px";
+    el.style.left = (el.offsetLeft - pos1) + "px";
   }
 
   function closeDragElement() {
@@ -2267,32 +2270,47 @@ function makeElementDraggable(element) {
 }
 
 function publishEditorMedia() {
-  showToast('Publishing your VIBE creation! 🚀');
-  setTimeout(() => {
-    document.getElementById('editorScreen').classList.remove('open');
-    document.getElementById('navHomeBtn').classList.add('active');
-    
-    // Add newly created post to feed
-    feedData.unshift({
-      id: Date.now(),
-      type: currentEditorItems.length > 1 ? 'carousel' : currentEditorItems[0].type,
-      author: profile.name,
-      handle: '@' + profile.username,
-      avatar: profile.avatar,
-      caption: 'Just created this using VIBE Studio! ✨ #vibe #creator',
-      audioTitle: currentSound.title,
-      audioArtist: currentSound.artist,
-      likes: 1,
-      comments: 0,
-      shares: 0,
-      saved: 0,
-      isLiked: false,
-      isSaved: false,
-      src: currentEditorItems.length === 1 ? currentEditorItems[0].url : undefined,
-      items: currentEditorItems.length > 1 ? currentEditorItems : undefined
-    });
-    renderFeed();
-  }, 1000);
+  let mediaSrc = 'https://assets.mixkit.co/videos/preview/mixkit-girl-in-neon-lights-walking-in-a-city-41551-large.mp4';
+  let type = 'video';
+
+  if (currentEditorItems.length > 0) {
+    mediaSrc = currentEditorItems[0].url;
+    type = currentEditorItems[0].type;
+  }
+
+  const newPost = {
+    id: Date.now(),
+    type: type,
+    author: profile.name,
+    handle: '@' + profile.username,
+    avatar: profile.avatar,
+    caption: 'My new VIBE creation! 🚀 #vibe #creator',
+    audioTitle: currentSound.title,
+    audioArtist: currentSound.artist,
+    likes: 1,
+    comments: 0,
+    shares: 0,
+    saved: 0,
+    isLiked: false,
+    isSaved: false,
+    src: mediaSrc
+  };
+
+  feedData.unshift(newPost);
+  currentUserPosts.unshift({
+    id: Date.now(),
+    type: type,
+    src: mediaSrc,
+    caption: newPost.caption,
+    likes: '0',
+    views: '1'
+  });
+
+  document.getElementById('editorScreen').classList.remove('open');
+  document.getElementById('navHomeBtn').classList.add('active');
+  renderFeed();
+  renderUserProfilePosts();
+  showToast('Published to VIBE successfully! 🎉');
 }
 
 function renderUserProfilePosts(filter = 'posts') {
@@ -2300,123 +2318,172 @@ function renderUserProfilePosts(filter = 'posts') {
   if (!grid) return;
   grid.innerHTML = '';
 
-  let itemsToRender = currentUserPosts;
+  let listToRender = currentUserPosts;
   if (filter === 'saved') {
-    itemsToRender = currentUserPosts.slice(0, 1);
-  } else if (filter === 'tagged') {
-    itemsToRender = [];
+    listToRender = feedData.filter(f => f.isSaved).map(f => ({
+      id: f.id,
+      type: f.type === 'carousel' ? 'image' : f.type,
+      src: f.type === 'carousel' ? f.items[0].url : f.src,
+      likes: formatCount(f.likes),
+      views: '1.2K'
+    }));
   }
 
-  if (itemsToRender.length === 0) {
-    grid.innerHTML = `<div style="grid-column: span 3; text-align:center; padding: 40px; color: var(--muted); font-size:14px;">No items found</div>`;
+  if (listToRender.length === 0) {
+    grid.innerHTML = `<div style="grid-column: span 3; text-align: center; padding: 40px; color: var(--muted); font-size: 13px;">No items found here yet.</div>`;
     return;
   }
 
-  itemsToRender.forEach(post => {
+  listToRender.forEach(post => {
     const thumb = document.createElement('div');
     thumb.className = 'userPostThumb';
+    
+    let mediaEl = `<img src="${post.src}" alt="Post">`;
+    if (post.type === 'video') {
+      mediaEl = `<video src="${post.src}" muted playsinline></video>`;
+    }
+
     thumb.innerHTML = `
-      ${post.type === 'video' ? `<video src="${post.src}"></video>` : `<img src="${post.src}" alt="Post">`}
-      <div class="profile-view-badge">▶ ${post.views || '1.2K'}</div>
+      ${mediaEl}
+      <div class="profile-view-badge">▶ ${post.likes || '0'}</div>
     `;
     grid.appendChild(thumb);
   });
 }
 
-function renderDiscoverResults(query = '', filter = 'all') {
-  const container = document.getElementById('discoverResultsContainer');
-  if (!container) return;
-  
-  if (!query && filter === 'all') {
-    container.innerHTML = `
-      <div class="discoverSectionTitle">Trending Hashtags</div>
-      <div class="hashtagSearchRow" onclick="openHashtagModal('#vibe')">
-        <div style="display:flex; align-items:center;">
-          <div class="hashtagSymbol">#</div>
-          <div class="hashtagDetails"><div class="hashtagName">#vibe</div><div class="hashtagCount">14.2M views</div></div>
-        </div>
-        <span style="color:var(--muted)">›</span>
-      </div>
-      <div class="hashtagSearchRow" onclick="openHashtagModal('#citylife')">
-        <div style="display:flex; align-items:center;">
-          <div class="hashtagSymbol">#</div>
-          <div class="hashtagDetails"><div class="hashtagName">#citylife</div><div class="hashtagCount">8.5M views</div></div>
-        </div>
-        <span style="color:var(--muted)">›</span>
-      </div>
-      <div class="discoverSectionTitle">Suggested Creators</div>
-      <div class="creatorSearchRow">
-        <div class="creatorSearchInfo">
-          <img class="creatorSearchAvatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" alt="Avatar">
-          <div class="creatorSearchMeta"><div class="name">Elena Rostova</div><div class="handle">@elena_rostova</div></div>
-        </div>
-        <button class="creatorFollowBtn" onclick="toggleFollow(this)">Follow</button>
-      </div>
-      <div class="discoverGrid">
-        <div class="discoverGridItem"><img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=500" alt="Discover"></div>
-        <div class="discoverGridItem"><img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=500" alt="Discover"></div>
-        <div class="discoverGridItem"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500" alt="Discover"></div>
-      </div>
-    `;
-    return;
+function openSettingsScreen() {
+  document.getElementById('settingsScreen').classList.add('open');
+}
+function closeSettingsScreen() {
+  document.getElementById('settingsScreen').classList.remove('open');
+}
+function openPrivateInfoScreen() {
+  document.getElementById('privateInfoScreen').classList.add('open');
+}
+function closePrivateInfoScreen() {
+  document.getElementById('privateInfoScreen').classList.remove('open');
+}
+function openHelpCenter() {
+  document.getElementById('helpCenterSubPanel').classList.add('open');
+}
+function openTermsOfService() {
+  document.getElementById('termsOfServiceSubPanel').classList.add('open');
+}
+function openAccountSettings() {
+  document.getElementById('accountSettingsSubPanel').classList.add('open');
+}
+function openVideoPlaybackSettings() {
+  document.getElementById('videoPlaybackSubPanel').classList.add('open');
+}
+function closeSubPanel(panelId) {
+  document.getElementById(panelId).classList.remove('open');
+}
+function selectVideoQuality(quality) {
+  document.getElementById('currentQualityLabel').textContent = quality.split(' ')[0] + ' ›';
+  closeSubPanel('videoPlaybackSubPanel');
+  showToast(`Video quality set to ${quality}`);
+}
+function toggleDarkThemeSetting() {
+  const checkbox = document.getElementById('darkThemeCheckbox');
+  if (checkbox) {
+    checkbox.checked = !checkbox.checked;
+    handleDarkThemeToggle(checkbox);
   }
-  
-  container.innerHTML = `<div style="padding:20px; text-align:center; color:var(--muted)">Searching results for "${query || filter}"...</div>`;
+}
+function handleDarkThemeToggle(checkbox) {
+  if (checkbox.checked) {
+    document.body.classList.add('light-theme');
+    showToast('Light theme enabled ☀️');
+  } else {
+    document.body.classList.remove('light-theme');
+    showToast('Dark theme enabled 🌙');
+  }
+}
+function openLogOutModal() {
+  document.getElementById('logoutModal').classList.add('open');
+}
+function closeLogOutModal() {
+  document.getElementById('logoutModal').classList.remove('open');
+}
+function confirmLogOut() {
+  closeLogOutModal();
+  closeSettingsScreen();
+  showToast('Logged out successfully');
 }
 
-function renderInboxContent(tabName) {
-  const container = document.getElementById('inboxContentContainer');
-  if (!container) return;
-  if (tabName === 'messages') {
-    container.innerHTML = `
-      <div class="messageItem" onclick="openDirectMessage('Elena Rostova', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150')">
-        <img class="messageAvatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" alt="Avatar">
-        <div class="messageContent">
-          <div class="messageName">Elena Rostova</div>
-          <div class="messageSnippet">Loved your recent vibe post! ✨</div>
-        </div>
-      </div>
-      <div class="messageItem" onclick="openDirectMessage('Liam Chen', 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150')">
-        <img class="messageAvatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150" alt="Avatar">
-        <div class="messageContent">
-          <div class="messageName">Liam Chen</div>
-          <div class="messageSnippet">Let's collaborate on a clip soon.</div>
-        </div>
-      </div>
-    `;
-  } else if (tabName === 'requests') {
-    container.innerHTML = `<div style="padding:30px; text-align:center; color:var(--muted);">No message requests pending.</div>`;
-  } else {
-    container.innerHTML = `
-      <div class="messageItem">
-        <div class="messageContent">
-          <div class="messageName">System Notification</div>
-          <div class="messageSnippet">Your video reached 1,000 views! 🎉</div>
-        </div>
-      </div>
-    `;
+function openSecurity(type) {
+  const modal = document.getElementById('securitySubModal');
+  const title = document.getElementById('securityTitle');
+  const text = document.getElementById('securityText');
+  const actionBtn = document.getElementById('securityAction');
+  
+  modal.style.display = 'block';
+  if (type === 'password') {
+    title.textContent = 'Change Password';
+    text.textContent = 'Enter your current password to proceed with setting a new one.';
+    actionBtn.textContent = 'Update Password';
+  } else if (type === 'twofa') {
+    title.textContent = 'Two-Factor Authentication';
+    text.textContent = 'Confirm your credentials to configure 2FA security settings.';
+    actionBtn.textContent = 'Configure 2FA';
+  } else if (type === 'delete') {
+    title.textContent = 'Delete Account Permanently';
+    text.textContent = 'Warning: This action is irreversible. Enter your password to delete.';
+    actionBtn.textContent = 'Delete Account';
+    actionBtn.style.background = 'var(--pink)';
   }
+}
+function closeSecuritySub() {
+  document.getElementById('securitySubModal').style.display = 'none';
+  document.getElementById('securityInput').value = '';
+}
+function securityAction() {
+  showToast('Security action executed successfully');
+  closeSecuritySub();
+}
+
+let currentReportTarget = null;
+function openReportModal(target) {
+  currentReportTarget = target;
+  document.getElementById('reportModal').classList.add('open');
+}
+function closeReportModal() {
+  document.getElementById('reportModal').classList.remove('open');
+  document.querySelectorAll('.report-reason-item').forEach(i => i.classList.remove('selected'));
+  currentReportTarget = null;
+}
+function selectReportReason(item) {
+  document.querySelectorAll('.report-reason-item').forEach(i => i.classList.remove('selected'));
+  item.classList.add('selected');
+  const radio = item.querySelector('input[type="radio"]');
+  if (radio) radio.checked = true;
+}
+function submitReport() {
+  showToast('Report submitted. Thank you for keeping VIBE safe! 🛡️');
+  closeReportModal();
 }
 
 function openCreatorProfile(name, handle, avatar) {
-  const modal = document.getElementById('creatorProfileModal');
   document.getElementById('modalCreatorHeaderName').textContent = name;
   document.getElementById('modalCreatorName').textContent = name;
   document.getElementById('modalCreatorHandle').textContent = handle;
   document.getElementById('modalCreatorAvatar').src = avatar;
+  document.getElementById('modalCreatorBio').textContent = `${name}'s official creator profile on VIBE showcasing recent reels and community highlights.`;
   
   const grid = document.getElementById('modalCreatorPostsGrid');
-  grid.innerHTML = `
-    <div class="userPostThumb"><img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=500" alt="Post"></div>
-    <div class="userPostThumb"><img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=500" alt="Post"></div>
-  `;
-  modal.classList.add('open');
-}
+  grid.innerHTML = '';
+  for (let i = 0; i < 3; i++) {
+    const thumb = document.createElement('div');
+    thumb.className = 'userPostThumb';
+    thumb.innerHTML = `<img src="${avatar}" alt="Post">`;
+    grid.appendChild(thumb);
+  }
 
+  document.getElementById('creatorProfileModal').classList.add('open');
+}
 function closeCreatorProfileModal() {
   document.getElementById('creatorProfileModal').classList.remove('open');
 }
-
 function toggleModalCreatorFollow() {
   const btn = document.getElementById('modalCreatorFollowBtn');
   if (btn.textContent === 'Follow') {
@@ -2434,108 +2501,123 @@ function toggleModalCreatorFollow() {
   }
 }
 
-function openHashtagModal(tagName) {
-  document.getElementById('hashtagModalTitle').textContent = tagName;
-  document.getElementById('hashtagModalName').textContent = tagName;
-  const grid = document.getElementById('hashtagModalPostsGrid');
-  grid.innerHTML = `
-    <div class="userPostThumb"><img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500" alt="Post"></div>
-    <div class="userPostThumb"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500" alt="Post"></div>
+function renderDiscoverResults(query = '', filter = 'all') {
+  const container = document.getElementById('discoverResultsContainer');
+  if (!container) return;
+
+  if (!query && filter === 'all') {
+    container.innerHTML = `
+      <div class="discoverSectionTitle">Trending Hashtags</div>
+      <div class="hashtagSearchRow" onclick="openHashtagModal('#vibe', '1.4M views')">
+        <div style="display:flex; align-items:center;">
+          <div class="hashtagSymbol">#</div>
+          <div class="hashtagDetails"><div class="hashtagName">#vibe</div><div class="hashtagCount">1.4M posts</div></div>
+        </div>
+        <span style="color:var(--muted)">›</span>
+      </div>
+      <div class="hashtagSearchRow" onclick="openHashtagModal('#citylife', '840K views')">
+        <div style="display:flex; align-items:center;">
+          <div class="hashtagSymbol">#</div>
+          <div class="hashtagDetails"><div class="hashtagName">#citylife</div><div class="hashtagCount">840K posts</div></div>
+        </div>
+        <span style="color:var(--muted)">›</span>
+      </div>
+      
+      <div class="discoverSectionTitle">Suggested Creators</div>
+      <div class="creatorSearchRow">
+        <div class="creatorSearchInfo" onclick="openCreatorProfile('Elena Rostova', '@elena_rostova', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150')">
+          <img class="creatorSearchAvatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150">
+          <div class="creatorSearchMeta"><div class="name">Elena Rostova</div><div class="handle">@elena_rostova</div></div>
+        </div>
+        <button class="creatorFollowBtn" onclick="toggleFollow(this)">Follow</button>
+      </div>
+      
+      <div class="discoverSectionTitle">Trending Grid</div>
+      <div class="discoverGrid">
+        <div class="discoverGridItem"><img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=500"></div>
+        <div class="discoverGridItem"><img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=500"></div>
+        <div class="discoverGridItem"><img src="https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?w=500"></div>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = `
+    <div style="padding: 20px; text-align: center; color: var(--muted); font-size: 13px;">
+      Showing results for "<strong>${query || filter}</strong>"
+    </div>
+    <div class="discoverGrid">
+      <div class="discoverGridItem"><img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=500"></div>
+      <div class="discoverGridItem"><img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=500"></div>
+    </div>
   `;
-  document.getElementById('hashtagModal').classList.add('open');
 }
 
+function openHashtagModal(tagName, views) {
+  document.getElementById('hashtagModalTitle').textContent = tagName;
+  document.getElementById('hashtagModalName').textContent = tagName;
+  document.getElementById('hashtagModalViews').textContent = views;
+  
+  const grid = document.getElementById('hashtagModalPostsGrid');
+  grid.innerHTML = '';
+  for(let i=0; i<6; i++) {
+    const thumb = document.createElement('div');
+    thumb.className = 'userPostThumb';
+    thumb.innerHTML = `<img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=500" alt="Post">`;
+    grid.appendChild(thumb);
+  }
+  document.getElementById('hashtagModal').classList.add('open');
+}
 function closeHashtagModal() {
   document.getElementById('hashtagModal').classList.remove('open');
 }
 
-function openSettingsScreen() { document.getElementById('settingsScreen').classList.add('open'); }
-function closeSettingsScreen() { document.getElementById('settingsScreen').classList.remove('open'); }
-function openPrivateInfoScreen() { document.getElementById('privateInfoScreen').classList.add('open'); }
-function closePrivateInfoScreen() { document.getElementById('privateInfoScreen').classList.remove('open'); }
-function openHelpCenter() { document.getElementById('helpCenterSubPanel').classList.add('open'); }
-function openTermsOfService() { document.getElementById('termsOfServiceSubPanel').classList.add('open'); }
-function openAccountSettings() { document.getElementById('accountSettingsSubPanel').classList.add('open'); }
-function closeSubPanel(id) { document.getElementById(id).classList.remove('open'); }
-
-function openVideoPlaybackSettings() { document.getElementById('videoPlaybackSubPanel').classList.add('open'); }
-function selectVideoQuality(qualityName) {
-  document.getElementById('currentQualityLabel').textContent = qualityName.split(' ')[0] + ' ›';
-  document.getElementById('videoPlaybackSubPanel').classList.remove('open');
-  showToast(`Playback quality set to ${qualityName}`);
-}
-
-function handleDarkThemeToggle(checkbox) {
-  if (checkbox.checked) {
-    document.body.classList.add('light-theme');
-    showToast('Switched to Light Theme ☀️');
+function renderInboxContent(tab) {
+  const container = document.getElementById('inboxContentContainer');
+  if(!container) return;
+  if(tab === 'messages') {
+    container.innerHTML = `
+      <div class="messageItem" onclick="openDirectMessage('Elena Rostova', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150')">
+        <img class="messageAvatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" alt="Avatar">
+        <div class="messageContent">
+          <div class="messageName">Elena Rostova</div>
+          <div class="messageSnippet">Loved your recent vibe post! ✨</div>
+        </div>
+      </div>
+      <div class="messageItem" onclick="openDirectMessage('Liam Chen', 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150')">
+        <img class="messageAvatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150" alt="Avatar">
+        <div class="messageContent">
+          <div class="messageName">Liam Chen</div>
+          <div class="messageSnippet">Let's collaborate on a clip soon.</div>
+        </div>
+      </div>
+    `;
+  } else if(tab === 'requests') {
+    container.innerHTML = `<div style="padding: 30px; text-align: center; color: var(--muted); font-size: 13px;">No pending message requests.</div>`;
   } else {
-    document.body.classList.remove('light-theme');
-    showToast('Switched to Dark Theme 🌙');
+    container.innerHTML = `
+      <div class="messageItem">
+        <div class="messageContent">
+          <div class="messageName">System Notification</div>
+          <div class="messageSnippet">Your reel reached over 1,000 views! 🚀</div>
+        </div>
+      </div>
+    `;
   }
 }
 
-let activeSecurityType = '';
-function openSecurity(type) {
-  activeSecurityType = type;
-  const modal = document.getElementById('securitySubModal');
-  const title = document.getElementById('securityTitle');
-  const text = document.getElementById('securityText');
-  const input = document.getElementById('securityInput');
-  
-  if (type === 'password') {
-    title.textContent = 'Change Password';
-    text.textContent = 'Enter your current password to continue.';
-    input.placeholder = 'Current password';
-  } else if (type === 'delete') {
-    title.textContent = 'Delete Account';
-    text.textContent = 'This action is irreversible. Enter your password to confirm.';
-    input.placeholder = 'Password';
-  } else {
-    title.textContent = 'Security Verification';
-    text.textContent = 'Enter your password to modify 2FA settings.';
-    input.placeholder = 'Password';
-  }
-  
-  modal.style.display = 'block';
-}
-
-function closeSecuritySub() {
-  document.getElementById('securitySubModal').style.display = 'none';
-  document.getElementById('securityInput').value = '';
-}
-
-function securityAction() {
-  const val = document.getElementById('securityInput').value.trim();
-  if (!val) {
-    showToast('Please enter your password.');
-    return;
-  }
-  closeSecuritySub();
-  if (activeSecurityType === 'delete') {
-    showToast('Account scheduled for deletion.');
-  } else {
-    showToast('Security settings updated successfully.');
-  }
-}
-
-function openLogOutModal() { document.getElementById('logoutModal').classList.add('open'); }
-function closeLogOutModal() { document.getElementById('logoutModal').classList.remove('open'); }
-function confirmLogOut() {
-  closeLogOutModal();
-  showToast('Logged out successfully.');
-}
-
+let activeCommentReelIndex = 0;
 function openCommentModal(index) {
+  activeCommentReelIndex = index;
   document.getElementById('commentModal').classList.add('open');
 }
-
 function postComment() {
   const input = document.getElementById('commentInputField');
+  if(!input) return;
   const text = input.value.trim();
-  if (!text) return;
-  
-  const container = document.getElementById('commentListContainer');
+  if(!text) return;
+
+  const list = document.getElementById('commentListContainer');
   const row = document.createElement('div');
   row.className = 'commentRow';
   row.innerHTML = `
@@ -2545,11 +2627,12 @@ function postComment() {
       <div class="commentText">${text}</div>
     </div>
   `;
-  container.appendChild(row);
+  list.appendChild(row);
   input.value = '';
-  container.scrollTop = container.scrollHeight;
-  showToast('Comment posted! 💬');
+  list.scrollTop = list.scrollHeight;
+  showToast('Comment posted');
 }
 </script>
+
 </body>
 </html>
