@@ -17,7 +17,7 @@
 
     <!-- SPLASH SCREEN (Shows for 2 seconds on load) -->
     <div id="splashView" class="fixed inset-0 bg-slate-950 z-50 flex flex-col items-center justify-center space-y-4 transition-opacity duration-500">
-        <div class="bg-indigo-600 text-white p-5 rounded-3xl shadow-2xl shadow-indigo-600/50 animate-bounce">
+        <div class="bg-indigo-600 text-white p-5 rounded-3xl shadow-2xl shadow-indigo-600/50">
             <i class="fa-solid fa-location-crosshairs text-4xl"></i>
         </div>
         <div class="text-center">
@@ -273,17 +273,15 @@
     <script>
         let generatedOtp = "123456";
 
-        // Sample YouTube video IDs for live embedded players per feed item
         const sampleYouTubeVideos = [
-            "dQw4w9WgXcQ", 
-            "jNQXAC9IVRw", 
-            "9bZkp7q19f0", 
-            "L_LUpnjgPso", 
-            "kJQP7kiw5Fk", 
-            "fJ9rUzIMcZQ"
+            { id: "dQw4w9WgXcQ", available: true },
+            { id: "jNQXAC9IVRw", available: true },
+            { id: "INVALID_ID_TEST", available: false },
+            { id: "L_LUpnjgPso", available: true },
+            { id: "kJQP7kiw5Fk", available: true },
+            { id: "fJ9rUzIMcZQ", available: false }
         ];
 
-        // Check Session Persistence on Load
         window.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 document.getElementById('splashBar').style.width = '100%';
@@ -303,7 +301,6 @@
             }, 2000);
         });
 
-        // Live Password Strength Meter
         function checkPasswordStrength(password) {
             const bar = document.getElementById('strengthBar');
             const text = document.getElementById('strengthText');
@@ -464,7 +461,6 @@
         }
 
         function loadSimulatedFeeds(countryName, code) {
-            // News Feed Cards
             document.getElementById('content-news').innerHTML = [1, 2, 3, 4, 5, 6].map(i => `
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between shadow-lg relative">
                     <button onclick="toggleBookmark(this)" class="absolute top-4 right-4 text-slate-500 hover:text-indigo-400 transition"><i class="fa-regular fa-bookmark text-base"></i></button>
@@ -480,27 +476,40 @@
                 </div>
             `).join('');
 
-            // Trending Videos (Upgraded with Responsive YouTube Iframe Embeds & loading="lazy")
-            document.getElementById('content-videos').innerHTML = sampleYouTubeVideos.map((videoId, index) => `
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg flex flex-col">
-                    <div class="relative w-full aspect-video bg-slate-950">
+            document.getElementById('content-videos').innerHTML = sampleYouTubeVideos.map((vid, index) => {
+                let mediaElement = '';
+                if (vid.available) {
+                    mediaElement = `
                         <iframe class="w-full h-full object-cover" 
-                            src="https://www.youtube.com/embed/${videoId}" 
+                            src="https://www.youtube.com/embed/${vid.id}" 
                             title="Trending Viral Clip #${index + 1} in ${countryName}" 
                             frameborder="0" 
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                             allowfullscreen 
                             loading="lazy">
-                        </iframe>
-                    </div>
-                    <div class="p-4 flex flex-col flex-grow">
-                        <h4 class="text-sm font-semibold text-white line-clamp-1">Trending Viral Clip #${index + 1} in ${countryName}</h4>
-                        <p class="text-xs text-slate-400 mt-1">Creator Hub • 1.2M views</p>
-                    </div>
-                </div>
-            `).join('');
+                        </iframe>`;
+                } else {
+                    mediaElement = `
+                        <div class="w-full h-full flex flex-col items-center justify-center bg-slate-900 text-slate-400 p-4 text-center">
+                            <i class="fa-solid fa-triangle-exclamation text-2xl text-amber-500 mb-2"></i>
+                            <p class="text-xs font-medium text-slate-300">Video Currently Unavailable</p>
+                            <span class="text-[10px] text-slate-500 mt-0.5">This media stream is offline or restricted in ${countryName}</span>
+                        </div>`;
+                }
 
-            // Music / Songs Cards
+                return `
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg flex flex-col">
+                        <div class="relative w-full aspect-video bg-slate-950">
+                            ${mediaElement}
+                        </div>
+                        <div class="p-4 flex flex-col flex-grow">
+                            <h4 class="text-sm font-semibold text-white line-clamp-1">Trending Viral Clip #${index + 1} in ${countryName}</h4>
+                            <p class="text-xs text-slate-400 mt-1">Creator Hub • ${vid.available ? '1.2M views' : 'Offline'}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
             document.getElementById('content-music').innerHTML = [1, 2, 3, 4, 5, 6].map(i => `
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center space-x-4 shadow-lg">
                     <div class="w-14 h-14 bg-indigo-600/20 border border-indigo-500/30 rounded-xl flex items-center justify-center text-indigo-400 font-bold text-lg">
@@ -593,4 +602,3 @@
     </script>
 </body>
 </html>
- 
