@@ -3,42 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BlindSpot - Viral Canvas</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Atlas — Global Content Explorer</title>
+    
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Leaflet CSS for the interactive map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        /* Custom dark tile filter for Leaflet to match our UI vibe */
+        .leaflet-layer, .leaflet-control-zoom-in, .leaflet-control-zoom-out {
+            filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3);
+        }
+        /* Custom pulse animation for live pins */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.4); opacity: 0.3; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+        .live-pulse::before {
+            content: '';
+            position: absolute;
+            top: -6px; left: -6px; right: -6px; bottom: -6px;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.6);
+            animation: pulse-ring 2s infinite;
+            z-index: -1;
+        }
+    </style>
 </head>
-<body>
+<body class="bg-slate-950 text-white h-screen w-screen overflow-hidden flex flex-col">
 
-    <div class="app-container">
-        <!-- HOME SCREEN -->
-        <div id="home-screen" class="screen active">
-            <h1>BlindSpot</h1>
-            <p>Drop a prompt. Lock the room. Wait for the reveal.</p>
-            <div class="card-box">
-                <input type="text" id="prompt-input" placeholder="e.g., Hot takes about our friend group...">
-                <button id="create-room-btn">Create Viral Room</button>
-            </div>
+    <!-- Top Navigation Bar -->
+    <header class="h-16 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 flex items-center justify-between px-6 z-20">
+        <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-rose-500 flex items-center justify-center font-bold text-lg shadow-lg shadow-indigo-500/20">A</div>
+            <h1 class="text-xl font-bold tracking-wider bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">ATLAS</h1>
         </div>
+        <div class="text-xs font-medium text-slate-400 bg-slate-800/60 px-3 py-1.5 rounded-full border border-slate-700/50">
+            🌍 Tap a pin to explore the world
+        </div>
+    </header>
 
-        <!-- ROOM / CANVAS SCREEN -->
-        <div id="room-screen" class="screen">
-            <header>
-                <h2 id="room-title">Loading Prompt...</h2>
-                <div id="timer-box">Unlocks in: <span id="countdown">00:30</span></div>
-            </header>
+    <!-- Main Container -->
+    <div class="relative flex-1 w-full flex">
+        
+        <!-- Map Container -->
+        <div id="map" class="absolute inset-0 z-0"></div>
 
-            <!-- Submission Form (Hidden once submitted or locked) -->
-            <div id="submission-container">
-                <textarea id="user-submission" placeholder="Drop your anonymous card..."></textarea>
-                <button id="submit-card-btn">Drop Card (Locked until timer ends)</button>
+        <!-- Slide-up / Side Content Drawer -->
+        <div id="content-drawer" class="absolute bottom-0 left-0 right-0 md:top-0 md:right-0 md:bottom-auto md:left-auto md:w-96 md:h-full bg-slate-900/90 backdrop-blur-xl border-t md:border-t-0 md:border-l border-slate-800 transform translate-y-full md:translate-y-0 md:translate-x-full transition-transform duration-300 ease-in-out z-30 flex flex-col shadow-2xl max-h-[75vh] md:max-h-none">
+            
+            <!-- Drawer Header -->
+            <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+                <div>
+                    <span id="location-tag" class="text-xs uppercase tracking-widest text-indigo-400 font-semibold">Selected Location</span>
+                    <h2 id="location-title" class="text-xl font-bold text-white mt-0.5">Explore Feed</h2>
+                </div>
+                <button onclick="closeDrawer()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition">
+                    ✕
+                </button>
             </div>
 
-            <!-- The Grid Canvas -->
-            <div id="canvas-grid" class="locked">
-                <!-- Cards will render here dynamically -->
+            <!-- Drawer Feed Content -->
+            <div id="location-feed" class="flex-1 overflow-y-auto p-5 space-y-4">
+                <!-- Dynamic cards will load here -->
             </div>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        // 1. Initialize Map centered globally
+        const map = L.map('map', { zoomControl: false }).setView([20, 0], 3);
+
+        // Add custom zoom control position
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+        // Add dark tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        // 2. Mock Data for World Locations & Feeds
+        const locations = [
+            {
+                name: "Tokyo, Japan",
+                coords: [35.6762, 139.6503],
+                type: "live",
+                feed: [
+                    { title: "Neon Nights in Shibuya Crossing", type: "Live", views: "14.2K watching", author: "Kenji_Live" },
+                    { title: "Late night ramen cooking stream", type: "Trending", views: "45K views", author: "ChefSora" }
+                ]
+            },
+            {
+                name: "New York, USA",
+                coords: [40.7128, -74.0060],
+                type: "trending",
+                feed: [
+                    { title: "Times Square Street Performers Cypher", type: "Trending", views: "128K views", author: "NYCVibes" },
+                    { title: "Skateboarding down Broadway", type: "Live", views: "8.4K watching", author: "SkateNY" }
+                ]
+            },
+            {
+                name: "Paris, France",
+                coords: [48.8566, 2.3522],
+                type: "event",
+                feed: [
+                    { title: "Seine River Sunset & Live Buskers", type: "Live", views: "9.1K watching", author: "ParisianWalks" },
+                    { title: "Street Fashion Week Sneak Peek", type: "Trending", views: "89K views", author: "VogueStreet" }
+                ]
+            }
+        ];
+
+        // 3. Add Custom Pins to Map
+        locations.forEach(loc => {
+            let pinColor = loc.type === 'live' ? 'bg-red-500 live-pulse' : 'bg-indigo-500';
+            
+            // Create custom HTML marker
+            const customIcon = L.divIcon({
+                className: 'custom-div-icon',
+                html: `<div class="relative w-6 h-6 rounded-full ${pinColor} border-2 border-white shadow-lg cursor-pointer flex items-center justify-center"></div>`,
+                iconSize: [24, 24],
+                iconAnchor: [12, 12]
+            });
+
+            const marker = L.marker(loc.coords, { icon: customIcon }).addTo(map);
+
+            // Click event to open drawer and populate content
+            marker.on('click', () => {
+                openDrawer(loc);
+                map.flyTo(loc.coords, 6, { duration: 1.5 });
+            });
+        });
+
+        // 4. Drawer Control Functions
+        function openDrawer(loc) {
+            document.getElementById('location-title').innerText = loc.name;
+            const feedContainer = document.getElementById('location-feed');
+            feedContainer.innerHTML = '';
+
+            loc.feed.forEach(item => {
+                feedContainer.innerHTML += `
+                    <div class="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-4 hover:border-slate-600 transition cursor-pointer group">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-md ${item.type === 'Live' ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30'}">${item.type}</span>
+                            <span class="text-xs text-slate-400">${item.views}</span>
+                        </div>
+                        <h3 class="font-semibold text-white group-hover:text-indigo-300 transition line-clamp-2">${item.title}</h3>
+                        <p class="text-xs text-slate-400 mt-2">@${item.author}</p>
+                    </div>
+                `;
+            });
+
+            const drawer = document.getElementById('content-drawer');
+            drawer.classList.remove('translate-y-full', 'md:translate-x-full');
+        }
+
+        function closeDrawer() {
+            const drawer = document.getElementById('content-drawer');
+            drawer.classList.add('translate-y-full', 'md:translate-x-full');
+            map.setView([20, 0], 3);
+        }
+    </script>
 </body>
 </html>
