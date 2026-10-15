@@ -98,7 +98,7 @@
 
         // Add dark tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 18,
+            maxZoom: 19,
             attribution: '© OpenStreetMap'
         }).addTo(map);
 
@@ -148,7 +148,8 @@
 
             marker.on('click', () => {
                 openDrawer(loc);
-                map.flyTo(loc.coords, 6, { duration: 1.5 });
+                // Zoom level 16 gets you down to street and building level
+                map.flyTo(loc.coords, 16, { duration: 1.5 });
             });
         });
 
@@ -157,11 +158,11 @@
             if (event.key === 'Enter') {
                 const query = document.getElementById('search-input').value.toLowerCase().trim();
                 
-                // Find matching location in our mock data
                 const foundLoc = locations.find(loc => loc.name.toLowerCase().includes(query));
 
                 if (foundLoc) {
-                    map.flyTo(foundLoc.coords, 6, { duration: 1.5 });
+                    // Zoom level 16 for building-level view
+                    map.flyTo(foundLoc.coords, 16, { duration: 1.5 });
                     openDrawer(foundLoc);
                 } else {
                     alert(`Location "${query}" not found in current pins. Try Tokyo, New York, or Paris!`);
