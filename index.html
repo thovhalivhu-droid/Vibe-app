@@ -15,10 +15,10 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
 
-    <!-- HEADER / NAVBAR -->
-    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-50">
+    <!-- HEADER / NAVBAR (Hidden until logged in) -->
+    <header id="appHeader" class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-50 hidden">
         <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div class="flex items-center space-x-3 cursor-pointer" onclick="resetApp()">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="returnToHome()">
                 <div class="bg-indigo-600 text-white p-2.5 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/30">
                     <i class="fa-solid fa-location-crosshairs text-xl"></i>
                 </div>
@@ -28,24 +28,75 @@
                 </div>
             </div>
             
-            <!-- Country Search Bar -->
-            <div class="relative w-full sm:w-80">
-                <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                </span>
-                <input type="text" id="countrySearch" placeholder="Search country (e.g., Japan, Brazil)..." 
-                    class="w-full pl-10 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
+            <!-- Country Search Bar & Logout -->
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+                <div class="relative w-full sm:w-80">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </span>
+                    <input type="text" id="countrySearch" placeholder="Search country (e.g., Japan, Brazil)..." 
+                        class="w-full pl-10 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
+                </div>
+                <button onclick="logout()" title="Log out" class="p-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-400 hover:text-red-400 rounded-xl transition">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
             </div>
         </div>
     </header>
 
     <!-- MAIN CONTENT CONTAINER -->
-    <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-8">
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-8 flex items-center justify-center">
 
-        <!-- VIEW 1: HOME GRID (Quick Country Selectors) -->
-        <div id="homeView">
-            <div class="text-center max-w-2xl mx-auto my-12">
-                <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-4">Explore Local Pulses Worldwide</h2>
+        <!-- VIEW 0: LOGIN PORTAL (Default view) -->
+        <div id="loginView" class="w-full max-w-md bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl space-y-6">
+            <div class="text-center space-y-2">
+                <div class="inline-flex bg-indigo-600 text-white p-3 rounded-2xl shadow-lg shadow-indigo-600/30 mb-2">
+                    <i class="fa-solid fa-location-crosshairs text-2xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-white tracking-tight">Welcome to Pinpoint</h2>
+                <p class="text-xs text-slate-400">Sign in to access world news, viral media, and regional charts.</p>
+            </div>
+
+            <form onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Email Address</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500"><i class="fa-solid fa-envelope"></i></span>
+                        <input type="email" required placeholder="name@example.com" 
+                            class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Password</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500"><i class="fa-solid fa-lock"></i></span>
+                        <input type="password" required placeholder="••••••••" 
+                            class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition shadow-lg shadow-indigo-600/25 flex items-center justify-center space-x-2">
+                    <span>Enter Pinpoint</span>
+                    <i class="fa-solid fa-arrow-right text-xs"></i>
+                </button>
+            </form>
+
+            <div class="relative flex py-2 items-center">
+                <div class="flex-grow border-t border-slate-800"></div>
+                <span class="flex-shrink mx-4 text-slate-500 text-[10px] uppercase tracking-wider">or quick access</span>
+                <div class="flex-grow border-t border-slate-800"></div>
+            </div>
+
+            <button onclick="bypassLogin()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium rounded-xl border border-slate-700 transition">
+                Continue as Guest
+            </button>
+        </div>
+
+        <!-- VIEW 1: HOME GRID (Hidden initially) -->
+        <div id="homeView" class="w-full hidden">
+            <div class="text-center max-w-2xl mx-auto my-8">
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-3">Explore Local Pulses Worldwide</h2>
                 <p class="text-slate-400 text-sm sm:text-base">Select a country below or search above to instantly stream trending local headlines, viral regional videos, and charts.</p>
             </div>
 
@@ -54,8 +105,8 @@
             </div>
         </div>
 
-        <!-- VIEW 2: COUNTRY HUB (Hidden by default until selected) -->
-        <div id="hubView" class="hidden space-y-6">
+        <!-- VIEW 2: COUNTRY HUB (Hidden initially) -->
+        <div id="hubView" class="w-full hidden space-y-6">
             
             <!-- Country Banner Header -->
             <div class="bg-gradient-to-r from-slate-900 to-indigo-950 border border-slate-800 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
@@ -70,7 +121,7 @@
                     </div>
                 </div>
                 
-                <button onclick="resetApp()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium rounded-xl border border-slate-700 transition flex items-center space-x-2">
+                <button onclick="returnToHome()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium rounded-xl border border-slate-700 transition flex items-center space-x-2">
                     <i class="fa-solid fa-arrow-left"></i>
                     <span>Back to Globe</span>
                 </button>
@@ -93,18 +144,10 @@
             </div>
 
             <!-- TAB CONTENT SECTIONS -->
-            <div id="content-news" class="tab-content grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Filled via JS -->
-            </div>
-
-            <div id="content-videos" class="tab-content hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Filled via JS -->
-            </div>
-
-            <div id="content-music" class="tab-content hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Filled via JS -->
-            </div>
-
+            <div id="content-news" class="tab-content grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            <div id="content-videos" class="tab-content hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            <div id="content-music" class="tab-content hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            
             <div id="content-facts" class="tab-content hidden">
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div class="p-4 bg-slate-950/50 rounded-xl border border-slate-800">
@@ -137,7 +180,6 @@
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
-        // Preset sample countries for quick selection grid
         const popularCountries = [
             { name: "United States", code: "US", flag: "https://flagcdn.com/w320/us.png" },
             { name: "Japan", code: "JP", flag: "https://flagcdn.com/w320/jp.png" },
@@ -155,7 +197,29 @@
 
         const gridEl = document.getElementById('quickCountryGrid');
 
-        // Render quick country cards
+        function handleLogin(e) {
+            e.preventDefault();
+            transitionToApp();
+        }
+
+        function bypassLogin() {
+            transitionToApp();
+        }
+
+        function transitionToApp() {
+            document.getElementById('loginView').classList.add('hidden');
+            document.getElementById('appHeader').classList.remove('hidden');
+            document.getElementById('homeView').classList.remove('hidden');
+            renderHomeGrid();
+        }
+
+        function logout() {
+            document.getElementById('appHeader').classList.add('hidden');
+            document.getElementById('homeView').classList.add('hidden');
+            document.getElementById('hubView').classList.add('hidden');
+            document.getElementById('loginView').classList.remove('hidden');
+        }
+
         function renderHomeGrid() {
             gridEl.innerHTML = popularCountries.map(c => `
                 <div onclick="selectCountry('${c.code}', '${c.name}', '${c.flag}')" 
@@ -175,10 +239,7 @@
             document.getElementById('hubCode').innerText = code;
             document.getElementById('hubFlag').src = flagUrl;
 
-            // Fetch live country details via free REST Countries API
             fetchCountryDetails(code);
-            
-            // Populate mock/live localized previews for news, videos, and music based on selection
             loadSimulatedFeeds(name, code);
         }
 
@@ -203,9 +264,7 @@
         }
 
         function loadSimulatedFeeds(countryName, code) {
-            // News Feed Simulation placeholders styled cleanly
-            const newsContainer = document.getElementById('content-news');
-            newsContainer.innerHTML = [1, 2, 3, 4, 5, 6].map(i => `
+            document.getElementById('content-news').innerHTML = [1, 2, 3, 4, 5, 6].map(i => `
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between shadow-lg">
                     <div>
                         <span class="text-[10px] bg-indigo-500/10 text-indigo-400 font-semibold px-2 py-0.5 rounded border border-indigo-500/20">Top Story #${i}</span>
@@ -219,9 +278,7 @@
                 </div>
             `).join('');
 
-            // Trending Videos Simulation
-            const videoContainer = document.getElementById('content-videos');
-            videoContainer.innerHTML = [1, 2, 3, 4, 5, 6].map(i => `
+            document.getElementById('content-videos').innerHTML = [1, 2, 3, 4, 5, 6].map(i => `
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg flex flex-col">
                     <div class="bg-slate-800 h-40 flex items-center justify-center relative group cursor-pointer">
                         <i class="fa-solid fa-play text-3xl text-indigo-400 group-hover:scale-110 transition"></i>
@@ -234,9 +291,7 @@
                 </div>
             `).join('');
 
-            // Music / Songs Simulation
-            const musicContainer = document.getElementById('content-music');
-            musicContainer.innerHTML = [1, 2, 3, 4, 5, 6].map(i => `
+            document.getElementById('content-music').innerHTML = [1, 2, 3, 4, 5, 6].map(i => `
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center space-x-4 shadow-lg">
                     <div class="w-14 h-14 bg-indigo-600/20 border border-indigo-500/30 rounded-xl flex items-center justify-center text-indigo-400 font-bold text-lg">
                         #${i}
@@ -265,13 +320,12 @@
             activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-md', 'shadow-indigo-600/20');
         }
 
-        function resetApp() {
+        function returnToHome() {
             document.getElementById('hubView').classList.add('hidden');
             document.getElementById('homeView').classList.remove('hidden');
             document.getElementById('countrySearch').value = '';
         }
 
-        // Search bar interaction filter
         document.getElementById('countrySearch').addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase();
             const matched = popularCountries.filter(c => c.name.toLowerCase().includes(query));
@@ -290,9 +344,6 @@
                 </div>
             `).join('') : `<p class="col-span-full text-center text-slate-500 py-8">No countries found matching "${query}"</p>`;
         });
-
-        // Initialize grid on load
-        renderHomeGrid();
     </script>
 </body>
 </html>
