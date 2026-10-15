@@ -36,7 +36,7 @@
             z-index: -1;
         }
 
-        /* --- New styles for cars and people --- */
+        /* --- Styles for dynamic cars and people --- */
         .map-car {
             width: 14px;
             height: 7px;
@@ -73,15 +73,15 @@
             <h1 class="text-xl font-bold tracking-wider bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">ATLAS</h1>
         </div>
 
-        <!-- Search Bar -->
+        <!-- Global Search Bar -->
         <div class="flex items-center bg-slate-800/80 border border-slate-700/60 rounded-full px-4 py-1.5 w-72 md:w-96 shadow-inner focus-within:border-indigo-500 transition">
             <svg class="w-4 h-4 text-slate-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-            <input type="text" id="search-input" placeholder="Search city or region (e.g. Tokyo)..." class="bg-transparent text-sm text-white placeholder-slate-400 focus:outline-none w-full" onkeypress="handleSearch(event)">
+            <input type="text" id="search-input" placeholder="Search ANY city, country, or region..." class="bg-transparent text-sm text-white placeholder-slate-400 focus:outline-none w-full" onkeypress="handleSearch(event)">
         </div>
 
         <!-- Hint badge -->
         <div class="hidden lg:block text-xs font-medium text-slate-400 bg-slate-800/60 px-3 py-1.5 rounded-full border border-slate-700/50">
-            🌍 Tap a pin to explore
+            🌍 Type any place on Earth
         </div>
     </header>
 
@@ -97,7 +97,7 @@
             <!-- Drawer Header -->
             <div class="p-5 border-b border-slate-800 flex items-center justify-between">
                 <div>
-                    <span id="location-tag" class="text-xs uppercase tracking-widest text-indigo-400 font-semibold">Selected Location</span>
+                    <span id="location-tag" class="text-xs uppercase tracking-widest text-indigo-400 font-semibold">Global Feed</span>
                     <h2 id="location-title" class="text-xl font-bold text-white mt-0.5">Explore Feed</h2>
                 </div>
                 <button onclick="closeDrawer()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition">
@@ -119,123 +119,97 @@
         // 1. Initialize Map centered globally
         const map = L.map('map', { zoomControl: false }).setView([20, 0], 3);
 
-        // Add custom zoom control position
         L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-        // Add dark tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '© OpenStreetMap'
         }).addTo(map);
 
-        // --- New layer group for traffic ---
         const trafficLayerGroup = L.layerGroup().addTo(map);
+        let currentMarker = null;
 
-        // 2. Mock Data for World Locations, Feeds, and Traffic (Cars/People)
-        const locations = [
-            {
-                name: "Tokyo, Japan",
-                coords: [35.6762, 139.6503],
-                type: "live",
-                feed: [
-                    { title: "Neon Nights in Shibuya Crossing", type: "Live", views: "14.2K watching", author: "Kenji_Live" },
-                    { title: "Late night ramen cooking stream", type: "Trending", views: "45K views", author: "ChefSora" }
-                ],
-                // Mock traffic data (car or person, with slight coord variance)
-                traffic: [
-                    { type: "car", coords: [35.6760, 139.6501], bearing: 45 },
-                    { type: "car", coords: [35.6764, 139.6505], bearing: 180 },
-                    { type: "car", coords: [35.6758, 139.6499], bearing: 90 },
-                    { type: "person", coords: [35.6761, 139.6502] },
-                    { type: "person", coords: [35.6763, 139.6504] }
-                ]
-            },
-            {
-                name: "New York, USA",
-                coords: [40.7128, -74.0060],
-                type: "trending",
-                feed: [
-                    { title: "Times Square Street Performers Cypher", type: "Trending", views: "128K views", author: "NYCVibes" },
-                    { title: "Skateboarding down Broadway", type: "Live", views: "8.4K watching", author: "SkateNY" }
-                ],
-                traffic: [
-                    { type: "car", coords: [40.7126, -74.0058], bearing: 0 },
-                    { type: "car", coords: [40.7130, -74.0062], bearing: 220 },
-                    { type: "person", coords: [40.7127, -74.0059] },
-                    { type: "person", coords: [40.7129, -74.0061] },
-                    { type: "car", coords: [40.7122, -74.0055], bearing: 45 },
-                ]
-            },
-            {
-                name: "Paris, France",
-                coords: [48.8566, 2.3522],
-                type: "event",
-                feed: [
-                    { title: "Seine River Sunset & Live Buskers", type: "Live", views: "9.1K watching", author: "ParisianWalks" },
-                    { title: "Street Fashion Week Sneak Peek", type: "Trending", views: "89K views", author: "VogueStreet" }
-                ],
-                traffic: [
-                    { type: "car", coords: [48.8564, 2.3520], bearing: 135 },
-                    { type: "car", coords: [48.8568, 2.3524], bearing: 300 },
-                    { type: "person", coords: [48.8565, 2.3521] },
-                    { type: "person", coords: [48.8567, 2.3523] }
-                ]
-            }
-        ];
-
-        // 3. Add Custom Pins to Map
-        locations.forEach(loc => {
-            let pinColor = loc.type === 'live' ? 'bg-red-500 live-pulse' : 'bg-indigo-500';
-            
-            const customIcon = L.divIcon({
-                className: 'custom-div-icon',
-                html: `<div class="relative w-6 h-6 rounded-full ${pinColor} border-2 border-white shadow-lg cursor-pointer flex items-center justify-center"></div>`,
-                iconSize: [24, 24],
-                iconAnchor: [12, 12]
-            });
-
-            const marker = L.marker(loc.coords, { icon: customIcon }).addTo(map);
-
-            marker.on('click', () => {
-                openDrawer(loc);
-                // Zoom level 18 gets you VERY close, perfect for seeing traffic and people
-                map.flyTo(loc.coords, 18, { duration: 1.5 });
-            });
-        });
-
-        // 4. Search Functionality
-        function handleSearch(event) {
+        // 2. Global Search using OpenStreetMap Nominatim API
+        async function handleSearch(event) {
             if (event.key === 'Enter') {
-                const query = document.getElementById('search-input').value.toLowerCase().trim();
-                
-                const foundLoc = locations.find(loc => loc.name.toLowerCase().includes(query));
+                const query = document.getElementById('search-input').value.trim();
+                if (!query) return;
 
-                if (foundLoc) {
-                    // Zoom level 18 for street-level view
-                    map.flyTo(foundLoc.coords, 18, { duration: 1.5 });
-                    openDrawer(foundLoc);
-                } else {
-                    alert(`Location "${query}" not found in current pins. Try Tokyo, New York, or Paris!`);
+                // Call free global geocoding API
+                try {
+                    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+                    const data = await response.json();
+
+                    if (data && data.length > 0) {
+                        const lat = parseFloat(data[0].lat);
+                        const lon = parseFloat(data[0].lon);
+                        const displayName = data[0].display_name.split(',')[0]; // Get primary city/region name
+
+                        const coords = [lat, lon];
+
+                        // Fly map down to street/building level
+                        map.flyTo(coords, 18, { duration: 1.8 });
+
+                        // Add or move pin on the map
+                        if (currentMarker) map.removeLayer(currentMarker);
+                        
+                        const customIcon = L.divIcon({
+                            className: 'custom-div-icon',
+                            html: `<div class="relative w-6 h-6 rounded-full bg-indigo-500 border-2 border-white shadow-lg cursor-pointer flex items-center justify-center"></div>`,
+                            iconSize: [24, 24],
+                            iconAnchor: [12, 12]
+                        });
+                        currentMarker = L.marker(coords, { icon: customIcon }).addTo(map);
+
+                        // Generate dynamic localized content and traffic for this specific spot
+                        const generatedData = generateLocationData(displayName, coords);
+                        openDrawer(generatedData);
+
+                    } else {
+                        alert(`Could not find "${query}". Try searching for another city, country, or landmark!`);
+                    }
+                } catch (error) {
+                    console.error("Geocoding error:", error);
+                    alert("Error searching location. Please check your connection.");
                 }
             }
         }
 
-        // --- New function to render dynamic cars and people ---
-        function renderTraffic(trafficData) {
-            trafficLayerGroup.clearLayers(); // Clear old traffic before rendering new
+        // 3. Helper to dynamically generate realistic feed and traffic for ANY searched place
+        function generateLocationData(name, coords) {
+            const [lat, lon] = coords;
+            return {
+                name: name,
+                coords: coords,
+                feed: [
+                    { title: `Live broadcast from downtown ${name}`, type: "Live", views: `${Math.floor(Math.random() * 15) + 2}.1K watching`, author: `${name.replace(/\s+/g, '')}_Live` },
+                    { title: `Exploring hidden spots & food around ${name}`, type: "Trending", views: `${Math.floor(Math.random() * 80) + 10}K views`, author: `GlobalVibe` },
+                    { title: `Local weekend street events in ${name}`, type: "Trending", views: `${Math.floor(Math.random() * 40) + 5}K views`, author: `ExplorerX` }
+                ],
+                traffic: [
+                    { type: "car", coords: [lat + 0.0002, lon + 0.0001], bearing: 45 },
+                    { type: "car", coords: [lat - 0.0002, lon - 0.0001], bearing: 220 },
+                    { type: "car", coords: [lat + 0.0001, lon - 0.0002], bearing: 110 },
+                    { type: "person", coords: [lat + 0.00015, lon + 0.00015] },
+                    { type: "person", coords: [lat - 0.00015, lon + 0.0001] },
+                    { type: "person", coords: [lat, lon - 0.00015] }
+                ]
+            };
+        }
 
+        // 4. Render Dynamic Cars and People
+        function renderTraffic(trafficData) {
+            trafficLayerGroup.clearLayers();
             trafficData.forEach(item => {
                 let trafficIcon;
                 if (item.type === 'car') {
-                    // Create car marker (rotated)
                     trafficIcon = L.divIcon({
                         className: 'custom-traffic-icon',
                         html: `<div class="map-car" style="transform: rotate(${item.bearing}deg);"></div>`,
                         iconSize: [14, 7],
                         iconAnchor: [7, 3.5]
                     });
-                } else if (item.type === 'person') {
-                    // Create pedestrian marker
+                } else {
                     trafficIcon = L.divIcon({
                         className: 'custom-traffic-icon',
                         html: `<div class="map-pedestrian"></div>`,
@@ -243,14 +217,11 @@
                         iconAnchor: [3, 3]
                     });
                 }
-
-                if (trafficIcon) {
-                    L.marker(item.coords, { icon: trafficIcon }).addTo(trafficLayerGroup);
-                }
+                L.marker(item.coords, { icon: trafficIcon }).addTo(trafficLayerGroup);
             });
         }
 
-        // 5. Drawer Control Functions
+        // 5. Drawer Controls
         function openDrawer(loc) {
             document.getElementById('location-title').innerText = loc.name;
             const feedContainer = document.getElementById('location-feed');
@@ -269,10 +240,7 @@
                 `;
             });
 
-            // --- Render the dynamic traffic for the selected location ---
-            if (loc.traffic) {
-                renderTraffic(loc.traffic);
-            }
+            renderTraffic(loc.traffic);
 
             const drawer = document.getElementById('content-drawer');
             drawer.classList.remove('translate-y-full', 'md:translate-x-full');
@@ -281,7 +249,8 @@
         function closeDrawer() {
             const drawer = document.getElementById('content-drawer');
             drawer.classList.add('translate-y-full', 'md:translate-x-full');
-            trafficLayerGroup.clearLayers(); // Clear traffic on close
+            trafficLayerGroup.clearLayers();
+            if (currentMarker) map.removeLayer(currentMarker);
             map.setView([20, 0], 3);
         }
     </script>
