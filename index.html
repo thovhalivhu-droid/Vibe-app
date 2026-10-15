@@ -1,103 +1,298 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, ActivityIndicator, SafeAreaView } from 'react-native';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pinpoint — Global Content & Media Explorer</title>
+    <!-- Tailwind CSS for modern, responsive styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
 
-export default function App() {
-  const [selectedCountry, setSelectedCountry] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState(null);
+    <!-- HEADER / NAVBAR -->
+    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="resetApp()">
+                <div class="bg-indigo-600 text-white p-2.5 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                    <i class="fa-solid fa-location-crosshairs text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-white">PINPOINT</h1>
+                    <p class="text-xs text-slate-400">Discover the heartbeat of any nation</p>
+                </div>
+            </div>
+            
+            <!-- Country Search Bar -->
+            <div class="relative w-full sm:w-80">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </span>
+                <input type="text" id="countrySearch" placeholder="Search country (e.g., Japan, Brazil)..." 
+                    class="w-full pl-10 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
+            </div>
+        </div>
+    </header>
 
-  // Function to call your Pinpoint backend
-  const fetchCountryData = async (code, name) => {
-    setSelectedCountry(name);
-    setLoading(true);
-    
-    try {
-      // Replace with your computer's local IP address if testing on a physical mobile device (e.g., http://192.168.1.50:5000)
-      const response = await fetch(`http://localhost:5000/api/country/${code}`);
-      const json = await response.json();
-      setData(json);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-8">
 
-  return (
-    <SafeAreaView style={styles.container}>
-      {/* App Header */}
-      <View style={styles.header}>
-        <Text style={styles.logo}>📍 PINPOINT</Text>
-        <Text style={styles.subtext}>Tap a region to discover its pulse</Text>
-      </View>
+        <!-- VIEW 1: HOME GRID (Quick Country Selectors) -->
+        <div id="homeView">
+            <div class="text-center max-w-2xl mx-auto my-12">
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-4">Explore Local Pulses Worldwide</h2>
+                <p class="text-slate-400 text-sm sm:text-base">Select a country below or search above to instantly stream trending local headlines, viral regional videos, and charts.</p>
+            </div>
 
-      {/* Quick Country Selector Grid (MVP placeholder for map) */}
-      <View style={styles.grid}>
-        <TouchableOpacity style={styles.countryButton} onPress={() => fetchCountryData('us', 'United States')}>
-          <Text style={styles.buttonText}>🇺🇸 United States</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.countryButton} onPress={() => fetchCountryData('gb', 'United Kingdom')}>
-          <Text style={styles.buttonText}>🇬🇧 United Kingdom</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.countryButton} onPress={() => fetchCountryData('jp', 'Japan')}>
-          <Text style={styles.buttonText}>🇯🇵 Japan</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.countryButton} onPress={() => fetchCountryData('br', 'Brazil')}>
-          <Text style={styles.buttonText}>🇧🇷 Brazil</Text>
-        </TouchableOpacity>
-      </View>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4" id="quickCountryGrid">
+                <!-- Populated dynamically via JS -->
+            </div>
+        </div>
 
-      {/* Content Area */}
-      {selectedCountry && (
-        <View style={styles.dashboard}>
-          <View style={styles.dashHeader}>
-            <Text style={styles.dashTitle}>{selectedCountry}</Text>
-            <TouchableOpacity onPress={() => setSelectedCountry(null)}>
-              <Text style={styles.closeText}>✕ Close</Text>
-            </TouchableOpacity>
-          </View>
+        <!-- VIEW 2: COUNTRY HUB (Hidden by default until selected) -->
+        <div id="hubView" class="hidden space-y-6">
+            
+            <!-- Country Banner Header -->
+            <div class="bg-gradient-to-r from-slate-900 to-indigo-950 border border-slate-800 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
+                <div class="flex items-center space-x-4">
+                    <img id="hubFlag" src="" alt="Flag" class="w-20 h-14 object-cover rounded-lg shadow-md border border-slate-700">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <h2 id="hubCountryName" class="text-2xl sm:text-3xl font-bold text-white">Country Name</h2>
+                            <span id="hubCode" class="text-xs bg-indigo-500/20 text-indigo-400 font-semibold px-2.5 py-1 rounded-full border border-indigo-500/30"></span>
+                        </div>
+                        <p id="hubCapital" class="text-sm text-slate-400 mt-1"><i class="fa-solid fa-city mr-1.5 text-indigo-400"></i>Capital: --</p>
+                    </div>
+                </div>
+                
+                <button onclick="resetApp()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium rounded-xl border border-slate-700 transition flex items-center space-x-2">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    <span>Back to Globe</span>
+                </button>
+            </div>
 
-          {loading ? (
-            <ActivityIndicator size="large" color="#00E5FF" style={{ marginTop: 40 }} />
-          ) : (
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <Text style={styles.sectionTitle}>📰 Top Headlines</Text>
-              {data?.news?.map((item, index) => (
-                <View key={index} style={styles.card}>
-                  <Text style={styles.cardTitle}>{item.title}</Text>
-                  <Text style={styles.cardSource}>{item.source}</Text>
-                </View>
-              ))}
+            <!-- Navigation Tabs -->
+            <div class="flex space-x-2 border-b border-slate-800 overflow-x-auto pb-2">
+                <button onclick="switchTab('news')" id="tab-news" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-semibold transition bg-indigo-600 text-white shadow-md shadow-indigo-600/20">
+                    <i class="fa-solid fa-newspaper mr-2"></i>Local News
+                </button>
+                <button onclick="switchTab('videos')" id="tab-videos" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-semibold transition text-slate-400 hover:text-white hover:bg-slate-900">
+                    <i class="fa-solid fa-video mr-2"></i>Trending Videos
+                </button>
+                <button onclick="switchTab('music')" id="tab-music" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-semibold transition text-slate-400 hover:text-white hover:bg-slate-900">
+                    <i class="fa-solid fa-music mr-2"></i>Top Songs & Audio
+                </button>
+                <button onclick="switchTab('facts')" id="tab-facts" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-semibold transition text-slate-400 hover:text-white hover:bg-slate-900">
+                    <i class="fa-solid fa-globe mr-2"></i>Country Snapshot
+                </button>
+            </div>
 
-              <Text style={styles.sectionTitle}>🔥 Trending Media & Music</Text>
-              {data?.trendingMedia?.map((item, index) => (
-                <View key={index} style={styles.card}>
-                  <Text style={styles.cardTitle}>{item.title}</Text>
-                  <Text style={styles.cardSource}>{item.type === 'song' ? item.artist : item.views}</Text>
-                </View>
-              ))}
-            </ScrollView>
-          )}
-        </View>
-      )}
-    </SafeAreaView>
-  );
-}
+            <!-- TAB CONTENT SECTIONS -->
+            <div id="content-news" class="tab-content grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Filled via JS -->
+            </div>
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0B0F19', padding: 20 },
-  header: { marginTop: 20, marginBottom: 20 },
-  logo: { fontSize: 24, fontWeight: 'bold', color: '#00E5FF', letterSpacing: 2 },
-  subtext: { color: '#64748B', fontSize: 14, marginTop: 4 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'space-between' },
-  countryButton: { backgroundColor: '#1E293B', width: '48%', padding: 16, borderRadius: 12, alignItems: 'center', marginBottom: 10 },
-  buttonText: { color: '#F8FAFC', fontWeight: '600', fontSize: 14 },
-  dashboard: { flex: 1, backgroundColor: '#121829', marginTop: 10, borderRadius: 16, padding: 16 },
-  dashHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
-  dashTitle: { fontSize: 20, fontWeight: 'bold', color: '#FFF' },
-  closeText: { color: '#00E5FF', fontWeight: '600' },
-  sectionTitle: { fontSize: 15, fontWeight: 'bold', color: '#94A3B8', marginTop: 15, marginBottom: 8 },
-  card: { backgroundColor: '#1E293B', padding: 12, borderRadius: 10, marginBottom: 8 },
-  cardTitle: { color: '#F8FAFC', fontSize: 13, fontWeight: '500' },
-  cardSource: { color: '#00E5FF', fontSize: 11, marginTop: 4 }
-});
+            <div id="content-videos" class="tab-content hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Filled via JS -->
+            </div>
+
+            <div id="content-music" class="tab-content hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Filled via JS -->
+            </div>
+
+            <div id="content-facts" class="tab-content hidden">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="p-4 bg-slate-950/50 rounded-xl border border-slate-800">
+                        <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Population</p>
+                        <p id="factPop" class="text-xl font-bold text-white mt-1">--</p>
+                    </div>
+                    <div class="p-4 bg-slate-950/50 rounded-xl border border-slate-800">
+                        <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Primary Currency</p>
+                        <p id="factCurrency" class="text-xl font-bold text-white mt-1">--</p>
+                    </div>
+                    <div class="p-4 bg-slate-950/50 rounded-xl border border-slate-800">
+                        <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Region / Continent</p>
+                        <p id="factRegion" class="text-xl font-bold text-white mt-1">--</p>
+                    </div>
+                    <div class="p-4 bg-slate-950/50 rounded-xl border border-slate-800">
+                        <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Primary Language</p>
+                        <p id="factLang" class="text-xl font-bold text-white mt-1">--</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-slate-800 mt-auto py-6 text-center text-xs text-slate-500">
+        Pinpoint Engine • Real-Time Geo Media Aggregator &copy; 2026
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // Preset sample countries for quick selection grid
+        const popularCountries = [
+            { name: "United States", code: "US", flag: "https://flagcdn.com/w320/us.png" },
+            { name: "Japan", code: "JP", flag: "https://flagcdn.com/w320/jp.png" },
+            { name: "United Kingdom", code: "GB", flag: "https://flagcdn.com/w320/gb.png" },
+            { name: "Brazil", code: "BR", flag: "https://flagcdn.com/w320/br.png" },
+            { name: "Germany", code: "DE", flag: "https://flagcdn.com/w320/de.png" },
+            { name: "South Africa", code: "ZA", flag: "https://flagcdn.com/w320/za.png" },
+            { name: "India", code: "IN", flag: "https://flagcdn.com/w320/in.png" },
+            { name: "Australia", code: "AU", flag: "https://flagcdn.com/w320/au.png" },
+            { name: "France", code: "FR", flag: "https://flagcdn.com/w320/fr.png" },
+            { name: "South Korea", code: "KR", flag: "https://flagcdn.com/w320/kr.png" },
+            { name: "Canada", code: "CA", flag: "https://flagcdn.com/w320/ca.png" },
+            { name: "Mexico", code: "MX", flag: "https://flagcdn.com/w320/mx.png" }
+        ];
+
+        const gridEl = document.getElementById('quickCountryGrid');
+
+        // Render quick country cards
+        function renderHomeGrid() {
+            gridEl.innerHTML = popularCountries.map(c => `
+                <div onclick="selectCountry('${c.code}', '${c.name}', '${c.flag}')" 
+                    class="group bg-slate-900 border border-slate-800 hover:border-indigo-500 p-4 rounded-2xl cursor-pointer transition transform hover:-translate-y-1 flex flex-col items-center text-center shadow-lg">
+                    <img src="${c.flag}" alt="${c.name}" class="w-16 h-11 object-cover rounded-md shadow mb-3 group-hover:scale-105 transition">
+                    <span class="text-sm font-semibold text-slate-200 group-hover:text-indigo-400 transition">${c.name}</span>
+                    <span class="text-[10px] text-slate-500 mt-0.5">Code: ${c.code}</span>
+                </div>
+            `).join('');
+        }
+
+        async function selectCountry(code, name, flagUrl) {
+            document.getElementById('homeView').classList.add('hidden');
+            document.getElementById('hubView').classList.remove('hidden');
+
+            document.getElementById('hubCountryName').innerText = name;
+            document.getElementById('hubCode').innerText = code;
+            document.getElementById('hubFlag').src = flagUrl;
+
+            // Fetch live country details via free REST Countries API
+            fetchCountryDetails(code);
+            
+            // Populate mock/live localized previews for news, videos, and music based on selection
+            loadSimulatedFeeds(name, code);
+        }
+
+        async function fetchCountryDetails(code) {
+            try {
+                let res = await fetch(`https://restcountries.com/v3.1/alpha/${code}`);
+                let data = await res.json();
+                let country = data[0];
+
+                document.getElementById('hubCapital').innerHTML = `<i class="fa-solid fa-city mr-1.5 text-indigo-400"></i>Capital: ${country.capital ? country.capital[0] : 'N/A'}`;
+                document.getElementById('factPop').innerText = country.population ? country.population.toLocaleString() : 'N/A';
+                document.getElementById('factRegion').innerText = country.region || 'N/A';
+                
+                let currencies = country.currencies ? Object.values(country.currencies).map(c => `${c.name} (${c.symbol || ''})`).join(', ') : 'N/A';
+                document.getElementById('factCurrency').innerText = currencies;
+
+                let languages = country.languages ? Object.values(country.languages).join(', ') : 'N/A';
+                document.getElementById('factLang').innerText = languages;
+            } catch (err) {
+                console.error("Could not fetch extended country data", err);
+            }
+        }
+
+        function loadSimulatedFeeds(countryName, code) {
+            // News Feed Simulation placeholders styled cleanly
+            const newsContainer = document.getElementById('content-news');
+            newsContainer.innerHTML = [1, 2, 3, 4, 5, 6].map(i => `
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between shadow-lg">
+                    <div>
+                        <span class="text-[10px] bg-indigo-500/10 text-indigo-400 font-semibold px-2 py-0.5 rounded border border-indigo-500/20">Top Story #${i}</span>
+                        <h3 class="text-base font-semibold text-white mt-3 leading-snug">Major developments unfolding across economic sectors in ${countryName}</h3>
+                        <p class="text-xs text-slate-400 mt-2 line-clamp-2">Local news outlets report shifting paradigms with widespread engagement across key municipal districts...</p>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-500">
+                        <span><i class="fa-regular fa-clock mr-1"></i>2 hours ago</span>
+                        <span class="text-indigo-400 font-medium cursor-pointer hover:underline">Read Source &rarr;</span>
+                    </div>
+                </div>
+            `).join('');
+
+            // Trending Videos Simulation
+            const videoContainer = document.getElementById('content-videos');
+            videoContainer.innerHTML = [1, 2, 3, 4, 5, 6].map(i => `
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg flex flex-col">
+                    <div class="bg-slate-800 h-40 flex items-center justify-center relative group cursor-pointer">
+                        <i class="fa-solid fa-play text-3xl text-indigo-400 group-hover:scale-110 transition"></i>
+                        <span class="absolute bottom-2 right-2 bg-black/70 text-[10px] px-2 py-0.5 rounded text-white font-mono">12:45</span>
+                    </div>
+                    <div class="p-4 flex flex-col flex-grow">
+                        <h4 class="text-sm font-semibold text-white line-clamp-1">Trending Viral Clip #${i} in ${countryName}</h4>
+                        <p class="text-xs text-slate-400 mt-1">Creator Hub • 1.2M views</p>
+                    </div>
+                </div>
+            `).join('');
+
+            // Music / Songs Simulation
+            const musicContainer = document.getElementById('content-music');
+            musicContainer.innerHTML = [1, 2, 3, 4, 5, 6].map(i => `
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center space-x-4 shadow-lg">
+                    <div class="w-14 h-14 bg-indigo-600/20 border border-indigo-500/30 rounded-xl flex items-center justify-center text-indigo-400 font-bold text-lg">
+                        #${i}
+                    </div>
+                    <div class="flex-grow">
+                        <h4 class="text-sm font-semibold text-white">Top Chart Single #${i}</h4>
+                        <p class="text-xs text-slate-400">Featured Artist • ${countryName} Charts</p>
+                    </div>
+                    <button class="w-10 h-10 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition shadow-md shadow-indigo-600/30">
+                        <i class="fa-solid fa-play text-xs pl-0.5"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-md', 'shadow-indigo-600/20');
+                btn.classList.add('text-slate-400', 'hover:text-white', 'hover:bg-slate-900');
+            });
+
+            document.getElementById(`content-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tabName}`);
+            activeBtn.classList.remove('text-slate-400', 'hover:text-white', 'hover:bg-slate-900');
+            activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-md', 'shadow-indigo-600/20');
+        }
+
+        function resetApp() {
+            document.getElementById('hubView').classList.add('hidden');
+            document.getElementById('homeView').classList.remove('hidden');
+            document.getElementById('countrySearch').value = '';
+        }
+
+        // Search bar interaction filter
+        document.getElementById('countrySearch').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const matched = popularCountries.filter(c => c.name.toLowerCase().includes(query));
+            
+            if(query.trim() === '') {
+                renderHomeGrid();
+                return;
+            }
+
+            gridEl.innerHTML = matched.length ? matched.map(c => `
+                <div onclick="selectCountry('${c.code}', '${c.name}', '${c.flag}')" 
+                    class="group bg-slate-900 border border-slate-800 hover:border-indigo-500 p-4 rounded-2xl cursor-pointer transition transform hover:-translate-y-1 flex flex-col items-center text-center shadow-lg">
+                    <img src="${c.flag}" alt="${c.name}" class="w-16 h-11 object-cover rounded-md shadow mb-3 group-hover:scale-105 transition">
+                    <span class="text-sm font-semibold text-slate-200 group-hover:text-indigo-400 transition">${c.name}</span>
+                    <span class="text-[10px] text-slate-500 mt-0.5">Code: ${c.code}</span>
+                </div>
+            `).join('') : `<p class="col-span-full text-center text-slate-500 py-8">No countries found matching "${query}"</p>`;
+        });
+
+        // Initialize grid on load
+        renderHomeGrid();
+    </script>
+</body>
+</html>
