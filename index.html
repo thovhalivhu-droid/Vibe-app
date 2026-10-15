@@ -35,6 +35,32 @@
             animation: pulse-ring 2s infinite;
             z-index: -1;
         }
+
+        /* --- New styles for cars and people --- */
+        .map-car {
+            width: 14px;
+            height: 7px;
+            background-color: #71717a; /* slate-500 */
+            border-radius: 2px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.8), 0 0 4px rgba(255, 255, 255, 0.2);
+            position: relative;
+        }
+        .map-car::after { /* front lights */
+            content: '';
+            position: absolute;
+            top: 2px; right: -2px;
+            width: 3px; height: 3px;
+            background: rgba(255, 255, 180, 0.8);
+            border-radius: 1px;
+        }
+
+        .map-pedestrian {
+            width: 6px;
+            height: 6px;
+            background-color: #10b981; /* emerald-500 */
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.6), 0 0 4px rgba(16, 185, 129, 0.6);
+        }
     </style>
 </head>
 <body class="bg-slate-950 text-white h-screen w-screen overflow-hidden flex flex-col">
@@ -102,7 +128,10 @@
             attribution: '© OpenStreetMap'
         }).addTo(map);
 
-        // 2. Mock Data for World Locations & Feeds
+        // --- New layer group for traffic ---
+        const trafficLayerGroup = L.layerGroup().addTo(map);
+
+        // 2. Mock Data for World Locations, Feeds, and Traffic (Cars/People)
         const locations = [
             {
                 name: "Tokyo, Japan",
@@ -111,6 +140,14 @@
                 feed: [
                     { title: "Neon Nights in Shibuya Crossing", type: "Live", views: "14.2K watching", author: "Kenji_Live" },
                     { title: "Late night ramen cooking stream", type: "Trending", views: "45K views", author: "ChefSora" }
+                ],
+                // Mock traffic data (car or person, with slight coord variance)
+                traffic: [
+                    { type: "car", coords: [35.6760, 139.6501], bearing: 45 },
+                    { type: "car", coords: [35.6764, 139.6505], bearing: 180 },
+                    { type: "car", coords: [35.6758, 139.6499], bearing: 90 },
+                    { type: "person", coords: [35.6761, 139.6502] },
+                    { type: "person", coords: [35.6763, 139.6504] }
                 ]
             },
             {
@@ -120,6 +157,13 @@
                 feed: [
                     { title: "Times Square Street Performers Cypher", type: "Trending", views: "128K views", author: "NYCVibes" },
                     { title: "Skateboarding down Broadway", type: "Live", views: "8.4K watching", author: "SkateNY" }
+                ],
+                traffic: [
+                    { type: "car", coords: [40.7126, -74.0058], bearing: 0 },
+                    { type: "car", coords: [40.7130, -74.0062], bearing: 220 },
+                    { type: "person", coords: [40.7127, -74.0059] },
+                    { type: "person", coords: [40.7129, -74.0061] },
+                    { type: "car", coords: [40.7122, -74.0055], bearing: 45 },
                 ]
             },
             {
@@ -129,6 +173,12 @@
                 feed: [
                     { title: "Seine River Sunset & Live Buskers", type: "Live", views: "9.1K watching", author: "ParisianWalks" },
                     { title: "Street Fashion Week Sneak Peek", type: "Trending", views: "89K views", author: "VogueStreet" }
+                ],
+                traffic: [
+                    { type: "car", coords: [48.8564, 2.3520], bearing: 135 },
+                    { type: "car", coords: [48.8568, 2.3524], bearing: 300 },
+                    { type: "person", coords: [48.8565, 2.3521] },
+                    { type: "person", coords: [48.8567, 2.3523] }
                 ]
             }
         ];
@@ -148,8 +198,8 @@
 
             marker.on('click', () => {
                 openDrawer(loc);
-                // Zoom level 16 gets you down to street and building level
-                map.flyTo(loc.coords, 16, { duration: 1.5 });
+                // Zoom level 18 gets you VERY close, perfect for seeing traffic and people
+                map.flyTo(loc.coords, 18, { duration: 1.5 });
             });
         });
 
@@ -161,13 +211,43 @@
                 const foundLoc = locations.find(loc => loc.name.toLowerCase().includes(query));
 
                 if (foundLoc) {
-                    // Zoom level 16 for building-level view
-                    map.flyTo(foundLoc.coords, 16, { duration: 1.5 });
+                    // Zoom level 18 for street-level view
+                    map.flyTo(foundLoc.coords, 18, { duration: 1.5 });
                     openDrawer(foundLoc);
                 } else {
                     alert(`Location "${query}" not found in current pins. Try Tokyo, New York, or Paris!`);
                 }
             }
+        }
+
+        // --- New function to render dynamic cars and people ---
+        function renderTraffic(trafficData) {
+            trafficLayerGroup.clearLayers(); // Clear old traffic before rendering new
+
+            trafficData.forEach(item => {
+                let trafficIcon;
+                if (item.type === 'car') {
+                    // Create car marker (rotated)
+                    trafficIcon = L.divIcon({
+                        className: 'custom-traffic-icon',
+                        html: `<div class="map-car" style="transform: rotate(${item.bearing}deg);"></div>`,
+                        iconSize: [14, 7],
+                        iconAnchor: [7, 3.5]
+                    });
+                } else if (item.type === 'person') {
+                    // Create pedestrian marker
+                    trafficIcon = L.divIcon({
+                        className: 'custom-traffic-icon',
+                        html: `<div class="map-pedestrian"></div>`,
+                        iconSize: [6, 6],
+                        iconAnchor: [3, 3]
+                    });
+                }
+
+                if (trafficIcon) {
+                    L.marker(item.coords, { icon: trafficIcon }).addTo(trafficLayerGroup);
+                }
+            });
         }
 
         // 5. Drawer Control Functions
@@ -189,6 +269,11 @@
                 `;
             });
 
+            // --- Render the dynamic traffic for the selected location ---
+            if (loc.traffic) {
+                renderTraffic(loc.traffic);
+            }
+
             const drawer = document.getElementById('content-drawer');
             drawer.classList.remove('translate-y-full', 'md:translate-x-full');
         }
@@ -196,6 +281,7 @@
         function closeDrawer() {
             const drawer = document.getElementById('content-drawer');
             drawer.classList.add('translate-y-full', 'md:translate-x-full');
+            trafficLayerGroup.clearLayers(); // Clear traffic on close
             map.setView([20, 0], 3);
         }
     </script>
