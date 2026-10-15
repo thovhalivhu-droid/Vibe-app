@@ -273,13 +273,14 @@
     <script>
         let generatedOtp = "123456";
 
-        const sampleYouTubeVideos = [
-            { id: "dQw4w9WgXcQ", available: true },
-            { id: "jNQXAC9IVRw", available: true },
-            { id: "INVALID_ID_TEST", available: false },
-            { id: "L_LUpnjgPso", available: true },
-            { id: "kJQP7kiw5Fk", available: true },
-            { id: "fJ9rUzIMcZQ", available: false }
+        // Video list with sample playable video feeds and availability flags
+        const sampleVideos = [
+            { url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", available: true, views: "1.2M views" },
+            { url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", available: true, views: "840K views" },
+            { url: "", available: false, views: "Offline" },
+            { url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", available: true, views: "2.5M views" },
+            { url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackSeeTheWorld.mp4", available: true, views: "510K views" },
+            { url: "", available: false, views: "Offline" }
         ];
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -461,6 +462,7 @@
         }
 
         function loadSimulatedFeeds(countryName, code) {
+            // News Feed Cards
             document.getElementById('content-news').innerHTML = [1, 2, 3, 4, 5, 6].map(i => `
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between shadow-lg relative">
                     <button onclick="toggleBookmark(this)" class="absolute top-4 right-4 text-slate-500 hover:text-indigo-400 transition"><i class="fa-regular fa-bookmark text-base"></i></button>
@@ -476,18 +478,17 @@
                 </div>
             `).join('');
 
-            document.getElementById('content-videos').innerHTML = sampleYouTubeVideos.map((vid, index) => {
+            // Trending Videos with Mutual Pause Controller (Ensures only one video plays at a time)
+            document.getElementById('content-videos').innerHTML = sampleVideos.map((vid, index) => {
                 let mediaElement = '';
                 if (vid.available) {
                     mediaElement = `
-                        <iframe class="w-full h-full object-cover" 
-                            src="https://www.youtube.com/embed/${vid.id}" 
-                            title="Trending Viral Clip #${index + 1} in ${countryName}" 
-                            frameborder="0" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                            allowfullscreen 
-                            loading="lazy">
-                        </iframe>`;
+                        <video class="pinpoint-video w-full h-full object-cover" 
+                            controls 
+                            preload="none"
+                            onplay="pauseOtherVideos(this)"
+                            src="${vid.url}">
+                        </video>`;
                 } else {
                     mediaElement = `
                         <div class="w-full h-full flex flex-col items-center justify-center bg-slate-900 text-slate-400 p-4 text-center">
@@ -504,12 +505,13 @@
                         </div>
                         <div class="p-4 flex flex-col flex-grow">
                             <h4 class="text-sm font-semibold text-white line-clamp-1">Trending Viral Clip #${index + 1} in ${countryName}</h4>
-                            <p class="text-xs text-slate-400 mt-1">Creator Hub • ${vid.available ? '1.2M views' : 'Offline'}</p>
+                            <p class="text-xs text-slate-400 mt-1">Creator Hub • ${vid.views}</p>
                         </div>
                     </div>
                 `;
             }).join('');
 
+            // Music / Songs Cards
             document.getElementById('content-music').innerHTML = [1, 2, 3, 4, 5, 6].map(i => `
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center space-x-4 shadow-lg">
                     <div class="w-14 h-14 bg-indigo-600/20 border border-indigo-500/30 rounded-xl flex items-center justify-center text-indigo-400 font-bold text-lg">
@@ -524,6 +526,16 @@
                     </button>
                 </div>
             `).join('');
+        }
+
+        // Controller to ensure past/other videos automatically pause when a new one plays
+        function pauseOtherVideos(currentVideo) {
+            const allVideos = document.querySelectorAll('.pinpoint-video');
+            allVideos.forEach(vid => {
+                if (vid !== currentVideo) {
+                    vid.pause();
+                }
+            });
         }
 
         function toggleBookmark(btn) {
@@ -563,6 +575,9 @@
         }
 
         function switchTab(tabName) {
+            // Pause all videos whenever switching tabs
+            document.querySelectorAll('.pinpoint-video').forEach(vid => vid.pause());
+
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-md', 'shadow-indigo-600/20');
@@ -576,6 +591,9 @@
         }
 
         function returnToHome() {
+            // Pause all videos when returning to home/globe
+            document.querySelectorAll('.pinpoint-video').forEach(vid => vid.pause());
+
             document.getElementById('hubView').classList.add('hidden');
             document.getElementById('homeView').classList.remove('hidden');
             document.getElementById('countrySearch').value = '';
