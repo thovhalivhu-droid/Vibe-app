@@ -41,12 +41,21 @@
 
     <!-- Top Navigation Bar -->
     <header class="h-16 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 flex items-center justify-between px-6 z-20">
+        <!-- Logo -->
         <div class="flex items-center space-x-3">
             <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-rose-500 flex items-center justify-center font-bold text-lg shadow-lg shadow-indigo-500/20">A</div>
             <h1 class="text-xl font-bold tracking-wider bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">ATLAS</h1>
         </div>
-        <div class="text-xs font-medium text-slate-400 bg-slate-800/60 px-3 py-1.5 rounded-full border border-slate-700/50">
-            🌍 Tap a pin to explore the world
+
+        <!-- Search Bar -->
+        <div class="flex items-center bg-slate-800/80 border border-slate-700/60 rounded-full px-4 py-1.5 w-72 md:w-96 shadow-inner focus-within:border-indigo-500 transition">
+            <svg class="w-4 h-4 text-slate-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <input type="text" id="search-input" placeholder="Search city or region (e.g. Tokyo)..." class="bg-transparent text-sm text-white placeholder-slate-400 focus:outline-none w-full" onkeypress="handleSearch(event)">
+        </div>
+
+        <!-- Hint badge -->
+        <div class="hidden lg:block text-xs font-medium text-slate-400 bg-slate-800/60 px-3 py-1.5 rounded-full border border-slate-700/50">
+            🌍 Tap a pin to explore
         </div>
     </header>
 
@@ -128,7 +137,6 @@
         locations.forEach(loc => {
             let pinColor = loc.type === 'live' ? 'bg-red-500 live-pulse' : 'bg-indigo-500';
             
-            // Create custom HTML marker
             const customIcon = L.divIcon({
                 className: 'custom-div-icon',
                 html: `<div class="relative w-6 h-6 rounded-full ${pinColor} border-2 border-white shadow-lg cursor-pointer flex items-center justify-center"></div>`,
@@ -138,14 +146,30 @@
 
             const marker = L.marker(loc.coords, { icon: customIcon }).addTo(map);
 
-            // Click event to open drawer and populate content
             marker.on('click', () => {
                 openDrawer(loc);
                 map.flyTo(loc.coords, 6, { duration: 1.5 });
             });
         });
 
-        // 4. Drawer Control Functions
+        // 4. Search Functionality
+        function handleSearch(event) {
+            if (event.key === 'Enter') {
+                const query = document.getElementById('search-input').value.toLowerCase().trim();
+                
+                // Find matching location in our mock data
+                const foundLoc = locations.find(loc => loc.name.toLowerCase().includes(query));
+
+                if (foundLoc) {
+                    map.flyTo(foundLoc.coords, 6, { duration: 1.5 });
+                    openDrawer(foundLoc);
+                } else {
+                    alert(`Location "${query}" not found in current pins. Try Tokyo, New York, or Paris!`);
+                }
+            }
+        }
+
+        // 5. Drawer Control Functions
         function openDrawer(loc) {
             document.getElementById('location-title').innerText = loc.name;
             const feedContainer = document.getElementById('location-feed');
