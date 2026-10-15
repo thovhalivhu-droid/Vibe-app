@@ -1,291 +1,103 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Atlas — Global Content Explorer</title>
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, ActivityIndicator, SafeAreaView } from 'react-native';
+
+export default function App() {
+  const [selectedCountry, setSelectedCountry] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState(null);
+
+  // Function to call your Pinpoint backend
+  const fetchCountryData = async (code, name) => {
+    setSelectedCountry(name);
+    setLoading(true);
     
-    <!-- Tailwind CSS for styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Leaflet CSS for the interactive map -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    try {
+      // Replace with your computer's local IP address if testing on a physical mobile device (e.g., http://192.168.1.50:5000)
+      const response = await fetch(`http://localhost:5000/api/country/${code}`);
+      const json = await response.json();
+      setData(json);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        
-        /* High-contrast custom styling for dark mode streets */
-        .leaflet-layer {
-            filter: brightness(0.55) invert(1) contrast(2.6) hue-rotate(200deg) saturate(0.4);
-        }
+  return (
+    <SafeAreaView style={styles.container}>
+      {/* App Header */}
+      <View style={styles.header}>
+        <Text style={styles.logo}>📍 PINPOINT</Text>
+        <Text style={styles.subtext}>Tap a region to discover its pulse</Text>
+      </View>
 
-        /* Custom pulse animation for live pins */
-        @keyframes pulse-ring {
-            0% { transform: scale(0.95); opacity: 0.8; }
-            50% { transform: scale(1.4); opacity: 0.3; }
-            100% { transform: scale(0.95); opacity: 0.8; }
-        }
-        .live-pulse::before {
-            content: '';
-            position: absolute;
-            top: -6px; left: -6px; right: -6px; bottom: -6px;
-            border-radius: 50%;
-            background: rgba(239, 68, 68, 0.6);
-            animation: pulse-ring 2s infinite;
-            z-index: -1;
-        }
+      {/* Quick Country Selector Grid (MVP placeholder for map) */}
+      <View style={styles.grid}>
+        <TouchableOpacity style={styles.countryButton} onPress={() => fetchCountryData('us', 'United States')}>
+          <Text style={styles.buttonText}>🇺🇸 United States</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.countryButton} onPress={() => fetchCountryData('gb', 'United Kingdom')}>
+          <Text style={styles.buttonText}>🇬🇧 United Kingdom</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.countryButton} onPress={() => fetchCountryData('jp', 'Japan')}>
+          <Text style={styles.buttonText}>🇯🇵 Japan</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.countryButton} onPress={() => fetchCountryData('br', 'Brazil')}>
+          <Text style={styles.buttonText}>🇧🇷 Brazil</Text>
+        </TouchableOpacity>
+      </View>
 
-        /* Styles for dynamic cars and people */
-        .map-car {
-            width: 14px;
-            height: 7px;
-            background-color: #38bdf8; /* sky-400 */
-            border-radius: 2px;
-            box-shadow: 0 0 10px rgba(56, 189, 248, 0.8), 0 0 4px rgba(255, 255, 255, 0.4);
-            position: relative;
-        }
-        .map-car::after {
-            content: '';
-            position: absolute;
-            top: 2px; right: -2px;
-            width: 3px; height: 3px;
-            background: rgba(255, 255, 200, 0.9);
-            border-radius: 1px;
-        }
+      {/* Content Area */}
+      {selectedCountry && (
+        <View style={styles.dashboard}>
+          <View style={styles.dashHeader}>
+            <Text style={styles.dashTitle}>{selectedCountry}</Text>
+            <TouchableOpacity onPress={() => setSelectedCountry(null)}>
+              <Text style={styles.closeText}>✕ Close</Text>
+            </TouchableOpacity>
+          </View>
 
-        .map-pedestrian {
-            width: 6px;
-            height: 6px;
-            background-color: #34d399; /* emerald-400 */
-            border-radius: 50%;
-            box-shadow: 0 0 8px rgba(52, 211, 153, 0.8);
-        }
-    </style>
-</head>
-<body class="bg-slate-950 text-white h-screen w-screen overflow-hidden flex flex-col">
+          {loading ? (
+            <ActivityIndicator size="large" color="#00E5FF" style={{ marginTop: 40 }} />
+          ) : (
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <Text style={styles.sectionTitle}>📰 Top Headlines</Text>
+              {data?.news?.map((item, index) => (
+                <View key={index} style={styles.card}>
+                  <Text style={styles.cardTitle}>{item.title}</Text>
+                  <Text style={styles.cardSource}>{item.source}</Text>
+                </View>
+              ))}
 
-    <!-- Top Navigation Bar -->
-    <header class="h-16 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 flex items-center justify-between px-6 z-20 gap-4">
-        <!-- Logo -->
-        <div class="flex items-center space-x-3 flex-shrink-0">
-            <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-rose-500 flex items-center justify-center font-bold text-lg shadow-lg shadow-indigo-500/20">A</div>
-            <h1 class="text-xl font-bold tracking-wider bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">ATLAS</h1>
-        </div>
+              <Text style={styles.sectionTitle}>🔥 Trending Media & Music</Text>
+              {data?.trendingMedia?.map((item, index) => (
+                <View key={index} style={styles.card}>
+                  <Text style={styles.cardTitle}>{item.title}</Text>
+                  <Text style={styles.cardSource}>{item.type === 'song' ? item.artist : item.views}</Text>
+                </View>
+              ))}
+            </ScrollView>
+          )}
+        </View>
+      )}
+    </SafeAreaView>
+  );
+}
 
-        <!-- Search Controls Group -->
-        <div class="flex items-center gap-3 flex-1 max-w-2xl">
-            <!-- Global Place Search Bar -->
-            <div class="flex items-center bg-slate-800/80 border border-slate-700/60 rounded-full px-4 py-1.5 flex-1 shadow-inner focus-within:border-indigo-500 transition">
-                <svg class="w-4 h-4 text-slate-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                <input type="text" id="search-input" placeholder="Search place (e.g. Tokyo, Paris)..." class="bg-transparent text-sm text-white placeholder-slate-400 focus:outline-none w-full" onkeypress="handleSearch(event)">
-            </div>
-
-            <!-- Coordinate Teleporter / Hack Input -->
-            <div class="hidden md:flex items-center bg-slate-800/80 border border-emerald-500/40 rounded-full px-4 py-1.5 w-64 shadow-inner focus-within:border-emerald-400 transition">
-                <span class="text-xs text-emerald-400 font-mono mr-2 font-bold">GPS:</span>
-                <input type="text" id="coord-input" placeholder="lat, lon (e.g. 40.71,-74.0)" class="bg-transparent text-xs text-white placeholder-slate-400 focus:outline-none w-full font-mono" onkeypress="handleCoordHack(event)">
-            </div>
-        </div>
-
-        <!-- Hint badge -->
-        <div class="hidden xl:block text-xs font-medium text-slate-400 bg-slate-800/60 px-3 py-1.5 rounded-full border border-slate-700/50 flex-shrink-0">
-            ⚡ GPS Teleporter Ready
-        </div>
-    </header>
-
-    <!-- Main Container -->
-    <div class="relative flex-1 w-full flex">
-        
-        <!-- Map Container -->
-        <div id="map" class="absolute inset-0 z-0"></div>
-
-        <!-- Slide-up / Side Content Drawer -->
-        <div id="content-drawer" class="absolute bottom-0 left-0 right-0 md:top-0 md:right-0 md:bottom-auto md:left-auto md:w-96 md:h-full bg-slate-900/90 backdrop-blur-xl border-t md:border-t-0 md:border-l border-slate-800 transform translate-y-full md:translate-y-0 md:translate-x-full transition-transform duration-300 ease-in-out z-30 flex flex-col shadow-2xl max-h-[75vh] md:max-h-none">
-            
-            <!-- Drawer Header -->
-            <div class="p-5 border-b border-slate-800 flex items-center justify-between">
-                <div>
-                    <span id="location-tag" class="text-xs uppercase tracking-widest text-emerald-400 font-semibold">Target Locked</span>
-                    <h2 id="location-title" class="text-xl font-bold text-white mt-0.5">Explore Feed</h2>
-                </div>
-                <button onclick="closeDrawer()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition">
-                    ✕
-                </button>
-            </div>
-
-            <!-- Drawer Feed Content -->
-            <div id="location-feed" class="flex-1 overflow-y-auto p-5 space-y-4">
-                <!-- Dynamic cards will load here -->
-            </div>
-        </div>
-    </div>
-
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-    <script>
-        // 1. Initialize Map centered globally
-        const map = L.map('map', { zoomControl: false }).setView([20, 0], 3);
-
-        L.control.zoom({ position: 'bottomright' }).addTo(map);
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 20,
-            maxNativeZoom: 19,
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-
-        const trafficLayerGroup = L.layerGroup().addTo(map);
-        let currentMarker = null;
-
-        // 2. Global Place Name Search Function
-        async function handleSearch(event) {
-            if (event.key === 'Enter') {
-                const query = document.getElementById('search-input').value.trim();
-                if (!query) return;
-
-                try {
-                    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
-                    const data = await response.json();
-
-                    if (data && data.length > 0) {
-                        const lat = parseFloat(data[0].lat);
-                        const lon = parseFloat(data[0].lon);
-                        const displayName = data[0].display_name.split(',')[0]; 
-                        teleportToCoords(lat, lon, displayName);
-                    } else {
-                        alert(`Could not find "${query}".`);
-                    }
-                } catch (error) {
-                    console.error("Geocoding error:", error);
-                }
-            }
-        }
-
-        // 3. Exact Coordinate Teleporter ("Hack") Function
-        function handleCoordHack(event) {
-            if (event.key === 'Enter') {
-                const inputVal = document.getElementById('coord-input').value.trim();
-                const parts = inputVal.split(',');
-
-                if (parts.length === 2) {
-                    const lat = parseFloat(parts[0].trim());
-                    const lon = parseFloat(parts[1].trim());
-
-                    if (!isNaN(lat) && !isNaN(lon) && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
-                        teleportToCoords(lat, lon, `Coordinates (${lat.toFixed(4)}, ${lon.toFixed(4)})`);
-                    } else {
-                        alert("Invalid coordinates! Latitude must be between -90 and 90, Longitude between -180 and 180.");
-                    }
-                } else {
-                    alert("Please enter valid format: latitude, longitude (e.g., 40.7128, -74.0060)");
-                }
-            }
-        }
-
-        // Core teleport and render logic
-        function teleportToCoords(lat, lon, name) {
-            const coords = [lat, lon];
-
-            // Zoom right down to street/building level
-            map.flyTo(coords, 18, { duration: 1.8 });
-
-            if (currentMarker) map.removeLayer(currentMarker);
-            
-            const customIcon = L.divIcon({
-                className: 'custom-div-icon',
-                html: `<div class="relative w-6 h-6 rounded-full bg-emerald-500 live-pulse border-2 border-white shadow-lg cursor-pointer flex items-center justify-center"></div>`,
-                iconSize: [24, 24],
-                iconAnchor: [12, 12]
-            });
-            currentMarker = L.marker(coords, { icon: customIcon }).addTo(map);
-
-            const generatedData = generateLocationData(name, coords);
-            openDrawer(generatedData);
-        }
-
-        // 4. Generate dynamic feeds and local traffic patterns
-        function generateLocationData(name, coords) {
-            const [lat, lon] = coords;
-            return {
-                name: name,
-                coords: coords,
-                feed: [
-                    { title: `Live ground camera stream near ${name}`, type: "Live", views: `${Math.floor(Math.random() * 15) + 4}.2K watching`, author: `TargetNode_Live` },
-                    { title: `Local viral trends and challenges detected`, type: "Trending", views: `${Math.floor(Math.random() * 80) + 15}K views`, author: `AtlasScanner` },
-                    { title: `Surrounding neighborhood structure overview`, type: "Trending", views: `${Math.floor(Math.random() * 50) + 10}K views`, author: `SectorViewer` }
-                ],
-                traffic: [
-                    { type: "car", coords: [lat + 0.00025, lon + 0.0001], bearing: 30 },
-                    { type: "car", coords: [lat - 0.0002, lon - 0.00015], bearing: 210 },
-                    { type: "car", coords: [lat + 0.00005, lon - 0.00025], bearing: 120 },
-                    { type: "person", coords: [lat + 0.00012, lon + 0.00015] },
-                    { type: "person", coords: [lat - 0.0001, lon + 0.00012] },
-                    { type: "person", coords: [lat + 0.00018, lon - 0.0001] },
-                    { type: "person", coords: [lat - 0.00015, lon - 0.00012] }
-                ]
-            };
-        }
-
-        // 5. Render Cars and Pedestrians
-        function renderTraffic(trafficData) {
-            trafficLayerGroup.clearLayers();
-            trafficData.forEach(item => {
-                let trafficIcon;
-                if (item.type === 'car') {
-                    trafficIcon = L.divIcon({
-                        className: 'custom-traffic-icon',
-                        html: `<div class="map-car" style="transform: rotate(${item.bearing}deg);"></div>`,
-                        iconSize: [14, 7],
-                        iconAnchor: [7, 3.5]
-                    });
-                } else {
-                    trafficIcon = L.divIcon({
-                        className: 'custom-traffic-icon',
-                        html: `<div class="map-pedestrian"></div>`,
-                        iconSize: [6, 6],
-                        iconAnchor: [3, 3]
-                    });
-                }
-                L.marker(item.coords, { icon: trafficIcon }).addTo(trafficLayerGroup);
-            });
-        }
-
-        // 6. Drawer Controllers
-        function openDrawer(loc) {
-            document.getElementById('location-title').innerText = loc.name;
-            const feedContainer = document.getElementById('location-feed');
-            feedContainer.innerHTML = '';
-
-            loc.feed.forEach(item => {
-                feedContainer.innerHTML += `
-                    <div class="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-4 hover:border-slate-600 transition cursor-pointer group">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-md ${item.type === 'Live' ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30'}">${item.type}</span>
-                            <span class="text-xs text-slate-400">${item.views}</span>
-                        </div>
-                        <h3 class="font-semibold text-white group-hover:text-indigo-300 transition line-clamp-2">${item.title}</h3>
-                        <p class="text-xs text-slate-400 mt-2">@${item.author}</p>
-                    </div>
-                `;
-            });
-
-            renderTraffic(loc.traffic);
-
-            const drawer = document.getElementById('content-drawer');
-            drawer.classList.remove('translate-y-full', 'md:translate-x-full');
-        }
-
-        function closeDrawer() {
-            const drawer = document.getElementById('content-drawer');
-            drawer.classList.add('translate-y-full', 'md:translate-x-full');
-            trafficLayerGroup.clearLayers();
-            if (currentMarker) map.removeLayer(currentMarker);
-            map.setView([20, 0], 3);
-        }
-    </script>
-</body>
-</html>
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#0B0F19', padding: 20 },
+  header: { marginTop: 20, marginBottom: 20 },
+  logo: { fontSize: 24, fontWeight: 'bold', color: '#00E5FF', letterSpacing: 2 },
+  subtext: { color: '#64748B', fontSize: 14, marginTop: 4 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'space-between' },
+  countryButton: { backgroundColor: '#1E293B', width: '48%', padding: 16, borderRadius: 12, alignItems: 'center', marginBottom: 10 },
+  buttonText: { color: '#F8FAFC', fontWeight: '600', fontSize: 14 },
+  dashboard: { flex: 1, backgroundColor: '#121829', marginTop: 10, borderRadius: 16, padding: 16 },
+  dashHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
+  dashTitle: { fontSize: 20, fontWeight: 'bold', color: '#FFF' },
+  closeText: { color: '#00E5FF', fontWeight: '600' },
+  sectionTitle: { fontSize: 15, fontWeight: 'bold', color: '#94A3B8', marginTop: 15, marginBottom: 8 },
+  card: { backgroundColor: '#1E293B', padding: 12, borderRadius: 10, marginBottom: 8 },
+  cardTitle: { color: '#F8FAFC', fontSize: 13, fontWeight: '500' },
+  cardSource: { color: '#00E5FF', fontSize: 11, marginTop: 4 }
+});
