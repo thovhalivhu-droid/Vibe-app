@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -62,33 +61,34 @@
     <!-- MAIN CONTENT CONTAINER -->
     <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-8 flex items-center justify-center">
 
-        <!-- VIEW 0: LOGIN PORTAL (Hidden until splash finishes) -->
+        <!-- VIEW 0A: LOGIN / REGISTER PORTAL -->
         <div id="loginView" class="w-full max-w-md bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl space-y-6 hidden">
             <div class="text-center space-y-2">
                 <div class="inline-flex bg-indigo-600 text-white p-3 rounded-2xl shadow-lg shadow-indigo-600/30 mb-2">
                     <i class="fa-solid fa-location-crosshairs text-2xl"></i>
                 </div>
                 <h2 class="text-2xl font-bold text-white tracking-tight">Welcome to Pinpoint</h2>
-                <p class="text-xs text-slate-400">Sign in to access world news, viral media, and regional charts.</p>
+                <p class="text-xs text-slate-400">Enter your credentials. A strong password is required for security.</p>
             </div>
 
-            <form onsubmit="handleLogin(event)" class="space-y-4">
+            <form onsubmit="handleInitialAuth(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-medium text-slate-300 mb-1.5">Email Address</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500"><i class="fa-solid fa-envelope"></i></span>
-                        <input type="email" required placeholder="name@example.com" 
+                        <input type="email" id="authEmail" required placeholder="name@example.com" 
                             class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Password</label>
+                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Strong Password</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500"><i class="fa-solid fa-lock"></i></span>
-                        <input type="password" required placeholder="••••••••" 
+                        <input type="password" id="authPassword" required placeholder="Min 8 chars, Uppercase, Number, Symbol" 
                             class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition">
                     </div>
+                    <p id="passwordError" class="text-[11px] text-red-400 mt-1.5 hidden"></p>
                 </div>
 
                 <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition shadow-lg shadow-indigo-600/25 flex items-center justify-center space-x-2">
@@ -105,6 +105,36 @@
 
             <button onclick="bypassLogin()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium rounded-xl border border-slate-700 transition">
                 Continue as Guest
+            </button>
+        </div>
+
+        <!-- VIEW 0B: VERIFICATION CODE SCREEN (OTP) -->
+        <div id="verifyView" class="w-full max-w-md bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl space-y-6 hidden">
+            <div class="text-center space-y-2">
+                <div class="inline-flex bg-emerald-600 text-white p-3 rounded-2xl shadow-lg shadow-emerald-600/30 mb-2">
+                    <i class="fa-solid fa-shield-halved text-2xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-white tracking-tight">Security Verification</h2>
+                <p class="text-xs text-slate-400">We've sent a 6-digit confirmation code to <span id="displayUserEmail" class="text-indigo-400 font-medium">your email</span>.</p>
+                <p class="text-[11px] bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 py-1.5 px-3 rounded-lg inline-block font-mono mt-1">Hint for testing: Code is <b id="hintCode">123456</b></p>
+            </div>
+
+            <form onsubmit="handleVerifyCode(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1.5 text-center">Enter 6-Digit Code</label>
+                    <input type="text" id="verificationCodeInput" maxlength="6" required placeholder="123456" 
+                        class="w-full text-center tracking-[0.5em] font-mono text-lg py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-700 focus:outline-none focus:border-indigo-500 transition">
+                    <p id="verifyError" class="text-[11px] text-red-400 mt-1.5 text-center hidden">Incorrect code. Please try again.</p>
+                </div>
+
+                <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition shadow-lg shadow-indigo-600/25 flex items-center justify-center space-x-2">
+                    <span>Verify & Enter App</span>
+                    <i class="fa-solid fa-check text-xs"></i>
+                </button>
+            </form>
+
+            <button onclick="backToLogin()" class="w-full text-center text-xs text-slate-500 hover:text-slate-300 transition">
+                &larr; Back to login
             </button>
         </div>
 
@@ -195,23 +225,96 @@
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
+        let generatedOtp = "123456";
+
         // Automatic Splash Screen Timer (2 Seconds)
         window.addEventListener('DOMContentLoaded', () => {
-            // Trigger loading bar animation
             setTimeout(() => {
                 document.getElementById('splashBar').style.width = '100%';
             }, 50);
 
-            // Hide splash screen after exactly 2000ms (2 seconds) and show login
             setTimeout(() => {
                 const splash = document.getElementById('splashView');
                 splash.style.opacity = '0';
                 setTimeout(() => {
                     splash.style.display = 'none';
                     document.getElementById('loginView').classList.remove('hidden');
-                }, 500); // match duration of fade out transition
+                }, 500);
             }, 2000);
         });
+
+        // Strong Password Validation Rule: Minimum 8 chars, at least 1 uppercase, 1 number, 1 special character
+        function isStrongPassword(password) {
+            const minLength = password.length >= 8;
+            const hasUppercase = /[A-Z]/.test(password);
+            const hasNumber = /[0-9]/.test(password);
+            const hasSpecial = /[^A-Za-z0-9]/.test(password);
+            return minLength && hasUppercase && hasNumber && hasSpecial;
+        }
+
+        function handleInitialAuth(e) {
+            e.preventDefault();
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+            const errorEl = document.getElementById('passwordError');
+
+            if (!isStrongPassword(password)) {
+                errorEl.textContent = "Password must be 8+ chars and include an uppercase letter, number, and symbol.";
+                errorEl.classList.remove('hidden');
+                return;
+            }
+            errorEl.classList.add('hidden');
+
+            // Generate a random 6-digit verification code
+            generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+            document.getElementById('hintCode').textContent = generatedOtp;
+            document.getElementById('displayUserEmail').textContent = email;
+
+            // Transition from login view to code verification view
+            document.getElementById('loginView').classList.add('hidden');
+            document.getElementById('verifyView').classList.remove('hidden');
+        }
+
+        function handleVerifyCode(e) {
+            e.preventDefault();
+            const enteredCode = document.getElementById('verificationCodeInput').value;
+            const verifyError = document.getElementById('verifyError');
+
+            if (enteredCode === generatedOtp) {
+                verifyError.classList.add('hidden');
+                transitionToApp();
+            } else {
+                verifyError.classList.remove('hidden');
+            }
+        }
+
+        function bypassLogin() {
+            transitionToApp();
+        }
+
+        function backToLogin() {
+            document.getElementById('verifyView').classList.add('hidden');
+            document.getElementById('loginView').classList.remove('hidden');
+            document.getElementById('verificationCodeInput').value = '';
+        }
+
+        function transitionToApp() {
+            document.getElementById('loginView').classList.add('hidden');
+            document.getElementById('verifyView').classList.add('hidden');
+            document.getElementById('appHeader').classList.remove('hidden');
+            document.getElementById('homeView').classList.remove('hidden');
+            renderHomeGrid();
+        }
+
+        function logout() {
+            document.getElementById('appHeader').classList.add('hidden');
+            document.getElementById('homeView').classList.add('hidden');
+            document.getElementById('hubView').classList.add('hidden');
+            document.getElementById('loginView').classList.remove('hidden');
+            document.getElementById('authEmail').value = '';
+            document.getElementById('authPassword').value = '';
+            document.getElementById('verificationCodeInput').value = '';
+        }
 
         const popularCountries = [
             { name: "United States", code: "US", flag: "https://flagcdn.com/w320/us.png" },
@@ -229,29 +332,6 @@
         ];
 
         const gridEl = document.getElementById('quickCountryGrid');
-
-        function handleLogin(e) {
-            e.preventDefault();
-            transitionToApp();
-        }
-
-        function bypassLogin() {
-            transitionToApp();
-        }
-
-        function transitionToApp() {
-            document.getElementById('loginView').classList.add('hidden');
-            document.getElementById('appHeader').classList.remove('hidden');
-            document.getElementById('homeView').classList.remove('hidden');
-            renderHomeGrid();
-        }
-
-        function logout() {
-            document.getElementById('appHeader').classList.add('hidden');
-            document.getElementById('homeView').classList.add('hidden');
-            document.getElementById('hubView').classList.add('hidden');
-            document.getElementById('loginView').classList.remove('hidden');
-        }
 
         function renderHomeGrid() {
             gridEl.innerHTML = popularCountries.map(c => `
