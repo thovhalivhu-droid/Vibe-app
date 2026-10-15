@@ -17,7 +17,7 @@
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         
-        /* High-contrast custom styling to make real street grids and blocks pop in dark mode */
+        /* High-contrast custom styling for dark mode streets */
         .leaflet-layer {
             filter: brightness(0.55) invert(1) contrast(2.6) hue-rotate(200deg) saturate(0.4);
         }
@@ -38,7 +38,7 @@
             z-index: -1;
         }
 
-        /* Styles for dynamic cars and people moving across real streets */
+        /* Styles for dynamic cars and people */
         .map-car {
             width: 14px;
             height: 7px;
@@ -47,7 +47,7 @@
             box-shadow: 0 0 10px rgba(56, 189, 248, 0.8), 0 0 4px rgba(255, 255, 255, 0.4);
             position: relative;
         }
-        .map-car::after { /* front headlights */
+        .map-car::after {
             content: '';
             position: absolute;
             top: 2px; right: -2px;
@@ -68,22 +68,31 @@
 <body class="bg-slate-950 text-white h-screen w-screen overflow-hidden flex flex-col">
 
     <!-- Top Navigation Bar -->
-    <header class="h-16 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 flex items-center justify-between px-6 z-20">
+    <header class="h-16 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 flex items-center justify-between px-6 z-20 gap-4">
         <!-- Logo -->
-        <div class="flex items-center space-x-3">
+        <div class="flex items-center space-x-3 flex-shrink-0">
             <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-rose-500 flex items-center justify-center font-bold text-lg shadow-lg shadow-indigo-500/20">A</div>
             <h1 class="text-xl font-bold tracking-wider bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">ATLAS</h1>
         </div>
 
-        <!-- Global Search Bar -->
-        <div class="flex items-center bg-slate-800/80 border border-slate-700/60 rounded-full px-4 py-1.5 w-72 md:w-96 shadow-inner focus-within:border-indigo-500 transition">
-            <svg class="w-4 h-4 text-slate-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-            <input type="text" id="search-input" placeholder="Search ANY city, street, or region..." class="bg-transparent text-sm text-white placeholder-slate-400 focus:outline-none w-full" onkeypress="handleSearch(event)">
+        <!-- Search Controls Group -->
+        <div class="flex items-center gap-3 flex-1 max-w-2xl">
+            <!-- Global Place Search Bar -->
+            <div class="flex items-center bg-slate-800/80 border border-slate-700/60 rounded-full px-4 py-1.5 flex-1 shadow-inner focus-within:border-indigo-500 transition">
+                <svg class="w-4 h-4 text-slate-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <input type="text" id="search-input" placeholder="Search place (e.g. Tokyo, Paris)..." class="bg-transparent text-sm text-white placeholder-slate-400 focus:outline-none w-full" onkeypress="handleSearch(event)">
+            </div>
+
+            <!-- Coordinate Teleporter / Hack Input -->
+            <div class="hidden md:flex items-center bg-slate-800/80 border border-emerald-500/40 rounded-full px-4 py-1.5 w-64 shadow-inner focus-within:border-emerald-400 transition">
+                <span class="text-xs text-emerald-400 font-mono mr-2 font-bold">GPS:</span>
+                <input type="text" id="coord-input" placeholder="lat, lon (e.g. 40.71,-74.0)" class="bg-transparent text-xs text-white placeholder-slate-400 focus:outline-none w-full font-mono" onkeypress="handleCoordHack(event)">
+            </div>
         </div>
 
         <!-- Hint badge -->
-        <div class="hidden lg:block text-xs font-medium text-slate-400 bg-slate-800/60 px-3 py-1.5 rounded-full border border-slate-700/50">
-            🌍 Real-world street mapping active
+        <div class="hidden xl:block text-xs font-medium text-slate-400 bg-slate-800/60 px-3 py-1.5 rounded-full border border-slate-700/50 flex-shrink-0">
+            ⚡ GPS Teleporter Ready
         </div>
     </header>
 
@@ -99,7 +108,7 @@
             <!-- Drawer Header -->
             <div class="p-5 border-b border-slate-800 flex items-center justify-between">
                 <div>
-                    <span id="location-tag" class="text-xs uppercase tracking-widest text-indigo-400 font-semibold">Global Feed</span>
+                    <span id="location-tag" class="text-xs uppercase tracking-widest text-emerald-400 font-semibold">Target Locked</span>
                     <h2 id="location-title" class="text-xl font-bold text-white mt-0.5">Explore Feed</h2>
                 </div>
                 <button onclick="closeDrawer()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition">
@@ -123,7 +132,6 @@
 
         L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-        // High-density street tile layer showing accurate structural blocks and road vectors globally
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 20,
             maxNativeZoom: 19,
@@ -133,7 +141,7 @@
         const trafficLayerGroup = L.layerGroup().addTo(map);
         let currentMarker = null;
 
-        // 2. Global Search for ANY location on earth using Nominatim
+        // 2. Global Place Name Search Function
         async function handleSearch(event) {
             if (event.key === 'Enter') {
                 const query = document.getElementById('search-input').value.trim();
@@ -147,45 +155,68 @@
                         const lat = parseFloat(data[0].lat);
                         const lon = parseFloat(data[0].lon);
                         const displayName = data[0].display_name.split(',')[0]; 
-
-                        const coords = [lat, lon];
-
-                        // Zoom right down into individual street layouts and building blocks (Zoom 18)
-                        map.flyTo(coords, 18, { duration: 1.8 });
-
-                        if (currentMarker) map.removeLayer(currentMarker);
-                        
-                        const customIcon = L.divIcon({
-                            className: 'custom-div-icon',
-                            html: `<div class="relative w-6 h-6 rounded-full bg-indigo-500 live-pulse border-2 border-white shadow-lg cursor-pointer flex items-center justify-center"></div>`,
-                            iconSize: [24, 24],
-                            iconAnchor: [12, 12]
-                        });
-                        currentMarker = L.marker(coords, { icon: customIcon }).addTo(map);
-
-                        const generatedData = generateLocationData(displayName, coords);
-                        openDrawer(generatedData);
-
+                        teleportToCoords(lat, lon, displayName);
                     } else {
-                        alert(`Could not find "${query}". Try entering another city, landmark, or street name!`);
+                        alert(`Could not find "${query}".`);
                     }
                 } catch (error) {
                     console.error("Geocoding error:", error);
-                    alert("Error searching location. Please check your internet connection.");
                 }
             }
         }
 
-        // 3. Generate hyper-localized content feeds and matching local traffic flows
+        // 3. Exact Coordinate Teleporter ("Hack") Function
+        function handleCoordHack(event) {
+            if (event.key === 'Enter') {
+                const inputVal = document.getElementById('coord-input').value.trim();
+                const parts = inputVal.split(',');
+
+                if (parts.length === 2) {
+                    const lat = parseFloat(parts[0].trim());
+                    const lon = parseFloat(parts[1].trim());
+
+                    if (!isNaN(lat) && !isNaN(lon) && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
+                        teleportToCoords(lat, lon, `Coordinates (${lat.toFixed(4)}, ${lon.toFixed(4)})`);
+                    } else {
+                        alert("Invalid coordinates! Latitude must be between -90 and 90, Longitude between -180 and 180.");
+                    }
+                } else {
+                    alert("Please enter valid format: latitude, longitude (e.g., 40.7128, -74.0060)");
+                }
+            }
+        }
+
+        // Core teleport and render logic
+        function teleportToCoords(lat, lon, name) {
+            const coords = [lat, lon];
+
+            // Zoom right down to street/building level
+            map.flyTo(coords, 18, { duration: 1.8 });
+
+            if (currentMarker) map.removeLayer(currentMarker);
+            
+            const customIcon = L.divIcon({
+                className: 'custom-div-icon',
+                html: `<div class="relative w-6 h-6 rounded-full bg-emerald-500 live-pulse border-2 border-white shadow-lg cursor-pointer flex items-center justify-center"></div>`,
+                iconSize: [24, 24],
+                iconAnchor: [12, 12]
+            });
+            currentMarker = L.marker(coords, { icon: customIcon }).addTo(map);
+
+            const generatedData = generateLocationData(name, coords);
+            openDrawer(generatedData);
+        }
+
+        // 4. Generate dynamic feeds and local traffic patterns
         function generateLocationData(name, coords) {
             const [lat, lon] = coords;
             return {
                 name: name,
                 coords: coords,
                 feed: [
-                    { title: `Live ground camera stream around ${name}`, type: "Live", views: `${Math.floor(Math.random() * 18) + 3}.4K watching`, author: `${name.replace(/\s+/g, '')}Live` },
-                    { title: `Trending public challenges and city highlights in ${name}`, type: "Trending", views: `${Math.floor(Math.random() * 75) + 12}K views`, author: `GlobalAtlas` },
-                    { title: `Exploring local architecture & spots near ${name}`, type: "Trending", views: `${Math.floor(Math.random() * 45) + 8}K views`, author: `CityExplorer` }
+                    { title: `Live ground camera stream near ${name}`, type: "Live", views: `${Math.floor(Math.random() * 15) + 4}.2K watching`, author: `TargetNode_Live` },
+                    { title: `Local viral trends and challenges detected`, type: "Trending", views: `${Math.floor(Math.random() * 80) + 15}K views`, author: `AtlasScanner` },
+                    { title: `Surrounding neighborhood structure overview`, type: "Trending", views: `${Math.floor(Math.random() * 50) + 10}K views`, author: `SectorViewer` }
                 ],
                 traffic: [
                     { type: "car", coords: [lat + 0.00025, lon + 0.0001], bearing: 30 },
@@ -199,7 +230,7 @@
             };
         }
 
-        // 4. Render Cars and Pedestrians along real street vectors
+        // 5. Render Cars and Pedestrians
         function renderTraffic(trafficData) {
             trafficLayerGroup.clearLayers();
             trafficData.forEach(item => {
@@ -223,7 +254,7 @@
             });
         }
 
-        // 5. Drawer Controllers
+        // 6. Drawer Controllers
         function openDrawer(loc) {
             document.getElementById('location-title').innerText = loc.name;
             const feedContainer = document.getElementById('location-feed');
