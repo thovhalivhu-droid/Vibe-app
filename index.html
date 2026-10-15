@@ -68,7 +68,7 @@
                     <i class="fa-solid fa-location-crosshairs text-2xl"></i>
                 </div>
                 <h2 class="text-2xl font-bold text-white tracking-tight">Welcome to Pinpoint</h2>
-                <p class="text-xs text-slate-400">Enter your credentials. A strong password is required for security.</p>
+                <p class="text-xs text-slate-400">Enter your credentials. Password strength meter active.</p>
             </div>
 
             <form onsubmit="handleInitialAuth(event)" class="space-y-4">
@@ -82,13 +82,23 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Strong Password</label>
+                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Password</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500"><i class="fa-solid fa-lock"></i></span>
-                        <input type="password" id="authPassword" required placeholder="Min 8 chars, Uppercase, Number, Symbol" 
+                        <input type="password" id="authPassword" oninput="checkPasswordStrength(this.value)" required placeholder="Min 8 chars, Uppercase, Number, Symbol" 
                             class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition">
                     </div>
-                    <p id="passwordError" class="text-[11px] text-red-400 mt-1.5 hidden"></p>
+                    <!-- Password Strength Meter Bar -->
+                    <div class="w-full h-1.5 bg-slate-800 rounded-full mt-2 overflow-hidden">
+                        <div id="strengthBar" class="h-full w-0 transition-all duration-300"></div>
+                    </div>
+                    <p id="strengthText" class="text-[11px] text-slate-400 mt-1">Strength: Too short</p>
+                    <p id="passwordError" class="text-[11px] text-red-400 mt-1 hidden"></p>
+                </div>
+
+                <div class="flex items-center space-x-2">
+                    <input type="checkbox" id="rememberMe" class="rounded bg-slate-950 border-slate-800 text-indigo-600 focus:ring-0">
+                    <label for="rememberMe" class="text-xs text-slate-400 cursor-pointer">Remember me on this device</label>
                 </div>
 
                 <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition shadow-lg shadow-indigo-600/25 flex items-center justify-center space-x-2">
@@ -115,7 +125,7 @@
                     <i class="fa-solid fa-shield-halved text-2xl"></i>
                 </div>
                 <h2 class="text-2xl font-bold text-white tracking-tight">Security Verification</h2>
-                <p class="text-xs text-slate-400">We've sent a 6-digit confirmation code to <span id="displayUserEmail" class="text-indigo-400 font-medium">your email</span>.</p>
+                <p class="text-xs text-slate-400">Confirmation code dispatched to <span id="displayUserEmail" class="text-indigo-400 font-medium">your email</span>.</p>
                 <p class="text-[11px] bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 py-1.5 px-3 rounded-lg inline-block font-mono mt-1">Hint for testing: Code is <b id="hintCode">123456</b></p>
             </div>
 
@@ -186,6 +196,9 @@
                 <button onclick="switchTab('facts')" id="tab-facts" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-semibold transition text-slate-400 hover:text-white hover:bg-slate-900">
                     <i class="fa-solid fa-globe mr-2"></i>Country Snapshot
                 </button>
+                <button onclick="switchTab('community')" id="tab-community" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-semibold transition text-slate-400 hover:text-white hover:bg-slate-900">
+                    <i class="fa-solid fa-comments mr-2"></i>Community & Polls
+                </button>
             </div>
 
             <!-- TAB CONTENT SECTIONS -->
@@ -214,6 +227,39 @@
                 </div>
             </div>
 
+            <!-- COMMUNITY & POLLS TAB -->
+            <div id="content-community" class="tab-content hidden space-y-6">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+                    <h3 class="text-lg font-bold text-white flex items-center"><i class="fa-solid fa-chart-pie mr-2 text-indigo-400"></i>Weekly Economic Outlook Poll</h3>
+                    <p class="text-xs text-slate-400">How would you rate the current trajectory of this nation's media and economic climate?</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                        <button onclick="votePoll('bullish')" class="p-4 bg-slate-950 border border-slate-800 hover:border-emerald-500 rounded-xl text-left transition group">
+                            <span class="text-xs text-emerald-400 font-semibold uppercase tracking-wider">Bullish / Positive</span>
+                            <p id="bullishCount" class="text-2xl font-bold text-white mt-1">68%</p>
+                        </button>
+                        <button onclick="votePoll('bearish')" class="p-4 bg-slate-950 border border-slate-800 hover:border-rose-500 rounded-xl text-left transition group">
+                            <span class="text-xs text-rose-400 font-semibold uppercase tracking-wider">Bearish / Cautious</span>
+                            <p id="bearishCount" class="text-2xl font-bold text-white mt-1">32%</p>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+                    <h3 class="text-lg font-bold text-white flex items-center"><i class="fa-solid fa-comments mr-2 text-indigo-400"></i>Live Country Feed Discussion</h3>
+                    <div id="commentList" class="space-y-3 max-h-60 overflow-y-auto pr-2">
+                        <div class="p-3 bg-slate-950/50 rounded-xl border border-slate-800 text-xs">
+                            <span class="font-semibold text-indigo-400">GlobalObserver_99</span>
+                            <p class="text-slate-300 mt-1">Great cultural developments happening across urban centers here this week!</p>
+                        </div>
+                    </div>
+                    <form onsubmit="postComment(event)" class="flex gap-2 pt-2">
+                        <input type="text" id="commentInput" required placeholder="Add to the conversation..." 
+                            class="flex-grow px-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500">
+                        <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl transition">Post</button>
+                    </form>
+                </div>
+            </div>
+
         </div>
 
     </main>
@@ -227,7 +273,7 @@
     <script>
         let generatedOtp = "123456";
 
-        // Automatic Splash Screen Timer (2 Seconds)
+        // Check Session Persistence on Load
         window.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 document.getElementById('splashBar').style.width = '100%';
@@ -238,18 +284,47 @@
                 splash.style.opacity = '0';
                 setTimeout(() => {
                     splash.style.display = 'none';
-                    document.getElementById('loginView').classList.remove('hidden');
+                    if (localStorage.getItem('pinpoint_logged_in') === 'true') {
+                        transitionToApp();
+                    } else {
+                        document.getElementById('loginView').classList.remove('hidden');
+                    }
                 }, 500);
             }, 2000);
         });
 
-        // Strong Password Validation Rule: Minimum 8 chars, at least 1 uppercase, 1 number, 1 special character
+        // Live Password Strength Meter
+        function checkPasswordStrength(password) {
+            const bar = document.getElementById('strengthBar');
+            const text = document.getElementById('strengthText');
+            
+            let score = 0;
+            if (password.length >= 8) score++;
+            if (/[A-Z]/.test(password)) score++;
+            if (/[0-9]/.test(password)) score++;
+            if (/[^A-Za-z0-9]/.test(password)) score++;
+
+            if (score === 0) {
+                bar.style.width = '0%';
+                bar.className = 'h-full transition-all duration-300 bg-red-500';
+                text.textContent = 'Strength: Too short';
+            } else if (score <= 2) {
+                bar.style.width = '40%';
+                bar.className = 'h-full transition-all duration-300 bg-orange-500';
+                text.textContent = 'Strength: Weak';
+            } else if (score === 3) {
+                bar.style.width = '75%';
+                bar.className = 'h-full transition-all duration-300 bg-yellow-500';
+                text.textContent = 'Strength: Good';
+            } else {
+                bar.style.width = '100%';
+                bar.className = 'h-full transition-all duration-300 bg-emerald-500';
+                text.textContent = 'Strength: Strong & Secure';
+            }
+        }
+
         function isStrongPassword(password) {
-            const minLength = password.length >= 8;
-            const hasUppercase = /[A-Z]/.test(password);
-            const hasNumber = /[0-9]/.test(password);
-            const hasSpecial = /[^A-Za-z0-9]/.test(password);
-            return minLength && hasUppercase && hasNumber && hasSpecial;
+            return password.length >= 8 && /[A-Z]/.test(password) && /[0-9]/.test(password) && /[^A-Za-z0-9]/.test(password);
         }
 
         function handleInitialAuth(e) {
@@ -265,12 +340,10 @@
             }
             errorEl.classList.add('hidden');
 
-            // Generate a random 6-digit verification code
             generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
             document.getElementById('hintCode').textContent = generatedOtp;
             document.getElementById('displayUserEmail').textContent = email;
 
-            // Transition from login view to code verification view
             document.getElementById('loginView').classList.add('hidden');
             document.getElementById('verifyView').classList.remove('hidden');
         }
@@ -282,6 +355,9 @@
 
             if (enteredCode === generatedOtp) {
                 verifyError.classList.add('hidden');
+                if (document.getElementById('rememberMe').checked) {
+                    localStorage.setItem('pinpoint_logged_in', 'true');
+                }
                 transitionToApp();
             } else {
                 verifyError.classList.remove('hidden');
@@ -307,6 +383,7 @@
         }
 
         function logout() {
+            localStorage.removeItem('pinpoint_logged_in');
             document.getElementById('appHeader').classList.add('hidden');
             document.getElementById('homeView').classList.add('hidden');
             document.getElementById('hubView').classList.add('hidden');
@@ -359,105 +436,4 @@
         async function fetchCountryDetails(code) {
             try {
                 let res = await fetch(`https://restcountries.com/v3.1/alpha/${code}`);
-                let data = await res.json();
-                let country = data[0];
-
-                document.getElementById('hubCapital').innerHTML = `<i class="fa-solid fa-city mr-1.5 text-indigo-400"></i>Capital: ${country.capital ? country.capital[0] : 'N/A'}`;
-                document.getElementById('factPop').innerText = country.population ? country.population.toLocaleString() : 'N/A';
-                document.getElementById('factRegion').innerText = country.region || 'N/A';
-                
-                let currencies = country.currencies ? Object.values(country.currencies).map(c => `${c.name} (${c.symbol || ''})`).join(', ') : 'N/A';
-                document.getElementById('factCurrency').innerText = currencies;
-
-                let languages = country.languages ? Object.values(country.languages).join(', ') : 'N/A';
-                document.getElementById('factLang').innerText = languages;
-            } catch (err) {
-                console.error("Could not fetch extended country data", err);
-            }
-        }
-
-        function loadSimulatedFeeds(countryName, code) {
-            document.getElementById('content-news').innerHTML = [1, 2, 3, 4, 5, 6].map(i => `
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between shadow-lg">
-                    <div>
-                        <span class="text-[10px] bg-indigo-500/10 text-indigo-400 font-semibold px-2 py-0.5 rounded border border-indigo-500/20">Top Story #${i}</span>
-                        <h3 class="text-base font-semibold text-white mt-3 leading-snug">Major developments unfolding across economic sectors in ${countryName}</h3>
-                        <p class="text-xs text-slate-400 mt-2 line-clamp-2">Local news outlets report shifting paradigms with widespread engagement across key municipal districts...</p>
-                    </div>
-                    <div class="mt-4 pt-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-500">
-                        <span><i class="fa-regular fa-clock mr-1"></i>2 hours ago</span>
-                        <span class="text-indigo-400 font-medium cursor-pointer hover:underline">Read Source &rarr;</span>
-                    </div>
-                </div>
-            `).join('');
-
-            document.getElementById('content-videos').innerHTML = [1, 2, 3, 4, 5, 6].map(i => `
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg flex flex-col">
-                    <div class="bg-slate-800 h-40 flex items-center justify-center relative group cursor-pointer">
-                        <i class="fa-solid fa-play text-3xl text-indigo-400 group-hover:scale-110 transition"></i>
-                        <span class="absolute bottom-2 right-2 bg-black/70 text-[10px] px-2 py-0.5 rounded text-white font-mono">12:45</span>
-                    </div>
-                    <div class="p-4 flex flex-col flex-grow">
-                        <h4 class="text-sm font-semibold text-white line-clamp-1">Trending Viral Clip #${i} in ${countryName}</h4>
-                        <p class="text-xs text-slate-400 mt-1">Creator Hub • 1.2M views</p>
-                    </div>
-                </div>
-            `).join('');
-
-            document.getElementById('content-music').innerHTML = [1, 2, 3, 4, 5, 6].map(i => `
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center space-x-4 shadow-lg">
-                    <div class="w-14 h-14 bg-indigo-600/20 border border-indigo-500/30 rounded-xl flex items-center justify-center text-indigo-400 font-bold text-lg">
-                        #${i}
-                    </div>
-                    <div class="flex-grow">
-                        <h4 class="text-sm font-semibold text-white">Top Chart Single #${i}</h4>
-                        <p class="text-xs text-slate-400">Featured Artist • ${countryName} Charts</p>
-                    </div>
-                    <button class="w-10 h-10 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition shadow-md shadow-indigo-600/30">
-                        <i class="fa-solid fa-play text-xs pl-0.5"></i>
-                    </button>
-                </div>
-            `).join('');
-        }
-
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-md', 'shadow-indigo-600/20');
-                btn.classList.add('text-slate-400', 'hover:text-white', 'hover:bg-slate-900');
-            });
-
-            document.getElementById(`content-${tabName}`).classList.remove('hidden');
-            const activeBtn = document.getElementById(`tab-${tabName}`);
-            activeBtn.classList.remove('text-slate-400', 'hover:text-white', 'hover:bg-slate-900');
-            activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-md', 'shadow-indigo-600/20');
-        }
-
-        function returnToHome() {
-            document.getElementById('hubView').classList.add('hidden');
-            document.getElementById('homeView').classList.remove('hidden');
-            document.getElementById('countrySearch').value = '';
-        }
-
-        document.getElementById('countrySearch').addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase();
-            const matched = popularCountries.filter(c => c.name.toLowerCase().includes(query));
-            
-            if(query.trim() === '') {
-                renderHomeGrid();
-                return;
-            }
-
-            gridEl.innerHTML = matched.length ? matched.map(c => `
-                <div onclick="selectCountry('${c.code}', '${c.name}', '${c.flag}')" 
-                    class="group bg-slate-900 border border-slate-800 hover:border-indigo-500 p-4 rounded-2xl cursor-pointer transition transform hover:-translate-y-1 flex flex-col items-center text-center shadow-lg">
-                    <img src="${c.flag}" alt="${c.name}" class="w-16 h-11 object-cover rounded-md shadow mb-3 group-hover:scale-105 transition">
-                    <span class="text-sm font-semibold text-slate-200 group-hover:text-indigo-400 transition">${c.name}</span>
-                    <span class="text-[10px] text-slate-500 mt-0.5">Code: ${c.code}</span>
-                </div>
-            `).join('') : `<p class="col-span-full text-center text-slate-500 py-8">No countries found matching "${query}"</p>`;
-        });
-    </script>
-</body>
-</html>
- 
+                let data = await
