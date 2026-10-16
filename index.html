@@ -44,6 +44,11 @@
             </div>
             
             <div class="flex items-center gap-3 w-full md:w-auto justify-end flex-wrap">
+                <button onclick="openAiVisionModal()" title="Open Neural Vision HUD" class="px-3 py-2 bg-indigo-950/60 hover:bg-indigo-900/80 border border-indigo-500/40 text-xs text-indigo-300 rounded-xl transition flex items-center space-x-2">
+                    <i class="fa-solid fa-eye"></i>
+                    <span>AI Vision HUD</span>
+                </button>
+
                 <button onclick="openCreateStudioModal()" title="Create or Upload Videos and Photos" class="px-3.5 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-xs font-bold text-white rounded-xl transition shadow-lg shadow-indigo-600/30 flex items-center space-x-2">
                     <i class="fa-solid fa-cloud-arrow-up"></i>
                     <span id="btnUploadText">Create & Upload Gallery Media</span>
@@ -76,20 +81,6 @@
                         <option value="es">🇪🇸 Spanish</option>
                         <option value="ar">🇸🇦 Standard Arabic</option>
                         <option value="fr">🇫🇷 French</option>
-                        <option value="bn">🇧🇩 Bengali</option>
-                        <option value="pt">🇵🇹 Portuguese</option>
-                        <option value="ru">🇷🇺 Russian</option>
-                        <option value="ur">🇵🇰 Urdu</option>
-                        <option value="id">🇮🇩 Indonesian (Bahasa)</option>
-                        <option value="sw">🇹🇿 Swahili</option>
-                        <option value="ja">🇯🇵 Japanese</option>
-                        <option value="de">🇩🇪 German</option>
-                        <option value="tr">🇹🇷 Turkish</option>
-                        <option value="ko">🇰🇷 Korean</option>
-                        <option value="it">🇮🇹 Italian</option>
-                        <option value="vi">🇻🇳 Vietnamese</option>
-                        <option value="pa">🇮🇳 Punjabi</option>
-                        <option value="fa">🇮🇷 Persian (Farsi)</option>
                     </select>
                 </div>
 
@@ -99,6 +90,49 @@
             </div>
         </div>
     </header>
+
+    <!-- AI COMPUTER VISION INSPECTOR MODAL -->
+    <div id="aiVisionModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-indigo-500/40 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-6">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-indigo-600/20 text-indigo-400 p-2.5 rounded-xl border border-indigo-500/30">
+                        <i class="fa-solid fa-eye text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-white">Pinpoint Neural Vision HUD</h3>
+                        <p class="text-xs text-indigo-300 font-mono">Live Spatial Object & Telemetry Extraction</p>
+                    </div>
+                </div>
+                <button onclick="closeAiVisionModal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="relative w-full aspect-video bg-slate-950 rounded-2xl overflow-hidden border border-slate-800 flex items-center justify-center">
+                    <div id="visionScanAnimation" class="absolute inset-0 bg-gradient-to-b from-indigo-500/10 via-transparent to-indigo-500/10 animate-pulse pointer-events-none"></div>
+                    <div id="visionTargetBox" class="absolute border-2 border-emerald-400 bg-emerald-500/10 rounded p-2 text-[10px] font-mono text-emerald-300 transition-all duration-500" style="top: 20%; left: 30%; width: 40%; height: 50%;">
+                        <span class="bg-emerald-500 text-slate-950 px-1 font-bold rounded">TARGET: 99.4% CONFIDENCE</span>
+                    </div>
+                    <div class="absolute bottom-3 left-3 bg-slate-900/80 backdrop-blur px-3 py-1.5 rounded-lg border border-slate-700 text-[10px] font-mono text-slate-300">
+                        <i class="fa-solid fa-satellite text-indigo-400 mr-1"></i> Neural Engine: Active (YOLO-Edge v5)
+                    </div>
+                </div>
+
+                <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-2 font-mono text-xs">
+                    <p class="text-slate-400">Frame Telemetry: <span id="visionTelemetryId" class="text-indigo-400">Analyzing focal node...</span></p>
+                    <p class="text-slate-400">Identified Entities:</p>
+                    <div id="visionEntitiesList" class="text-slate-200 bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-1">
+                        <div class="flex justify-between"><span>[Class 01]: High-speed motion</span><span class="text-emerald-400">0.98</span></div>
+                        <div class="flex justify-between"><span>[Class 02]: Urban infrastructure</span><span class="text-emerald-400">0.94</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end pt-2 border-t border-slate-800">
+                <button onclick="closeAiVisionModal()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white rounded-xl transition shadow-lg shadow-indigo-600/30">Close Vision HUD</button>
+            </div>
+        </div>
+    </div>
 
     <!-- DATABASE RECORD INSPECTOR MODAL -->
     <div id="dbRecordModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
@@ -313,26 +347,66 @@
     <!-- MAIN CONTENT CONTAINER -->
     <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-8 flex items-center justify-center">
 
-        <!-- VIEW 0A: LOGIN / REGISTER PORTAL -->
-        <div id="loginView" class="w-full max-w-md bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl space-y-6 hidden">
+        <!-- VIEW 0A: LOGIN / REGISTER PORTAL (TABBED AUTH) -->
+        <div id="loginView" class="w-full max-w-md bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl space-y-6">
             <div class="text-center space-y-2">
                 <div class="inline-flex bg-indigo-600 text-white p-3 rounded-2xl shadow-lg shadow-indigo-600/30 mb-2">
                     <i class="fa-solid fa-location-crosshairs text-2xl"></i>
                 </div>
-                <h2 class="text-2xl font-bold text-white tracking-tight">Welcome to Pinpoint</h2>
-                <p class="text-xs text-slate-400">Enter your credentials. Password strength meter active.</p>
+                <h2 id="authMainTitle" class="text-2xl font-bold text-white tracking-tight">Welcome to Pinpoint</h2>
+                <p id="authSubtitle" class="text-xs text-slate-400">Log in to your account or create a new profile.</p>
             </div>
 
-            <form onsubmit="handleInitialAuth(event)" class="space-y-4">
+            <!-- Auth Tabs (Sign In / Sign Up) -->
+            <div class="grid grid-cols-2 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                <button type="button" onclick="switchAuthTab('signin')" id="tabSignIn" class="py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white transition shadow">Sign In</button>
+                <button type="button" onclick="switchAuthTab('signup')" id="tabSignUp" class="py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition">Sign Up</button>
+            </div>
+
+            <!-- SIGN IN FORM -->
+            <form id="signInForm" onsubmit="handleSignIn(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-medium text-slate-300 mb-1.5">Email Address</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500"><i class="fa-solid fa-envelope"></i></span>
-                        <input type="email" id="authEmail" required placeholder="name@example.com" class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500">
+                        <input type="email" id="signInEmail" required placeholder="name@example.com" class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500">
                     </div>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-slate-300 mb-1.5">Password</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500"><i class="fa-solid fa-lock"></i></span>
+                        <input type="password" id="signInPassword" required placeholder="••••••••" class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <p id="signInError" class="text-[11px] text-red-400 mt-1.5 hidden"></p>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <input type="checkbox" id="rememberMe" class="rounded bg-slate-950 border-slate-800 text-indigo-600 focus:ring-0">
+                    <label for="rememberMe" class="text-xs text-slate-400 cursor-pointer">Remember me on this device</label>
+                </div>
+                <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition shadow-lg shadow-indigo-600/25 flex items-center justify-center space-x-2">
+                    <span>Log In to Pinpoint</span><i class="fa-solid fa-arrow-right text-xs"></i>
+                </button>
+            </form>
+
+            <!-- SIGN UP FORM -->
+            <form id="signUpForm" onsubmit="handleSignUp(event)" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Full Name</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500"><i class="fa-solid fa-user"></i></span>
+                        <input type="text" id="signUpName" required placeholder="John Doe" class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Email Address</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500"><i class="fa-solid fa-envelope"></i></span>
+                        <input type="email" id="signUpEmail" required placeholder="name@example.com" class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Create Password</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500"><i class="fa-solid fa-lock"></i></span>
                         <input type="password" id="authPassword" oninput="checkPasswordStrength(this.value)" required placeholder="Min 8 chars, Uppercase, Number, Symbol" class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500">
@@ -343,22 +417,10 @@
                     <p id="strengthText" class="text-[11px] text-slate-400 mt-1">Strength: Too short</p>
                     <p id="passwordError" class="text-[11px] text-red-400 mt-1 hidden"></p>
                 </div>
-                <div class="flex items-center space-x-2">
-                    <input type="checkbox" id="rememberMe" class="rounded bg-slate-950 border-slate-800 text-indigo-600 focus:ring-0">
-                    <label for="rememberMe" class="text-xs text-slate-400 cursor-pointer">Remember me on this device</label>
-                </div>
-                <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition shadow-lg shadow-indigo-600/25 flex items-center justify-center space-x-2">
-                    <span>Enter Pinpoint</span><i class="fa-solid fa-arrow-right text-xs"></i>
+                <button type="submit" class="w-full py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold rounded-xl transition shadow-lg shadow-indigo-600/25 flex items-center justify-center space-x-2">
+                    <span>Create Account & Verify</span><i class="fa-solid fa-user-plus text-xs"></i>
                 </button>
             </form>
-            <div class="relative flex py-2 items-center">
-                <div class="flex-grow border-t border-slate-800"></div>
-                <span class="flex-shrink mx-4 text-slate-500 text-[10px] uppercase tracking-wider">or quick access</span>
-                <div class="flex-grow border-t border-slate-800"></div>
-            </div>
-            <button onclick="bypassLogin()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium rounded-xl border border-slate-700 transition">
-                Continue as Guest
-            </button>
         </div>
 
         <!-- VIEW 0B: VERIFICATION CODE SCREEN -->
@@ -381,7 +443,7 @@
                     <span>Verify & Enter App</span><i class="fa-solid fa-check text-xs"></i>
                 </button>
             </form>
-            <button onclick="backToLogin()" class="w-full text-center text-xs text-slate-500 hover:text-slate-300 transition">&larr; Back to login</button>
+            <button onclick="backToLogin()" class="w-full text-center text-xs text-slate-500 hover:text-slate-300 transition">&larr; Back to sign in</button>
         </div>
 
         <!-- VIEW 1: HOME GRID -->
@@ -550,7 +612,7 @@
 
         // Comprehensive Translation Dictionary
         const translations = {
-            en: { // English (Reset/Default values)
+            en: {
                 appTitle: "Pinpoint — Global Content & Media Explorer",
                 navSubtitle: "Discover the heartbeat of any nation",
                 btnUploadText: "Create & Upload Gallery Media",
@@ -575,7 +637,7 @@
                 btnPostComment: "Post",
                 commentPlaceholder: "Add to the conversation..."
             },
-            ve: { // Tshivenḓa
+            ve: {
                 appTitle: "Pinpoint — Tshaka ya Mafhungo na Mitalo ya Shango",
                 navSubtitle: "Wanani mbilu ya shango liṅwe na liṅwe",
                 btnUploadText: "Sika & Vhea Zwiṱientshi",
@@ -600,7 +662,7 @@
                 btnPostComment: "Tumana",
                 commentPlaceholder: "Ṿhea thungo kha nyambedzano..."
             },
-            zu: { // IsiZulu
+            zu: {
                 appTitle: "Pinpoint — Injini Yemithombo Yezindaba Zomhlaba",
                 navSubtitle: "Thola isikhunta sanoma yiliphi izwe",
                 btnUploadText: "Dala & Layisha Imidiya",
@@ -625,7 +687,7 @@
                 btnPostComment: "Thumela",
                 commentPlaceholder: "Engeza amazwana..."
             },
-            zh: { // Mandarin Chinese
+            zh: {
                 appTitle: "Pinpoint — 全球内容与媒体引擎",
                 navSubtitle: "探索任何国家的脉搏",
                 btnUploadText: "创建并上传图库媒体",
@@ -650,7 +712,7 @@
                 btnPostComment: "发布",
                 commentPlaceholder: "参与讨论..."
             },
-            hi: { // Hindi
+            hi: {
                 appTitle: "Pinpoint — वैश्विक सामग्री और मीडिया इंजन",
                 navSubtitle: "किसी भी देश की नब्ज पहचानें",
                 btnUploadText: "मीडिया बनाएं और अपलोड करें",
@@ -675,7 +737,7 @@
                 btnPostComment: "पोस्ट करें",
                 commentPlaceholder: "वार्तालाप में शामिल हों..."
             },
-            es: { // Spanish
+            es: {
                 appTitle: "Pinpoint — Explorador Global de Contenido y Medios",
                 navSubtitle: "Descubre el pulso de cualquier nación",
                 btnUploadText: "Crear y Subir Medios",
@@ -700,7 +762,7 @@
                 btnPostComment: "Publicar",
                 commentPlaceholder: "Añadir a la conversación..."
             },
-            ar: { // Standard Arabic
+            ar: {
                 appTitle: "Pinpoint — محرك المحتوى والوسائط العالمي",
                 navSubtitle: "اكتشف نبض أي دولة",
                 btnUploadText: "إنشاء وتحميل وسائط المعرض",
@@ -725,7 +787,7 @@
                 btnPostComment: "نشر",
                 commentPlaceholder: "أضف تعليقاً..."
             },
-            fr: { // French
+            fr: {
                 appTitle: "Pinpoint — Moteur Mondial de Contenu et Médias",
                 navSubtitle: "Découvrez le pouls n'importe quelle nation",
                 btnUploadText: "Créer et Télécharger des Médias",
@@ -772,7 +834,7 @@
             "Qatar",
             "Romania", "Russia", "Rwanda",
             "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Korea", "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", "Syria",
-            "Taiwan (often counted independently, though disputed in UN frameworks)", "Tajikistan", "Tanzania", "Thailand", "Timor-Leste (East Timor)", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey (Türkiye)", "Turkmenistan", "Tuvalu",
+            "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Timor-Leste (East Timor)", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey (Türkiye)", "Turkmenistan", "Tuvalu",
             "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan",
             "Vanuatu", "Vatican City (Holy See)", "Venezuela", "Vietnam",
             "Yemen",
@@ -889,12 +951,153 @@
             currentlyPlayingVideo = null;
         }
 
+        // Auth Tab Switching (Sign In vs Sign Up)
+        function switchAuthTab(mode) {
+            const btnIn = document.getElementById('tabSignIn');
+            const btnUp = document.getElementById('tabSignUp');
+            const formIn = document.getElementById('signInForm');
+            const formUp = document.getElementById('signUpForm');
+            const title = document.getElementById('authMainTitle');
+            const sub = document.getElementById('authSubtitle');
+
+            if (mode === 'signin') {
+                btnIn.className = "py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white transition shadow";
+                btnUp.className = "py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition";
+                formIn.classList.remove('hidden');
+                formUp.classList.add('hidden');
+                title.textContent = "Welcome Back to Pinpoint";
+                sub.textContent = "Log in to access your saved media and global dashboards.";
+            } else {
+                btnUp.className = "py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white transition shadow";
+                btnIn.className = "py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition";
+                formUp.classList.remove('hidden');
+                formIn.classList.add('hidden');
+                title.textContent = "Create Pinpoint Account";
+                sub.textContent = "Sign up to start syndicating and exploring global feeds.";
+            }
+        }
+
+        function checkPasswordStrength(password) {
+            const bar = document.getElementById('strengthBar');
+            const text = document.getElementById('strengthText');
+            let score = 0;
+            if (password.length >= 8) score++;
+            if (/[A-Z]/.test(password)) score++;
+            if (/[0-9]/.test(password)) score++;
+            if (/[^A-Za-z0-9]/.test(password)) score++;
+
+            if (score <= 2) { bar.style.width = '40%'; bar.className = 'h-full bg-orange-500 transition-all'; text.textContent = 'Strength: Weak'; }
+            else if (score === 3) { bar.style.width = '75%'; bar.className = 'h-full bg-yellow-500 transition-all'; text.textContent = 'Strength: Good'; }
+            else { bar.style.width = '100%'; bar.className = 'h-full bg-emerald-500 transition-all'; text.textContent = 'Strength: Secure'; }
+        }
+
+        function isStrongPassword(p) { return p.length >= 8 && /[A-Z]/.test(p) && /[0-9]/.test(p) && /[^A-Za-z0-9]/.test(p); }
+
+        function handleSignIn(e) {
+            e.preventDefault();
+            const email = document.getElementById('signInEmail').value;
+            const password = document.getElementById('signInPassword').value;
+            const errorEl = document.getElementById('signInError');
+
+            const registeredUser = JSON.parse(localStorage.getItem('pinpoint_registered_user'));
+
+            if (!registeredUser || registeredUser.email !== email || registeredUser.password !== password) {
+                errorEl.textContent = "Invalid email or password. If you don't have an account, please Sign Up.";
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            errorEl.classList.add('hidden');
+            if (document.getElementById('rememberMe').checked) {
+                localStorage.setItem('pinpoint_logged_in', 'true');
+            }
+            transitionToApp();
+        }
+
+        function handleSignUp(e) {
+            e.preventDefault();
+            const name = document.getElementById('signUpName').value;
+            const email = document.getElementById('signUpEmail').value;
+            const password = document.getElementById('authPassword').value;
+            const errorEl = document.getElementById('passwordError');
+
+            if (!isStrongPassword(password)) {
+                errorEl.textContent = "Password must be 8+ chars and include uppercase, number, symbol.";
+                errorEl.classList.remove('hidden');
+                return;
+            }
+            errorEl.classList.add('hidden');
+
+            // Save user credentials to local storage for sign-in validation
+            localStorage.setItem('pinpoint_registered_user', JSON.stringify({ name, email, password }));
+
+            generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+            document.getElementById('hintCode').textContent = generatedOtp;
+            document.getElementById('displayUserEmail').textContent = email;
+            document.getElementById('loginView').classList.add('hidden');
+            document.getElementById('verifyView').classList.remove('hidden');
+        }
+
+        function handleVerifyCode(e) {
+            e.preventDefault();
+            if (document.getElementById('verificationCodeInput').value === generatedOtp) {
+                localStorage.setItem('pinpoint_logged_in', 'true');
+                transitionToApp();
+            } else {
+                document.getElementById('verifyError').classList.remove('hidden');
+            }
+        }
+
+        function backToLogin() { 
+            document.getElementById('verifyView').classList.add('hidden'); 
+            document.getElementById('loginView').classList.remove('hidden'); 
+            switchAuthTab('signin');
+        }
+
+        function transitionToApp() {
+            document.getElementById('loginView').classList.add('hidden');
+            document.getElementById('verifyView').classList.add('hidden');
+            document.getElementById('appHeader').classList.remove('hidden');
+            document.getElementById('homeView').classList.remove('hidden');
+            fetchAllCountries();
+            renderSavedItems();
+        }
+
+        function logout() {
+            cancelAllBackgroundAudio();
+            localStorage.removeItem('pinpoint_logged_in');
+            document.getElementById('appHeader').classList.add('hidden');
+            document.getElementById('homeView').classList.add('hidden');
+            document.getElementById('hubView').classList.add('hidden');
+            document.getElementById('loginView').classList.remove('hidden');
+            switchAuthTab('signin');
+        }
+
+        // AI Vision HUD controls
+        function openAiVisionModal() {
+            cancelAllBackgroundAudio();
+            document.getElementById('aiVisionModal').classList.remove('hidden');
+            const targetBox = document.getElementById('visionTargetBox');
+            const telemetry = document.getElementById('visionTelemetryId');
+            
+            telemetry.textContent = "Locking onto focal vectors...";
+            setTimeout(() => {
+                targetBox.style.top = '15%';
+                targetBox.style.left = '25%';
+                targetBox.style.width = '50%';
+                targetBox.style.height = '60%';
+                telemetry.textContent = "Frame analysis locked (1920x1080 @ 60fps)";
+            }, 600);
+        }
+
+        function closeAiVisionModal() {
+            document.getElementById('aiVisionModal').classList.add('hidden');
+        }
+
         function translatePage(targetLang) {
             currentLanguage = targetLang;
             const t = translations[targetLang];
-            if (!t) {
-                return;
-            }
+            if (!t) return;
 
             document.getElementById('appTitle').textContent = t.appTitle;
             document.getElementById('navSubtitle').textContent = t.navSubtitle;
@@ -1180,72 +1383,6 @@
                 });
             }, options);
             document.querySelectorAll('.pinpoint-video').forEach(video => videoObserver.observe(video));
-        }
-
-        function checkPasswordStrength(password) {
-            const bar = document.getElementById('strengthBar');
-            const text = document.getElementById('strengthText');
-            let score = 0;
-            if (password.length >= 8) score++;
-            if (/[A-Z]/.test(password)) score++;
-            if (/[0-9]/.test(password)) score++;
-            if (/[^A-Za-z0-9]/.test(password)) score++;
-
-            if (score <= 2) { bar.style.width = '40%'; bar.className = 'h-full bg-orange-500 transition-all'; text.textContent = 'Strength: Weak'; }
-            else if (score === 3) { bar.style.width = '75%'; bar.className = 'h-full bg-yellow-500 transition-all'; text.textContent = 'Strength: Good'; }
-            else { bar.style.width = '100%'; bar.className = 'h-full bg-emerald-500 transition-all'; text.textContent = 'Strength: Secure'; }
-        }
-
-        function isStrongPassword(p) { return p.length >= 8 && /[A-Z]/.test(p) && /[0-9]/.test(p) && /[^A-Za-z0-9]/.test(p); }
-
-        function handleInitialAuth(e) {
-            e.preventDefault();
-            const email = document.getElementById('authEmail').value;
-            const password = document.getElementById('authPassword').value;
-            const errorEl = document.getElementById('passwordError');
-
-            if (!isStrongPassword(password)) {
-                errorEl.textContent = "Password must be 8+ chars and include uppercase, number, symbol.";
-                errorEl.classList.remove('hidden');
-                return;
-            }
-            errorEl.classList.add('hidden');
-            generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
-            document.getElementById('hintCode').textContent = generatedOtp;
-            document.getElementById('displayUserEmail').textContent = email;
-            document.getElementById('loginView').classList.add('hidden');
-            document.getElementById('verifyView').classList.remove('hidden');
-        }
-
-        function handleVerifyCode(e) {
-            e.preventDefault();
-            if (document.getElementById('verificationCodeInput').value === generatedOtp) {
-                if (document.getElementById('rememberMe').checked) localStorage.setItem('pinpoint_logged_in', 'true');
-                transitionToApp();
-            } else {
-                document.getElementById('verifyError').classList.remove('hidden');
-            }
-        }
-
-        function bypassLogin() { transitionToApp(); }
-        function backToLogin() { document.getElementById('verifyView').classList.add('hidden'); document.getElementById('loginView').classList.remove('hidden'); }
-
-        function transitionToApp() {
-            document.getElementById('loginView').classList.add('hidden');
-            document.getElementById('verifyView').classList.add('hidden');
-            document.getElementById('appHeader').classList.remove('hidden');
-            document.getElementById('homeView').classList.remove('hidden');
-            fetchAllCountries();
-            renderSavedItems();
-        }
-
-        function logout() {
-            cancelAllBackgroundAudio();
-            localStorage.removeItem('pinpoint_logged_in');
-            document.getElementById('appHeader').classList.add('hidden');
-            document.getElementById('homeView').classList.add('hidden');
-            document.getElementById('hubView').classList.add('hidden');
-            document.getElementById('loginView').classList.remove('hidden');
         }
 
         async function selectCountry(code, name, flagUrl) {
