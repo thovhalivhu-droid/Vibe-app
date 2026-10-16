@@ -32,7 +32,7 @@
 
     <!-- HEADER / NAVBAR (Hidden until logged in) -->
     <header id="appHeader" class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-40 hidden">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
             <div class="flex items-center space-x-3 cursor-pointer" onclick="returnToHome()">
                 <div class="bg-indigo-600 text-white p-2.5 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/30">
                     <i class="fa-solid fa-location-crosshairs text-xl"></i>
@@ -43,7 +43,7 @@
                 </div>
             </div>
             
-            <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+            <div class="flex items-center gap-3 w-full md:w-auto justify-end flex-wrap">
                 <button onclick="openPressModal()" title="Global Press Releases" class="px-3 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-indigo-500 text-xs text-slate-200 rounded-xl transition flex items-center space-x-2">
                     <i class="fa-solid fa-bullhorn text-indigo-400"></i>
                     <span>Press Room</span>
@@ -254,6 +254,19 @@
                 </div>
             </div>
 
+            <!-- SAVED ITEMS TOP RIGHT LAYOUT PANEL -->
+            <div id="savedItemsContainer" class="bg-slate-900/90 border border-indigo-500/40 rounded-2xl p-5 shadow-2xl max-w-3xl mx-auto space-y-3">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-400 flex items-center">
+                        <i class="fa-solid fa-bookmark mr-2 text-sm"></i>Saved News, Videos & Songs
+                    </h3>
+                    <span id="savedCountBadge" class="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full font-mono">0 Items</span>
+                </div>
+                <div id="savedItemsList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-48 overflow-y-auto pr-1">
+                    <p class="text-xs text-slate-500 italic col-span-full text-center py-3">No saved items yet. Click the bookmark icon on news or save media to pin them here!</p>
+                </div>
+            </div>
+
             <div id="dbActiveBanner" class="hidden max-w-2xl mx-auto p-4 bg-indigo-950/40 border border-indigo-500/30 rounded-2xl flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                     <i class="fa-solid fa-database text-indigo-400 text-xl"></i>
@@ -392,6 +405,7 @@
         let isDbConnected = false;
         let customDbRecords = [];
         let filteredCountriesList = [];
+        let savedItems = [];
 
         const completeCountryNames = [
             "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan",
@@ -651,6 +665,7 @@
             document.getElementById('appHeader').classList.remove('hidden');
             document.getElementById('homeView').classList.remove('hidden');
             fetchAllCountries();
+            renderSavedItems();
         }
 
         function logout() {
@@ -682,64 +697,133 @@
             if (videoObserver) videoObserver.disconnect();
             currentlyPlayingVideo = null;
 
-            document.getElementById('content-news').innerHTML = [1, 2, 3, 4, 5, 6].map(i => `
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between shadow-lg relative">
-                    <button onclick="toggleBookmark(this)" class="absolute top-4 right-4 text-slate-500 hover:text-indigo-400 transition"><i class="fa-regular fa-bookmark text-base"></i></button>
-                    <div>
-                        <span class="text-[10px] bg-indigo-500/10 text-indigo-400 font-semibold px-2 py-0.5 rounded border border-indigo-500/20">${countryName} News #${i}</span>
-                        <h3 class="text-base font-semibold text-white mt-3 leading-snug">Major economic and cultural breakthroughs announced across ${countryName}</h3>
-                        <p class="text-xs text-slate-400 mt-2 line-clamp-2">Leading journalists in ${countryName} report unprecedented municipal developments and regional updates this week...</p>
+            document.getElementById('content-news').innerHTML = [1, 2, 3, 4, 5, 6].map(i => {
+                const title = `Major economic and cultural breakthroughs announced across ${countryName} #${i}`;
+                const type = 'News';
+                const isAlreadySaved = savedItems.some(s => s.title === title);
+                return `
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between shadow-lg relative">
+                        <button onclick="toggleSaveItem('${type}', \`${title}\`)" class="absolute top-4 right-4 text-slate-400 hover:text-indigo-400 transition">
+                            <i class="${isAlreadySaved ? 'fa-solid text-indigo-400' : 'fa-regular'} fa-bookmark text-base"></i>
+                        </button>
+                        <div>
+                            <span class="text-[10px] bg-indigo-500/10 text-indigo-400 font-semibold px-2 py-0.5 rounded border border-indigo-500/20">${countryName} News #${i}</span>
+                            <h3 class="text-base font-semibold text-white mt-3 leading-snug">${title}</h3>
+                            <p class="text-xs text-slate-400 mt-2 line-clamp-2">Leading journalists in ${countryName} report unprecedented municipal developments and regional updates this week...</p>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-500">
+                            <span><i class="fa-regular fa-clock mr-1"></i>1 hour ago</span>
+                            <span onclick="switchTab('press')" class="text-indigo-400 font-medium cursor-pointer hover:underline">${countryName} Press &rarr;</span>
+                        </div>
                     </div>
-                    <div class="mt-4 pt-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-500">
-                        <span><i class="fa-regular fa-clock mr-1"></i>1 hour ago</span>
-                        <span onclick="switchTab('press')" class="text-indigo-400 font-medium cursor-pointer hover:underline">${countryName} Press &rarr;</span>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
 
-            document.getElementById('content-videos').innerHTML = globalSampleVideos.map((vid, index) => `
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg flex flex-col relative">
-                    <span class="absolute top-3 left-3 z-10 text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-semibold px-2 py-0.5 rounded-full backdrop-blur">
-                        <i class="fa-solid fa-fire mr-1"></i>${countryName} ${vid.trendingTag}
-                    </span>
-                    <div class="relative w-full aspect-video bg-slate-950">
-                        <video class="pinpoint-video w-full h-full object-cover" controls muted playsinline preload="metadata" src="${vid.url}"></video>
+            document.getElementById('content-videos').innerHTML = globalSampleVideos.map((vid, index) => {
+                const title = `Viral Spotlight #${index + 1} in ${countryName}`;
+                const type = 'Video';
+                const isAlreadySaved = savedItems.some(s => s.title === title);
+                return `
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg flex flex-col relative">
+                        <button onclick="toggleSaveItem('${type}', \`${title}\`)" class="absolute top-3 right-3 z-10 p-2 bg-slate-950/80 rounded-full text-slate-300 hover:text-indigo-400 backdrop-blur transition">
+                            <i class="${isAlreadySaved ? 'fa-solid text-indigo-400' : 'fa-regular'} fa-bookmark text-xs"></i>
+                        </button>
+                        <span class="absolute top-3 left-3 z-10 text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-semibold px-2 py-0.5 rounded-full backdrop-blur">
+                            <i class="fa-solid fa-fire mr-1"></i>${countryName} ${vid.trendingTag}
+                        </span>
+                        <div class="relative w-full aspect-video bg-slate-950">
+                            <video class="pinpoint-video w-full h-full object-cover" controls muted playsinline preload="metadata" src="${vid.url}"></video>
+                        </div>
+                        <div class="p-4 flex flex-col flex-grow">
+                            <h4 class="text-sm font-semibold text-white line-clamp-1">${title}</h4>
+                            <p class="text-xs text-slate-400 mt-1">${countryName} Creator Hub • <span class="text-emerald-400 font-semibold">${vid.views}</span></p>
+                        </div>
                     </div>
-                    <div class="p-4 flex flex-col flex-grow">
-                        <h4 class="text-sm font-semibold text-white line-clamp-1">Viral Spotlight #${index + 1} in ${countryName}</h4>
-                        <p class="text-xs text-slate-400 mt-1">${countryName} Creator Hub • <span class="text-emerald-400 font-semibold">${vid.views}</span></p>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
 
-            document.getElementById('content-music').innerHTML = [1, 2, 3, 4, 5, 6].map(i => `
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center space-x-4 shadow-lg">
-                    <div class="w-14 h-14 bg-indigo-600/20 border border-indigo-500/30 rounded-xl flex items-center justify-center text-indigo-400 font-bold text-lg">#${i}</div>
-                    <div class="flex-grow">
-                        <h4 class="text-sm font-semibold text-white">${countryName} Viral Hit Single #${i}</h4>
-                        <p class="text-xs text-slate-400">Local Chart Artist • Top ${countryName} Audio</p>
+            document.getElementById('content-music').innerHTML = [1, 2, 3, 4, 5, 6].map(i => {
+                const title = `${countryName} Viral Hit Single #${i}`;
+                const type = 'Song';
+                const isAlreadySaved = savedItems.some(s => s.title === title);
+                return `
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center space-x-4 shadow-lg relative">
+                        <div class="w-14 h-14 bg-indigo-600/20 border border-indigo-500/30 rounded-xl flex items-center justify-center text-indigo-400 font-bold text-lg">#${i}</div>
+                        <div class="flex-grow">
+                            <h4 class="text-sm font-semibold text-white">${title}</h4>
+                            <p class="text-xs text-slate-400">Local Chart Artist • Top Audio</p>
+                        </div>
+                        <button onclick="toggleSaveItem('${type}', \`${title}\`)" class="p-2 text-slate-400 hover:text-indigo-400 transition" title="Save song">
+                            <i class="${isAlreadySaved ? 'fa-solid text-indigo-400' : 'fa-regular'} fa-bookmark text-sm"></i>
+                        </button>
+                        <button class="w-10 h-10 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition shadow-md shadow-indigo-600/30">
+                            <i class="fa-solid fa-play text-xs pl-0.5"></i>
+                        </button>
                     </div>
-                    <button class="w-10 h-10 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition shadow-md shadow-indigo-600/30">
-                        <i class="fa-solid fa-play text-xs pl-0.5"></i>
+                `;
+            }).join('');
+
+            document.getElementById('content-press').innerHTML = [1, 2, 3, 4, 5, 6].map(i => {
+                const title = `National Media Briefing & Regulatory Update #${i}`;
+                const type = 'Press';
+                const isAlreadySaved = savedItems.some(s => s.title === title);
+                return `
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between shadow-lg relative">
+                        <button onclick="toggleSaveItem('${type}', \`${title}\`)" class="absolute top-4 right-4 text-slate-400 hover:text-indigo-400 transition">
+                            <i class="${isAlreadySaved ? 'fa-solid text-indigo-400' : 'fa-regular'} fa-bookmark text-base"></i>
+                        </button>
+                        <span class="text-[10px] bg-indigo-500/20 text-indigo-300 font-semibold px-2.5 py-0.5 rounded-full border border-indigo-500/30 w-max">Official Press Release #${i}</span>
+                        <h4 class="text-sm font-bold text-white mt-3">${title} for ${countryName}</h4>
+                        <p class="text-xs text-slate-400 mt-2 leading-relaxed">Ministry of Communications and regional press bureaus release official statements regarding digital media infrastructure and public broadcasting frameworks in ${countryName}.</p>
+                        <div class="mt-4 pt-3 border-t border-slate-800 text-[10px] text-slate-500 flex items-center justify-between">
+                            <span><i class="fa-regular fa-building mr-1"></i>${countryName} Press Office</span>
+                            <button onclick="downloadPressPdf('${countryName}', ${i})" class="text-indigo-400 font-medium hover:underline flex items-center space-x-1">
+                                <i class="fa-solid fa-download text-[9px]"></i><span>Download PDF</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            setTimeout(() => { initVideoObserver(); }, 100);
+        }
+
+        function toggleSaveItem(type, title) {
+            const index = savedItems.findIndex(s => s.title === title);
+            if (index > -1) {
+                savedItems.splice(index, 1);
+            } else {
+                savedItems.push({ type, title });
+            }
+            renderSavedItems();
+            // Re-render feeds to update bookmark icon states if active
+            const activeCountryName = document.getElementById('hubCountryName').innerText;
+            if (activeCountryName && activeCountryName !== 'Country Name') {
+                loadCountrySpecificFeeds(activeCountryName, document.getElementById('hubCode').innerText);
+            }
+        }
+
+        function renderSavedItems() {
+            const listEl = document.getElementById('savedItemsList');
+            const badgeEl = document.getElementById('savedCountBadge');
+            badgeEl.textContent = `${savedItems.length} Item${savedItems.length === 1 ? '' : 's'}`;
+
+            if (savedItems.length === 0) {
+                listEl.innerHTML = `<p class="text-xs text-slate-500 italic col-span-full text-center py-3">No saved items yet. Click the bookmark icon on news or save media to pin them here!</p>`;
+                return;
+            }
+
+            listEl.innerHTML = savedItems.map((item, idx) => `
+                <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl flex items-center justify-between gap-2 shadow">
+                    <div class="min-w-0">
+                        <span class="text-[9px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded font-mono uppercase">${item.type}</span>
+                        <h4 class="text-xs font-semibold text-white mt-1 line-clamp-1">${item.title}</h4>
+                    </div>
+                    <button onclick="toggleSaveItem('${item.type}', \`${item.title.replace(/'/g, "\\'")}\`)" class="text-slate-500 hover:text-rose-400 transition p-1" title="Remove">
+                        <i class="fa-solid fa-trash-can text-xs"></i>
                     </button>
                 </div>
             `).join('');
-
-            document.getElementById('content-press').innerHTML = [1, 2, 3, 4, 5, 6].map(i => `
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between shadow-lg relative">
-                    <span class="text-[10px] bg-indigo-500/20 text-indigo-300 font-semibold px-2.5 py-0.5 rounded-full border border-indigo-500/30 w-max">Official Press Release #${i}</span>
-                    <h4 class="text-sm font-bold text-white mt-3">National Media Briefing & Regulatory Update for ${countryName}</h4>
-                    <p class="text-xs text-slate-400 mt-2 leading-relaxed">Ministry of Communications and regional press bureaus release official statements regarding digital media infrastructure and public broadcasting frameworks in ${countryName}.</p>
-                    <div class="mt-4 pt-3 border-t border-slate-800 text-[10px] text-slate-500 flex items-center justify-between">
-                        <span><i class="fa-regular fa-building mr-1"></i>${countryName} Press Office</span>
-                        <button onclick="downloadPressPdf('${countryName}', ${i})" class="text-indigo-400 font-medium hover:underline flex items-center space-x-1">
-                            <i class="fa-solid fa-download text-[9px]"></i><span>Download PDF</span>
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-
-            setTimeout(() => { initVideoObserver(); }, 100);
         }
 
         function downloadPressPdf(countryName, releaseNum) {
@@ -753,13 +837,6 @@
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-        }
-
-        function toggleBookmark(btn) {
-            const icon = btn.querySelector('i');
-            icon.classList.toggle('fa-regular');
-            icon.classList.toggle('fa-solid');
-            icon.classList.toggle('text-indigo-400');
         }
 
         function votePoll(type) {
@@ -811,8 +888,8 @@
             document.getElementById('homeView').classList.remove('hidden');
             document.getElementById('countrySearch').value = '';
             fetchAllCountries();
+            renderSavedItems();
         }
     </script>
 </body>
 </html>
- 
