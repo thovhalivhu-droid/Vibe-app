@@ -44,9 +44,14 @@
             </div>
             
             <div class="flex items-center gap-3 w-full md:w-auto justify-end flex-wrap">
-                <button onclick="openSyndicateModal()" title="Broadcast to All Countries & Socials" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white rounded-xl transition shadow-lg shadow-indigo-600/30 flex items-center space-x-2 animate-pulse">
+                <button onclick="openCreateStudioModal()" title="Create AI Videos and Photos" class="px-3.5 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-xs font-bold text-white rounded-xl transition shadow-lg shadow-indigo-600/30 flex items-center space-x-2">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>Create Videos & Photos</span>
+                </button>
+
+                <button onclick="openSyndicateModal()" title="Broadcast to All Countries & Socials" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white rounded-xl transition shadow-lg shadow-indigo-600/30 flex items-center space-x-2">
                     <i class="fa-solid fa-globe"></i>
-                    <span>Broadcast & Trend Globally</span>
+                    <span>Broadcast & Trend</span>
                 </button>
 
                 <button onclick="openPressModal()" title="Global Press Releases" class="px-3 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-indigo-500 text-xs text-slate-200 rounded-xl transition flex items-center space-x-2">
@@ -78,6 +83,68 @@
             </div>
         </div>
     </header>
+
+    <!-- CREATE AI VIDEOS & PHOTOS STUDIO MODAL -->
+    <div id="createStudioModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-6">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-purple-600/20 text-purple-400 p-2.5 rounded-xl border border-purple-500/30">
+                        <i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-white">Create AI Videos & Photos Studio</h3>
+                        <p class="text-xs text-slate-400">Generate digital portraits, lifestyle imagery, or video shorts</p>
+                    </div>
+                </div>
+                <button onclick="closeCreateStudioModal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <form onsubmit="handleAiGeneration(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Asset Type</label>
+                    <select id="generationType" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-purple-500">
+                        <option value="video">AI Video Short / Cinematic Clip</option>
+                        <option value="photo">AI Digital Portrait / Lifestyle Image</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Prompt / Creative Description</label>
+                    <textarea id="generationPrompt" rows="2" required placeholder="E.g., Cinematic portrait in an urban fashion setting with dramatic neon lighting..." class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-purple-500"></textarea>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Aesthetic Style</label>
+                        <select id="generationStyle" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-purple-500">
+                            <option value="Cinematic">Cinematic & Moody</option>
+                            <option value="Urban Fashion">Urban Fashion & Streetwear</option>
+                            <option value="Cyberpunk">Cyberpunk Neon</option>
+                            <option value="Documentary">Documentary Press</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Syndicate Action</label>
+                        <select id="generationSyndicate" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-purple-500">
+                            <option value="all">Trend Across All Countries & Socials</option>
+                            <option value="save">Save to Saved Items Only</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="generationStatusBox" class="p-3 bg-slate-950 rounded-xl border border-slate-800 text-[11px] font-mono text-slate-400 hidden">
+                    <span id="generationStatusText">Rendering AI asset...</span>
+                </div>
+
+                <div class="flex items-center justify-between pt-2">
+                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-xs font-semibold text-white rounded-xl transition shadow-lg shadow-indigo-600/30 flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-sparkles"></i><span>Generate & Syndicate Asset</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- GLOBAL SYNDICATION & TRENDING BROADCASTER MODAL -->
     <div id="syndicateModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
@@ -636,6 +703,56 @@
             currentlyPlayingVideo = null;
         }
 
+        function openCreateStudioModal() {
+            cancelAllBackgroundAudio();
+            document.getElementById('createStudioModal').classList.remove('hidden');
+        }
+        function closeCreateStudioModal() {
+            document.getElementById('createStudioModal').classList.add('hidden');
+        }
+
+        function handleAiGeneration(e) {
+            e.preventDefault();
+            const type = document.getElementById('generationType').value;
+            const prompt = document.getElementById('generationPrompt').value;
+            const style = document.getElementById('generationStyle').value;
+            const syndicateAction = document.getElementById('generationSyndicate').value;
+            const statusBox = document.getElementById('generationStatusBox');
+            const statusText = document.getElementById('generationStatusText');
+
+            statusBox.classList.remove('hidden');
+            statusText.textContent = `Generating AI ${type} (${style}): "${prompt.slice(0, 30)}..."`;
+            statusText.className = "text-purple-400 font-mono";
+
+            setTimeout(() => {
+                const title = `🎨 AI Created ${type === 'video' ? 'Video Short' : 'Portrait'} (${style}): ${prompt}`;
+                if (syndicateAction === 'all') {
+                    globalSyndicatedVideos.unshift({
+                        url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+                        views: "24.5M views (AI #1)",
+                        trendingTag: "✨ AI CREATED & TRENDING #1",
+                        title: title,
+                        platforms: ["TikTok", "YouTube Shorts", "Instagram Reels", "X / Twitter", "Facebook"]
+                    });
+                }
+                savedItems.push({ type: type === 'video' ? 'Video' : 'Photo', title: title });
+                renderSavedItems();
+
+                statusText.textContent = `SUCCESS: AI asset generated and syndicated globally!`;
+                statusText.className = "text-emerald-400 font-mono";
+                setTimeout(() => {
+                    closeCreateStudioModal();
+                    statusBox.classList.add('hidden');
+                    alert(`Successfully created and published your AI ${type}!`);
+                    const activeCountryName = document.getElementById('hubCountryName').innerText;
+                    if (activeCountryName && activeCountryName !== 'Country Name') {
+                        loadCountrySpecificFeeds(activeCountryName, document.getElementById('hubCode').innerText);
+                        switchTab('videos');
+                    }
+                }, 1200);
+            }, 1800);
+        }
+
         function openSyndicateModal() {
             cancelAllBackgroundAudio();
             document.getElementById('syndicateModal').classList.remove('hidden');
@@ -671,7 +788,6 @@
                     closeSyndicateModal();
                     statusBox.classList.add('hidden');
                     alert("Your video is now trending #1 across all countries and social media platforms!");
-                    // If inside a country hub, refresh videos tab
                     const activeCountryName = document.getElementById('hubCountryName').innerText;
                     if (activeCountryName && activeCountryName !== 'Country Name') {
                         loadCountrySpecificFeeds(activeCountryName, document.getElementById('hubCode').innerText);
@@ -966,7 +1082,6 @@
 
             document.getElementById('content-news').innerHTML = newsHtml;
 
-            // Combine syndicated user videos and sample videos
             const combinedVideos = [...globalSyndicatedVideos, ...globalSampleVideos];
 
             document.getElementById('content-videos').innerHTML = combinedVideos.map((vid, index) => {
@@ -1139,3 +1254,4 @@
     </script>
 </body>
 </html>
+ 
