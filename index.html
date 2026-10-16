@@ -550,6 +550,31 @@
 
         // Comprehensive Translation Dictionary
         const translations = {
+            en: { // English (Reset/Default values)
+                appTitle: "Pinpoint — Global Content & Media Explorer",
+                navSubtitle: "Discover the heartbeat of any nation",
+                btnUploadText: "Create & Upload Gallery Media",
+                btnBroadcastText: "Broadcast & Trend",
+                btnPressText: "Press Room",
+                btnDbText: "Database",
+                homeHeading: "Explore All Countries Worldwide",
+                homeSubheading: "Browse or search any nation globally to instantly access live news broadcasts, breaking wires, and regional media.",
+                searchPlaceholder: "Search any country worldwide (Press Enter to open)...",
+                savedHeading: "Saved News, Videos & Songs",
+                noSavedText: "No saved items yet.",
+                btnBackGlobe: "Back to Globe",
+                tabNews: "Live Local News Tab",
+                tabVideos: "Trending Videos",
+                tabMusic: "Top Songs & Audio",
+                tabPress: "Press Room",
+                tabFacts: "Country Snapshot",
+                tabCommunity: "Community & Polls",
+                pollHeading: "Weekly Economic Outlook Poll",
+                pollSubheading: "How would you rate the current trajectory of this nation's media and economic climate?",
+                commentHeading: "Live Country Feed Discussion",
+                btnPostComment: "Post",
+                commentPlaceholder: "Add to the conversation..."
+            },
             ve: { // Tshivenḓa
                 appTitle: "Pinpoint — Tshaka ya Mafhungo na Mitalo ya Shango",
                 navSubtitle: "Wanani mbilu ya shango liṅwe na liṅwe",
@@ -702,7 +727,7 @@
             },
             fr: { // French
                 appTitle: "Pinpoint — Moteur Mondial de Contenu et Médias",
-                navSubtitle: "Découvrez le pouls de n'importe quelle nation",
+                navSubtitle: "Découvrez le pouls n'importe quelle nation",
                 btnUploadText: "Créer et Télécharger des Médias",
                 btnBroadcastText: "Diffuser et Tendance",
                 btnPressText: "Salle de Presse",
@@ -868,7 +893,6 @@
             currentLanguage = targetLang;
             const t = translations[targetLang];
             if (!t) {
-                // Fallback for languages without custom strings loaded
                 return;
             }
 
