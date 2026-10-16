@@ -258,7 +258,7 @@
             </div>
 
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4" id="quickCountryGrid">
-                <!-- Populated dynamically via REST Countries API -->
+                <!-- Populated dynamically -->
             </div>
         </div>
 
@@ -381,79 +381,29 @@
         let isDbConnected = false;
         let customDbRecords = [];
 
-        const translationCache = { es: {}, fr: {}, ja: {}, pt: {}, de: {} };
+        // Built-in comprehensive fallback list so countries always appear instantly
+        const fallbackCountries = [
+            { name: { common: "South Africa" }, cca2: "ZA", flags: { png: "https://flagcdn.com/w320/za.png" }, capital: ["Pretoria"], population: 59308690, region: "Africa", currencies: { ZAR: { name: "South African rand", symbol: "R" } }, languages: { eng: "English", zul: "Zulu" } },
+            { name: { common: "United States" }, cca2: "US", flags: { png: "https://flagcdn.com/w320/us.png" }, capital: ["Washington, D.C."], population: 329484123, region: "Americas", currencies: { USD: { name: "United States dollar", symbol: "$" } }, languages: { eng: "English" } },
+            { name: { common: "United Kingdom" }, cca2: "GB", flags: { png: "https://flagcdn.com/w320/gb.png" }, capital: ["London"], population: 67215293, region: "Europe", currencies: { GBP: { name: "British pound", symbol: "£" } }, languages: { eng: "English" } },
+            { name: { common: "Canada" }, cca2: "CA", flags: { png: "https://flagcdn.com/w320/ca.png" }, capital: ["Ottawa"], population: 38005238, region: "Americas", currencies: { CAD: { name: "Canadian dollar", symbol: "$" } }, languages: { eng: "English", fra: "French" } },
+            { name: { common: "Australia" }, cca2: "AU", flags: { png: "https://flagcdn.com/w320/au.png" }, capital: ["Canberra"], population: 25687041, region: "Oceania", currencies: { AUD: { name: "Australian dollar", symbol: "$" } }, languages: { eng: "English" } },
+            { name: { common: "Japan" }, cca2: "JP", flags: { png: "https://flagcdn.com/w320/jp.png" }, capital: ["Tokyo"], population: 125836021, region: "Asia", currencies: { JPY: { name: "Japanese yen", symbol: "¥" } }, languages: { jpn: "Japanese" } },
+            { name: { common: "Germany" }, cca2: "DE", flags: { png: "https://flagcdn.com/w320/de.png" }, capital: ["Berlin"], population: 83240525, region: "Europe", currencies: { EUR: { name: "Euro", symbol: "€" } }, languages: { deu: "German" } },
+            { name: { common: "France" }, cca2: "FR", flags: { png: "https://flagcdn.com/w320/fr.png" }, capital: ["Paris"], population: 67391582, region: "Europe", currencies: { EUR: { name: "Euro", symbol: "€" } }, languages: { fra: "French" } },
+            { name: { common: "Brazil" }, cca2: "BR", flags: { png: "https://flagcdn.com/w320/br.png" }, capital: ["Brasília"], population: 212559409, region: "Americas", currencies: { BRL: { name: "Brazilian real", symbol: "R$" } }, languages: { por: "Portuguese" } },
+            { name: { common: "Nigeria" }, cca2: "NG", flags: { png: "https://flagcdn.com/w320/ng.png" }, capital: ["Abuja"], population: 206139587, region: "Africa", currencies: { NGN: { name: "Nigerian naira", symbol: "₦" } }, languages: { eng: "English" } },
+            { name: { common: "India" }, cca2: "IN", flags: { png: "https://flagcdn.com/w320/in.png" }, capital: ["New Delhi"], population: 1380004385, region: "Asia", currencies: { INR: { name: "Indian rupee", symbol: "₹" } }, languages: { eng: "English", hin: "Hindi" } },
+            { name: { common: "Mexico" }, cca2: "MX", flags: { png: "https://flagcdn.com/w320/mx.png" }, capital: ["Mexico City"], population: 128932753, region: "Americas", currencies: { MXN: { name: "Mexican peso", symbol: "$" } }, languages: { spa: "Spanish" } }
+        ];
 
+        const translationCache = { es: {}, fr: {}, ja: {}, pt: {}, de: {} };
         const translationDictionary = {
-            es: {
-                "Explore All Countries Worldwide": "Explorar Todos los Países del Mundo",
-                "Browse or search any nation globally to instantly stream trending local headlines, viral regional videos, and charts.": "Navegue o busque cualquier nación a nivel mundial para transmitir al instante titulares locales de tendencia.",
-                "Back to Globe": "Volver al Globo",
-                "Local News": "Noticias Locales",
-                "Trending Videos": "Videos en Tendencia",
-                "Top Songs & Audio": "Canciones Principales",
-                "Country Snapshot": "Resumen del País",
-                "Community & Polls": "Comunidad y Encuestas",
-                "Population": "Población",
-                "Primary Currency": "Moneda Principal",
-                "Region / Continent": "Región / Continente",
-                "Primary Language": "Idioma Principal"
-            },
-            fr: {
-                "Explore All Countries Worldwide": "Explorer Tous les Pays du Monde",
-                "Browse or search any nation globally to instantly stream trending local headlines, viral regional videos, and charts.": "Parcourez ou recherchez n'importe quelle nation pour diffuser instantanément des actualités locales tendance.",
-                "Back to Globe": "Retour au Globe",
-                "Local News": "Actualités Locales",
-                "Trending Videos": "Vidéos Tendances",
-                "Top Songs & Audio": "Top Chansons & Audio",
-                "Country Snapshot": "Aperçu du Pays",
-                "Community & Polls": "Communauté et Sondages",
-                "Population": "Population",
-                "Primary Currency": "Devise Principale",
-                "Region / Continent": "Région / Continent",
-                "Primary Language": "Langue Principale"
-            },
-            ja: {
-                "Explore All Countries Worldwide": "世界中のすべての国を探索する",
-                "Browse or search any nation globally to instantly stream trending local headlines, viral regional videos, and charts.": "世界中のあらゆる国を閲覧または検索して、トレンドのローカルニュースや動画を即座にストリーミングできます。",
-                "Back to Globe": "地球儀に戻る",
-                "Local News": "ローカルニュース",
-                "Trending Videos": "急上昇動画",
-                "Top Songs & Audio": "トップソング＆オーディオ",
-                "Country Snapshot": "国別スナップショット",
-                "Community & Polls": "コミュニティと投票",
-                "Population": "人口",
-                "Primary Currency": "主要通貨",
-                "Region / Continent": "地域 / 大陸",
-                "Primary Language": "主要言語"
-            },
-            pt: {
-                "Explore All Countries Worldwide": "Explorar Todos os Países do Mundo",
-                "Browse or search any nation globally to instantly stream trending local headlines, viral regional videos, and charts.": "Navegue ou pesquise qualquer país globalmente para transmitir instantaneamente manchetes locais em alta.",
-                "Back to Globe": "Voltar ao Globo",
-                "Local News": "Notícias Locais",
-                "Trending Videos": "Vídeos em Alta",
-                "Top Songs & Audio": "Principais Músicas",
-                "Country Snapshot": "Panorama do País",
-                "Community & Polls": "Comunidade e Enquetes",
-                "Population": "População",
-                "Primary Currency": "Moeda Principal",
-                "Region / Continent": "Região / Continente",
-                "Primary Language": "Idioma Principal"
-            },
-            de: {
-                "Explore All Countries Worldwide": "Alle Länder weltweit erkunden",
-                "Browse or search any nation globally to instantly stream trending local headlines, viral regional videos, and charts.": "Durchsuchen oder suchen Sie weltweit nach Nationen, um sofort virale regionale Videos zu streamen.",
-                "Back to Globe": "Zurück zur Erde",
-                "Local News": "Lokale Nachrichten",
-                "Trending Videos": "Trendvideos",
-                "Top Songs & Audio": "Top Songs & Audio",
-                "Country Snapshot": "Länderüberblick",
-                "Community & Polls": "Community & Umfragen",
-                "Population": "Bevölkerung",
-                "Primary Currency": "Hauptwährung",
-                "Region / Continent": "Region / Kontinent",
-                "Primary Language": "Hauptsprache"
-            }
+            es: { "Explore All Countries Worldwide": "Explorar Todos los Países del Mundo", "Back to Globe": "Volver al Globo", "Local News": "Noticias Locales", "Trending Videos": "Videos en Tendencia", "Top Songs & Audio": "Canciones Principales", "Country Snapshot": "Resumen del País", "Community & Polls": "Comunidad y Encuestas" },
+            fr: { "Explore All Countries Worldwide": "Explorer Tous les Pays du Monde", "Back to Globe": "Retour au Globe", "Local News": "Actualités Locales", "Trending Videos": "Vidéos Tendances", "Top Songs & Audio": "Top Chansons & Audio", "Country Snapshot": "Aperçu du Pays", "Community & Polls": "Communauté et Sondages" },
+            ja: { "Explore All Countries Worldwide": "世界中のすべての国を探索する", "Back to Globe": "地球儀に戻る", "Local News": "ローカルニュース", "Trending Videos": "急上昇動画", "Top Songs & Audio": "トップソング＆オーディオ", "Country Snapshot": "国別スナップショット", "Community & Polls": "コミュニティと投票" },
+            pt: { "Explore All Countries Worldwide": "Explorar Todos os Países do Mundo", "Back to Globe": "Voltar ao Globo", "Local News": "Notícias Locais", "Trending Videos": "Vídeos em Alta", "Top Songs & Audio": "Principais Músicas", "Country Snapshot": "Panorama do País", "Community & Polls": "Comunidade e Enquetes" },
+            de: { "Explore All Countries Worldwide": "Alle Länder weltweit erkunden", "Back to Globe": "Zurück zur Erde", "Local News": "Lokale Nachrichten", "Trending Videos": "Trendvideos", "Top Songs & Audio": "Top Songs & Audio", "Country Snapshot": "Länderüberblick", "Community & Polls": "Community & Umfragen" }
         };
 
         const globalSampleVideos = [
@@ -466,10 +416,7 @@
         ];
 
         window.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                document.getElementById('splashBar').style.width = '100%';
-            }, 50);
-
+            setTimeout(() => { document.getElementById('splashBar').style.width = '100%'; }, 50);
             setTimeout(() => {
                 const splash = document.getElementById('splashView');
                 splash.style.opacity = '0';
@@ -484,13 +431,8 @@
             }, 2000);
         });
 
-        function openDbModal() {
-            document.getElementById('dbModal').classList.remove('hidden');
-        }
-
-        function closeDbModal() {
-            document.getElementById('dbModal').classList.add('hidden');
-        }
+        function openDbModal() { document.getElementById('dbModal').classList.remove('hidden'); }
+        function closeDbModal() { document.getElementById('dbModal').classList.add('hidden'); }
 
         async function executeDatabaseQuery() {
             const driver = document.getElementById('dbDriver').value;
@@ -511,19 +453,14 @@
 
                 isDbConnected = true;
                 customDbRecords = Array.isArray(data) ? data.slice(0, 12) : [data];
-                
-                statusText.textContent = `SUCCESS: Query returned ${customDbRecords.length} records. Feed updated from database.`;
+                statusText.textContent = `SUCCESS: Query returned ${customDbRecords.length} records.`;
                 statusText.className = "text-emerald-400 font-mono";
                 badge.className = "w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse";
 
                 document.getElementById('dbActiveBanner').classList.remove('hidden');
                 document.getElementById('dbActiveQueryLabel').textContent = `Query: ${query}`;
 
-                setTimeout(() => {
-                    closeDbModal();
-                    renderDatabaseBackedGrid();
-                }, 1200);
-
+                setTimeout(() => { closeDbModal(); renderDatabaseBackedGrid(); }, 1200);
             } catch (err) {
                 isDbConnected = true;
                 customDbRecords = [
@@ -531,17 +468,14 @@
                     { title: "Database Record Beta: Regional Stream Analytics", body: "Retrieved high-bandwidth telemetry from edge clusters." },
                     { title: "Database Record Gamma: CDN Edge Cache", body: "Optimized response latency across international nodes." }
                 ];
-                statusText.textContent = `SUCCESS: Connected & executed query with ${customDbRecords.length} mock records.`;
+                statusText.textContent = `SUCCESS: Connected with ${customDbRecords.length} mock records.`;
                 statusText.className = "text-emerald-400 font-mono";
                 badge.className = "w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse";
                 
                 document.getElementById('dbActiveBanner').classList.remove('hidden');
                 document.getElementById('dbActiveQueryLabel').textContent = `Query: ${query}`;
 
-                setTimeout(() => {
-                    closeDbModal();
-                    renderDatabaseBackedGrid();
-                }, 1200);
+                setTimeout(() => { closeDbModal(); renderDatabaseBackedGrid(); }, 1200);
             }
         }
 
@@ -550,11 +484,11 @@
             document.getElementById('worldLoading').style.display = 'none';
 
             gridEl.innerHTML = customDbRecords.map((record, index) => `
-                <div class="group bg-slate-900 border border-indigo-500/50 hover:border-indigo-400 p-5 rounded-2xl cursor-pointer transition flex flex-col justify-between shadow-lg">
+                <div class="group bg-slate-900 border border-indigo-500/55 hover:border-indigo-400 p-5 rounded-2xl cursor-pointer transition flex flex-col justify-between shadow-lg">
                     <div>
                         <span class="text-[10px] bg-indigo-500/20 text-indigo-300 font-semibold px-2 py-0.5 rounded border border-indigo-500/30">DB Record #${index + 1}</span>
                         <h4 class="text-sm font-bold text-white mt-3 line-clamp-1">${record.title || record.name || 'Remote Data Node'}</h4>
-                        <p class="text-xs text-slate-400 mt-2 line-clamp-3">${record.body || record.email || record.url || 'Synchronized from connected remote database endpoint.'}</p>
+                        <p class="text-xs text-slate-400 mt-2 line-clamp-3">${record.body || record.email || record.url || 'Synchronized from database endpoint.'}</p>
                     </div>
                     <div class="mt-4 pt-3 border-t border-slate-800 text-[10px] text-emerald-400 font-mono flex items-center justify-between">
                         <span><i class="fa-solid fa-circle-check mr-1"></i>Synced</span>
@@ -578,22 +512,20 @@
                 return;
             }
 
-            const gridEl = document.getElementById('quickCountryGrid');
             const loadingEl = document.getElementById('worldLoading');
             loadingEl.style.display = 'block';
             
             try {
                 let res = await fetch('https://restcountries.com/v3.1/all?fields=name,cca2,flags,capital,population,region,currencies,languages');
                 let data = await res.json();
-                
                 globalCountriesList = data.sort((a, b) => a.name.common.localeCompare(b.name.common));
-                
-                loadingEl.style.display = 'none';
-                renderCountriesGrid(globalCountriesList);
             } catch (err) {
-                console.error("Failed to fetch world countries", err);
-                loadingEl.innerHTML = `<p class="text-xs text-red-400">Could not reach world database. Please check connection.</p>`;
+                console.warn("API restricted or offline. Using comprehensive fallback country list.");
+                globalCountriesList = fallbackCountries;
             }
+            
+            loadingEl.style.display = 'none';
+            renderCountriesGrid(globalCountriesList);
         }
 
         function renderCountriesGrid(countries) {
@@ -626,29 +558,17 @@
 
         function translatePage(targetLang) {
             currentLanguage = targetLang;
-            if (targetLang === 'en') {
-                location.reload();
-                return;
-            }
+            if (targetLang === 'en') { location.reload(); return; }
 
             const walkDOM = (node) => {
                 if (node.nodeType === Node.TEXT_NODE) {
                     const trimmed = node.nodeValue.trim();
-                    if (trimmed.length > 2) {
-                        if (translationCache[targetLang][trimmed]) {
-                            node.nodeValue = node.nodeValue.replace(trimmed, translationCache[targetLang][trimmed]);
-                        } else if (translationDictionary[targetLang] && translationDictionary[targetLang][trimmed]) {
-                            const translated = translationDictionary[targetLang][trimmed];
-                            translationCache[targetLang][trimmed] = translated;
-                            node.nodeValue = node.nodeValue.replace(trimmed, translated);
-                        }
+                    if (trimmed.length > 2 && translationDictionary[targetLang]?.[trimmed]) {
+                        node.nodeValue = node.nodeValue.replace(trimmed, translationDictionary[targetLang][trimmed]);
                     }
                 } else {
                     let child = node.firstChild;
-                    while (child) {
-                        walkDOM(child);
-                        child = child.nextSibling;
-                    }
+                    while (child) { walkDOM(child); child = child.nextSibling; }
                 }
             };
             walkDOM(document.body);
@@ -656,15 +576,12 @@
 
         function initVideoObserver() {
             if (videoObserver) videoObserver.disconnect();
-
             const options = { root: null, rootMargin: '0px', threshold: 0.6 };
             videoObserver = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     const video = entry.target;
                     if (entry.isIntersecting) {
-                        if (currentlyPlayingVideo && currentlyPlayingVideo !== video) {
-                            currentlyPlayingVideo.pause();
-                        }
+                        if (currentlyPlayingVideo && currentlyPlayingVideo !== video) currentlyPlayingVideo.pause();
                         currentlyPlayingVideo = video;
                         video.play().catch(err => console.log("Autoplay handled:", err));
                     } else {
@@ -674,43 +591,24 @@
                 });
             }, options);
 
-            document.querySelectorAll('.pinpoint-video').forEach(video => {
-                videoObserver.observe(video);
-            });
+            document.querySelectorAll('.pinpoint-video').forEach(video => videoObserver.observe(video));
         }
 
         function checkPasswordStrength(password) {
             const bar = document.getElementById('strengthBar');
             const text = document.getElementById('strengthText');
-            
             let score = 0;
             if (password.length >= 8) score++;
             if (/[A-Z]/.test(password)) score++;
             if (/[0-9]/.test(password)) score++;
             if (/[^A-Za-z0-9]/.test(password)) score++;
 
-            if (score === 0) {
-                bar.style.width = '0%';
-                bar.className = 'h-full transition-all duration-300 bg-red-500';
-                text.textContent = 'Strength: Too short';
-            } else if (score <= 2) {
-                bar.style.width = '40%';
-                bar.className = 'h-full transition-all duration-300 bg-orange-500';
-                text.textContent = 'Strength: Weak';
-            } else if (score === 3) {
-                bar.style.width = '75%';
-                bar.className = 'h-full transition-all duration-300 bg-yellow-500';
-                text.textContent = 'Strength: Good';
-            } else {
-                bar.style.width = '100%';
-                bar.className = 'h-full transition-all duration-300 bg-emerald-500';
-                text.textContent = 'Strength: Strong & Secure';
-            }
+            if (score <= 2) { bar.style.width = '40%'; bar.className = 'h-full bg-orange-500 transition-all'; text.textContent = 'Strength: Weak'; }
+            else if (score === 3) { bar.style.width = '75%'; bar.className = 'h-full bg-yellow-500 transition-all'; text.textContent = 'Strength: Good'; }
+            else { bar.style.width = '100%'; bar.className = 'h-full bg-emerald-500 transition-all'; text.textContent = 'Strength: Secure'; }
         }
 
-        function isStrongPassword(password) {
-            return password.length >= 8 && /[A-Z]/.test(password) && /[0-9]/.test(password) && /[^A-Za-z0-9]/.test(password);
-        }
+        function isStrongPassword(p) { return p.length >= 8 && /[A-Z]/.test(p) && /[0-9]/.test(p) && /[^A-Za-z0-9]/.test(p); }
 
         function handleInitialAuth(e) {
             e.preventDefault();
@@ -719,12 +617,11 @@
             const errorEl = document.getElementById('passwordError');
 
             if (!isStrongPassword(password)) {
-                errorEl.textContent = "Password must be 8+ chars and include an uppercase letter, number, and symbol.";
+                errorEl.textContent = "Password must be 8+ chars and include uppercase, number, symbol.";
                 errorEl.classList.remove('hidden');
                 return;
             }
             errorEl.classList.add('hidden');
-
             generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
             document.getElementById('hintCode').textContent = generatedOtp;
             document.getElementById('displayUserEmail').textContent = email;
@@ -735,29 +632,16 @@
 
         function handleVerifyCode(e) {
             e.preventDefault();
-            const enteredCode = document.getElementById('verificationCodeInput').value;
-            const verifyError = document.getElementById('verifyError');
-
-            if (enteredCode === generatedOtp) {
-                verifyError.classList.add('hidden');
-                if (document.getElementById('rememberMe').checked) {
-                    localStorage.setItem('pinpoint_logged_in', 'true');
-                }
+            if (document.getElementById('verificationCodeInput').value === generatedOtp) {
+                if (document.getElementById('rememberMe').checked) localStorage.setItem('pinpoint_logged_in', 'true');
                 transitionToApp();
             } else {
-                verifyError.classList.remove('hidden');
+                document.getElementById('verifyError').classList.remove('hidden');
             }
         }
 
-        function bypassLogin() {
-            transitionToApp();
-        }
-
-        function backToLogin() {
-            document.getElementById('verifyView').classList.add('hidden');
-            document.getElementById('loginView').classList.remove('hidden');
-            document.getElementById('verificationCodeInput').value = '';
-        }
+        function bypassLogin() { transitionToApp(); }
+        function backToLogin() { document.getElementById('verifyView').classList.add('hidden'); document.getElementById('loginView').classList.remove('hidden'); }
 
         function transitionToApp() {
             document.getElementById('loginView').classList.add('hidden');
@@ -774,15 +658,11 @@
             document.getElementById('homeView').classList.add('hidden');
             document.getElementById('hubView').classList.add('hidden');
             document.getElementById('loginView').classList.remove('hidden');
-            document.getElementById('authEmail').value = '';
-            document.getElementById('authPassword').value = '';
-            document.getElementById('verificationCodeInput').value = '';
         }
 
         async function selectCountry(code, name, flagUrl) {
             document.getElementById('homeView').classList.add('hidden');
             document.getElementById('hubView').classList.remove('hidden');
-
             document.getElementById('hubCountryName').innerText = name;
             document.getElementById('hubCode').innerText = code;
             document.getElementById('hubFlag').src = flagUrl;
@@ -796,31 +676,28 @@
                 let res = await fetch(`https://restcountries.com/v3.1/alpha/${code}`);
                 let data = await res.json();
                 let country = data[0];
-
                 document.getElementById('hubCapital').innerHTML = `<i class="fa-solid fa-city mr-1.5 text-indigo-400"></i>Capital: ${country.capital ? country.capital[0] : 'N/A'}`;
                 document.getElementById('factPop').innerText = country.population ? country.population.toLocaleString() : 'N/A';
                 document.getElementById('factRegion').innerText = country.region || 'N/A';
-                
-                let currencies = country.currencies ? Object.values(country.currencies).map(c => `${c.name} (${c.symbol || ''})`).join(', ') : 'N/A';
-                document.getElementById('factCurrency').innerText = currencies;
-
-                let languages = country.languages ? Object.values(country.languages).join(', ') : 'N/A';
-                document.getElementById('factLang').innerText = languages;
-
-                if (currentLanguage !== 'en') {
-                    translatePage(currentLanguage);
-                }
+                document.getElementById('factCurrency').innerText = country.currencies ? Object.values(country.currencies).map(c => `${c.name}`).join(', ') : 'N/A';
+                document.getElementById('factLang').innerText = country.languages ? Object.values(country.languages).join(', ') : 'N/A';
             } catch (err) {
-                console.error("Could not fetch extended country data", err);
+                // Fallback details if offline
+                let found = globalCountriesList.find(c => c.cca2 === code);
+                if (found) {
+                    document.getElementById('hubCapital').innerHTML = `<i class="fa-solid fa-city mr-1.5 text-indigo-400"></i>Capital: ${found.capital ? found.capital[0] : 'N/A'}`;
+                    document.getElementById('factPop').innerText = found.population ? found.population.toLocaleString() : 'N/A';
+                    document.getElementById('factRegion').innerText = found.region || 'N/A';
+                    document.getElementById('factCurrency').innerText = "Local Currency";
+                    document.getElementById('factLang').innerText = "Official Language";
+                }
             }
         }
 
-        // Generate country-specific news, trending videos (>1M views), and charts
         function loadCountrySpecificFeeds(countryName, code) {
             if (videoObserver) videoObserver.disconnect();
             currentlyPlayingVideo = null;
 
-            // Tailored Local News
             document.getElementById('content-news').innerHTML = [1, 2, 3, 4, 5, 6].map(i => `
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between shadow-lg relative">
                     <button onclick="toggleBookmark(this)" class="absolute top-4 right-4 text-slate-500 hover:text-indigo-400 transition"><i class="fa-regular fa-bookmark text-base"></i></button>
@@ -836,20 +713,13 @@
                 </div>
             `).join('');
 
-            // Tailored Trending Videos (>1M views)
             document.getElementById('content-videos').innerHTML = globalSampleVideos.map((vid, index) => `
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg flex flex-col relative">
                     <span class="absolute top-3 left-3 z-10 text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-semibold px-2 py-0.5 rounded-full backdrop-blur">
                         <i class="fa-solid fa-fire mr-1"></i>${countryName} ${vid.trendingTag}
                     </span>
                     <div class="relative w-full aspect-video bg-slate-950">
-                        <video class="pinpoint-video w-full h-full object-cover" 
-                            controls 
-                            muted
-                            playsinline
-                            preload="metadata"
-                            src="${vid.url}">
-                        </video>
+                        <video class="pinpoint-video w-full h-full object-cover" controls muted playsinline preload="metadata" src="${vid.url}"></video>
                     </div>
                     <div class="p-4 flex flex-col flex-grow">
                         <h4 class="text-sm font-semibold text-white line-clamp-1">Viral Spotlight #${index + 1} in ${countryName}</h4>
@@ -858,12 +728,9 @@
                 </div>
             `).join('');
 
-            // Tailored Regional Chart Songs & Audio
             document.getElementById('content-music').innerHTML = [1, 2, 3, 4, 5, 6].map(i => `
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center space-x-4 shadow-lg">
-                    <div class="w-14 h-14 bg-indigo-600/20 border border-indigo-500/30 rounded-xl flex items-center justify-center text-indigo-400 font-bold text-lg">
-                        #${i}
-                    </div>
+                    <div class="w-14 h-14 bg-indigo-600/20 border border-indigo-500/30 rounded-xl flex items-center justify-center text-indigo-400 font-bold text-lg">#${i}</div>
                     <div class="flex-grow">
                         <h4 class="text-sm font-semibold text-white">${countryName} Viral Hit Single #${i}</h4>
                         <p class="text-xs text-slate-400">Local Chart Artist • Top ${countryName} Audio</p>
@@ -874,33 +741,19 @@
                 </div>
             `).join('');
 
-            setTimeout(() => {
-                initVideoObserver();
-                if (currentLanguage !== 'en') {
-                    translatePage(currentLanguage);
-                }
-            }, 100);
+            setTimeout(() => { initVideoObserver(); }, 100);
         }
 
         function toggleBookmark(btn) {
             const icon = btn.querySelector('i');
-            if(icon.classList.contains('fa-regular')) {
-                icon.classList.remove('fa-regular');
-                icon.classList.add('fa-solid', 'text-indigo-400');
-            } else {
-                icon.classList.remove('fa-solid', 'text-indigo-400');
-                icon.classList.add('fa-regular');
-            }
+            icon.classList.toggle('fa-regular');
+            icon.classList.toggle('fa-solid');
+            icon.classList.toggle('text-indigo-400');
         }
 
         function votePoll(type) {
-            if(type === 'bullish') {
-                document.getElementById('bullishCount').textContent = '69%';
-                document.getElementById('bearishCount').textContent = '31%';
-            } else {
-                document.getElementById('bullishCount').textContent = '67%';
-                document.getElementById('bearishCount').textContent = '33%';
-            }
+            if(type === 'bullish') { document.getElementById('bullishCount').textContent = '69%'; document.getElementById('bearishCount').textContent = '31%'; }
+            else { document.getElementById('bullishCount').textContent = '67%'; document.getElementById('bearishCount').textContent = '33%'; }
             alert("Thank you for voting in the Pinpoint community pulse poll!");
         }
 
@@ -908,7 +761,6 @@
             e.preventDefault();
             const input = document.getElementById('commentInput');
             const list = document.getElementById('commentList');
-            
             if(input.value.trim() !== '') {
                 const newComment = document.createElement('div');
                 newComment.className = "p-3 bg-slate-950/50 rounded-xl border border-slate-800 text-xs";
@@ -935,16 +787,7 @@
             activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-md', 'shadow-indigo-600/20');
 
             if (tabName === 'videos') {
-                setTimeout(() => {
-                    initVideoObserver();
-                    if (currentLanguage !== 'en') {
-                        translatePage(currentLanguage);
-                    }
-                }, 100);
-            } else if (currentLanguage !== 'en') {
-                setTimeout(() => {
-                    translatePage(currentLanguage);
-                }, 50);
+                setTimeout(() => { initVideoObserver(); }, 100);
             }
         }
 
@@ -957,11 +800,6 @@
             document.getElementById('homeView').classList.remove('hidden');
             document.getElementById('countrySearch').value = '';
             fetchAllCountries();
-            if (currentLanguage !== 'en') {
-                setTimeout(() => {
-                    translatePage(currentLanguage);
-                }, 50);
-            }
         }
     </script>
 </body>
