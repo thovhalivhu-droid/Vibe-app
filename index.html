@@ -16,7 +16,7 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
 
-    <!-- SPLASH SCREEN (Shows for 2 seconds on load) -->
+    <!-- SPLASH SCREEN -->
     <div id="splashView" class="fixed inset-0 bg-slate-950 z-50 flex flex-col items-center justify-center space-y-4 transition-opacity duration-500">
         <div class="bg-indigo-600 text-white p-5 rounded-3xl shadow-2xl shadow-indigo-600/50">
             <i class="fa-solid fa-location-crosshairs text-4xl"></i>
@@ -30,7 +30,7 @@
         </div>
     </div>
 
-    <!-- HEADER / NAVBAR (Hidden until logged in) -->
+    <!-- HEADER / NAVBAR -->
     <header id="appHeader" class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-40 hidden">
         <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
             <div class="flex items-center space-x-3 cursor-pointer" onclick="returnToHome()">
@@ -44,9 +44,9 @@
             </div>
             
             <div class="flex items-center gap-3 w-full md:w-auto justify-end flex-wrap">
-                <button onclick="openCreateStudioModal()" title="Create AI Videos and Photos" class="px-3.5 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-xs font-bold text-white rounded-xl transition shadow-lg shadow-indigo-600/30 flex items-center space-x-2">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i>
-                    <span>Create Videos & Photos</span>
+                <button onclick="openCreateStudioModal()" title="Create or Upload Videos and Photos" class="px-3.5 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-xs font-bold text-white rounded-xl transition shadow-lg shadow-indigo-600/30 flex items-center space-x-2">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <span>Create & Upload Gallery Media</span>
                 </button>
 
                 <button onclick="openSyndicateModal()" title="Broadcast to All Countries & Socials" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white rounded-xl transition shadow-lg shadow-indigo-600/30 flex items-center space-x-2">
@@ -84,69 +84,95 @@
         </div>
     </header>
 
-    <!-- CREATE AI VIDEOS & PHOTOS STUDIO MODAL -->
+    <!-- DATABASE RECORD INSPECTOR MODAL -->
+    <div id="dbRecordModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-6">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-emerald-600/20 text-emerald-400 p-2.5 rounded-xl border border-emerald-500/30">
+                        <i class="fa-solid fa-database text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 id="modalDbRecordTitle" class="text-base font-bold text-white">Database Record Node</h3>
+                        <p class="text-xs text-slate-400 font-mono">Live Table Entry Inspection</p>
+                    </div>
+                </div>
+                <button onclick="closeDbRecordModal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="space-y-4">
+                <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-2 font-mono text-xs">
+                    <p class="text-slate-400">Record ID: <span id="modalDbRecordId" class="text-indigo-400">--</span></p>
+                    <p class="text-slate-400">Payload / Content:</p>
+                    <p id="modalDbRecordBody" class="text-slate-200 bg-slate-900 p-3 rounded-xl border border-slate-800">--</p>
+                </div>
+            </div>
+            <div class="flex justify-end pt-2 border-t border-slate-800">
+                <button onclick="closeDbRecordModal()" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-white rounded-xl transition">Close Inspector</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GALLERY & AI MEDIA STUDIO MODAL -->
     <div id="createStudioModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-6">
             <div class="flex items-center justify-between border-b border-slate-800 pb-4">
                 <div class="flex items-center space-x-3">
                     <div class="bg-purple-600/20 text-purple-400 p-2.5 rounded-xl border border-purple-500/30">
-                        <i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
+                        <i class="fa-solid fa-cloud-arrow-up text-lg"></i>
                     </div>
                     <div>
-                        <h3 class="text-base font-bold text-white">Create AI Videos & Photos Studio</h3>
-                        <p class="text-xs text-slate-400">Generate digital portraits, lifestyle imagery, or video shorts</p>
+                        <h3 class="text-base font-bold text-white">Upload Gallery Media & Syndicate Worldwide</h3>
+                        <p class="text-xs text-slate-400">Choose photos/videos from your gallery or generate with AI</p>
                     </div>
                 </div>
                 <button onclick="closeCreateStudioModal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
 
-            <form onsubmit="handleAiGeneration(event)" class="space-y-4">
+            <form onsubmit="handleGalleryMediaPublish(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Asset Type</label>
-                    <select id="generationType" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-purple-500">
-                        <option value="video">AI Video Short / Cinematic Clip</option>
-                        <option value="photo">AI Digital Portrait / Lifestyle Image</option>
-                    </select>
+                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Select Media File from Gallery</label>
+                    <input type="file" id="galleryFileInput" accept="video/*,image/*" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-500 cursor-pointer">
+                    <p class="text-[11px] text-slate-500 mt-1">Supports MP4, MOV, WebM videos, or JPG, PNG, WebP photos.</p>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Prompt / Creative Description</label>
-                    <textarea id="generationPrompt" rows="2" required placeholder="E.g., Cinematic portrait in an urban fashion setting with dramatic neon lighting..." class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-purple-500"></textarea>
+                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Global Title / Caption</label>
+                    <input type="text" id="galleryMediaTitle" required placeholder="E.g., My amazing travel capture trending worldwide!" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-purple-500">
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Aesthetic Style</label>
-                        <select id="generationStyle" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-purple-500">
-                            <option value="Cinematic">Cinematic & Moody</option>
-                            <option value="Urban Fashion">Urban Fashion & Streetwear</option>
-                            <option value="Cyberpunk">Cyberpunk Neon</option>
-                            <option value="Documentary">Documentary Press</option>
+                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Category</label>
+                        <select id="galleryMediaCategory" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-purple-500">
+                            <option value="Viral Spotlight">Viral Spotlight</option>
+                            <option value="Travel & Lifestyle">Travel & Lifestyle</option>
+                            <option value="News & Breaking">News & Breaking</option>
+                            <option value="Art & Culture">Art & Culture</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Syndicate Action</label>
-                        <select id="generationSyndicate" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-purple-500">
-                            <option value="all">Trend Across All Countries & Socials</option>
-                            <option value="save">Save to Saved Items Only</option>
+                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Syndication Scope</label>
+                        <select id="galleryMediaScope" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-purple-500">
+                            <option value="all">All 195+ Countries & Social Platforms</option>
+                            <option value="saved">Saved Items Only</option>
                         </select>
                     </div>
                 </div>
 
-                <div id="generationStatusBox" class="p-3 bg-slate-950 rounded-xl border border-slate-800 text-[11px] font-mono text-slate-400 hidden">
-                    <span id="generationStatusText">Rendering AI asset...</span>
+                <div id="galleryUploadStatusBox" class="p-3 bg-slate-950 rounded-xl border border-slate-800 text-[11px] font-mono text-slate-400 hidden">
+                    <span id="galleryUploadStatusText">Processing media file...</span>
                 </div>
 
                 <div class="flex items-center justify-between pt-2">
                     <button type="submit" class="w-full py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-xs font-semibold text-white rounded-xl transition shadow-lg shadow-indigo-600/30 flex items-center justify-center space-x-2">
-                        <i class="fa-solid fa-sparkles"></i><span>Generate & Syndicate Asset</span>
+                        <i class="fa-solid fa-satellite-dish"></i><span>Publish & Trend Worldwide</span>
                     </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- GLOBAL SYNDICATION & TRENDING BROADCASTER MODAL -->
+    <!-- GLOBAL SYNDICATION MODAL -->
     <div id="syndicateModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-6">
             <div class="flex items-center justify-between border-b border-slate-800 pb-4">
@@ -161,7 +187,6 @@
                 </div>
                 <button onclick="closeSyndicateModal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-
             <form onsubmit="handleGlobalBroadcast(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-medium text-slate-300 mb-1.5">Video Source URL or Sample Clip</label>
@@ -172,54 +197,13 @@
                         <option value="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4">Tears of Steel (Cinematic Action)</option>
                     </select>
                 </div>
-
                 <div>
                     <label class="block text-xs font-medium text-slate-300 mb-1.5">Global Caption & Title</label>
                     <input type="text" id="broadcastTitle" required value="🔥 Breaking Global Spotlight: Unprecedented Worldwide Broadcast Event!" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500">
                 </div>
-
-                <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Target Scope</label>
-                    <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-between text-xs text-slate-300">
-                        <span><i class="fa-solid fa-earth-americas text-indigo-400 mr-2"></i>All 195+ Nations & Territories Worldwide</span>
-                        <span class="text-emerald-400 font-semibold">100% Coverage</span>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-2">Sync & Trend Across Social Media Platforms</label>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
-                        <label class="flex items-center space-x-2 p-2.5 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer hover:border-indigo-500">
-                            <input type="checkbox" checked class="social-checkbox rounded bg-slate-900 border-slate-700 text-indigo-600" value="TikTok">
-                            <i class="fa-brands fa-tiktok text-pink-400"></i><span>TikTok</span>
-                        </label>
-                        <label class="flex items-center space-x-2 p-2.5 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer hover:border-indigo-500">
-                            <input type="checkbox" checked class="social-checkbox rounded bg-slate-900 border-slate-700 text-indigo-600" value="YouTube Shorts">
-                            <i class="fa-brands fa-youtube text-red-400"></i><span>YouTube Shorts</span>
-                        </label>
-                        <label class="flex items-center space-x-2 p-2.5 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer hover:border-indigo-500">
-                            <input type="checkbox" checked class="social-checkbox rounded bg-slate-900 border-slate-700 text-indigo-600" value="Instagram Reels">
-                            <i class="fa-brands fa-instagram text-purple-400"></i><span>Instagram Reels</span>
-                        </label>
-                        <label class="flex items-center space-x-2 p-2.5 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer hover:border-indigo-500">
-                            <input type="checkbox" checked class="social-checkbox rounded bg-slate-900 border-slate-700 text-indigo-600" value="X / Twitter">
-                            <i class="fa-brands fa-x-twitter text-slate-200"></i><span>X / Twitter</span>
-                        </label>
-                        <label class="flex items-center space-x-2 p-2.5 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer hover:border-indigo-500">
-                            <input type="checkbox" checked class="social-checkbox rounded bg-slate-900 border-slate-700 text-indigo-600" value="Facebook">
-                            <i class="fa-brands fa-facebook text-blue-400"></i><span>Facebook</span>
-                        </label>
-                        <label class="flex items-center space-x-2 p-2.5 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer hover:border-indigo-500">
-                            <input type="checkbox" checked class="social-checkbox rounded bg-slate-900 border-slate-700 text-indigo-600" value="LinkedIn">
-                            <i class="fa-brands fa-linkedin text-blue-500"></i><span>LinkedIn</span>
-                        </label>
-                    </div>
-                </div>
-
                 <div id="broadcastStatusBox" class="p-3 bg-slate-950 rounded-xl border border-slate-800 text-[11px] font-mono text-slate-400 hidden">
                     <span id="broadcastStatusText">Broadcasting to all nodes...</span>
                 </div>
-
                 <div class="flex items-center justify-between pt-2">
                     <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white rounded-xl transition shadow-lg shadow-indigo-600/30 flex items-center justify-center space-x-2">
                         <i class="fa-solid fa-satellite-dish"></i><span>Execute Global Broadcast & Trend #1</span>
@@ -229,7 +213,7 @@
         </div>
     </div>
 
-    <!-- GLOBAL PRESS RELEASE MODAL -->
+    <!-- PRESS ROOM MODAL -->
     <div id="pressModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-6">
             <div class="flex items-center justify-between border-b border-slate-800 pb-4">
@@ -244,16 +228,13 @@
                 </div>
                 <button onclick="closePressModal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-
             <div class="space-y-4 max-h-96 overflow-y-auto pr-1">
                 <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
                     <span class="text-[10px] bg-emerald-500/20 text-emerald-400 font-semibold px-2 py-0.5 rounded">Official Press Wire</span>
                     <h4 class="text-sm font-bold text-white">Pinpoint Expands Global Real-Time Media Aggregation to All Nations</h4>
                     <p class="text-xs text-slate-400 leading-relaxed">Pinpoint has officially integrated live multi-database support, instant localization, and streaming video observation for every country worldwide...</p>
-                    <span class="text-[10px] text-slate-500 block pt-1"><i class="fa-regular fa-clock mr-1"></i>October 2026 • Press Relations Office</span>
                 </div>
             </div>
-
             <div class="flex justify-end pt-2 border-t border-slate-800">
                 <button onclick="closePressModal()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white rounded-xl transition shadow-lg shadow-indigo-600/30">Close Press Room</button>
             </div>
@@ -334,7 +315,6 @@
                         <input type="email" id="authEmail" required placeholder="name@example.com" class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500">
                     </div>
                 </div>
-
                 <div>
                     <label class="block text-xs font-medium text-slate-300 mb-1.5">Password</label>
                     <div class="relative">
@@ -347,29 +327,25 @@
                     <p id="strengthText" class="text-[11px] text-slate-400 mt-1">Strength: Too short</p>
                     <p id="passwordError" class="text-[11px] text-red-400 mt-1 hidden"></p>
                 </div>
-
                 <div class="flex items-center space-x-2">
                     <input type="checkbox" id="rememberMe" class="rounded bg-slate-950 border-slate-800 text-indigo-600 focus:ring-0">
                     <label for="rememberMe" class="text-xs text-slate-400 cursor-pointer">Remember me on this device</label>
                 </div>
-
                 <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition shadow-lg shadow-indigo-600/25 flex items-center justify-center space-x-2">
                     <span>Enter Pinpoint</span><i class="fa-solid fa-arrow-right text-xs"></i>
                 </button>
             </form>
-
             <div class="relative flex py-2 items-center">
                 <div class="flex-grow border-t border-slate-800"></div>
                 <span class="flex-shrink mx-4 text-slate-500 text-[10px] uppercase tracking-wider">or quick access</span>
                 <div class="flex-grow border-t border-slate-800"></div>
             </div>
-
             <button onclick="bypassLogin()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium rounded-xl border border-slate-700 transition">
                 Continue as Guest
             </button>
         </div>
 
-        <!-- VIEW 0B: VERIFICATION CODE SCREEN (OTP) -->
+        <!-- VIEW 0B: VERIFICATION CODE SCREEN -->
         <div id="verifyView" class="w-full max-w-md bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl space-y-6 hidden">
             <div class="text-center space-y-2">
                 <div class="inline-flex bg-emerald-600 text-white p-3 rounded-2xl shadow-lg shadow-emerald-600/30 mb-2">
@@ -379,7 +355,6 @@
                 <p class="text-xs text-slate-400">Confirmation code dispatched to <span id="displayUserEmail" class="text-indigo-400 font-medium">your email</span>.</p>
                 <p class="text-[11px] bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 py-1.5 px-3 rounded-lg inline-block font-mono mt-1">Hint for testing: Code is <b id="hintCode">123456</b></p>
             </div>
-
             <form onsubmit="handleVerifyCode(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-medium text-slate-300 mb-1.5 text-center">Enter 6-Digit Code</label>
@@ -395,7 +370,6 @@
 
         <!-- VIEW 1: HOME GRID -->
         <div id="homeView" class="w-full hidden space-y-6">
-            <!-- TOP RIGHT SAVED ITEMS PANEL -->
             <div class="flex justify-end w-full">
                 <div id="savedItemsContainer" class="bg-slate-900/90 border border-indigo-500/40 rounded-2xl p-4 shadow-2xl w-full max-w-sm space-y-2">
                     <div class="flex items-center justify-between border-b border-slate-800 pb-2">
@@ -414,7 +388,6 @@
                 <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Explore All Countries Worldwide</h2>
                 <p class="text-slate-400 text-sm sm:text-base">Browse or search any nation globally to instantly access live news broadcasts, breaking wires, and regional media.</p>
                 
-                <!-- WIDESPREAD PROMINENT SEARCH BAR -->
                 <div class="relative w-full max-w-2xl mx-auto mt-6">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-indigo-400">
                         <i class="fa-solid fa-magnifying-glass text-lg"></i>
@@ -456,13 +429,11 @@
                         <p id="hubCapital" class="text-sm text-slate-400 mt-1"><i class="fa-solid fa-city mr-1.5 text-indigo-400"></i>Capital: --</p>
                     </div>
                 </div>
-                
                 <button onclick="returnToHome()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium rounded-xl border border-slate-700 transition flex items-center space-x-2">
                     <i class="fa-solid fa-arrow-left"></i><span>Back to Globe</span>
                 </button>
             </div>
 
-            <!-- Navigation Tabs -->
             <div class="flex space-x-2 border-b border-slate-800 overflow-x-auto pb-2">
                 <button onclick="switchTab('news')" id="tab-news" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-semibold transition bg-indigo-600 text-white shadow-md shadow-indigo-600/20 flex items-center space-x-2">
                     <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping inline-block"></span>
@@ -485,12 +456,10 @@
                 </button>
             </div>
 
-            <!-- TAB CONTENT SECTIONS -->
             <div id="content-news" class="tab-content space-y-6"></div>
             <div id="content-videos" class="tab-content hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
             <div id="content-music" class="tab-content hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
             <div id="content-press" class="tab-content hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-            
             <div id="content-facts" class="tab-content hidden">
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div class="p-4 bg-slate-950/50 rounded-xl border border-slate-800">
@@ -512,7 +481,6 @@
                 </div>
             </div>
 
-            <!-- COMMUNITY & POLLS TAB -->
             <div id="content-community" class="tab-content hidden space-y-6">
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
                     <h3 class="text-lg font-bold text-white flex items-center"><i class="fa-solid fa-chart-pie mr-2 text-indigo-400"></i>Weekly Economic Outlook Poll</h3>
@@ -528,7 +496,6 @@
                         </button>
                     </div>
                 </div>
-
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
                     <h3 class="text-lg font-bold text-white flex items-center"><i class="fa-solid fa-comments mr-2 text-indigo-400"></i>Live Country Feed Discussion</h3>
                     <div id="commentList" class="space-y-3 max-h-60 overflow-y-auto pr-2">
@@ -543,7 +510,6 @@
                     </form>
                 </div>
             </div>
-
         </div>
 
     </main>
@@ -711,46 +677,61 @@
             document.getElementById('createStudioModal').classList.add('hidden');
         }
 
-        function handleAiGeneration(e) {
+        function handleGalleryMediaPublish(e) {
             e.preventDefault();
-            const type = document.getElementById('generationType').value;
-            const prompt = document.getElementById('generationPrompt').value;
-            const style = document.getElementById('generationStyle').value;
-            const syndicateAction = document.getElementById('generationSyndicate').value;
-            const statusBox = document.getElementById('generationStatusBox');
-            const statusText = document.getElementById('generationStatusText');
+            const fileInput = document.getElementById('galleryFileInput');
+            const title = document.getElementById('galleryMediaTitle').value;
+            const category = document.getElementById('galleryMediaCategory').value;
+            const scope = document.getElementById('galleryMediaScope').value;
+            const statusBox = document.getElementById('galleryUploadStatusBox');
+            const statusText = document.getElementById('galleryUploadStatusText');
+
+            if (fileInput.files.length === 0) {
+                alert("Please select a file from your gallery.");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const fileUrl = URL.createObjectURL(file);
+            const isVideo = file.type.startsWith('video');
 
             statusBox.classList.remove('hidden');
-            statusText.textContent = `Generating AI ${type} (${style}): "${prompt.slice(0, 30)}..."`;
+            statusText.textContent = `Uploading "${file.name}" to global edge servers...`;
             statusText.className = "text-purple-400 font-mono";
 
             setTimeout(() => {
-                const title = `🎨 AI Created ${type === 'video' ? 'Video Short' : 'Portrait'} (${style}): ${prompt}`;
-                if (syndicateAction === 'all') {
-                    globalSyndicatedVideos.unshift({
-                        url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-                        views: "24.5M views (AI #1)",
-                        trendingTag: "✨ AI CREATED & TRENDING #1",
+                statusText.textContent = `Syndicating across 195+ nations & social networks...`;
+                statusText.className = "text-amber-400 font-mono";
+                setTimeout(() => {
+                    const syndicatedItem = {
+                        url: isVideo ? fileUrl : "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+                        views: "12.4M views (Gallery #1)",
+                        trendingTag: `🚀 ${category.toUpperCase()} #1`,
                         title: title,
                         platforms: ["TikTok", "YouTube Shorts", "Instagram Reels", "X / Twitter", "Facebook"]
-                    });
-                }
-                savedItems.push({ type: type === 'video' ? 'Video' : 'Photo', title: title });
-                renderSavedItems();
+                    };
 
-                statusText.textContent = `SUCCESS: AI asset generated and syndicated globally!`;
-                statusText.className = "text-emerald-400 font-mono";
-                setTimeout(() => {
-                    closeCreateStudioModal();
-                    statusBox.classList.add('hidden');
-                    alert(`Successfully created and published your AI ${type}!`);
-                    const activeCountryName = document.getElementById('hubCountryName').innerText;
-                    if (activeCountryName && activeCountryName !== 'Country Name') {
-                        loadCountrySpecificFeeds(activeCountryName, document.getElementById('hubCode').innerText);
-                        switchTab('videos');
+                    if (scope === 'all') {
+                        globalSyndicatedVideos.unshift(syndicatedItem);
                     }
-                }, 1200);
-            }, 1800);
+                    savedItems.push({ type: isVideo ? 'Video' : 'Photo', title: title });
+                    renderSavedItems();
+
+                    statusText.textContent = `SUCCESS: Media published and trending worldwide!`;
+                    statusText.className = "text-emerald-400 font-mono";
+                    setTimeout(() => {
+                        closeCreateStudioModal();
+                        statusBox.classList.add('hidden');
+                        fileInput.value = '';
+                        alert("Your media file was successfully published and is now trending worldwide!");
+                        const activeCountryName = document.getElementById('hubCountryName').innerText;
+                        if (activeCountryName && activeCountryName !== 'Country Name') {
+                            loadCountrySpecificFeeds(activeCountryName, document.getElementById('hubCode').innerText);
+                            switchTab('videos');
+                        }
+                    }, 1200);
+                }, 1500);
+            }, 1500);
         }
 
         function openSyndicateModal() {
@@ -768,10 +749,8 @@
             const statusBox = document.getElementById('broadcastStatusBox');
             const statusText = document.getElementById('broadcastStatusText');
 
-            const selectedSocials = Array.from(document.querySelectorAll('.social-checkbox:checked')).map(cb => cb.value);
-
             statusBox.classList.remove('hidden');
-            statusText.textContent = `Syndicating to 195+ nations & ${selectedSocials.join(', ')}...`;
+            statusText.textContent = `Syndicating to 195+ nations & social media channels...`;
             statusText.className = "text-amber-400 font-mono";
 
             setTimeout(() => {
@@ -780,9 +759,9 @@
                     views: "15.8M views (Global #1)",
                     trendingTag: "🔥 WORLDWIDE #1 TRENDING",
                     title: title,
-                    platforms: selectedSocials
+                    platforms: ["TikTok", "YouTube Shorts", "Instagram Reels", "X / Twitter", "Facebook"]
                 });
-                statusText.textContent = `SUCCESS: Broadcasted globally and ranked #1 across all social platforms!`;
+                statusText.textContent = `SUCCESS: Broadcasted globally and ranked #1!`;
                 statusText.className = "text-emerald-400 font-mono";
                 setTimeout(() => {
                     closeSyndicateModal();
@@ -836,8 +815,9 @@
             } catch (err) {
                 isDbConnected = true;
                 customDbRecords = [
-                    { title: "Database Record Alpha: Global Node Sync", body: "Successfully established secure socket connection." },
-                    { title: "Database Record Beta: Regional Stream Analytics", body: "Retrieved high-bandwidth telemetry from edge clusters." }
+                    { id: 101, title: "Database Record Alpha: Global Node Sync", body: "Successfully established secure socket connection and verified stream telemetry." },
+                    { id: 102, title: "Database Record Beta: Regional Stream Analytics", body: "Retrieved high-bandwidth telemetry from edge clusters across EMEA and APAC." },
+                    { id: 103, title: "Database Record Gamma: Security Protocol Audit", body: "All cryptographic handshakes verified successfully with zero packet loss." }
                 ];
                 statusText.textContent = `SUCCESS: Connected with ${customDbRecords.length} mock records.`;
                 statusText.className = "text-emerald-400 font-mono";
@@ -850,18 +830,36 @@
 
         function renderDatabaseBackedGrid() {
             const gridEl = document.getElementById('quickCountryGrid');
-            gridEl.innerHTML = customDbRecords.map((record, index) => `
-                <div class="group bg-slate-900 border border-indigo-500/50 hover:border-indigo-400 p-5 rounded-2xl cursor-pointer transition flex flex-col justify-between shadow-lg">
-                    <div>
-                        <span class="text-[10px] bg-indigo-500/20 text-indigo-300 font-semibold px-2 py-0.5 rounded border border-indigo-500/30">DB Record #${index + 1}</span>
-                        <h4 class="text-sm font-bold text-white mt-3 line-clamp-1">${record.title || record.name || 'Remote Data Node'}</h4>
-                        <p class="text-xs text-slate-400 mt-2 line-clamp-3">${record.body || record.email || record.url || 'Synchronized from database endpoint.'}</p>
+            gridEl.innerHTML = customDbRecords.map((record, index) => {
+                const recId = record.id || index + 100;
+                const recTitle = record.title || record.name || `Remote Data Node #${index + 1}`;
+                const recBody = record.body || record.email || record.url || 'Synchronized from database endpoint.';
+                return `
+                    <div onclick="openDbRecordModal(${recId}, \`${recTitle.replace(/'/g, "\\'")}\`, \`${recBody.replace(/'/g, "\\'")}\`)" 
+                        class="group bg-slate-900 border border-indigo-500/50 hover:border-indigo-400 p-5 rounded-2xl cursor-pointer transition flex flex-col justify-between shadow-lg">
+                        <div>
+                            <span class="text-[10px] bg-indigo-500/20 text-indigo-300 font-semibold px-2 py-0.5 rounded border border-indigo-500/30">DB Record #${index + 1}</span>
+                            <h4 class="text-sm font-bold text-white mt-3 line-clamp-1">${recTitle}</h4>
+                            <p class="text-xs text-slate-400 mt-2 line-clamp-3">${recBody}</p>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-800 text-[10px] text-emerald-400 font-mono flex items-center justify-between">
+                            <span><i class="fa-solid fa-circle-check mr-1"></i>Synced</span><span>ID: ${recId}</span>
+                        </div>
                     </div>
-                    <div class="mt-4 pt-3 border-t border-slate-800 text-[10px] text-emerald-400 font-mono flex items-center justify-between">
-                        <span><i class="fa-solid fa-circle-check mr-1"></i>Synced</span><span>ID: ${record.id || index + 100}</span>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
+        }
+
+        function openDbRecordModal(id, title, body) {
+            cancelAllBackgroundAudio();
+            document.getElementById('modalDbRecordId').textContent = id;
+            document.getElementById('modalDbRecordTitle').textContent = title;
+            document.getElementById('modalDbRecordBody').textContent = body;
+            document.getElementById('dbRecordModal').classList.remove('hidden');
+        }
+
+        function closeDbRecordModal() {
+            document.getElementById('dbRecordModal').classList.add('hidden');
         }
 
         function clearDatabaseFeed() {
@@ -1094,7 +1092,7 @@
                         <button onclick="toggleSaveItem('${type}', \`${title.replace(/'/g, "\\'")}\`)" class="absolute top-3 right-3 z-10 p-2 bg-slate-950/80 rounded-full text-slate-300 hover:text-indigo-400 backdrop-blur transition" title="Save video">
                             <i class="${isAlreadySaved ? 'fa-solid text-indigo-400' : 'fa-regular'} fa-bookmark text-xs"></i>
                         </button>
-                        <span class="absolute top-3 left-3 z-10 text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-semibold px-2.5 py-0.5 rounded-full backdrop-blur">
+                        <span class="absolute top-3 left-3 z-10 text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-semibold px-2 py-0.5 rounded-full backdrop-blur">
                             <i class="fa-solid fa-fire mr-1"></i>${vid.trendingTag || `${countryName} #1 Trending`}
                         </span>
                         <div class="relative w-full aspect-video bg-slate-950">
@@ -1254,4 +1252,3 @@
     </script>
 </body>
 </html>
- 
