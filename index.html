@@ -42,17 +42,31 @@
                 </div>
             </div>
             
-            <!-- Country Search Bar & Logout -->
-            <div class="flex items-center gap-3 w-full sm:w-auto">
-                <div class="relative w-full sm:w-80">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                    </span>
-                    <input type="text" id="countrySearch" placeholder="Search country (e.g., Japan, Brazil)..." 
-                        class="w-full pl-10 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
+            <!-- Navbar Tools: Translate Dropdown, Country Search, & Logout -->
+            <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+                <!-- Compact Translation Dropdown -->
+                <div class="relative">
+                    <select id="langTranslateDropdown" onchange="translatePage(this.value)" 
+                        class="px-3 py-2 bg-slate-900 border border-slate-700 hover:border-indigo-500 text-xs text-slate-200 rounded-xl focus:outline-none transition cursor-pointer">
+                        <option value="en">🌐 English (Original)</option>
+                        <option value="es">🇪🇸 Español</option>
+                        <option value="fr">🇫🇷 Français</option>
+                        <option value="ja">🇯🇵 日本語</option>
+                        <option value="pt">🇵🇹 Português</option>
+                        <option value="de">🇩🇪 Deutsch</option>
+                    </select>
                 </div>
-                <button onclick="logout()" title="Log out" class="p-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-400 hover:text-red-400 rounded-xl transition">
-                    <i class="fa-solid fa-right-from-bracket"></i>
+
+                <div class="relative w-full sm:w-64">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                        <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                    </span>
+                    <input type="text" id="countrySearch" placeholder="Search country..." 
+                        class="w-full pl-9 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
+                </div>
+
+                <button onclick="logout()" title="Log out" class="p-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-400 hover:text-red-400 rounded-xl transition">
+                    <i class="fa-solid fa-right-from-bracket text-xs"></i>
                 </button>
             </div>
         </div>
@@ -151,8 +165,8 @@
         <!-- VIEW 1: HOME GRID (Hidden initially) -->
         <div id="homeView" class="w-full hidden">
             <div class="text-center max-w-2xl mx-auto my-8">
-                <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-3">Explore Local Pulses Worldwide</h2>
-                <p class="text-slate-400 text-sm sm:text-base">Select a country below or search above to instantly stream trending local headlines, viral regional videos, and charts.</p>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-3" data-translate="explore_title">Explore Local Pulses Worldwide</h2>
+                <p class="text-slate-400 text-sm sm:text-base" data-translate="explore_desc">Select a country below or search above to instantly stream trending local headlines, viral regional videos, and charts.</p>
             </div>
 
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4" id="quickCountryGrid">
@@ -178,26 +192,26 @@
                 
                 <button onclick="returnToHome()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium rounded-xl border border-slate-700 transition flex items-center space-x-2">
                     <i class="fa-solid fa-arrow-left"></i>
-                    <span>Back to Globe</span>
+                    <span data-translate="back_globe">Back to Globe</span>
                 </button>
             </div>
 
             <!-- Navigation Tabs -->
             <div class="flex space-x-2 border-b border-slate-800 overflow-x-auto pb-2">
                 <button onclick="switchTab('news')" id="tab-news" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-semibold transition bg-indigo-600 text-white shadow-md shadow-indigo-600/20">
-                    <i class="fa-solid fa-newspaper mr-2"></i>Local News
+                    <i class="fa-solid fa-newspaper mr-2"></i><span data-translate="tab_news">Local News</span>
                 </button>
                 <button onclick="switchTab('videos')" id="tab-videos" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-semibold transition text-slate-400 hover:text-white hover:bg-slate-900">
-                    <i class="fa-solid fa-video mr-2"></i>Trending Videos
+                    <i class="fa-solid fa-video mr-2"></i><span data-translate="tab_videos">Trending Videos</span>
                 </button>
                 <button onclick="switchTab('music')" id="tab-music" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-semibold transition text-slate-400 hover:text-white hover:bg-slate-900">
-                    <i class="fa-solid fa-music mr-2"></i>Top Songs & Audio
+                    <i class="fa-solid fa-music mr-2"></i><span data-translate="tab_music">Top Songs & Audio</span>
                 </button>
                 <button onclick="switchTab('facts')" id="tab-facts" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-semibold transition text-slate-400 hover:text-white hover:bg-slate-900">
-                    <i class="fa-solid fa-globe mr-2"></i>Country Snapshot
+                    <i class="fa-solid fa-globe mr-2"></i><span data-translate="tab_facts">Country Snapshot</span>
                 </button>
                 <button onclick="switchTab('community')" id="tab-community" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-semibold transition text-slate-400 hover:text-white hover:bg-slate-900">
-                    <i class="fa-solid fa-comments mr-2"></i>Community & Polls
+                    <i class="fa-solid fa-comments mr-2"></i><span data-translate="tab_community">Community & Polls</span>
                 </button>
             </div>
 
@@ -209,19 +223,19 @@
             <div id="content-facts" class="tab-content hidden">
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div class="p-4 bg-slate-950/50 rounded-xl border border-slate-800">
-                        <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Population</p>
+                        <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold" data-translate="pop_label">Population</p>
                         <p id="factPop" class="text-xl font-bold text-white mt-1">--</p>
                     </div>
                     <div class="p-4 bg-slate-950/50 rounded-xl border border-slate-800">
-                        <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Primary Currency</p>
+                        <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold" data-translate="curr_label">Primary Currency</p>
                         <p id="factCurrency" class="text-xl font-bold text-white mt-1">--</p>
                     </div>
                     <div class="p-4 bg-slate-950/50 rounded-xl border border-slate-800">
-                        <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Region / Continent</p>
+                        <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold" data-translate="reg_label">Region / Continent</p>
                         <p id="factRegion" class="text-xl font-bold text-white mt-1">--</p>
                     </div>
                     <div class="p-4 bg-slate-950/50 rounded-xl border border-slate-800">
-                        <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Primary Language</p>
+                        <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold" data-translate="lang_label">Primary Language</p>
                         <p id="factLang" class="text-xl font-bold text-white mt-1">--</p>
                     </div>
                 </div>
@@ -274,8 +288,91 @@
         let generatedOtp = "123456";
         let videoObserver = null;
         let currentlyPlayingVideo = null;
+        let currentLanguage = 'en';
 
-        // Video list filtered strictly to trending clips with over 1 million views
+        // Translation Cache Object to minimize redundant translation requests
+        const translationCache = {
+            es: {},
+            fr: {},
+            ja: {},
+            pt: {},
+            de: {}
+        };
+
+        // Static translation dictionary for key UI strings and dynamic elements
+        const translationDictionary = {
+            es: {
+                "Explore Local Pulses Worldwide": "Explorar Pulsos Locales en todo el Mundo",
+                "Select a country below or search above to instantly stream trending local headlines, viral regional videos, and charts.": "Seleccione un país abajo o busque arriba para transmitir instantáneamente titulares locales de tendencia, videos regionales virales y listas de éxitos.",
+                "Back to Globe": "Volver al Globo",
+                "Local News": "Noticias Locales",
+                "Trending Videos": "Videos en Tendencia",
+                "Top Songs & Audio": "Canciones Principales",
+                "Country Snapshot": "Resumen del País",
+                "Community & Polls": "Comunidad y Encuestas",
+                "Population": "Población",
+                "Primary Currency": "Moneda Principal",
+                "Region / Continent": "Región / Continente",
+                "Primary Language": "Idioma Principal"
+            },
+            fr: {
+                "Explore Local Pulses Worldwide": "Explorer les pulsations locales dans le monde",
+                "Select a country below or search above to instantly stream trending local headlines, viral regional videos, and charts.": "Sélectionnez un pays ci-dessous ou recherchez ci-dessus pour diffuser instantanément des actualités locales tendance et des vidéos virales.",
+                "Back to Globe": "Retour au Globe",
+                "Local News": "Actualités Locales",
+                "Trending Videos": "Vidéos Tendances",
+                "Top Songs & Audio": "Top Chansons & Audio",
+                "Country Snapshot": "Aperçu du Pays",
+                "Community & Polls": "Communauté et Sondages",
+                "Population": "Population",
+                "Primary Currency": "Devise Principale",
+                "Region / Continent": "Région / Continent",
+                "Primary Language": "Langue Principale"
+            },
+            ja: {
+                "Explore Local Pulses Worldwide": "世界のローカルパルスを探索する",
+                "Select a country below or search above to instantly stream trending local headlines, viral regional videos, and charts.": "下の国を選択するか、上で検索して、トレンドのローカルニュースやバイラルビデオをすぐにストリーミングできます。",
+                "Back to Globe": "地球儀に戻る",
+                "Local News": "ローカルニュース",
+                "Trending Videos": "急上昇動画",
+                "Top Songs & Audio": "トップソング＆オーディオ",
+                "Country Snapshot": "国別スナップショット",
+                "Community & Polls": "コミュニティと投票",
+                "Population": "人口",
+                "Primary Currency": "主要通貨",
+                "Region / Continent": "地域 / 大陸",
+                "Primary Language": "主要言語"
+            },
+            pt: {
+                "Explore Local Pulses Worldwide": "Explorar Pulsos Locais em Todo o Mundo",
+                "Select a country below or search above to instantly stream trending local headlines, viral regional videos, and charts.": "Selecione um país abaixo ou pesquise acima para transmitir instantaneamente manchetes locais em alta e vídeos virais.",
+                "Back to Globe": "Voltar ao Globo",
+                "Local News": "Notícias Locais",
+                "Trending Videos": "Vídeos em Alta",
+                "Top Songs & Audio": "Principais Músicas",
+                "Country Snapshot": "Panorama do País",
+                "Community & Polls": "Comunidade e Enquetes",
+                "Population": "População",
+                "Primary Currency": "Moeda Principal",
+                "Region / Continent": "Região / Continente",
+                "Primary Language": "Idioma Principal"
+            },
+            de: {
+                "Explore Local Pulses Worldwide": "Lokale Impulse weltweit erkunden",
+                "Select a country below or search above to instantly stream trending local headlines, viral regional videos, and charts.": "Wählen Sie unten ein Land aus oder suchen Sie oben, um sofort virale regionale Videos und Schlagzeilen zu streamen.",
+                "Back to Globe": "Zurück zur Erde",
+                "Local News": "Lokale Nachrichten",
+                "Trending Videos": "Trendvideos",
+                "Top Songs & Audio": "Top Songs & Audio",
+                "Country Snapshot": "Länderüberblick",
+                "Community & Polls": "Community & Umfragen",
+                "Population": "Bevölkerung",
+                "Primary Currency": "Hauptwährung",
+                "Region / Continent": "Region / Kontinent",
+                "Primary Language": "Hauptsprache"
+            }
+        };
+
         const trendingVideos = [
             { url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", views: "4.2M views", trendingTag: "#1 Trending" },
             { url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", views: "2.8M views", trendingTag: "#2 Trending" },
@@ -304,7 +401,40 @@
             }, 2000);
         });
 
-        // Initialize IntersectionObserver to auto-play visible videos and pause previous ones
+        // Translation Engine with Caching
+        function translatePage(targetLang) {
+            currentLanguage = targetLang;
+            if (targetLang === 'en') {
+                location.reload(); // Quick reset to pristine original English
+                return;
+            }
+
+            // Loop through visible headline elements and text nodes across the active document
+            const walkDOM = (node) => {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    const trimmed = node.nodeValue.trim();
+                    if (trimmed.length > 2) {
+                        // Check cache first
+                        if (translationCache[targetLang][trimmed]) {
+                            node.nodeValue = node.nodeValue.replace(trimmed, translationCache[targetLang][trimmed]);
+                        } else if (translationDictionary[targetLang] && translationDictionary[targetLang][trimmed]) {
+                            const translated = translationDictionary[targetLang][trimmed];
+                            translationCache[targetLang][trimmed] = translated;
+                            node.nodeValue = node.nodeValue.replace(trimmed, translated);
+                        }
+                    }
+                } else {
+                    let child = node.firstChild;
+                    while (child) {
+                        walkDOM(child);
+                        child = child.nextSibling;
+                    }
+                }
+            };
+
+            walkDOM(document.body);
+        }
+
         function initVideoObserver() {
             if (videoObserver) {
                 videoObserver.disconnect();
@@ -313,15 +443,13 @@
             const options = {
                 root: null,
                 rootMargin: '0px',
-                threshold: 0.6 // Trigger when 60% of the video is visible on screen
+                threshold: 0.6
             };
 
             videoObserver = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     const video = entry.target;
-                    
                     if (entry.isIntersecting) {
-                        // Video has entered the screen viewport
                         if (currentlyPlayingVideo && currentlyPlayingVideo !== video) {
                             currentlyPlayingVideo.pause();
                         }
@@ -330,7 +458,6 @@
                             console.log("Autoplay prevented or interrupted:", err);
                         });
                     } else {
-                        // Video has left the screen viewport
                         video.pause();
                         if (currentlyPlayingVideo === video) {
                             currentlyPlayingVideo = null;
@@ -339,7 +466,6 @@
                 });
             }, options);
 
-            // Observe each individual video element rendered on the page
             document.querySelectorAll('.pinpoint-video').forEach(video => {
                 videoObserver.observe(video);
             });
@@ -357,304 +483,4 @@
 
             if (score === 0) {
                 bar.style.width = '0%';
-                bar.className = 'h-full transition-all duration-300 bg-red-500';
-                text.textContent = 'Strength: Too short';
-            } else if (score <= 2) {
-                bar.style.width = '40%';
-                bar.className = 'h-full transition-all duration-300 bg-orange-500';
-                text.textContent = 'Strength: Weak';
-            } else if (score === 3) {
-                bar.style.width = '75%';
-                bar.className = 'h-full transition-all duration-300 bg-yellow-500';
-                text.textContent = 'Strength: Good';
-            } else {
-                bar.style.width = '100%';
-                bar.className = 'h-full transition-all duration-300 bg-emerald-500';
-                text.textContent = 'Strength: Strong & Secure';
-            }
-        }
-
-        function isStrongPassword(password) {
-            return password.length >= 8 && /[A-Z]/.test(password) && /[0-9]/.test(password) && /[^A-Za-z0-9]/.test(password);
-        }
-
-        function handleInitialAuth(e) {
-            e.preventDefault();
-            const email = document.getElementById('authEmail').value;
-            const password = document.getElementById('authPassword').value;
-            const errorEl = document.getElementById('passwordError');
-
-            if (!isStrongPassword(password)) {
-                errorEl.textContent = "Password must be 8+ chars and include an uppercase letter, number, and symbol.";
-                errorEl.classList.remove('hidden');
-                return;
-            }
-            errorEl.classList.add('hidden');
-
-            generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
-            document.getElementById('hintCode').textContent = generatedOtp;
-            document.getElementById('displayUserEmail').textContent = email;
-
-            document.getElementById('loginView').classList.add('hidden');
-            document.getElementById('verifyView').classList.remove('hidden');
-        }
-
-        function handleVerifyCode(e) {
-            e.preventDefault();
-            const enteredCode = document.getElementById('verificationCodeInput').value;
-            const verifyError = document.getElementById('verifyError');
-
-            if (enteredCode === generatedOtp) {
-                verifyError.classList.add('hidden');
-                if (document.getElementById('rememberMe').checked) {
-                    localStorage.setItem('pinpoint_logged_in', 'true');
-                }
-                transitionToApp();
-            } else {
-                verifyError.classList.remove('hidden');
-            }
-        }
-
-        function bypassLogin() {
-            transitionToApp();
-        }
-
-        function backToLogin() {
-            document.getElementById('verifyView').classList.add('hidden');
-            document.getElementById('loginView').classList.remove('hidden');
-            document.getElementById('verificationCodeInput').value = '';
-        }
-
-        function transitionToApp() {
-            document.getElementById('loginView').classList.add('hidden');
-            document.getElementById('verifyView').classList.add('hidden');
-            document.getElementById('appHeader').classList.remove('hidden');
-            document.getElementById('homeView').classList.remove('hidden');
-            renderHomeGrid();
-        }
-
-        function logout() {
-            localStorage.removeItem('pinpoint_logged_in');
-            if (videoObserver) videoObserver.disconnect();
-            document.getElementById('appHeader').classList.add('hidden');
-            document.getElementById('homeView').classList.add('hidden');
-            document.getElementById('hubView').classList.add('hidden');
-            document.getElementById('loginView').classList.remove('hidden');
-            document.getElementById('authEmail').value = '';
-            document.getElementById('authPassword').value = '';
-            document.getElementById('verificationCodeInput').value = '';
-        }
-
-        const popularCountries = [
-            { name: "United States", code: "US", flag: "https://flagcdn.com/w320/us.png" },
-            { name: "Japan", code: "JP", flag: "https://flagcdn.com/w320/jp.png" },
-            { name: "United Kingdom", code: "GB", flag: "https://flagcdn.com/w320/gb.png" },
-            { name: "Brazil", code: "BR", flag: "https://flagcdn.com/w320/br.png" },
-            { name: "Germany", code: "DE", flag: "https://flagcdn.com/w320/de.png" },
-            { name: "South Africa", code: "ZA", flag: "https://flagcdn.com/w320/za.png" },
-            { name: "India", code: "IN", flag: "https://flagcdn.com/w320/in.png" },
-            { name: "Australia", code: "AU", flag: "https://flagcdn.com/w320/au.png" },
-            { name: "France", code: "FR", flag: "https://flagcdn.com/w320/fr.png" },
-            { name: "South Korea", code: "KR", flag: "https://flagcdn.com/w320/kr.png" },
-            { name: "Canada", code: "CA", flag: "https://flagcdn.com/w320/ca.png" },
-            { name: "Mexico", code: "MX", flag: "https://flagcdn.com/w320/mx.png" }
-        ];
-
-        const gridEl = document.getElementById('quickCountryGrid');
-
-        function renderHomeGrid() {
-            gridEl.innerHTML = popularCountries.map(c => `
-                <div onclick="selectCountry('${c.code}', '${c.name}', '${c.flag}')" 
-                    class="group bg-slate-900 border border-slate-800 hover:border-indigo-500 p-4 rounded-2xl cursor-pointer transition transform hover:-translate-y-1 flex flex-col items-center text-center shadow-lg">
-                    <img src="${c.flag}" alt="${c.name}" class="w-16 h-11 object-cover rounded-md shadow mb-3 group-hover:scale-105 transition">
-                    <span class="text-sm font-semibold text-slate-200 group-hover:text-indigo-400 transition">${c.name}</span>
-                    <span class="text-[10px] text-slate-500 mt-0.5">Code: ${c.code}</span>
-                </div>
-            `).join('');
-        }
-
-        async function selectCountry(code, name, flagUrl) {
-            document.getElementById('homeView').classList.add('hidden');
-            document.getElementById('hubView').classList.remove('hidden');
-
-            document.getElementById('hubCountryName').innerText = name;
-            document.getElementById('hubCode').innerText = code;
-            document.getElementById('hubFlag').src = flagUrl;
-
-            fetchCountryDetails(code);
-            loadSimulatedFeeds(name, code);
-        }
-
-        async function fetchCountryDetails(code) {
-            try {
-                let res = await fetch(`https://restcountries.com/v3.1/alpha/${code}`);
-                let data = await res.json();
-                let country = data[0];
-
-                document.getElementById('hubCapital').innerHTML = `<i class="fa-solid fa-city mr-1.5 text-indigo-400"></i>Capital: ${country.capital ? country.capital[0] : 'N/A'}`;
-                document.getElementById('factPop').innerText = country.population ? country.population.toLocaleString() : 'N/A';
-                document.getElementById('factRegion').innerText = country.region || 'N/A';
-                
-                let currencies = country.currencies ? Object.values(country.currencies).map(c => `${c.name} (${c.symbol || ''})`).join(', ') : 'N/A';
-                document.getElementById('factCurrency').innerText = currencies;
-
-                let languages = country.languages ? Object.values(country.languages).join(', ') : 'N/A';
-                document.getElementById('factLang').innerText = languages;
-            } catch (err) {
-                console.error("Could not fetch extended country data", err);
-            }
-        }
-
-        function loadSimulatedFeeds(countryName, code) {
-            if (videoObserver) videoObserver.disconnect();
-            currentlyPlayingVideo = null;
-
-            // News Feed Cards
-            document.getElementById('content-news').innerHTML = [1, 2, 3, 4, 5, 6].map(i => `
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between shadow-lg relative">
-                    <button onclick="toggleBookmark(this)" class="absolute top-4 right-4 text-slate-500 hover:text-indigo-400 transition"><i class="fa-regular fa-bookmark text-base"></i></button>
-                    <div>
-                        <span class="text-[10px] bg-indigo-500/10 text-indigo-400 font-semibold px-2 py-0.5 rounded border border-indigo-500/20">Top Story #${i}</span>
-                        <h3 class="text-base font-semibold text-white mt-3 leading-snug">Major developments unfolding across economic sectors in ${countryName}</h3>
-                        <p class="text-xs text-slate-400 mt-2 line-clamp-2">Local news outlets report shifting paradigms with widespread engagement across key municipal districts...</p>
-                    </div>
-                    <div class="mt-4 pt-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-500">
-                        <span><i class="fa-regular fa-clock mr-1"></i>2 hours ago</span>
-                        <span class="text-indigo-400 font-medium cursor-pointer hover:underline">Read Source &rarr;</span>
-                    </div>
-                </div>
-            `).join('');
-
-            // Trending Videos (>1M views, active playback via IntersectionObserver)
-            document.getElementById('content-videos').innerHTML = trendingVideos.map((vid, index) => `
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg flex flex-col relative">
-                    <span class="absolute top-3 left-3 z-10 text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-semibold px-2 py-0.5 rounded-full backdrop-blur">
-                        <i class="fa-solid fa-fire mr-1"></i>${vid.trendingTag}
-                    </span>
-                    <div class="relative w-full aspect-video bg-slate-950">
-                        <video class="pinpoint-video w-full h-full object-cover" 
-                            controls 
-                            muted
-                            playsinline
-                            preload="metadata"
-                            src="${vid.url}">
-                        </video>
-                    </div>
-                    <div class="p-4 flex flex-col flex-grow">
-                        <h4 class="text-sm font-semibold text-white line-clamp-1">Top Viral Feature #${index + 1} in ${countryName}</h4>
-                        <p class="text-xs text-slate-400 mt-1">Creator Pulse • <span class="text-emerald-400 font-semibold">${vid.views}</span></p>
-                    </div>
-                </div>
-            `).join('');
-
-            // Music / Songs Cards
-            document.getElementById('content-music').innerHTML = [1, 2, 3, 4, 5, 6].map(i => `
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center space-x-4 shadow-lg">
-                    <div class="w-14 h-14 bg-indigo-600/20 border border-indigo-500/30 rounded-xl flex items-center justify-center text-indigo-400 font-bold text-lg">
-                        #${i}
-                    </div>
-                    <div class="flex-grow">
-                        <h4 class="text-sm font-semibold text-white">Top Chart Single #${i}</h4>
-                        <p class="text-xs text-slate-400">Featured Artist • ${countryName} Charts</p>
-                    </div>
-                    <button class="w-10 h-10 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition shadow-md shadow-indigo-600/30">
-                        <i class="fa-solid fa-play text-xs pl-0.5"></i>
-                    </button>
-                </div>
-            `).join('');
-
-            setTimeout(() => {
-                initVideoObserver();
-            }, 100);
-        }
-
-        function toggleBookmark(btn) {
-            const icon = btn.querySelector('i');
-            if(icon.classList.contains('fa-regular')) {
-                icon.classList.remove('fa-regular');
-                icon.classList.add('fa-solid', 'text-indigo-400');
-            } else {
-                icon.classList.remove('fa-solid', 'text-indigo-400');
-                icon.classList.add('fa-regular');
-            }
-        }
-
-        function votePoll(type) {
-            if(type === 'bullish') {
-                document.getElementById('bullishCount').textContent = '69%';
-                document.getElementById('bearishCount').textContent = '31%';
-            } else {
-                document.getElementById('bullishCount').textContent = '67%';
-                document.getElementById('bearishCount').textContent = '33%';
-            }
-            alert("Thank you for voting in the Pinpoint community pulse poll!");
-        }
-
-        function postComment(e) {
-            e.preventDefault();
-            const input = document.getElementById('commentInput');
-            const list = document.getElementById('commentList');
-            
-            if(input.value.trim() !== '') {
-                const newComment = document.createElement('div');
-                newComment.className = "p-3 bg-slate-950/50 rounded-xl border border-slate-800 text-xs";
-                newComment.innerHTML = `<span class="font-semibold text-indigo-400">You (Verified User)</span><p class="text-slate-300 mt-1">${input.value}</p>`;
-                list.prepend(newComment);
-                input.value = '';
-            }
-        }
-
-        function switchTab(tabName) {
-            if (videoObserver) videoObserver.disconnect();
-            document.querySelectorAll('.pinpoint-video').forEach(vid => vid.pause());
-            currentlyPlayingVideo = null;
-
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-md', 'shadow-indigo-600/20');
-                btn.classList.add('text-slate-400', 'hover:text-white', 'hover:bg-slate-900');
-            });
-
-            document.getElementById(`content-${tabName}`).classList.remove('hidden');
-            const activeBtn = document.getElementById(`tab-${tabName}`);
-            activeBtn.classList.remove('text-slate-400', 'hover:text-white', 'hover:bg-slate-900');
-            activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-md', 'shadow-indigo-600/20');
-
-            if (tabName === 'videos') {
-                setTimeout(() => {
-                    initVideoObserver();
-                }, 100);
-            }
-        }
-
-        function returnToHome() {
-            if (videoObserver) videoObserver.disconnect();
-            document.querySelectorAll('.pinpoint-video').forEach(vid => vid.pause());
-            currentlyPlayingVideo = null;
-
-            document.getElementById('hubView').classList.add('hidden');
-            document.getElementById('homeView').classList.remove('hidden');
-            document.getElementById('countrySearch').value = '';
-        }
-
-        document.getElementById('countrySearch').addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase();
-            const matched = popularCountries.filter(c => c.name.toLowerCase().includes(query));
-            
-            if(query.trim() === '') {
-                renderHomeGrid();
-                return;
-            }
-
-            gridEl.innerHTML = matched.length ? matched.map(c => `
-                <div onclick="selectCountry('${c.code}', '${c.name}', '${c.flag}')" 
-                    class="group bg-slate-900 border border-slate-800 hover:border-indigo-500 p-4 rounded-2xl cursor-pointer transition transform hover:-translate-y-1 flex flex-col items-center text-center shadow-lg">
-                    <img src="${c.flag}" alt="${c.name}" class="w-16 h-11 object-cover rounded-md shadow mb-3 group-hover:scale-105 transition">
-                    <span class="text-sm font-semibold text-slate-200 group-hover:text-indigo-400 transition">${c.name}</span>
-                    <span class="text-[10px] text-slate-500 mt-0.5">Code: ${c.code}</span>
-                </div>
-            `).join('') : `<p class="col-span-full text-center text-slate-500 py-8">No countries found matching "${query}"</p>`;
-        });
-    </script>
-</body>
-</html>
+                bar.className = 'h-full transition-all duration-300 bg-red-5
