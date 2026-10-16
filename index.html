@@ -67,14 +67,6 @@
                     </select>
                 </div>
 
-                <div class="relative w-full sm:w-56">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
-                        <i class="fa-solid fa-magnifying-glass text-xs"></i>
-                    </span>
-                    <input type="text" id="countrySearch" oninput="filterCountries(this.value)" onkeydown="handleSearchKeydown(event)" placeholder="Search country (Press Enter)..." 
-                        class="w-full pl-9 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
-                </div>
-
                 <button onclick="logout()" title="Log out" class="p-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-400 hover:text-red-400 rounded-xl transition">
                     <i class="fa-solid fa-right-from-bracket text-xs"></i>
                 </button>
@@ -248,9 +240,18 @@
 
         <!-- VIEW 1: HOME GRID -->
         <div id="homeView" class="w-full hidden space-y-6">
-            <div class="text-center max-w-2xl mx-auto my-4">
-                <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-3">Explore All Countries Worldwide</h2>
+            <div class="text-center max-w-2xl mx-auto my-4 space-y-4">
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Explore All Countries Worldwide</h2>
                 <p class="text-slate-400 text-sm sm:text-base">Browse or search any nation globally to instantly stream trending local headlines, viral regional videos, and press wires.</p>
+                
+                <!-- WIDESPREAD PROMINENT SEARCH BAR -->
+                <div class="relative w-full max-w-2xl mx-auto mt-6">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-indigo-400">
+                        <i class="fa-solid fa-magnifying-glass text-lg"></i>
+                    </span>
+                    <input type="text" id="countrySearch" oninput="filterCountries(this.value)" onkeydown="handleSearchKeydown(event)" placeholder="Search any country worldwide (Press Enter to open)..." 
+                        class="w-full pl-12 pr-6 py-4 bg-slate-900 border-2 border-indigo-500/60 hover:border-indigo-500 rounded-2xl text-sm sm:text-base text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-indigo-600/30 transition shadow-2xl">
+                </div>
             </div>
 
             <div id="dbActiveBanner" class="hidden max-w-2xl mx-auto p-4 bg-indigo-950/40 border border-indigo-500/30 rounded-2xl flex items-center justify-between">
@@ -814,3 +815,4 @@
     </script>
 </body>
 </html>
+ 
