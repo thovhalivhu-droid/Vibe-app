@@ -67,11 +67,11 @@
                     </select>
                 </div>
 
-                <div class="relative w-full sm:w-48">
+                <div class="relative w-full sm:w-56">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
                         <i class="fa-solid fa-magnifying-glass text-xs"></i>
                     </span>
-                    <input type="text" id="countrySearch" oninput="filterCountries(this.value)" placeholder="Search country..." 
+                    <input type="text" id="countrySearch" oninput="filterCountries(this.value)" onkeydown="handleSearchKeydown(event)" placeholder="Search country (Press Enter)..." 
                         class="w-full pl-9 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
                 </div>
 
@@ -390,6 +390,7 @@
         let globalCountriesList = [];
         let isDbConnected = false;
         let customDbRecords = [];
+        let filteredCountriesList = [];
 
         const fallbackCountries = [
             { name: { common: "South Africa" }, cca2: "ZA", flags: { png: "https://flagcdn.com/w320/za.png" }, capital: ["Pretoria"], population: 59308690, region: "Africa", currencies: { ZAR: { name: "South African rand", symbol: "R" } }, languages: { eng: "English", zul: "Zulu" } },
@@ -515,7 +516,8 @@
                 globalCountriesList = fallbackCountries;
             }
             loadingEl.style.display = 'none';
-            renderCountriesGrid(globalCountriesList);
+            filteredCountriesList = globalCountriesList;
+            renderCountriesGrid(filteredCountriesList);
         }
 
         function renderCountriesGrid(countries) {
@@ -537,12 +539,23 @@
         function filterCountries(query) {
             if (isDbConnected) return;
             const q = query.toLowerCase().trim();
-            const filtered = globalCountriesList.filter(c => 
+            filteredCountriesList = globalCountriesList.filter(c => 
                 c.name.common.toLowerCase().includes(q) || 
                 (c.capital && c.capital.some(cap => cap.toLowerCase().includes(q))) ||
                 c.cca2.toLowerCase().includes(q)
             );
-            renderCountriesGrid(filtered);
+            renderCountriesGrid(filteredCountriesList);
+        }
+
+        function handleSearchKeydown(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                // If user presses enter and we have filtered results, automatically select the first country match!
+                if (filteredCountriesList.length > 0) {
+                    const match = filteredCountriesList[0];
+                    selectCountry(match.cca2, match.name.common, match.flags.png);
+                }
+            }
         }
 
         function translatePage(targetLang) {
@@ -671,7 +684,6 @@
             if (videoObserver) videoObserver.disconnect();
             currentlyPlayingVideo = null;
 
-            // Local News with functional press link triggering switchTab('press')
             document.getElementById('content-news').innerHTML = [1, 2, 3, 4, 5, 6].map(i => `
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between shadow-lg relative">
                     <button onclick="toggleBookmark(this)" class="absolute top-4 right-4 text-slate-500 hover:text-indigo-400 transition"><i class="fa-regular fa-bookmark text-base"></i></button>
@@ -687,7 +699,6 @@
                 </div>
             `).join('');
 
-            // Trending Videos (>1M views)
             document.getElementById('content-videos').innerHTML = globalSampleVideos.map((vid, index) => `
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg flex flex-col relative">
                     <span class="absolute top-3 left-3 z-10 text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-semibold px-2 py-0.5 rounded-full backdrop-blur">
@@ -703,7 +714,6 @@
                 </div>
             `).join('');
 
-            // Music
             document.getElementById('content-music').innerHTML = [1, 2, 3, 4, 5, 6].map(i => `
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center space-x-4 shadow-lg">
                     <div class="w-14 h-14 bg-indigo-600/20 border border-indigo-500/30 rounded-xl flex items-center justify-center text-indigo-400 font-bold text-lg">#${i}</div>
@@ -717,7 +727,6 @@
                 </div>
             `).join('');
 
-            // Press Releases
             document.getElementById('content-press').innerHTML = [1, 2, 3, 4, 5, 6].map(i => `
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between shadow-lg relative">
                     <span class="text-[10px] bg-indigo-500/20 text-indigo-300 font-semibold px-2.5 py-0.5 rounded-full border border-indigo-500/30 w-max">Official Press Release #${i}</span>
@@ -725,12 +734,27 @@
                     <p class="text-xs text-slate-400 mt-2 leading-relaxed">Ministry of Communications and regional press bureaus release official statements regarding digital media infrastructure and public broadcasting frameworks in ${countryName}.</p>
                     <div class="mt-4 pt-3 border-t border-slate-800 text-[10px] text-slate-500 flex items-center justify-between">
                         <span><i class="fa-regular fa-building mr-1"></i>${countryName} Press Office</span>
-                        <span class="text-indigo-400 font-medium cursor-pointer hover:underline">Download PDF &rarr;</span>
+                        <button onclick="downloadPressPdf('${countryName}', ${i})" class="text-indigo-400 font-medium hover:underline flex items-center space-x-1">
+                            <i class="fa-solid fa-download text-[9px]"></i><span>Download PDF</span>
+                        </button>
                     </div>
                 </div>
             `).join('');
 
             setTimeout(() => { initVideoObserver(); }, 100);
+        }
+
+        function downloadPressPdf(countryName, releaseNum) {
+            const pdfContent = `PINPOINT GLOBAL PRESS WIRE\n=====================================\nCountry: ${countryName}\nDocument: Official Press Release #${releaseNum}\nDate: October 2026\n\nMinistry of Communications and regional press bureaus release official statements regarding digital media infrastructure and public broadcasting frameworks in ${countryName}.\n\n-------------------------------------\nVerified by Pinpoint Global Engine`;
+            const blob = new Blob([pdfContent], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${countryName.replace(/\s+/g, '_')}_Press_Release_${releaseNum}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
 
         function toggleBookmark(btn) {
