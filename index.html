@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pinpoint — Global Content & Media Explorer</title>
+    <title id="appTitle">Pinpoint — Global Content & Media Explorer</title>
     <!-- Tailwind CSS for modern, responsive styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome for icons -->
@@ -39,29 +39,29 @@
                 </div>
                 <div>
                     <h1 class="text-xl font-bold tracking-tight text-white">PINPOINT</h1>
-                    <p class="text-xs text-slate-400">Discover the heartbeat of any nation</p>
+                    <p id="navSubtitle" class="text-xs text-slate-400">Discover the heartbeat of any nation</p>
                 </div>
             </div>
             
             <div class="flex items-center gap-3 w-full md:w-auto justify-end flex-wrap">
                 <button onclick="openCreateStudioModal()" title="Create or Upload Videos and Photos" class="px-3.5 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-xs font-bold text-white rounded-xl transition shadow-lg shadow-indigo-600/30 flex items-center space-x-2">
                     <i class="fa-solid fa-cloud-arrow-up"></i>
-                    <span>Create & Upload Gallery Media</span>
+                    <span id="btnUploadText">Create & Upload Gallery Media</span>
                 </button>
 
                 <button onclick="openSyndicateModal()" title="Broadcast to All Countries & Socials" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white rounded-xl transition shadow-lg shadow-indigo-600/30 flex items-center space-x-2">
                     <i class="fa-solid fa-globe"></i>
-                    <span>Broadcast & Trend</span>
+                    <span id="btnBroadcastText">Broadcast & Trend</span>
                 </button>
 
                 <button onclick="openPressModal()" title="Global Press Releases" class="px-3 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-indigo-500 text-xs text-slate-200 rounded-xl transition flex items-center space-x-2">
                     <i class="fa-solid fa-bullhorn text-indigo-400"></i>
-                    <span>Press Room</span>
+                    <span id="btnPressText">Press Room</span>
                 </button>
 
                 <button onclick="openDbModal()" title="Connect Database" class="px-3 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-indigo-500 text-xs text-slate-200 rounded-xl transition flex items-center space-x-2">
                     <i class="fa-solid fa-database text-indigo-400"></i>
-                    <span>Database</span>
+                    <span id="btnDbText">Database</span>
                     <span id="dbStatusBadge" class="w-2 h-2 rounded-full bg-red-500 inline-block"></span>
                 </button>
 
@@ -80,7 +80,7 @@
                         <option value="pt">🇵🇹 Portuguese</option>
                         <option value="ru">🇷🇺 Russian</option>
                         <option value="ur">🇵🇰 Urdu</option>
-                        <option value="id">🇮🇩 Indonesian (Bahasa Indonesia)</option>
+                        <option value="id">🇮🇩 Indonesian (Bahasa)</option>
                         <option value="sw">🇹🇿 Swahili</option>
                         <option value="ja">🇯🇵 Japanese</option>
                         <option value="de">🇩🇪 German</option>
@@ -137,7 +137,7 @@
                         <i class="fa-solid fa-cloud-arrow-up text-lg"></i>
                     </div>
                     <div>
-                        <h3 class="text-base font-bold text-white">Upload Gallery Media & Syndicate Worldwide</h3>
+                        <h3 id="modalUploadHeading" class="text-base font-bold text-white">Upload Gallery Media & Syndicate Worldwide</h3>
                         <p class="text-xs text-slate-400">Choose photos/videos from your gallery or generate with AI</p>
                     </div>
                 </div>
@@ -389,20 +389,20 @@
             <div class="flex justify-end w-full">
                 <div id="savedItemsContainer" class="bg-slate-900/90 border border-indigo-500/40 rounded-2xl p-4 shadow-2xl w-full max-w-sm space-y-2">
                     <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-                        <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-400 flex items-center">
+                        <h3 id="savedItemsHeading" class="text-xs font-bold uppercase tracking-wider text-indigo-400 flex items-center">
                             <i class="fa-solid fa-bookmark mr-2 text-sm"></i>Saved News, Videos & Songs
                         </h3>
                         <span id="savedCountBadge" class="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full font-mono">0 Items</span>
                     </div>
                     <div id="savedItemsList" class="space-y-2 max-h-40 overflow-y-auto pr-1">
-                        <p class="text-xs text-slate-500 italic text-center py-2">No saved items yet.</p>
+                        <p id="noSavedText" class="text-xs text-slate-500 italic text-center py-2">No saved items yet.</p>
                     </div>
                 </div>
             </div>
 
             <div class="text-center max-w-2xl mx-auto my-2 space-y-4">
-                <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Explore All Countries Worldwide</h2>
-                <p class="text-slate-400 text-sm sm:text-base">Browse or search any nation globally to instantly access live news broadcasts, breaking wires, and regional media.</p>
+                <h2 id="homeHeading" class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Explore All Countries Worldwide</h2>
+                <p id="homeSubheading" class="text-slate-400 text-sm sm:text-base">Browse or search any nation globally to instantly access live news broadcasts, breaking wires, and regional media.</p>
                 
                 <div class="relative w-full max-w-2xl mx-auto mt-6">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-indigo-400">
@@ -446,29 +446,29 @@
                     </div>
                 </div>
                 <button onclick="returnToHome()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium rounded-xl border border-slate-700 transition flex items-center space-x-2">
-                    <i class="fa-solid fa-arrow-left"></i><span>Back to Globe</span>
+                    <i class="fa-solid fa-arrow-left"></i><span id="btnBackGlobe">Back to Globe</span>
                 </button>
             </div>
 
             <div class="flex space-x-2 border-b border-slate-800 overflow-x-auto pb-2">
                 <button onclick="switchTab('news')" id="tab-news" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-semibold transition bg-indigo-600 text-white shadow-md shadow-indigo-600/20 flex items-center space-x-2">
                     <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping inline-block"></span>
-                    <span>Live Local News Tab (24/7 Broadcast Desk)</span>
+                    <span id="tabNameNews">Live Local News Tab</span>
                 </button>
                 <button onclick="switchTab('videos')" id="tab-videos" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-semibold transition text-slate-400 hover:text-white hover:bg-slate-900">
-                    <i class="fa-solid fa-video mr-2"></i>Trending Videos
+                    <i class="fa-solid fa-video mr-2"></i><span id="tabNameVideos">Trending Videos</span>
                 </button>
                 <button onclick="switchTab('music')" id="tab-music" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-semibold transition text-slate-400 hover:text-white hover:bg-slate-900">
-                    <i class="fa-solid fa-music mr-2"></i>Top Songs & Audio
+                    <i class="fa-solid fa-music mr-2"></i><span id="tabNameMusic">Top Songs & Audio</span>
                 </button>
                 <button onclick="switchTab('press')" id="tab-press" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-semibold transition text-slate-400 hover:text-white hover:bg-slate-900">
-                    <i class="fa-solid fa-bullhorn mr-2"></i>Press Room
+                    <i class="fa-solid fa-bullhorn mr-2"></i><span id="tabNamePress">Press Room</span>
                 </button>
                 <button onclick="switchTab('facts')" id="tab-facts" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-semibold transition text-slate-400 hover:text-white hover:bg-slate-900">
-                    <i class="fa-solid fa-globe mr-2"></i>Country Snapshot
+                    <i class="fa-solid fa-globe mr-2"></i><span id="tabNameFacts">Country Snapshot</span>
                 </button>
                 <button onclick="switchTab('community')" id="tab-community" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-semibold transition text-slate-400 hover:text-white hover:bg-slate-900">
-                    <i class="fa-solid fa-comments mr-2"></i>Community & Polls
+                    <i class="fa-solid fa-comments mr-2"></i><span id="tabNameCommunity">Community & Polls</span>
                 </button>
             </div>
 
@@ -499,8 +499,8 @@
 
             <div id="content-community" class="tab-content hidden space-y-6">
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
-                    <h3 class="text-lg font-bold text-white flex items-center"><i class="fa-solid fa-chart-pie mr-2 text-indigo-400"></i>Weekly Economic Outlook Poll</h3>
-                    <p class="text-xs text-slate-400">How would you rate the current trajectory of this nation's media and economic climate?</p>
+                    <h3 id="pollHeading" class="text-lg font-bold text-white flex items-center"><i class="fa-solid fa-chart-pie mr-2 text-indigo-400"></i>Weekly Economic Outlook Poll</h3>
+                    <p id="pollSubheading" class="text-xs text-slate-400">How would you rate the current trajectory of this nation's media and economic climate?</p>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                         <button onclick="votePoll('bullish')" class="p-4 bg-slate-950 border border-slate-800 hover:border-emerald-500 rounded-xl text-left transition group">
                             <span class="text-xs text-emerald-400 font-semibold uppercase tracking-wider">Bullish / Positive</span>
@@ -513,7 +513,7 @@
                     </div>
                 </div>
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
-                    <h3 class="text-lg font-bold text-white flex items-center"><i class="fa-solid fa-comments mr-2 text-indigo-400"></i>Live Country Feed Discussion</h3>
+                    <h3 id="commentHeading" class="text-lg font-bold text-white flex items-center"><i class="fa-solid fa-comments mr-2 text-indigo-400"></i>Live Country Feed Discussion</h3>
                     <div id="commentList" class="space-y-3 max-h-60 overflow-y-auto pr-2">
                         <div class="p-3 bg-slate-950/50 rounded-xl border border-slate-800 text-xs">
                             <span class="font-semibold text-indigo-400">GlobalObserver_99</span>
@@ -522,7 +522,7 @@
                     </div>
                     <form onsubmit="postComment(event)" class="flex gap-2 pt-2">
                         <input type="text" id="commentInput" required placeholder="Add to the conversation..." class="flex-grow px-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500">
-                        <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl transition">Post</button>
+                        <button type="submit" id="btnPostComment" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl transition">Post</button>
                     </form>
                 </div>
             </div>
@@ -547,6 +547,185 @@
         let filteredCountriesList = [];
         let savedItems = [];
         let globalSyndicatedVideos = [];
+
+        // Comprehensive Translation Dictionary
+        const translations = {
+            ve: { // Tshivenḓa
+                appTitle: "Pinpoint — Tshaka ya Mafhungo na Mitalo ya Shango",
+                navSubtitle: "Wanani mbilu ya shango liṅwe na liṅwe",
+                btnUploadText: "Sika & Vhea Zwiṱientshi",
+                btnBroadcastText: "Vhaladza na u Ṱumana",
+                btnPressText: "Tshirengi tsha Mafhungo",
+                btnDbText: "Databeisi",
+                homeHeading: "Kha vha ṱolisise Shango ḽothe",
+                homeSubheading: "Vhalise kana u ṱodḓa shango ḽiṅwe na ḽiṅwe u wana mafhungo a tshi khou tshimbila nga u ṱavhanya.",
+                searchPlaceholder: "Ṱodza shango ḽiṅwe na ḽiṅwe...",
+                savedHeading: "Mafhungo na Vhidio zwo Vheiwaho",
+                noSavedText: " A hu na zwiṱientshi zwo vheiwaho.",
+                btnBackGlobe: "Phelela kha Shango",
+                tabNews: "Mafhungo a Vhuḓani",
+                tabVideos: "Vhidio dzi re na Ṱhogomelo",
+                tabMusic: "Nyimbo Dzivhe Dza Nṱha",
+                tabPress: "Tshirengi tsha Mafhungo",
+                tabFacts: "Zwiga zwa Shango",
+                tabCommunity: "Vhadzuloni na Mbudziso",
+                pollHeading: "Mbudziso ya Maitele a Maitele a Icovha",
+                pollSubheading: "Vha vhona hani tshiteu tsha mafhungo na ikonomi ya shango ili?",
+                commentHeading: "MBUDZISO YA VHADZULONI",
+                btnPostComment: "Tumana",
+                commentPlaceholder: "Ṿhea thungo kha nyambedzano..."
+            },
+            zu: { // IsiZulu
+                appTitle: "Pinpoint — Injini Yemithombo Yezindaba Zomhlaba",
+                navSubtitle: "Thola isikhunta sanoma yiliphi izwe",
+                btnUploadText: "Dala & Layisha Imidiya",
+                btnBroadcastText: "Sakaza & Thambekile",
+                btnPressText: "Igumbi Lezindaba",
+                btnDbText: "Isizindalwazi",
+                homeHeading: "Hlola Wonke Amazwe Emhlabeni",
+                homeSubheading: "Sesha noma yiliphi izwe emhlabeni ukuze uthole izindaba ezibukhoma.",
+                searchPlaceholder: "Sesha noma yiliphi izwe emhlabeni...",
+                savedHeading: "Izindaba namavidiyo agciniwe",
+                noSavedText: "Ayikho imidiya egciniwe okwamanje.",
+                btnBackGlobe: "Buyela Emhlabeni",
+                tabNews: "Izindaba Zendawo Ezibukhoma",
+                tabVideos: "Amavidiyo Athandwayo",
+                tabMusic: "Izingoma Ezihamba Phambili",
+                tabPress: "Igumbi Lezindaba",
+                tabFacts: "Umlando Wezwe",
+                tabCommunity: "Imiphakathi Namavoti",
+                pollHeading: "I-Poll Yezomnotho Yeviki",
+                pollSubheading: "Ubona kanjani inqubekelaphambili yezomnotho kuleli zwe?",
+                commentHeading: "Ingxoxo Yesigodi Ebukhoma",
+                btnPostComment: "Thumela",
+                commentPlaceholder: "Engeza amazwana..."
+            },
+            zh: { // Mandarin Chinese
+                appTitle: "Pinpoint — 全球内容与媒体引擎",
+                navSubtitle: "探索任何国家的脉搏",
+                btnUploadText: "创建并上传图库媒体",
+                btnBroadcastText: "全球广播",
+                btnPressText: "新闻室",
+                btnDbText: "数据库",
+                homeHeading: "探索全球所有国家",
+                homeSubheading: "浏览或搜索全球任何国家，立即获取实时新闻广播。",
+                searchPlaceholder: "搜索全球任何国家（按回车打开）...",
+                savedHeading: "已保存的新闻、视频与歌曲",
+                noSavedText: "暂无保存的项目。",
+                btnBackGlobe: "返回全球地图",
+                tabNews: "实时地方新闻",
+                tabVideos: "热门视频",
+                tabMusic: "热门歌曲",
+                tabPress: "新闻室",
+                tabFacts: "国家概况",
+                tabCommunity: "社群与民意调查",
+                pollHeading: "每周经济前景民意调查",
+                pollSubheading: "您如何评价该国当前的媒体和经济环境？",
+                commentHeading: "国家动态实时讨论",
+                btnPostComment: "发布",
+                commentPlaceholder: "参与讨论..."
+            },
+            hi: { // Hindi
+                appTitle: "Pinpoint — वैश्विक सामग्री और मीडिया इंजन",
+                navSubtitle: "किसी भी देश की नब्ज पहचानें",
+                btnUploadText: "मीडिया बनाएं और अपलोड करें",
+                btnBroadcastText: "प्रसारण और ट्रेंड",
+                btnPressText: "प्रेस रूम",
+                btnDbText: "डेटाबेस",
+                homeHeading: "दुनिया भर के सभी देशों का अन्वेषण करें",
+                homeSubheading: "लाइव समाचार और क्षेत्रीय मीडिया तक तुरंत पहुँचने के लिए किसी भी देश को खोजें।",
+                searchPlaceholder: "दुनिया भर में कोई भी देश खोजें...",
+                savedHeading: "सहेजे गए समाचार, वीडियो और गाने",
+                noSavedText: "अभी तक कोई सहेजा गया आइटम नहीं है।",
+                btnBackGlobe: "ग्लोब पर वापस जाएं",
+                tabNews: "लाइव स्थानीय समाचार",
+                tabVideos: "ट्रेंडिंग वीडियो",
+                tabMusic: "शीर्ष गाने",
+                tabPress: "प्रेस रूम",
+                tabFacts: "देश का संक्षिप्त विवरण",
+                tabCommunity: "समुदाय और चुनाव",
+                pollHeading: "साप्ताहिक आर्थिक दृष्टिकोण पोल",
+                pollSubheading: "आप इस देश की आर्थिक स्थिति का मूल्यांकन कैसे करते हैं?",
+                commentHeading: "लाइव देश चर्चा",
+                btnPostComment: "पोस्ट करें",
+                commentPlaceholder: "वार्तालाप में शामिल हों..."
+            },
+            es: { // Spanish
+                appTitle: "Pinpoint — Explorador Global de Contenido y Medios",
+                navSubtitle: "Descubre el pulso de cualquier nación",
+                btnUploadText: "Crear y Subir Medios",
+                btnBroadcastText: "Transmitir y Tender",
+                btnPressText: "Sala de Prensa",
+                btnDbText: "Base de Datos",
+                homeHeading: "Explora Todos los Países del Mundo",
+                homeSubheading: "Busca o explora cualquier nación para acceder instantáneamente a transmisiones de noticias en vivo.",
+                searchPlaceholder: "Busca cualquier país del mundo...",
+                savedHeading: "Noticias, Videos y Canciones Guardados",
+                noSavedText: "No hay elementos guardados.",
+                btnBackGlobe: "Volver al Globo",
+                tabNews: "Noticias Locales en Vivo",
+                tabVideos: "Videos Tendencia",
+                tabMusic: "Canciones Principales",
+                tabPress: "Sala de Prensa",
+                tabFacts: "Resumen del País",
+                tabCommunity: "Comunidad y Encuestas",
+                pollHeading: "Encuesta Semanal de Perspectiva Económica",
+                pollSubheading: "¿Cómo calificaría la trayectoria económica actual de esta nación?",
+                commentHeading: "Discusión en Vivo del País",
+                btnPostComment: "Publicar",
+                commentPlaceholder: "Añadir a la conversación..."
+            },
+            ar: { // Standard Arabic
+                appTitle: "Pinpoint — محرك المحتوى والوسائط العالمي",
+                navSubtitle: "اكتشف نبض أي دولة",
+                btnUploadText: "إنشاء وتحميل وسائط المعرض",
+                btnBroadcastText: "بث واتجاه",
+                btnPressText: "غرفة الصحافة",
+                btnDbText: "قاعدة البيانات",
+                homeHeading: "استكشف جميع دول العالم",
+                homeSubheading: "تصفح أو ابحث عن أي دولة عالمياً للوصول الفوري إلى البث الإخباري المباشر.",
+                searchPlaceholder: "ابحث عن أي دولة في العالم...",
+                savedHeading: "الأخبار والفيديوهات والأغاني المحفوظة",
+                noSavedText: "لا توجد عناصر محفوظة حتى الآن.",
+                btnBackGlobe: "العودة إلى الخريطة",
+                tabNews: "أخبار محلية مباشرة",
+                tabVideos: "فيديوهات رائجة",
+                tabMusic: "أفضل الأغاني",
+                tabPress: "غرفة الصحافة",
+                tabFacts: "لمحة عن الدولة",
+                tabCommunity: "المجتمع والاستطلاعات",
+                pollHeading: "استطلاع التوقعات الاقتصادية الأسبوعي",
+                pollSubheading: "كيف تقيم المناخ الاقتصادي والإعلامي الحالي في هذه الدولة؟",
+                commentHeading: "نقاش حي حول الدولة",
+                btnPostComment: "نشر",
+                commentPlaceholder: "أضف تعليقاً..."
+            },
+            fr: { // French
+                appTitle: "Pinpoint — Moteur Mondial de Contenu et Médias",
+                navSubtitle: "Découvrez le pouls de n'importe quelle nation",
+                btnUploadText: "Créer et Télécharger des Médias",
+                btnBroadcastText: "Diffuser et Tendance",
+                btnPressText: "Salle de Presse",
+                btnDbText: "Base de Données",
+                homeHeading: "Explorez Tous les Pays du Monde",
+                homeSubheading: "Recherchez n'importe quelle nation pour accéder instantanément aux flux d'actualités en direct.",
+                searchPlaceholder: "Rechercher n'importe quel pays...",
+                savedHeading: "Actualités, Vidéos et Chansons Enregistrées",
+                noSavedText: "Aucun élément enregistré.",
+                btnBackGlobe: "Retour au Globe",
+                tabNews: "Actualités Locales en Direct",
+                tabVideos: "Vidéos Tendances",
+                tabMusic: "Meilleures Chansons",
+                tabPress: "Salle de Presse",
+                tabFacts: "Aperçu du Pays",
+                tabCommunity: "Communauté et Sondages",
+                pollHeading: "Sondage Économique Hebdomadaire",
+                pollSubheading: "Comment évaluez-vous la trajectoire économique actuelle de cette nation?",
+                commentHeading: "Discussion en Direct du Pays",
+                btnPostComment: "Publier",
+                commentPlaceholder: "Participer à la conversation..."
+            }
+        };
 
         const completeCountryNames = [
             "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan",
@@ -687,19 +866,35 @@
 
         function translatePage(targetLang) {
             currentLanguage = targetLang;
-            const langNames = {
-                'en': 'English', 've': 'Tshivenḓa', 'zu': 'IsiZulu', 'zh': 'Mandarin Chinese',
-                'hi': 'Hindi', 'es': 'Spanish', 'ar': 'Standard Arabic', 'fr': 'French',
-                'bn': 'Bengali', 'pt': 'Portuguese', 'ru': 'Russian', 'ur': 'Urdu',
-                'id': 'Indonesian', 'sw': 'Swahili', 'ja': 'Japanese', 'de': 'German',
-                'tr': 'Turkish', 'ko': 'Korean', 'it': 'Italian', 'vi': 'Vietnamese',
-                'pa': 'Punjabi', 'fa': 'Persian (Farsi)'
-            };
-            if (targetLang === 'en') {
-                alert("Switched to English (Original)");
+            const t = translations[targetLang];
+            if (!t) {
+                // Fallback for languages without custom strings loaded
                 return;
             }
-            alert(`Pinpoint interface successfully localized to ${langNames[targetLang] || targetLang}!`);
+
+            document.getElementById('appTitle').textContent = t.appTitle;
+            document.getElementById('navSubtitle').textContent = t.navSubtitle;
+            document.getElementById('btnUploadText').textContent = t.btnUploadText;
+            document.getElementById('btnBroadcastText').textContent = t.btnBroadcastText;
+            document.getElementById('btnPressText').textContent = t.btnPressText;
+            document.getElementById('btnDbText').textContent = t.btnDbText;
+            document.getElementById('homeHeading').textContent = t.homeHeading;
+            document.getElementById('homeSubheading').textContent = t.homeSubheading;
+            document.getElementById('countrySearch').placeholder = t.searchPlaceholder;
+            document.getElementById('savedItemsHeading').innerHTML = `<i class="fa-solid fa-bookmark mr-2 text-sm"></i>${t.savedHeading}`;
+            document.getElementById('noSavedText').textContent = t.noSavedText;
+            document.getElementById('btnBackGlobe').textContent = t.btnBackGlobe;
+            document.getElementById('tabNameNews').textContent = t.tabNews;
+            document.getElementById('tabNameVideos').textContent = t.tabVideos;
+            document.getElementById('tabNameMusic').textContent = t.tabMusic;
+            document.getElementById('tabNamePress').textContent = t.tabPress;
+            document.getElementById('tabNameFacts').textContent = t.tabFacts;
+            document.getElementById('tabNameCommunity').textContent = t.tabCommunity;
+            document.getElementById('pollHeading').innerHTML = `<i class="fa-solid fa-chart-pie mr-2 text-indigo-400"></i>${t.pollHeading}`;
+            document.getElementById('pollSubheading').textContent = t.pollSubheading;
+            document.getElementById('commentHeading').innerHTML = `<i class="fa-solid fa-comments mr-2 text-indigo-400"></i>${t.commentHeading}`;
+            document.getElementById('commentInput').placeholder = t.commentPlaceholder;
+            document.getElementById('btnPostComment').textContent = t.btnPostComment;
         }
 
         function openCreateStudioModal() {
@@ -719,10 +914,7 @@
             const statusBox = document.getElementById('galleryUploadStatusBox');
             const statusText = document.getElementById('galleryUploadStatusText');
 
-            if (fileInput.files.length === 0) {
-                alert("Please select a file from your gallery.");
-                return;
-            }
+            if (fileInput.files.length === 0) return;
 
             const file = fileInput.files[0];
             const fileUrl = URL.createObjectURL(file);
@@ -756,15 +948,14 @@
                         closeCreateStudioModal();
                         statusBox.classList.add('hidden');
                         fileInput.value = '';
-                        alert("Your media file was successfully published and is now trending worldwide!");
                         const activeCountryName = document.getElementById('hubCountryName').innerText;
                         if (activeCountryName && activeCountryName !== 'Country Name') {
                             loadCountrySpecificFeeds(activeCountryName, document.getElementById('hubCode').innerText);
                             switchTab('videos');
                         }
-                    }, 1200);
-                }, 1500);
-            }, 1500);
+                    }, 800);
+                }, 1000);
+            }, 1000);
         }
 
         function openSyndicateModal() {
@@ -799,14 +990,13 @@
                 setTimeout(() => {
                     closeSyndicateModal();
                     statusBox.classList.add('hidden');
-                    alert("Your video is now trending #1 across all countries and social media platforms!");
                     const activeCountryName = document.getElementById('hubCountryName').innerText;
                     if (activeCountryName && activeCountryName !== 'Country Name') {
                         loadCountrySpecificFeeds(activeCountryName, document.getElementById('hubCode').innerText);
                         switchTab('videos');
                     }
-                }, 1200);
-            }, 1500);
+                }, 800);
+            }, 1000);
         }
 
         function openPressModal() { 
@@ -844,7 +1034,7 @@
                 badge.className = "w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse";
                 document.getElementById('dbActiveBanner').classList.remove('hidden');
                 document.getElementById('dbActiveQueryLabel').textContent = `Query: ${query}`;
-                setTimeout(() => { closeDbModal(); renderDatabaseBackedGrid(); }, 1200);
+                setTimeout(() => { closeDbModal(); renderDatabaseBackedGrid(); }, 1000);
             } catch (err) {
                 isDbConnected = true;
                 customDbRecords = [
@@ -857,7 +1047,7 @@
                 badge.className = "w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse";
                 document.getElementById('dbActiveBanner').classList.remove('hidden');
                 document.getElementById('dbActiveQueryLabel').textContent = `Query: ${query}`;
-                setTimeout(() => { closeDbModal(); renderDatabaseBackedGrid(); }, 1200);
+                setTimeout(() => { closeDbModal(); renderDatabaseBackedGrid(); }, 1000);
             }
         }
 
@@ -1120,7 +1310,7 @@
                         <button onclick="toggleSaveItem('${type}', \`${title.replace(/'/g, "\\'")}\`)" class="absolute top-3 right-3 z-10 p-2 bg-slate-950/80 rounded-full text-slate-300 hover:text-indigo-400 backdrop-blur transition" title="Save video">
                             <i class="${isAlreadySaved ? 'fa-solid text-indigo-400' : 'fa-regular'} fa-bookmark text-xs"></i>
                         </button>
-                        <span class="absolute top-3 left-3 z-10 text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-semibold px-2 py-0.5 rounded-full backdrop-blur">
+                        <span class="absolute top-3 left-3 z-10 text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-semibold px-2.5 py-0.5 rounded-full backdrop-blur">
                             <i class="fa-solid fa-fire mr-1"></i>${vid.trendingTag || `${countryName} #1 Trending`}
                         </span>
                         <div class="relative w-full aspect-video bg-slate-950">
@@ -1201,7 +1391,10 @@
             badgeEl.textContent = `${savedItems.length} Item${savedItems.length === 1 ? '' : 's'}`;
 
             if (savedItems.length === 0) {
-                listEl.innerHTML = `<p class="text-xs text-slate-500 italic text-center py-2">No saved items yet.</p>`;
+                const noText = currentLanguage === 've' ? "A hu na zwiṱientshi zwo vheiwaho." : 
+                               currentLanguage === 'zu' ? "Ayikho imidiya egciniwe okwamanje." : 
+                               currentLanguage === 'zh' ? "暂无保存的项目。" : "No saved items yet.";
+                listEl.innerHTML = `<p class="text-xs text-slate-500 italic text-center py-2">${noText}</p>`;
                 return;
             }
 
@@ -1234,7 +1427,6 @@
         function votePoll(type) {
             if(type === 'bullish') { document.getElementById('bullishCount').textContent = '69%'; document.getElementById('bearishCount').textContent = '31%'; }
             else { document.getElementById('bullishCount').textContent = '67%'; document.getElementById('bearishCount').textContent = '33%'; }
-            alert("Thank you for voting in the Pinpoint community pulse poll!");
         }
 
         function postComment(e) {
