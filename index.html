@@ -61,7 +61,7 @@
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
                         <i class="fa-solid fa-magnifying-glass text-xs"></i>
                     </span>
-                    <input type="text" id="countrySearch" placeholder="Search country..." 
+                    <input type="text" id="countrySearch" oninput="filterCountries(this.value)" placeholder="Search any country worldwide..." 
                         class="w-full pl-9 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
                 </div>
 
@@ -165,12 +165,18 @@
         <!-- VIEW 1: HOME GRID (Hidden initially) -->
         <div id="homeView" class="w-full hidden">
             <div class="text-center max-w-2xl mx-auto my-8">
-                <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-3" data-translate="explore_title">Explore Local Pulses Worldwide</h2>
-                <p class="text-slate-400 text-sm sm:text-base" data-translate="explore_desc">Select a country below or search above to instantly stream trending local headlines, viral regional videos, and charts.</p>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-3" data-translate="explore_title">Explore All Countries Worldwide</h2>
+                <p class="text-slate-400 text-sm sm:text-base" data-translate="explore_desc">Browse or search any nation globally to instantly stream trending local headlines, viral regional videos, and charts.</p>
+            </div>
+
+            <!-- Loading Spinner for World Database -->
+            <div id="worldLoading" class="text-center py-12">
+                <i class="fa-solid fa-spinner animate-spin text-3xl text-indigo-500 mb-3"></i>
+                <p class="text-xs text-slate-400">Loading global country database...</p>
             </div>
 
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4" id="quickCountryGrid">
-                <!-- Populated dynamically via JS -->
+                <!-- Populated dynamically via REST Countries API -->
             </div>
         </div>
 
@@ -289,21 +295,14 @@
         let videoObserver = null;
         let currentlyPlayingVideo = null;
         let currentLanguage = 'en';
+        let globalCountriesList = [];
 
-        // Translation Cache Object to minimize redundant translation requests
-        const translationCache = {
-            es: {},
-            fr: {},
-            ja: {},
-            pt: {},
-            de: {}
-        };
+        const translationCache = { es: {}, fr: {}, ja: {}, pt: {}, de: {} };
 
-        // Static translation dictionary for key UI strings and dynamic elements
         const translationDictionary = {
             es: {
-                "Explore Local Pulses Worldwide": "Explorar Pulsos Locales en todo el Mundo",
-                "Select a country below or search above to instantly stream trending local headlines, viral regional videos, and charts.": "Seleccione un país abajo o busque arriba para transmitir instantáneamente titulares locales de tendencia, videos regionales virales y listas de éxitos.",
+                "Explore All Countries Worldwide": "Explorar Todos los Países del Mundo",
+                "Browse or search any nation globally to instantly stream trending local headlines, viral regional videos, and charts.": "Navegue o busque cualquier nación a nivel mundial para transmitir al instante titulares locales de tendencia, videos regionales virales y listas.",
                 "Back to Globe": "Volver al Globo",
                 "Local News": "Noticias Locales",
                 "Trending Videos": "Videos en Tendencia",
@@ -316,8 +315,8 @@
                 "Primary Language": "Idioma Principal"
             },
             fr: {
-                "Explore Local Pulses Worldwide": "Explorer les pulsations locales dans le monde",
-                "Select a country below or search above to instantly stream trending local headlines, viral regional videos, and charts.": "Sélectionnez un pays ci-dessous ou recherchez ci-dessus pour diffuser instantanément des actualités locales tendance et des vidéos virales.",
+                "Explore All Countries Worldwide": "Explorer Tous les Pays du Monde",
+                "Browse or search any nation globally to instantly stream trending local headlines, viral regional videos, and charts.": "Parcourez ou recherchez n'importe quelle nation pour diffuser instantanément des actualités locales tendance.",
                 "Back to Globe": "Retour au Globe",
                 "Local News": "Actualités Locales",
                 "Trending Videos": "Vidéos Tendances",
@@ -330,8 +329,8 @@
                 "Primary Language": "Langue Principale"
             },
             ja: {
-                "Explore Local Pulses Worldwide": "世界のローカルパルスを探索する",
-                "Select a country below or search above to instantly stream trending local headlines, viral regional videos, and charts.": "下の国を選択するか、上で検索して、トレンドのローカルニュースやバイラルビデオをすぐにストリーミングできます。",
+                "Explore All Countries Worldwide": "世界中のすべての国を探索する",
+                "Browse or search any nation globally to instantly stream trending local headlines, viral regional videos, and charts.": "世界中のあらゆる国を閲覧または検索して、トレンドのローカルニュースや動画を即座にストリーミングできます。",
                 "Back to Globe": "地球儀に戻る",
                 "Local News": "ローカルニュース",
                 "Trending Videos": "急上昇動画",
@@ -344,8 +343,8 @@
                 "Primary Language": "主要言語"
             },
             pt: {
-                "Explore Local Pulses Worldwide": "Explorar Pulsos Locais em Todo o Mundo",
-                "Select a country below or search above to instantly stream trending local headlines, viral regional videos, and charts.": "Selecione um país abaixo ou pesquise acima para transmitir instantaneamente manchetes locais em alta e vídeos virais.",
+                "Explore All Countries Worldwide": "Explorar Todos os Países do Mundo",
+                "Browse or search any nation globally to instantly stream trending local headlines, viral regional videos, and charts.": "Navegue ou pesquise qualquer país globalmente para transmitir instantaneamente manchetes locais em alta.",
                 "Back to Globe": "Voltar ao Globo",
                 "Local News": "Notícias Locais",
                 "Trending Videos": "Vídeos em Alta",
@@ -358,8 +357,8 @@
                 "Primary Language": "Idioma Principal"
             },
             de: {
-                "Explore Local Pulses Worldwide": "Lokale Impulse weltweit erkunden",
-                "Select a country below or search above to instantly stream trending local headlines, viral regional videos, and charts.": "Wählen Sie unten ein Land aus oder suchen Sie oben, um sofort virale regionale Videos und Schlagzeilen zu streamen.",
+                "Explore All Countries Worldwide": "Alle Länder weltweit erkunden",
+                "Browse or search any nation globally to instantly stream trending local headlines, viral regional videos, and charts.": "Durchsuchen oder suchen Sie weltweit nach Nationen, um sofort virale regionale Videos zu streamen.",
                 "Back to Globe": "Zurück zur Erde",
                 "Local News": "Lokale Nachrichten",
                 "Trending Videos": "Trendvideos",
@@ -401,20 +400,60 @@
             }, 2000);
         });
 
-        // Translation Engine with Caching
-        function translatePage(targetLang) {
-            currentLanguage = targetLang;
-            if (targetLang === 'en') {
-                location.reload(); // Quick reset to pristine original English
+        // Fetch ALL countries worldwide from REST Countries API
+        async function fetchAllCountries() {
+            const gridEl = document.getElementById('quickCountryGrid');
+            const loadingEl = document.getElementById('worldLoading');
+            
+            try {
+                let res = await fetch('https://restcountries.com/v3.1/all?fields=name,cca2,flags,capital,population,region,currencies,languages');
+                let data = await res.json();
+                
+                // Sort alphabetically by common name
+                globalCountriesList = data.sort((a, b) => a.name.common.localeCompare(b.name.common));
+                
+                loadingEl.style.display = 'none';
+                renderCountriesGrid(globalCountriesList);
+            } catch (err) {
+                console.error("Failed to fetch world countries", err);
+                loadingEl.innerHTML = `<p class="text-xs text-red-400">Could not reach world database. Please check connection.</p>`;
+            }
+        }
+
+        function renderCountriesGrid(countries) {
+            const gridEl = document.getElementById('quickCountryGrid');
+            if (countries.length === 0) {
+                gridEl.innerHTML = `<p class="col-span-full text-center text-slate-500 py-8">No countries found matching your search.</p>`;
                 return;
             }
 
-            // Loop through visible headline elements and text nodes across the active document
+            gridEl.innerHTML = countries.map(c => `
+                <div onclick="selectCountry('${c.cca2}', \`${c.name.common.replace(/'/g, "\\'")}\`, '${c.flags.png}')" 
+                    class="group bg-slate-900 border border-slate-800 hover:border-indigo-500 p-4 rounded-2xl cursor-pointer transition transform hover:-translate-y-1 flex flex-col items-center text-center shadow-lg">
+                    <img src="${c.flags.png}" alt="${c.name.common}" class="w-16 h-11 object-cover rounded-md shadow mb-3 group-hover:scale-105 transition">
+                    <span class="text-sm font-semibold text-slate-200 group-hover:text-indigo-400 transition line-clamp-1">${c.name.common}</span>
+                    <span class="text-[10px] text-slate-500 mt-0.5">Code: ${c.cca2}</span>
+                </div>
+            `).join('');
+        }
+
+        function filterCountries(query) {
+            const q = query.toLowerCase().trim();
+            const filtered = globalCountriesList.filter(c => c.name.common.toLowerCase().includes(q) || c.cca2.toLowerCase().includes(q));
+            renderCountriesGrid(filtered);
+        }
+
+        function translatePage(targetLang) {
+            currentLanguage = targetLang;
+            if (targetLang === 'en') {
+                location.reload();
+                return;
+            }
+
             const walkDOM = (node) => {
                 if (node.nodeType === Node.TEXT_NODE) {
                     const trimmed = node.nodeValue.trim();
                     if (trimmed.length > 2) {
-                        // Check cache first
                         if (translationCache[targetLang][trimmed]) {
                             node.nodeValue = node.nodeValue.replace(trimmed, translationCache[targetLang][trimmed]);
                         } else if (translationDictionary[targetLang] && translationDictionary[targetLang][trimmed]) {
@@ -431,21 +470,13 @@
                     }
                 }
             };
-
             walkDOM(document.body);
         }
 
         function initVideoObserver() {
-            if (videoObserver) {
-                videoObserver.disconnect();
-            }
+            if (videoObserver) videoObserver.disconnect();
 
-            const options = {
-                root: null,
-                rootMargin: '0px',
-                threshold: 0.6
-            };
-
+            const options = { root: null, rootMargin: '0px', threshold: 0.6 };
             videoObserver = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     const video = entry.target;
@@ -454,14 +485,10 @@
                             currentlyPlayingVideo.pause();
                         }
                         currentlyPlayingVideo = video;
-                        video.play().catch(err => {
-                            console.log("Autoplay prevented or interrupted:", err);
-                        });
+                        video.play().catch(err => console.log("Autoplay handled:", err));
                     } else {
                         video.pause();
-                        if (currentlyPlayingVideo === video) {
-                            currentlyPlayingVideo = null;
-                        }
+                        if (currentlyPlayingVideo === video) currentlyPlayingVideo = null;
                     }
                 });
             }, options);
@@ -483,4 +510,275 @@
 
             if (score === 0) {
                 bar.style.width = '0%';
-                bar.className = 'h-full transition-all duration-300 bg-red-5
+                bar.className = 'h-full transition-all duration-300 bg-red-500';
+                text.textContent = 'Strength: Too short';
+            } else if (score <= 2) {
+                bar.style.width = '40%';
+                bar.className = 'h-full transition-all duration-300 bg-orange-500';
+                text.textContent = 'Strength: Weak';
+            } else if (score === 3) {
+                bar.style.width = '75%';
+                bar.className = 'h-full transition-all duration-300 bg-yellow-500';
+                text.textContent = 'Strength: Good';
+            } else {
+                bar.style.width = '100%';
+                bar.className = 'h-full transition-all duration-300 bg-emerald-500';
+                text.textContent = 'Strength: Strong & Secure';
+            }
+        }
+
+        function isStrongPassword(password) {
+            return password.length >= 8 && /[A-Z]/.test(password) && /[0-9]/.test(password) && /[^A-Za-z0-9]/.test(password);
+        }
+
+        function handleInitialAuth(e) {
+            e.preventDefault();
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+            const errorEl = document.getElementById('passwordError');
+
+            if (!isStrongPassword(password)) {
+                errorEl.textContent = "Password must be 8+ chars and include an uppercase letter, number, and symbol.";
+                errorEl.classList.remove('hidden');
+                return;
+            }
+            errorEl.classList.add('hidden');
+
+            generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+            document.getElementById('hintCode').textContent = generatedOtp;
+            document.getElementById('displayUserEmail').textContent = email;
+
+            document.getElementById('loginView').classList.add('hidden');
+            document.getElementById('verifyView').classList.remove('hidden');
+        }
+
+        function handleVerifyCode(e) {
+            e.preventDefault();
+            const enteredCode = document.getElementById('verificationCodeInput').value;
+            const verifyError = document.getElementById('verifyError');
+
+            if (enteredCode === generatedOtp) {
+                verifyError.classList.add('hidden');
+                if (document.getElementById('rememberMe').checked) {
+                    localStorage.setItem('pinpoint_logged_in', 'true');
+                }
+                transitionToApp();
+            } else {
+                verifyError.classList.remove('hidden');
+            }
+        }
+
+        function bypassLogin() {
+            transitionToApp();
+        }
+
+        function backToLogin() {
+            document.getElementById('verifyView').classList.add('hidden');
+            document.getElementById('loginView').classList.remove('hidden');
+            document.getElementById('verificationCodeInput').value = '';
+        }
+
+        function transitionToApp() {
+            document.getElementById('loginView').classList.add('hidden');
+            document.getElementById('verifyView').classList.add('hidden');
+            document.getElementById('appHeader').classList.remove('hidden');
+            document.getElementById('homeView').classList.remove('hidden');
+            fetchAllCountries();
+        }
+
+        function logout() {
+            localStorage.removeItem('pinpoint_logged_in');
+            if (videoObserver) videoObserver.disconnect();
+            document.getElementById('appHeader').classList.add('hidden');
+            document.getElementById('homeView').classList.add('hidden');
+            document.getElementById('hubView').classList.add('hidden');
+            document.getElementById('loginView').classList.remove('hidden');
+            document.getElementById('authEmail').value = '';
+            document.getElementById('authPassword').value = '';
+            document.getElementById('verificationCodeInput').value = '';
+        }
+
+        async function selectCountry(code, name, flagUrl) {
+            document.getElementById('homeView').classList.add('hidden');
+            document.getElementById('hubView').classList.remove('hidden');
+
+            document.getElementById('hubCountryName').innerText = name;
+            document.getElementById('hubCode').innerText = code;
+            document.getElementById('hubFlag').src = flagUrl;
+
+            fetchCountryDetails(code);
+            loadSimulatedFeeds(name, code);
+        }
+
+        async function fetchCountryDetails(code) {
+            try {
+                let res = await fetch(`https://restcountries.com/v3.1/alpha/${code}`);
+                let data = await res.json();
+                let country = data[0];
+
+                document.getElementById('hubCapital').innerHTML = `<i class="fa-solid fa-city mr-1.5 text-indigo-400"></i>Capital: ${country.capital ? country.capital[0] : 'N/A'}`;
+                document.getElementById('factPop').innerText = country.population ? country.population.toLocaleString() : 'N/A';
+                document.getElementById('factRegion').innerText = country.region || 'N/A';
+                
+                let currencies = country.currencies ? Object.values(country.currencies).map(c => `${c.name} (${c.symbol || ''})`).join(', ') : 'N/A';
+                document.getElementById('factCurrency').innerText = currencies;
+
+                let languages = country.languages ? Object.values(country.languages).join(', ') : 'N/A';
+                document.getElementById('factLang').innerText = languages;
+
+                if (currentLanguage !== 'en') {
+                    translatePage(currentLanguage);
+                }
+            } catch (err) {
+                console.error("Could not fetch extended country data", err);
+            }
+        }
+
+        function loadSimulatedFeeds(countryName, code) {
+            if (videoObserver) videoObserver.disconnect();
+            currentlyPlayingVideo = null;
+
+            document.getElementById('content-news').innerHTML = [1, 2, 3, 4, 5, 6].map(i => `
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between shadow-lg relative">
+                    <button onclick="toggleBookmark(this)" class="absolute top-4 right-4 text-slate-500 hover:text-indigo-400 transition"><i class="fa-regular fa-bookmark text-base"></i></button>
+                    <div>
+                        <span class="text-[10px] bg-indigo-500/10 text-indigo-400 font-semibold px-2 py-0.5 rounded border border-indigo-500/20">Top Story #${i}</span>
+                        <h3 class="text-base font-semibold text-white mt-3 leading-snug">Major developments unfolding across economic sectors in ${countryName}</h3>
+                        <p class="text-xs text-slate-400 mt-2 line-clamp-2">Local news outlets report shifting paradigms with widespread engagement across key municipal districts...</p>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-500">
+                        <span><i class="fa-regular fa-clock mr-1"></i>2 hours ago</span>
+                        <span class="text-indigo-400 font-medium cursor-pointer hover:underline">Read Source &rarr;</span>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('content-videos').innerHTML = trendingVideos.map((vid, index) => `
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg flex flex-col relative">
+                    <span class="absolute top-3 left-3 z-10 text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-semibold px-2 py-0.5 rounded-full backdrop-blur">
+                        <i class="fa-solid fa-fire mr-1"></i>${vid.trendingTag}
+                    </span>
+                    <div class="relative w-full aspect-video bg-slate-950">
+                        <video class="pinpoint-video w-full h-full object-cover" 
+                            controls 
+                            muted
+                            playsinline
+                            preload="metadata"
+                            src="${vid.url}">
+                        </video>
+                    </div>
+                    <div class="p-4 flex flex-col flex-grow">
+                        <h4 class="text-sm font-semibold text-white line-clamp-1">Top Viral Feature #${index + 1} in ${countryName}</h4>
+                        <p class="text-xs text-slate-400 mt-1">Creator Pulse • <span class="text-emerald-400 font-semibold">${vid.views}</span></p>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('content-music').innerHTML = [1, 2, 3, 4, 5, 6].map(i => `
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center space-x-4 shadow-lg">
+                    <div class="w-14 h-14 bg-indigo-600/20 border border-indigo-500/30 rounded-xl flex items-center justify-center text-indigo-400 font-bold text-lg">
+                        #${i}
+                    </div>
+                    <div class="flex-grow">
+                        <h4 class="text-sm font-semibold text-white">Top Chart Single #${i}</h4>
+                        <p class="text-xs text-slate-400">Featured Artist • ${countryName} Charts</p>
+                    </div>
+                    <button class="w-10 h-10 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition shadow-md shadow-indigo-600/30">
+                        <i class="fa-solid fa-play text-xs pl-0.5"></i>
+                    </button>
+                </div>
+            `).join('');
+
+            setTimeout(() => {
+                initVideoObserver();
+                if (currentLanguage !== 'en') {
+                    translatePage(currentLanguage);
+                }
+            }, 100);
+        }
+
+        function toggleBookmark(btn) {
+            const icon = btn.querySelector('i');
+            if(icon.classList.contains('fa-regular')) {
+                icon.classList.remove('fa-regular');
+                icon.classList.add('fa-solid', 'text-indigo-400');
+            } else {
+                icon.classList.remove('fa-solid', 'text-indigo-400');
+                icon.classList.add('fa-regular');
+            }
+        }
+
+        function votePoll(type) {
+            if(type === 'bullish') {
+                document.getElementById('bullishCount').textContent = '69%';
+                document.getElementById('bearishCount').textContent = '31%';
+            } else {
+                document.getElementById('bullishCount').textContent = '67%';
+                document.getElementById('bearishCount').textContent = '33%';
+            }
+            alert("Thank you for voting in the Pinpoint community pulse poll!");
+        }
+
+        function postComment(e) {
+            e.preventDefault();
+            const input = document.getElementById('commentInput');
+            const list = document.getElementById('commentList');
+            
+            if(input.value.trim() !== '') {
+                const newComment = document.createElement('div');
+                newComment.className = "p-3 bg-slate-950/50 rounded-xl border border-slate-800 text-xs";
+                newComment.innerHTML = `<span class="font-semibold text-indigo-400">You (Verified User)</span><p class="text-slate-300 mt-1">${input.value}</p>`;
+                list.prepend(newComment);
+                input.value = '';
+            }
+        }
+
+        function switchTab(tabName) {
+            if (videoObserver) videoObserver.disconnect();
+            document.querySelectorAll('.pinpoint-video').forEach(vid => vid.pause());
+            currentlyPlayingVideo = null;
+
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-md', 'shadow-indigo-600/20');
+                btn.classList.add('text-slate-400', 'hover:text-white', 'hover:bg-slate-900');
+            });
+
+            document.getElementById(`content-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tabName}`);
+            activeBtn.classList.remove('text-slate-400', 'hover:text-white', 'hover:bg-slate-900');
+            activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-md', 'shadow-indigo-600/20');
+
+            if (tabName === 'videos') {
+                setTimeout(() => {
+                    initVideoObserver();
+                    if (currentLanguage !== 'en') {
+                        translatePage(currentLanguage);
+                    }
+                }, 100);
+            } else if (currentLanguage !== 'en') {
+                setTimeout(() => {
+                    translatePage(currentLanguage);
+                }, 50);
+            }
+        }
+
+        function returnToHome() {
+            if (videoObserver) videoObserver.disconnect();
+            document.querySelectorAll('.pinpoint-video').forEach(vid => vid.pause());
+            currentlyPlayingVideo = null;
+
+            document.getElementById('hubView').classList.add('hidden');
+            document.getElementById('homeView').classList.remove('hidden');
+            document.getElementById('countrySearch').value = '';
+            renderCountriesGrid(globalCountriesList);
+            if (currentLanguage !== 'en') {
+                setTimeout(() => {
+                    translatePage(currentLanguage);
+                }, 50);
+            }
+        }
+    </script>
+</body>
+</html>
+ 
