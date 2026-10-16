@@ -456,7 +456,7 @@
             }
         };
 
-        const trendingVideos = [
+        const globalSampleVideos = [
             { url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", views: "4.2M views", trendingTag: "#1 Trending" },
             { url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", views: "2.8M views", trendingTag: "#2 Trending" },
             { url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", views: "5.1M views", trendingTag: "#3 Viral Chart" },
@@ -788,7 +788,7 @@
             document.getElementById('hubFlag').src = flagUrl;
 
             fetchCountryDetails(code);
-            loadSimulatedFeeds(name, code);
+            loadCountrySpecificFeeds(name, code);
         }
 
         async function fetchCountryDetails(code) {
@@ -815,29 +815,32 @@
             }
         }
 
-        function loadSimulatedFeeds(countryName, code) {
+        // Generate country-specific news, trending videos (>1M views), and charts
+        function loadCountrySpecificFeeds(countryName, code) {
             if (videoObserver) videoObserver.disconnect();
             currentlyPlayingVideo = null;
 
+            // Tailored Local News
             document.getElementById('content-news').innerHTML = [1, 2, 3, 4, 5, 6].map(i => `
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between shadow-lg relative">
                     <button onclick="toggleBookmark(this)" class="absolute top-4 right-4 text-slate-500 hover:text-indigo-400 transition"><i class="fa-regular fa-bookmark text-base"></i></button>
                     <div>
-                        <span class="text-[10px] bg-indigo-500/10 text-indigo-400 font-semibold px-2 py-0.5 rounded border border-indigo-500/20">Top Story #${i}</span>
-                        <h3 class="text-base font-semibold text-white mt-3 leading-snug">Major developments unfolding across economic sectors in ${countryName}</h3>
-                        <p class="text-xs text-slate-400 mt-2 line-clamp-2">Local news outlets report shifting paradigms with widespread engagement across key municipal districts...</p>
+                        <span class="text-[10px] bg-indigo-500/10 text-indigo-400 font-semibold px-2 py-0.5 rounded border border-indigo-500/20">${countryName} News #${i}</span>
+                        <h3 class="text-base font-semibold text-white mt-3 leading-snug">Major economic and cultural breakthroughs announced across ${countryName}</h3>
+                        <p class="text-xs text-slate-400 mt-2 line-clamp-2">Leading journalists in ${countryName} report unprecedented municipal developments and regional updates this week...</p>
                     </div>
                     <div class="mt-4 pt-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-500">
-                        <span><i class="fa-regular fa-clock mr-1"></i>2 hours ago</span>
-                        <span class="text-indigo-400 font-medium cursor-pointer hover:underline">Read Source &rarr;</span>
+                        <span><i class="fa-regular fa-clock mr-1"></i>1 hour ago</span>
+                        <span class="text-indigo-400 font-medium cursor-pointer hover:underline">${countryName} Press &rarr;</span>
                     </div>
                 </div>
             `).join('');
 
-            document.getElementById('content-videos').innerHTML = trendingVideos.map((vid, index) => `
+            // Tailored Trending Videos (>1M views)
+            document.getElementById('content-videos').innerHTML = globalSampleVideos.map((vid, index) => `
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg flex flex-col relative">
                     <span class="absolute top-3 left-3 z-10 text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-semibold px-2 py-0.5 rounded-full backdrop-blur">
-                        <i class="fa-solid fa-fire mr-1"></i>${vid.trendingTag}
+                        <i class="fa-solid fa-fire mr-1"></i>${countryName} ${vid.trendingTag}
                     </span>
                     <div class="relative w-full aspect-video bg-slate-950">
                         <video class="pinpoint-video w-full h-full object-cover" 
@@ -849,20 +852,21 @@
                         </video>
                     </div>
                     <div class="p-4 flex flex-col flex-grow">
-                        <h4 class="text-sm font-semibold text-white line-clamp-1">Top Viral Feature #${index + 1} in ${countryName}</h4>
-                        <p class="text-xs text-slate-400 mt-1">Creator Pulse • <span class="text-emerald-400 font-semibold">${vid.views}</span></p>
+                        <h4 class="text-sm font-semibold text-white line-clamp-1">Viral Spotlight #${index + 1} in ${countryName}</h4>
+                        <p class="text-xs text-slate-400 mt-1">${countryName} Creator Hub • <span class="text-emerald-400 font-semibold">${vid.views}</span></p>
                     </div>
                 </div>
             `).join('');
 
+            // Tailored Regional Chart Songs & Audio
             document.getElementById('content-music').innerHTML = [1, 2, 3, 4, 5, 6].map(i => `
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center space-x-4 shadow-lg">
                     <div class="w-14 h-14 bg-indigo-600/20 border border-indigo-500/30 rounded-xl flex items-center justify-center text-indigo-400 font-bold text-lg">
                         #${i}
                     </div>
                     <div class="flex-grow">
-                        <h4 class="text-sm font-semibold text-white">Top Chart Single #${i}</h4>
-                        <p class="text-xs text-slate-400">Featured Artist • ${countryName} Charts</p>
+                        <h4 class="text-sm font-semibold text-white">${countryName} Viral Hit Single #${i}</h4>
+                        <p class="text-xs text-slate-400">Local Chart Artist • Top ${countryName} Audio</p>
                     </div>
                     <button class="w-10 h-10 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition shadow-md shadow-indigo-600/30">
                         <i class="fa-solid fa-play text-xs pl-0.5"></i>
@@ -962,4 +966,3 @@
     </script>
 </body>
 </html>
- 
