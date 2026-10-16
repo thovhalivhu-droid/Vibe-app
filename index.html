@@ -275,13 +275,14 @@
         let videoObserver = null;
         let currentlyPlayingVideo = null;
 
-        const sampleVideos = [
-            { url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", available: true, views: "1.2M views" },
-            { url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", available: true, views: "840K views" },
-            { url: "", available: false, views: "Offline" },
-            { url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", available: true, views: "2.5M views" },
-            { url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackSeeTheWorld.mp4", available: true, views: "510K views" },
-            { url: "", available: false, views: "Offline" }
+        // Video list filtered strictly to trending clips with over 1 million views
+        const trendingVideos = [
+            { url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", views: "4.2M views", trendingTag: "#1 Trending" },
+            { url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", views: "2.8M views", trendingTag: "#2 Trending" },
+            { url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", views: "5.1M views", trendingTag: "#3 Viral Chart" },
+            { url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackSeeTheWorld.mp4", views: "1.9M views", trendingTag: "#4 Trending" },
+            { url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4", views: "3.4M views", trendingTag: "#5 Hot Regional" },
+            { url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4", views: "1.6M views", trendingTag: "#6 Viral Pulse" }
         ];
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -505,7 +506,6 @@
         }
 
         function loadSimulatedFeeds(countryName, code) {
-            // Pause any active observer when reloading feeds
             if (videoObserver) videoObserver.disconnect();
             currentlyPlayingVideo = null;
 
@@ -525,39 +525,27 @@
                 </div>
             `).join('');
 
-            // Trending Videos with Individual Tracking & IntersectionObserver
-            document.getElementById('content-videos').innerHTML = sampleVideos.map((vid, index) => {
-                let mediaElement = '';
-                if (vid.available) {
-                    mediaElement = `
+            // Trending Videos (>1M views, active playback via IntersectionObserver)
+            document.getElementById('content-videos').innerHTML = trendingVideos.map((vid, index) => `
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg flex flex-col relative">
+                    <span class="absolute top-3 left-3 z-10 text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-semibold px-2 py-0.5 rounded-full backdrop-blur">
+                        <i class="fa-solid fa-fire mr-1"></i>${vid.trendingTag}
+                    </span>
+                    <div class="relative w-full aspect-video bg-slate-950">
                         <video class="pinpoint-video w-full h-full object-cover" 
                             controls 
                             muted
                             playsinline
                             preload="metadata"
                             src="${vid.url}">
-                        </video>`;
-                } else {
-                    mediaElement = `
-                        <div class="w-full h-full flex flex-col items-center justify-center bg-slate-900 text-slate-400 p-4 text-center">
-                            <i class="fa-solid fa-triangle-exclamation text-2xl text-amber-500 mb-2"></i>
-                            <p class="text-xs font-medium text-slate-300">Video Currently Unavailable</p>
-                            <span class="text-[10px] text-slate-500 mt-0.5">This media stream is offline or restricted in ${countryName}</span>
-                        </div>`;
-                }
-
-                return `
-                    <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg flex flex-col">
-                        <div class="relative w-full aspect-video bg-slate-950">
-                            ${mediaElement}
-                        </div>
-                        <div class="p-4 flex flex-col flex-grow">
-                            <h4 class="text-sm font-semibold text-white line-clamp-1">Trending Viral Clip #${index + 1} in ${countryName}</h4>
-                            <p class="text-xs text-slate-400 mt-1">Creator Hub • ${vid.views}</p>
-                        </div>
+                        </video>
                     </div>
-                `;
-            }).join('');
+                    <div class="p-4 flex flex-col flex-grow">
+                        <h4 class="text-sm font-semibold text-white line-clamp-1">Top Viral Feature #${index + 1} in ${countryName}</h4>
+                        <p class="text-xs text-slate-400 mt-1">Creator Pulse • <span class="text-emerald-400 font-semibold">${vid.views}</span></p>
+                    </div>
+                </div>
+            `).join('');
 
             // Music / Songs Cards
             document.getElementById('content-music').innerHTML = [1, 2, 3, 4, 5, 6].map(i => `
@@ -575,7 +563,6 @@
                 </div>
             `).join('');
 
-            // Activate observer after video elements are injected into the DOM
             setTimeout(() => {
                 initVideoObserver();
             }, 100);
@@ -618,7 +605,6 @@
         }
 
         function switchTab(tabName) {
-            // Pause all videos and disconnect observer when leaving the video tab
             if (videoObserver) videoObserver.disconnect();
             document.querySelectorAll('.pinpoint-video').forEach(vid => vid.pause());
             currentlyPlayingVideo = null;
@@ -634,7 +620,6 @@
             activeBtn.classList.remove('text-slate-400', 'hover:text-white', 'hover:bg-slate-900');
             activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-md', 'shadow-indigo-600/20');
 
-            // If switching back to the videos tab, re-initialize the observer
             if (tabName === 'videos') {
                 setTimeout(() => {
                     initVideoObserver();
@@ -673,4 +658,3 @@
     </script>
 </body>
 </html>
- 
