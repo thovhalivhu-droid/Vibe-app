@@ -42,8 +42,15 @@
                 </div>
             </div>
             
-            <!-- Navbar Tools: Translate Dropdown, Country Search, & Logout -->
+            <!-- Navbar Tools: Database Modal Trigger, Translate, Country Search, & Logout -->
             <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+                <!-- Database Connector Button -->
+                <button onclick="openDbModal()" title="Connect Database" class="px-3 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-indigo-500 text-xs text-slate-200 rounded-xl transition flex items-center space-x-2">
+                    <i class="fa-solid fa-database text-indigo-400"></i>
+                    <span>Database</span>
+                    <span id="dbStatusBadge" class="w-2 h-2 rounded-full bg-red-500 inline-block"></span>
+                </button>
+
                 <!-- Compact Translation Dropdown -->
                 <div class="relative">
                     <select id="langTranslateDropdown" onchange="translatePage(this.value)" 
@@ -57,11 +64,11 @@
                     </select>
                 </div>
 
-                <div class="relative w-full sm:w-64">
+                <div class="relative w-full sm:w-48">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
                         <i class="fa-solid fa-magnifying-glass text-xs"></i>
                     </span>
-                    <input type="text" id="countrySearch" oninput="filterCountries(this.value)" placeholder="Search any country worldwide..." 
+                    <input type="text" id="countrySearch" oninput="filterCountries(this.value)" placeholder="Search country..." 
                         class="w-full pl-9 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
                 </div>
 
@@ -71,6 +78,70 @@
             </div>
         </div>
     </header>
+
+    <!-- DATABASE CONNECTOR MODAL -->
+    <div id="dbModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-6">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-indigo-600/20 text-indigo-400 p-2.5 rounded-xl border border-indigo-500/30">
+                        <i class="fa-solid fa-server text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-white">Database Connection Hub</h3>
+                        <p class="text-xs text-slate-400">Connect external databases or query live feeds</p>
+                    </div>
+                </div>
+                <button onclick="closeDbModal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <form onsubmit="handleDbConnect(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Database Driver / Engine</label>
+                    <select id="dbDriver" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500">
+                        <option value="postgresql">PostgreSQL / Supabase</option>
+                        <option value="mysql">MySQL / MariaDB</option>
+                        <option value="mongodb">MongoDB Atlas</option>
+                        <option value="rest">Custom REST API Endpoint</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Host / Connection String</label>
+                    <input type="text" id="dbHost" required placeholder="e.g., db.yourdomain.com or https://api.service.io" 
+                        class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Port</label>
+                        <input type="text" id="dbPort" placeholder="5432" value="5432" 
+                            class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Database Name</label>
+                        <input type="text" id="dbName" required placeholder="pinpoint_db" 
+                            class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1.5">API Key / Access Token / Password</label>
+                    <input type="password" id="dbSecret" required placeholder="••••••••••••••••" 
+                        class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500">
+                </div>
+
+                <div id="dbResponseBox" class="p-3 bg-slate-950 rounded-xl border border-slate-800 text-[11px] font-mono text-slate-400 hidden">
+                    Status: <span id="dbStatusText">Idle</span>
+                </div>
+
+                <div class="flex items-center justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeDbModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300 rounded-xl transition">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white rounded-xl transition shadow-lg shadow-indigo-600/30">Test & Connect</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- MAIN CONTENT CONTAINER -->
     <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-8 flex items-center justify-center">
@@ -296,6 +367,7 @@
         let currentlyPlayingVideo = null;
         let currentLanguage = 'en';
         let globalCountriesList = [];
+        let isDbConnected = false;
 
         const translationCache = { es: {}, fr: {}, ja: {}, pt: {}, de: {} };
 
@@ -400,7 +472,42 @@
             }, 2000);
         });
 
-        // Fetch ALL countries worldwide from REST Countries API
+        // Database Modal Controls
+        function openDbModal() {
+            document.getElementById('dbModal').classList.remove('hidden');
+        }
+
+        function closeDbModal() {
+            document.getElementById('dbModal').classList.add('hidden');
+        }
+
+        // Database Connection Handler with Test Simulation
+        async function handleDbConnect(e) {
+            e.preventDefault();
+            const driver = document.getElementById('dbDriver').value;
+            const host = document.getElementById('dbHost').value;
+            const dbName = document.getElementById('dbName').value;
+            const box = document.getElementById('dbResponseBox');
+            const statusText = document.getElementById('dbStatusText');
+            const badge = document.getElementById('dbStatusBadge');
+
+            box.classList.remove('hidden');
+            statusText.textContent = `Connecting to ${driver.toUpperCase()} at ${host}...`;
+            statusText.className = "text-amber-400 font-mono";
+
+            // Simulate secure handshake and database ping
+            setTimeout(() => {
+                isDbConnected = true;
+                statusText.textContent = `SUCCESS: Connected to database "${dbName}" via ${driver.toUpperCase()}. Handshake verified (200 OK).`;
+                statusText.className = "text-emerald-400 font-mono";
+                badge.className = "w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse";
+                
+                setTimeout(() => {
+                    closeDbModal();
+                }, 1500);
+            }, 1200);
+        }
+
         async function fetchAllCountries() {
             const gridEl = document.getElementById('quickCountryGrid');
             const loadingEl = document.getElementById('worldLoading');
@@ -409,7 +516,6 @@
                 let res = await fetch('https://restcountries.com/v3.1/all?fields=name,cca2,flags,capital,population,region,currencies,languages');
                 let data = await res.json();
                 
-                // Sort alphabetically by common name
                 globalCountriesList = data.sort((a, b) => a.name.common.localeCompare(b.name.common));
                 
                 loadingEl.style.display = 'none';
@@ -781,4 +887,3 @@
     </script>
 </body>
 </html>
- 
