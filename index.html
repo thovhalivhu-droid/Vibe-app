@@ -419,7 +419,6 @@
             "Zambia", "Zimbabwe"
         ];
 
-        // Map complete list into structured country objects with flags & mock details
         const fallbackCountries = completeCountryNames.map(name => {
             const code = name.slice(0, 2).toUpperCase();
             return {
@@ -532,7 +531,6 @@
                 renderDatabaseBackedGrid();
                 return;
             }
-            // Instantly load the complete fallback list containing all requested countries
             globalCountriesList = fallbackCountries;
             filteredCountriesList = globalCountriesList;
             renderCountriesGrid(filteredCountriesList);
