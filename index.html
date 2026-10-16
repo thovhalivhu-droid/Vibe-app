@@ -16,19 +16,8 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
 
-    <!-- SPLASH SCREEN -->
-    <div id="splashView" class="fixed inset-0 bg-slate-950 z-50 flex flex-col items-center justify-center space-y-4 transition-opacity duration-500">
-        <div class="bg-indigo-600 text-white p-5 rounded-3xl shadow-2xl shadow-indigo-600/50">
-            <i class="fa-solid fa-location-crosshairs text-4xl"></i>
-        </div>
-        <div class="text-center">
-            <h1 class="text-3xl font-extrabold tracking-wider text-white">PINPOINT</h1>
-            <p class="text-xs text-slate-400 mt-1 tracking-widest uppercase">Global Content & Media Engine</p>
-        </div>
-        <div class="w-24 h-1 bg-slate-800 rounded-full overflow-hidden mt-4">
-            <div id="splashBar" class="h-full bg-indigo-600 transition-all duration-[2000ms] w-0"></div>
-        </div>
-    </div>
+    <!-- FLOATING BREAKING NEWS MESSAGE CONTAINER -->
+    <div id="newsMessageContainer" class="fixed bottom-6 right-6 z-50 flex flex-col space-y-3 pointer-events-none max-w-sm w-full"></div>
 
     <!-- HEADER / NAVBAR -->
     <header id="appHeader" class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-40 hidden">
@@ -924,19 +913,18 @@
         ];
 
         window.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => { document.getElementById('splashBar').style.width = '100%'; }, 50);
-            setTimeout(() => {
-                const splash = document.getElementById('splashView');
+            localStorage.removeItem('pinpoint_logged_in');
+            const splash = document.getElementById('splashView');
+            if (splash) {
                 splash.style.opacity = '0';
-                setTimeout(() => {
-                    splash.style.display = 'none';
-                    if (localStorage.getItem('pinpoint_logged_in') === 'true') {
-                        transitionToApp();
-                    } else {
-                        document.getElementById('loginView').classList.remove('hidden');
-                    }
-                }, 500);
-            }, 2000);
+                setTimeout(() => { splash.style.display = 'none'; }, 200);
+            }
+            document.getElementById('appHeader').classList.add('hidden');
+            document.getElementById('homeView').classList.add('hidden');
+            document.getElementById('hubView').classList.add('hidden');
+            document.getElementById('verifyView').classList.add('hidden');
+            document.getElementById('loginView').classList.remove('hidden');
+            switchAuthTab('signin');
         });
 
         function cancelAllBackgroundAudio() {
@@ -951,7 +939,6 @@
             currentlyPlayingVideo = null;
         }
 
-        // Auth Tab Switching (Sign In vs Sign Up)
         function switchAuthTab(mode) {
             const btnIn = document.getElementById('tabSignIn');
             const btnUp = document.getElementById('tabSignUp');
@@ -1028,7 +1015,6 @@
             }
             errorEl.classList.add('hidden');
 
-            // Save user credentials to local storage for sign-in validation
             localStorage.setItem('pinpoint_registered_user', JSON.stringify({ name, email, password }));
 
             generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -1073,7 +1059,35 @@
             switchAuthTab('signin');
         }
 
-        // AI Vision HUD controls
+        // Floating Breaking News Message Function
+        function showBreakingNewsMessage(title, category) {
+            const container = document.getElementById('newsMessageContainer');
+            const messageEl = document.createElement('div');
+            messageEl.className = "pointer-events-auto bg-slate-900 border border-indigo-500/60 rounded-2xl p-4 shadow-2xl shadow-indigo-600/30 transform translate-y-4 opacity-0 transition-all duration-300 space-y-1.5";
+            messageEl.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] bg-rose-500/20 text-rose-400 font-bold px-2 py-0.5 rounded-full border border-rose-500/30 flex items-center">
+                        <i class="fa-solid fa-circle text-[6px] mr-1 animate-ping"></i>BREAKING NEWS ALERT
+                    </span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xs"></i></button>
+                </div>
+                <h4 class="text-xs font-bold text-white leading-snug">${title}</h4>
+                <p class="text-[10px] text-indigo-300 font-mono">Category: ${category} • Dispatched Live</p>
+            `;
+            container.appendChild(messageEl);
+
+            // Animate in
+            setTimeout(() => {
+                messageEl.classList.remove('translate-y-4', 'opacity-0');
+            }, 50);
+
+            // Auto-dismiss after 6 seconds
+            setTimeout(() => {
+                messageEl.classList.add('translate-y-4', 'opacity-0');
+                setTimeout(() => messageEl.remove(), 300);
+            }, 6000);
+        }
+
         function openAiVisionModal() {
             cancelAllBackgroundAudio();
             document.getElementById('aiVisionModal').classList.remove('hidden');
@@ -1104,7 +1118,7 @@
             document.getElementById('btnUploadText').textContent = t.btnUploadText;
             document.getElementById('btnBroadcastText').textContent = t.btnBroadcastText;
             document.getElementById('btnPressText').textContent = t.btnPressText;
-            document.getElementById('btnDbText').textContent = t.btnDbText;
+            document.getElementById('btnDbText').textContent = t.dbText || "Database";
             document.getElementById('homeHeading').textContent = t.homeHeading;
             document.getElementById('homeSubheading').textContent = t.homeSubheading;
             document.getElementById('countrySearch').placeholder = t.searchPlaceholder;
@@ -1413,6 +1427,11 @@
                 { title: `Tech innovation hubs report surging startup investments in ${countryName}`, time: "9 hours ago", category: "Business" },
                 { title: `Transport ministry expands high-speed rail corridors in ${countryName}`, time: "12 hours ago", category: "Infrastructure" }
             ];
+
+            // Trigger breaking news message notification for the top news item when entering the country hub
+            if (countryNews.length > 0) {
+                showBreakingNewsMessage(countryNews[0].title, countryNews[0].category);
+            }
 
             let newsHtml = `
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl p-6 space-y-4 mb-6">
