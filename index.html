@@ -17,7 +17,7 @@
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <!-- Leaflet MarkerCluster JS -->
-    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.js"></script>
     <!-- Supabase JS Client SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -29,12 +29,40 @@
         .marker-cluster-medium div { background-color: rgba(168, 85, 247, 0.9); color: #fff; font-weight: bold; }
         .marker-cluster-large { background-color: rgba(225, 29, 72, 0.6); }
         .marker-cluster-large div { background-color: rgba(244, 63, 94, 0.9); color: #fff; font-weight: bold; }
+        
+        @keyframes ticker {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .animate-ticker {
+            display: flex;
+            width: max-content;
+            animation: ticker 35s linear infinite;
+        }
+        .animate-ticker:hover {
+            animation-play-state: paused;
+        }
+
+        .filter-normal { filter: none; }
+        .filter-cinematic { filter: contrast(1.15) saturate(1.25) brightness(0.95) sepia(0.15); }
+        .filter-cyberpunk { filter: contrast(1.3) saturate(1.8) hue-rotate(330deg) brightness(1.05); }
+        .filter-vintage { filter: sepia(0.6) contrast(1.1) brightness(0.9) hue-rotate(-15deg); }
+        .filter-noir { filter: grayscale(1) contrast(1.4) brightness(0.95); }
+        .filter-vibrant { filter: saturate(1.6) contrast(1.2) brightness(1.05); }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
 
-    <!-- FLOATING BREAKING NEWS MESSAGE CONTAINER -->
-    <div id="newsMessageContainer" class="fixed bottom-6 right-6 z-50 flex flex-col space-y-3 pointer-events-none max-w-sm w-full"></div>
+    <!-- MARKET TICKER TAPE BAR -->
+    <div id="marketTickerBar" class="bg-slate-900 border-b border-slate-800 py-2 px-4 overflow-hidden text-xs font-mono hidden z-50">
+        <div class="animate-ticker flex space-x-8 items-center text-slate-300">
+            <span class="flex items-center space-x-1.5"><strong class="text-white">S&P 500:</strong> <span class="text-emerald-400">5,842.10 (+0.84%)</span></span>
+            <span class="flex items-center space-x-1.5"><strong class="text-white">NASDAQ:</strong> <span class="text-emerald-400">18,310.45 (+1.12%)</span></span>
+            <span class="flex items-center space-x-1.5"><strong class="text-white">BRENT CRUDE:</strong> <span class="text-rose-400">$74.20 (-0.65%)</span></span>
+            <span class="flex items-center space-x-1.5"><strong class="text-white">BITCOIN:</strong> <span class="text-emerald-400">$68,450.00 (+2.40%)</span></span>
+            <span class="flex items-center space-x-1.5"><strong class="text-white">ZAR/USD:</strong> <span class="text-emerald-400">17.82 (+0.25%)</span></span>
+        </div>
+    </div>
 
     <!-- HEADER / NAVBAR -->
     <header id="appHeader" class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-40 hidden">
@@ -45,55 +73,26 @@
                 </div>
                 <div>
                     <h1 class="text-xl font-bold tracking-tight text-white">PINPOINT</h1>
-                    <p id="navSubtitle" class="text-xs text-slate-400">Discover the heartbeat of any nation</p>
+                    <p class="text-xs text-slate-400">Discover the heartbeat of any nation</p>
                 </div>
             </div>
             
             <div class="flex items-center gap-3 w-full md:w-auto justify-end flex-wrap">
-                <button onclick="openComparatorModal()" title="Side-by-Side Country Comparator" class="px-3.5 py-2 bg-indigo-900/60 hover:bg-indigo-800/80 border border-indigo-500/40 text-xs font-semibold text-indigo-300 rounded-xl transition flex items-center space-x-2">
-                    <i class="fa-solid fa-scale-balanced"></i>
-                    <span>Compare Countries</span>
+                <!-- OPTION 5: VOICE SYNTHESIS STUDIO LAUNCHER -->
+                <button onclick="openVoiceStudioModal()" title="AI Voice Narration & Speech Studio" class="px-3.5 py-2 bg-teal-950/60 hover:bg-teal-900/80 border border-teal-500/40 text-xs font-semibold text-teal-300 rounded-xl transition flex items-center space-x-2">
+                    <i class="fa-solid fa-microphone-lines text-teal-400 animate-pulse"></i>
+                    <span>Voice Studio</span>
                 </button>
 
-                <button onclick="openAiVisionModal()" title="Open Neural Vision HUD" class="px-3 py-2 bg-indigo-950/60 hover:bg-indigo-900/80 border border-indigo-500/40 text-xs text-indigo-300 rounded-xl transition flex items-center space-x-2">
-                    <i class="fa-solid fa-eye"></i>
-                    <span>AI Vision HUD</span>
+                <button onclick="openWarRoomsModal()" title="Live Regional War Rooms & Chat" class="px-3.5 py-2 bg-emerald-950/60 hover:bg-emerald-900/80 border border-emerald-500/40 text-xs font-semibold text-emerald-300 rounded-xl transition flex items-center space-x-2">
+                    <i class="fa-solid fa-people-group text-emerald-400"></i>
+                    <span>War Rooms</span>
                 </button>
 
-                <button onclick="openCreateStudioModal()" title="Create or Upload Videos and Photos" class="px-3.5 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-xs font-bold text-white rounded-xl transition shadow-lg shadow-indigo-600/30 flex items-center space-x-2">
-                    <i class="fa-solid fa-cloud-arrow-up"></i>
-                    <span id="btnUploadText">Create & Upload Gallery Media</span>
+                <button onclick="openCreateStudioModal()" title="Interactive Media Editor & Studio" class="px-3.5 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-xs font-bold text-white rounded-xl transition shadow-lg shadow-indigo-600/30 flex items-center space-x-2">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>Media Editor</span>
                 </button>
-
-                <button onclick="openSyndicateModal()" title="Broadcast to All Countries & Socials" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white rounded-xl transition shadow-lg shadow-indigo-600/30 flex items-center space-x-2">
-                    <i class="fa-solid fa-globe"></i>
-                    <span id="btnBroadcastText">Broadcast & Trend</span>
-                </button>
-
-                <button onclick="openPressModal()" title="Global Press Releases" class="px-3 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-indigo-500 text-xs text-slate-200 rounded-xl transition flex items-center space-x-2">
-                    <i class="fa-solid fa-bullhorn text-indigo-400"></i>
-                    <span id="btnPressText">Press Room</span>
-                </button>
-
-                <button onclick="openDbModal()" title="Connect Database" class="px-3 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-indigo-500 text-xs text-slate-200 rounded-xl transition flex items-center space-x-2">
-                    <i class="fa-solid fa-database text-indigo-400"></i>
-                    <span id="btnDbText">Database</span>
-                    <span id="dbStatusBadge" class="w-2 h-2 rounded-full bg-red-500 inline-block"></span>
-                </button>
-
-                <div class="relative">
-                    <select id="langTranslateDropdown" onchange="translatePage(this.value)" 
-                        class="px-3 py-2 bg-slate-900 border border-slate-700 hover:border-indigo-500 text-xs text-slate-200 rounded-xl focus:outline-none transition cursor-pointer">
-                        <option value="en">🌐 English (Original)</option>
-                        <option value="ve">🇿🇦 Tshivenḓa</option>
-                        <option value="zu">🇿🇦 IsiZulu</option>
-                        <option value="zh">🇨🇳 Mandarin Chinese</option>
-                        <option value="hi">🇮🇳 Hindi</option>
-                        <option value="es">🇪🇸 Spanish</option>
-                        <option value="ar">🇸🇦 Standard Arabic</option>
-                        <option value="fr">🇫🇷 French</option>
-                    </select>
-                </div>
 
                 <button onclick="logout()" title="Log out" class="p-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-400 hover:text-red-400 rounded-xl transition">
                     <i class="fa-solid fa-right-from-bracket text-xs"></i>
@@ -102,471 +101,163 @@
         </div>
     </header>
 
-    <!-- COUNTRY COMPARATOR MODAL -->
-    <div id="comparatorModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border border-indigo-500/40 rounded-3xl max-w-3xl w-full p-6 shadow-2xl space-y-6">
+    <!-- OPTION 5: AI VOICE NARRATION & SPEECH STUDIO MODAL -->
+    <div id="voiceStudioModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-teal-500/40 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-6">
             <div class="flex items-center justify-between border-b border-slate-800 pb-4">
                 <div class="flex items-center space-x-3">
-                    <div class="bg-indigo-600/20 text-indigo-400 p-2.5 rounded-xl border border-indigo-500/30">
-                        <i class="fa-solid fa-scale-balanced text-lg"></i>
+                    <div class="bg-teal-600/20 text-teal-400 p-2.5 rounded-xl border border-teal-500/30">
+                        <i class="fa-solid fa-microphone-lines text-lg"></i>
                     </div>
                     <div>
-                        <h3 class="text-base font-bold text-white">Interactive Country Comparator</h3>
-                        <p class="text-xs text-indigo-300 font-mono">Side-by-Side Sovereign & Media Telemetry</p>
+                        <h3 class="text-base font-bold text-white">AI Voice Narration & Speech Studio</h3>
+                        <p class="text-xs text-teal-300 font-mono">Convert briefings and updates into natural speech</p>
                     </div>
                 </div>
-                <button onclick="closeComparatorModal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <button onclick="closeVoiceStudioModal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Select Nation A</label>
-                    <select id="compareCountryA" onchange="updateComparisonData()" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500"></select>
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Select Nation B</label>
-                    <select id="compareCountryB" onchange="updateComparisonData()" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500"></select>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-950 p-4 rounded-2xl border border-slate-800">
-                <!-- Nation A Stats -->
-                <div id="compStatsA" class="space-y-3 pr-2 border-r border-slate-800/80">
-                    <div class="flex items-center space-x-3 pb-3 border-b border-slate-800">
-                        <img id="compFlagA" src="" class="w-10 h-7 object-cover rounded shadow border border-slate-700">
-                        <h4 id="compNameA" class="text-sm font-bold text-white">--</h4>
-                    </div>
-                    <p class="text-xs text-slate-300">Population: <span id="compPopA" class="text-indigo-400 font-mono font-semibold">--</span></p>
-                    <p class="text-xs text-slate-300">Primary Currency: <span id="compCurrA" class="text-emerald-400 font-mono font-semibold">--</span></p>
-                    <p class="text-xs text-slate-300">Media Wire Index: <span id="compWireA" class="text-purple-400 font-mono font-semibold">High (24/7 Live)</span></p>
-                </div>
-                <!-- Nation B Stats -->
-                <div id="compStatsB" class="space-y-3 pl-2">
-                    <div class="flex items-center space-x-3 pb-3 border-b border-slate-800">
-                        <img id="compFlagB" src="" class="w-10 h-7 object-cover rounded shadow border border-slate-700">
-                        <h4 id="compNameB" class="text-sm font-bold text-white">--</h4>
-                    </div>
-                    <p class="text-xs text-slate-300">Population: <span id="compPopB" class="text-indigo-400 font-mono font-semibold">--</span></p>
-                    <p class="text-xs text-slate-300">Primary Currency: <span id="compCurrB" class="text-emerald-400 font-mono font-semibold">--</span></p>
-                    <p class="text-xs text-slate-300">Media Wire Index: <span id="compWireB" class="text-purple-400 font-mono font-semibold">High (24/7 Live)</span></p>
-                </div>
-            </div>
-
-            <div class="flex justify-end pt-2 border-t border-slate-800">
-                <button onclick="closeComparatorModal()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white rounded-xl transition shadow-lg shadow-indigo-600/30">Close Comparator</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- AI COMPUTER VISION INSPECTOR MODAL -->
-    <div id="aiVisionModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border border-indigo-500/40 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-6">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
-                <div class="flex items-center space-x-3">
-                    <div class="bg-indigo-600/20 text-indigo-400 p-2.5 rounded-xl border border-indigo-500/30">
-                        <i class="fa-solid fa-eye text-lg"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-base font-bold text-white">Pinpoint Neural Vision HUD</h3>
-                        <p class="text-xs text-indigo-300 font-mono">Live Spatial Object & Telemetry Extraction</p>
-                    </div>
-                </div>
-                <button onclick="closeAiVisionModal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            
             <div class="space-y-4">
-                <div class="relative w-full aspect-video bg-slate-950 rounded-2xl overflow-hidden border border-slate-800 flex items-center justify-center">
-                    <div id="visionScanAnimation" class="absolute inset-0 bg-gradient-to-b from-indigo-500/10 via-transparent to-indigo-500/10 animate-pulse pointer-events-none"></div>
-                    <div id="visionTargetBox" class="absolute border-2 border-emerald-400 bg-emerald-500/10 rounded p-2 text-[10px] font-mono text-emerald-300 transition-all duration-500" style="top: 20%; left: 30%; width: 40%; height: 50%;">
-                        <span class="bg-emerald-500 text-slate-950 px-1 font-bold rounded">TARGET: 99.4% CONFIDENCE</span>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Text to Synthesize & Narrate</label>
+                    <textarea id="voiceStudioText" rows="4" class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-xs font-mono text-slate-200 focus:outline-none focus:border-teal-500">Pinpoint Global Intelligence Briefing: Markets are stable, regional wires are active, and real-time telemetry across all 195+ nations reports optimal synchronization.</textarea>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Voice Tone / Profile</label>
+                        <select id="voiceStudioTone" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-teal-500">
+                            <option value="anchor">Professional News Anchor</option>
+                            <option value="director">War Room Director</option>
+                            <option value="casual">Casual Narrator</option>
+                        </select>
                     </div>
-                    <div class="absolute bottom-3 left-3 bg-slate-900/80 backdrop-blur px-3 py-1.5 rounded-lg border border-slate-700 text-[10px] font-mono text-slate-300">
-                        <i class="fa-solid fa-satellite text-indigo-400 mr-1"></i> Neural Engine: Active (YOLO-Edge v5)
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Speech Speed</label>
+                        <select id="voiceStudioSpeed" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-teal-500">
+                            <option value="1.0">Normal (1.0x)</option>
+                            <option value="1.25">Fast (1.25x)</option>
+                            <option value="0.85">Relaxed (0.85x)</option>
+                        </select>
                     </div>
                 </div>
 
-                <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-2 font-mono text-xs">
-                    <p class="text-slate-400">Frame Telemetry: <span id="visionTelemetryId" class="text-indigo-400">Analyzing focal node...</span></p>
-                    <p class="text-slate-400">Identified Entities:</p>
-                    <div id="visionEntitiesList" class="text-slate-200 bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-1">
-                        <div class="flex justify-between"><span>[Class 01]: High-speed motion</span><span class="text-emerald-400">0.98</span></div>
-                        <div class="flex justify-between"><span>[Class 02]: Urban infrastructure</span><span class="text-emerald-400">0.94</span></div>
-                    </div>
+                <div id="voiceStudioStatusBox" class="p-3 bg-slate-950 rounded-xl border border-slate-800 text-[11px] font-mono text-slate-400 hidden">
+                    <span id="voiceStudioStatusText">Synthesizing audio stream...</span>
                 </div>
             </div>
 
-            <div class="flex justify-end pt-2 border-t border-slate-800">
-                <button onclick="closeAiVisionModal()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white rounded-xl transition shadow-lg shadow-indigo-600/30">Close Vision HUD</button>
+            <div class="flex items-center justify-between pt-2 border-t border-slate-800">
+                <button type="button" onclick="playVoiceNarration()" class="px-5 py-2.5 bg-teal-600 hover:bg-teal-500 text-xs font-semibold text-white rounded-xl transition shadow-lg shadow-teal-600/30 flex items-center space-x-2">
+                    <i class="fa-solid fa-play"></i><span>Play Narration</span>
+                </button>
+                <button type="button" onclick="stopVoiceNarration()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 rounded-xl transition">Stop Audio</button>
             </div>
         </div>
     </div>
 
-    <!-- DATABASE RECORD INSPECTOR MODAL -->
-    <div id="dbRecordModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-6">
+    <!-- WAR ROOMS MODAL -->
+    <div id="warRoomsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-emerald-500/40 rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-6">
             <div class="flex items-center justify-between border-b border-slate-800 pb-4">
                 <div class="flex items-center space-x-3">
                     <div class="bg-emerald-600/20 text-emerald-400 p-2.5 rounded-xl border border-emerald-500/30">
-                        <i class="fa-solid fa-database text-lg"></i>
+                        <i class="fa-solid fa-people-group text-lg"></i>
                     </div>
                     <div>
-                        <h3 id="modalDbRecordTitle" class="text-base font-bold text-white">Database Record Node</h3>
-                        <p class="text-xs text-slate-400 font-mono">Live Table Entry Inspection</p>
+                        <h3 class="text-base font-bold text-white">Live Regional War Rooms</h3>
+                        <p class="text-xs text-emerald-300 font-mono">Real-time collaborative intelligence channels</p>
                     </div>
                 </div>
-                <button onclick="closeDbRecordModal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <button onclick="closeWarRoomsModal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-            <div class="space-y-4">
-                <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-2 font-mono text-xs">
-                    <p class="text-slate-400">Record ID: <span id="modalDbRecordId" class="text-indigo-400">--</span></p>
-                    <p class="text-slate-400">Payload / Content:</p>
-                    <p id="modalDbRecordBody" class="text-slate-200 bg-slate-900 p-3 rounded-xl border border-slate-800">--</p>
+            <div class="space-y-3 max-h-72 overflow-y-auto pr-2 bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 text-xs space-y-1">
+                    <div class="flex justify-between font-mono text-[10px] text-slate-400">
+                        <span class="text-emerald-400 font-semibold">Director_Alex</span><span>Just now</span>
+                    </div>
+                    <p class="text-slate-200">Monitoring energy grid updates across Central Europe.</p>
                 </div>
             </div>
             <div class="flex justify-end pt-2 border-t border-slate-800">
-                <button onclick="closeDbRecordModal()" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-white rounded-xl transition">Close Inspector</button>
+                <button onclick="closeWarRoomsModal()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white rounded-xl transition">Close</button>
             </div>
         </div>
     </div>
 
-    <!-- GALLERY & AI MEDIA STUDIO MODAL -->
+    <!-- MEDIA EDITOR MODAL -->
     <div id="createStudioModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-6">
+        <div class="bg-slate-900 border border-indigo-500/40 rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
             <div class="flex items-center justify-between border-b border-slate-800 pb-4">
                 <div class="flex items-center space-x-3">
                     <div class="bg-purple-600/20 text-purple-400 p-2.5 rounded-xl border border-purple-500/30">
-                        <i class="fa-solid fa-cloud-arrow-up text-lg"></i>
+                        <i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
                     </div>
                     <div>
-                        <h3 id="modalUploadHeading" class="text-base font-bold text-white">Upload Gallery Media & Syndicate Worldwide</h3>
-                        <p class="text-xs text-slate-400">Choose photos/videos from your gallery or generate with AI</p>
+                        <h3 class="text-base font-bold text-white">Interactive Media Editor & Studio</h3>
+                        <p class="text-xs text-slate-400">Apply filters and publish worldwide</p>
                     </div>
                 </div>
                 <button onclick="closeCreateStudioModal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-
-            <form onsubmit="handleGalleryMediaPublish(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Select Media File from Gallery</label>
-                    <input type="file" id="galleryFileInput" accept="video/*,image/*" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-500 cursor-pointer">
-                    <p class="text-[11px] text-slate-500 mt-1">Supports MP4, MOV, WebM videos, or JPG, PNG, WebP photos.</p>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Global Title / Caption</label>
-                    <input type="text" id="galleryMediaTitle" required placeholder="E.g., My amazing travel capture trending worldwide!" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-purple-500">
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Category</label>
-                        <select id="galleryMediaCategory" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-purple-500">
-                            <option value="Viral Spotlight">Viral Spotlight</option>
-                            <option value="Travel & Lifestyle">Travel & Lifestyle</option>
-                            <option value="News & Breaking">News & Breaking</option>
-                            <option value="Art & Culture">Art & Culture</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Syndication Scope</label>
-                        <select id="galleryMediaScope" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-purple-500">
-                            <option value="all">All 195+ Countries & Social Platforms</option>
-                            <option value="saved">Saved Items Only</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div id="galleryUploadStatusBox" class="p-3 bg-slate-950 rounded-xl border border-slate-800 text-[11px] font-mono text-slate-400 hidden">
-                    <span id="galleryUploadStatusText">Processing media file...</span>
-                </div>
-
-                <div class="flex items-center justify-between pt-2">
-                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-xs font-semibold text-white rounded-xl transition shadow-lg shadow-indigo-600/30 flex items-center justify-center space-x-2">
-                        <i class="fa-solid fa-satellite-dish"></i><span>Publish & Trend Worldwide</span>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- GLOBAL SYNDICATION MODAL -->
-    <div id="syndicateModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-6">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
-                <div class="flex items-center space-x-3">
-                    <div class="bg-indigo-600/20 text-indigo-400 p-2.5 rounded-xl border border-indigo-500/30">
-                        <i class="fa-solid fa-globe text-lg"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-base font-bold text-white">Global Video Syndication & Trend Broadcaster</h3>
-                        <p class="text-xs text-slate-400">Push video instantly to all countries and social platforms</p>
-                    </div>
-                </div>
-                <button onclick="closeSyndicateModal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <form onsubmit="handleGlobalBroadcast(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Video Source URL or Sample Clip</label>
-                    <select id="broadcastVideoUrl" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500">
-                        <option value="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4">Big Buck Bunny (Animation Feature)</option>
-                        <option value="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4">Elephants Dream (Sci-Fi Short)</option>
-                        <option value="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4">For Bigger Blazes (Viral Promo)</option>
-                        <option value="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4">Tears of Steel (Cinematic Action)</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Global Caption & Title</label>
-                    <input type="text" id="broadcastTitle" required value="🔥 Breaking Global Spotlight: Unprecedented Worldwide Broadcast Event!" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500">
-                </div>
-                <div id="broadcastStatusBox" class="p-3 bg-slate-950 rounded-xl border border-slate-800 text-[11px] font-mono text-slate-400 hidden">
-                    <span id="broadcastStatusText">Broadcasting to all nodes...</span>
-                </div>
-                <div class="flex items-center justify-between pt-2">
-                    <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white rounded-xl transition shadow-lg shadow-indigo-600/30 flex items-center justify-center space-x-2">
-                        <i class="fa-solid fa-satellite-dish"></i><span>Execute Global Broadcast & Trend #1</span>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- PRESS ROOM MODAL -->
-    <div id="pressModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-6">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
-                <div class="flex items-center space-x-3">
-                    <div class="bg-indigo-600/20 text-indigo-400 p-2.5 rounded-xl border border-indigo-500/30">
-                        <i class="fa-solid fa-bullhorn text-lg"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-base font-bold text-white">Pinpoint Global Press Room</h3>
-                        <p class="text-xs text-slate-400">Official media releases, broadcasts, and press wires</p>
-                    </div>
-                </div>
-                <button onclick="closePressModal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <div class="space-y-4 max-h-96 overflow-y-auto pr-1">
-                <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
-                    <span class="text-[10px] bg-emerald-500/20 text-emerald-400 font-semibold px-2 py-0.5 rounded">Official Press Wire</span>
-                    <h4 class="text-sm font-bold text-white">Pinpoint Expands Global Real-Time Media Aggregation to All Nations</h4>
-                    <p class="text-xs text-slate-400 leading-relaxed">Pinpoint has officially integrated live multi-database support, instant localization, and streaming video observation for every country worldwide...</p>
-                </div>
+            <div class="space-y-4">
+                <input type="file" accept="video/*,image/*" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-300">
             </div>
             <div class="flex justify-end pt-2 border-t border-slate-800">
-                <button onclick="closePressModal()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white rounded-xl transition shadow-lg shadow-indigo-600/30">Close Press Room</button>
+                <button onclick="closeCreateStudioModal()" class="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-xs font-semibold text-white rounded-xl transition">Close Studio</button>
             </div>
-        </div>
-    </div>
-
-    <!-- DATABASE CONNECTOR MODAL -->
-    <div id="dbModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-6">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
-                <div class="flex items-center space-x-3">
-                    <div class="bg-indigo-600/20 text-indigo-400 p-2.5 rounded-xl border border-indigo-500/30">
-                        <i class="fa-solid fa-database text-lg"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-base font-bold text-white">Live Database & Query Engine</h3>
-                        <p class="text-xs text-slate-400">Connect and run SQL/NoSQL queries on remote databases</p>
-                    </div>
-                </div>
-                <button onclick="closeDbModal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-
-            <form onsubmit="handleDbConnect(event)" class="space-y-4">
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Database Driver</label>
-                        <select id="dbDriver" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500">
-                            <option value="postgresql">PostgreSQL / Supabase</option>
-                            <option value="mysql">MySQL / MariaDB</option>
-                            <option value="mongodb">MongoDB Atlas</option>
-                            <option value="rest">REST API Endpoint</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Database Name</label>
-                        <input type="text" id="dbName" required value="global_media" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Host / Endpoint URL</label>
-                    <input type="text" id="dbHost" required value="https://jsonplaceholder.typicode.com/posts" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Database Query / Statement</label>
-                    <textarea id="dbQuery" rows="2" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs font-mono text-indigo-300 focus:outline-none focus:border-indigo-500">SELECT * FROM global_feeds WHERE region = 'active';</textarea>
-                </div>
-                <div id="dbResponseBox" class="p-3 bg-slate-950 rounded-xl border border-slate-800 text-[11px] font-mono text-slate-400 hidden max-h-32 overflow-y-auto">
-                    <span id="dbStatusText">Ready to execute query...</span>
-                </div>
-                <div class="flex items-center justify-between pt-2">
-                    <button type="button" onclick="executeDatabaseQuery()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white rounded-xl transition shadow-lg shadow-emerald-600/20 flex items-center space-x-2">
-                        <i class="fa-solid fa-play text-[10px]"></i><span>Execute Query & Load Data</span>
-                    </button>
-                    <button type="button" onclick="closeDbModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300 rounded-xl transition">Close</button>
-                </div>
-            </form>
         </div>
     </div>
 
     <!-- MAIN CONTENT CONTAINER -->
     <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-8 flex items-center justify-center">
 
-        <!-- VIEW 0A: LOGIN / REGISTER PORTAL (TABBED AUTH) -->
+        <!-- VIEW 0: LOGIN PORTAL -->
         <div id="loginView" class="w-full max-w-md bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl space-y-6">
             <div class="text-center space-y-2">
                 <div class="inline-flex bg-indigo-600 text-white p-3 rounded-2xl shadow-lg shadow-indigo-600/30 mb-2">
                     <i class="fa-solid fa-location-crosshairs text-2xl"></i>
                 </div>
-                <h2 id="authMainTitle" class="text-2xl font-bold text-white tracking-tight">Welcome to Pinpoint</h2>
-                <p id="authSubtitle" class="text-xs text-slate-400">Log in to your account or create a new profile.</p>
+                <h2 class="text-2xl font-bold text-white tracking-tight">Welcome to Pinpoint</h2>
+                <p class="text-xs text-slate-400">Log in to access global media aggregation & AI voice studio.</p>
             </div>
-
-            <!-- Auth Tabs (Sign In / Sign Up) -->
-            <div class="grid grid-cols-2 bg-slate-950 p-1 rounded-xl border border-slate-800">
-                <button type="button" onclick="switchAuthTab('signin')" id="tabSignIn" class="py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white transition shadow">Sign In</button>
-                <button type="button" onclick="switchAuthTab('signup')" id="tabSignUp" class="py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition">Sign Up</button>
-            </div>
-
-            <!-- SIGN IN FORM -->
-            <form id="signInForm" onsubmit="handleSignIn(event)" class="space-y-4">
+            <form onsubmit="handleSignIn(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-medium text-slate-300 mb-1.5">Email Address</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500"><i class="fa-solid fa-envelope"></i></span>
-                        <input type="email" id="signInEmail" required placeholder="name@example.com" class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500">
-                    </div>
+                    <input type="email" required placeholder="name@example.com" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500" value="analyst@pinpoint.io">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-slate-300 mb-1.5">Password</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500"><i class="fa-solid fa-lock"></i></span>
-                        <input type="password" id="signInPassword" required placeholder="••••••••" class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500">
-                    </div>
-                    <p id="signInError" class="text-[11px] text-red-400 mt-1.5 hidden"></p>
+                    <input type="password" required placeholder="••••••••" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500" value="password123">
                 </div>
-                <div class="flex items-center space-x-2">
-                    <input type="checkbox" id="rememberMe" class="rounded bg-slate-950 border-slate-800 text-indigo-600 focus:ring-0">
-                    <label for="rememberMe" class="text-xs text-slate-400 cursor-pointer">Remember me on this device</label>
-                </div>
-                <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition shadow-lg shadow-indigo-600/25 flex items-center justify-center space-x-2">
-                    <span>Log In to Pinpoint</span><i class="fa-solid fa-arrow-right text-xs"></i>
-                </button>
-            </form>
-
-            <!-- SIGN UP FORM -->
-            <form id="signUpForm" onsubmit="handleSignUp(event)" class="space-y-4 hidden">
-                <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Full Name</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500"><i class="fa-solid fa-user"></i></span>
-                        <input type="text" id="signUpName" required placeholder="John Doe" class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Email Address</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500"><i class="fa-solid fa-envelope"></i></span>
-                        <input type="email" id="signUpEmail" required placeholder="name@example.com" class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Create Password</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500"><i class="fa-solid fa-lock"></i></span>
-                        <input type="password" id="authPassword" oninput="checkPasswordStrength(this.value)" required placeholder="Min 8 chars, Uppercase, Number, Symbol" class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500">
-                    </div>
-                    <div class="w-full h-1.5 bg-slate-800 rounded-full mt-2 overflow-hidden">
-                        <div id="strengthBar" class="h-full w-0 transition-all duration-300"></div>
-                    </div>
-                    <p id="strengthText" class="text-[11px] text-slate-400 mt-1">Strength: Too short</p>
-                    <p id="passwordError" class="text-[11px] text-red-400 mt-1 hidden"></p>
-                </div>
-                <button type="submit" class="w-full py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold rounded-xl transition shadow-lg shadow-indigo-600/25 flex items-center justify-center space-x-2">
-                    <span>Create Account & Verify</span><i class="fa-solid fa-user-plus text-xs"></i>
+                <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition shadow-lg shadow-indigo-600/25">
+                    <span>Log In to Pinpoint</span>
                 </button>
             </form>
         </div>
 
-        <!-- VIEW 0B: VERIFICATION CODE SCREEN -->
-        <div id="verifyView" class="w-full max-w-md bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl space-y-6 hidden">
-            <div class="text-center space-y-2">
-                <div class="inline-flex bg-emerald-600 text-white p-3 rounded-2xl shadow-lg shadow-emerald-600/30 mb-2">
-                    <i class="fa-solid fa-shield-halved text-2xl"></i>
-                </div>
-                <h2 class="text-2xl font-bold text-white tracking-tight">Security Verification</h2>
-                <p class="text-xs text-slate-400">Confirmation code dispatched to <span id="displayUserEmail" class="text-indigo-400 font-medium">your email</span>.</p>
-                <p class="text-[11px] bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 py-1.5 px-3 rounded-lg inline-block font-mono mt-1">Hint for testing: Code is <b id="hintCode">123456</b></p>
-            </div>
-            <form onsubmit="handleVerifyCode(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1.5 text-center">Enter 6-Digit Code</label>
-                    <input type="text" id="verificationCodeInput" maxlength="6" required placeholder="123456" class="w-full text-center tracking-[0.5em] font-mono text-lg py-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-indigo-500">
-                    <p id="verifyError" class="text-[11px] text-red-400 mt-1.5 text-center hidden">Incorrect code. Please try again.</p>
-                </div>
-                <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition shadow-lg shadow-indigo-600/25 flex items-center justify-center space-x-2">
-                    <span>Verify & Enter App</span><i class="fa-solid fa-check text-xs"></i>
-                </button>
-            </form>
-            <button onclick="backToLogin()" class="w-full text-center text-xs text-slate-500 hover:text-slate-300 transition">&larr; Back to sign in</button>
-        </div>
-
-        <!-- VIEW 1: HOME GRID -->
+        <!-- VIEW 1: HOME GRID & LEAFLET MAP -->
         <div id="homeView" class="w-full hidden space-y-6">
-            <div class="flex justify-end w-full">
-                <div id="savedItemsContainer" class="bg-slate-900/90 border border-indigo-500/40 rounded-2xl p-4 shadow-2xl w-full max-w-sm space-y-2">
-                    <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-                        <h3 id="savedItemsHeading" class="text-xs font-bold uppercase tracking-wider text-indigo-400 flex items-center">
-                            <i class="fa-solid fa-bookmark mr-2 text-sm"></i>Saved News, Videos & Songs
-                        </h3>
-                        <span id="savedCountBadge" class="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full font-mono">0 Items</span>
-                    </div>
-                    <div id="savedItemsList" class="space-y-2 max-h-40 overflow-y-auto pr-1">
-                        <p id="noSavedText" class="text-xs text-slate-500 italic text-center py-2">No saved items yet.</p>
-                    </div>
-                </div>
-            </div>
-
             <div class="text-center max-w-2xl mx-auto my-2 space-y-4">
-                <h2 id="homeHeading" class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Explore All Countries Worldwide</h2>
-                <p id="homeSubheading" class="text-slate-400 text-sm sm:text-base">Browse or search any nation globally to instantly access live news broadcasts, breaking wires, and regional media.</p>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Explore All Countries Worldwide</h2>
+                <p class="text-slate-400 text-sm sm:text-base">Browse or search any nation globally to instantly access live news broadcasts and voice briefings.</p>
                 
                 <div class="relative w-full max-w-2xl mx-auto mt-6">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-indigo-400">
                         <i class="fa-solid fa-magnifying-glass text-lg"></i>
                     </span>
-                    <input type="text" id="countrySearch" oninput="filterCountries(this.value)" onkeydown="handleSearchKeydown(event)" placeholder="Search any country worldwide (Press Enter to open)..." 
+                    <input type="text" id="countrySearch" oninput="filterCountries(this.value)" placeholder="Search any country worldwide..." 
                         class="w-full pl-12 pr-6 py-4 bg-slate-900 border-2 border-indigo-500/60 hover:border-indigo-500 rounded-2xl text-sm sm:text-base text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-indigo-600/30 transition shadow-2xl">
                 </div>
             </div>
 
-            <!-- INTERACTIVE WORLD MAP CONTAINER WITH MARKER CLUSTERING -->
-            <div id="worldMapContainer" class="w-full space-y-2 mb-6">
+            <div id="worldMapContainer" class="w-full space-y-2 mb-4">
                 <div class="flex items-center justify-between">
                     <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-400 flex items-center">
                         <i class="fa-solid fa-earth-americas mr-2 text-sm"></i>Interactive Clustered Global Map Explorer
                     </h3>
-                    <span class="text-[10px] text-slate-400 font-mono">Pins automatically cluster when zooming out</span>
                 </div>
-                <div id="leafletMap" class="w-full h-[400px] rounded-2xl border border-slate-800 shadow-2xl z-10"></div>
-            </div>
-
-            <div id="dbActiveBanner" class="hidden max-w-2xl mx-auto p-4 bg-indigo-950/40 border border-indigo-500/30 rounded-2xl flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <i class="fa-solid fa-database text-indigo-400 text-xl"></i>
-                    <div>
-                        <h4 class="text-xs font-bold text-white">Connected to Live Remote Database</h4>
-                        <p id="dbActiveQueryLabel" class="text-[11px] text-indigo-300 font-mono">Query executed successfully</p>
-                    </div>
-                </div>
-                <button onclick="clearDatabaseFeed()" class="text-xs text-slate-400 hover:text-white underline">Reset to Countries</button>
-            </div>
-
-            <div id="worldLoading" class="text-center py-12 hidden">
-                <i class="fa-solid fa-spinner animate-spin text-3xl text-indigo-500 mb-3"></i>
-                <p class="text-xs text-slate-400">Loading global country database...</p>
+                <div id="leafletMap" class="w-full h-[450px] rounded-2xl border border-slate-800 shadow-2xl z-10"></div>
             </div>
 
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4" id="quickCountryGrid"></div>
@@ -585,93 +276,18 @@
                         <p id="hubCapital" class="text-sm text-slate-400 mt-1"><i class="fa-solid fa-city mr-1.5 text-indigo-400"></i>Capital: --</p>
                     </div>
                 </div>
+
                 <div class="flex items-center gap-3 flex-wrap">
-                    <!-- AI Voice Narration Companion Button -->
-                    <button onclick="toggleAiVoiceNarration()" id="btnVoiceNarration" class="px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold rounded-xl transition shadow-lg shadow-emerald-600/30 flex items-center space-x-2">
-                        <i class="fa-solid fa-volume-high"></i><span id="voiceBtnText">Listen to AI Audio Summary</span>
+                    <button onclick="narrateCurrentHub()" class="px-4 py-2.5 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white text-xs font-bold rounded-xl transition shadow-lg shadow-teal-600/30 flex items-center space-x-2">
+                        <i class="fa-solid fa-volume-high"></i><span>Listen to AI Voice Briefing</span>
                     </button>
                     <button onclick="returnToHome()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium rounded-xl border border-slate-700 transition flex items-center space-x-2">
-                        <i class="fa-solid fa-arrow-left"></i><span id="btnBackGlobe">Back to Globe</span>
+                        <i class="fa-solid fa-arrow-left"></i><span>Back to Globe</span>
                     </button>
                 </div>
             </div>
 
-            <div class="flex space-x-2 border-b border-slate-800 overflow-x-auto pb-2">
-                <button onclick="switchTab('news')" id="tab-news" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-semibold transition bg-indigo-600 text-white shadow-md shadow-indigo-600/20 flex items-center space-x-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping inline-block"></span>
-                    <span id="tabNameNews">Live Local News Tab</span>
-                </button>
-                <button onclick="switchTab('videos')" id="tab-videos" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-semibold transition text-slate-400 hover:text-white hover:bg-slate-900">
-                    <i class="fa-solid fa-video mr-2"></i><span id="tabNameVideos">Trending Videos</span>
-                </button>
-                <button onclick="switchTab('music')" id="tab-music" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-semibold transition text-slate-400 hover:text-white hover:bg-slate-900">
-                    <i class="fa-solid fa-music mr-2"></i><span id="tabNameMusic">Top Songs & Audio</span>
-                </button>
-                <button onclick="switchTab('press')" id="tab-press" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-semibold transition text-slate-400 hover:text-white hover:bg-slate-900">
-                    <i class="fa-solid fa-bullhorn mr-2"></i><span id="tabNamePress">Press Room</span>
-                </button>
-                <button onclick="switchTab('facts')" id="tab-facts" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-semibold transition text-slate-400 hover:text-white hover:bg-slate-900">
-                    <i class="fa-solid fa-globe mr-2"></i><span id="tabNameFacts">Country Snapshot</span>
-                </button>
-                <button onclick="switchTab('community')" id="tab-community" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-semibold transition text-slate-400 hover:text-white hover:bg-slate-900">
-                    <i class="fa-solid fa-comments mr-2"></i><span id="tabNameCommunity">Community & Polls</span>
-                </button>
-            </div>
-
-            <div id="content-news" class="tab-content space-y-6"></div>
-            <div id="content-videos" class="tab-content hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-            <div id="content-music" class="tab-content hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-            <div id="content-press" class="tab-content hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-            <div id="content-facts" class="tab-content hidden">
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div class="p-4 bg-slate-950/50 rounded-xl border border-slate-800">
-                        <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Population</p>
-                        <p id="factPop" class="text-xl font-bold text-white mt-1">--</p>
-                    </div>
-                    <div class="p-4 bg-slate-950/50 rounded-xl border border-slate-800">
-                        <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Primary Currency</p>
-                        <p id="factCurrency" class="text-xl font-bold text-white mt-1">--</p>
-                    </div>
-                    <div class="p-4 bg-slate-950/50 rounded-xl border border-slate-800">
-                        <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Region / Continent</p>
-                        <p id="factRegion" class="text-xl font-bold text-white mt-1">--</p>
-                    </div>
-                    <div class="p-4 bg-slate-950/50 rounded-xl border border-slate-800">
-                        <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Primary Language</p>
-                        <p id="factLang" class="text-xl font-bold text-white mt-1">--</p>
-                    </div>
-                </div>
-            </div>
-
-            <div id="content-community" class="tab-content hidden space-y-6">
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
-                    <h3 id="pollHeading" class="text-lg font-bold text-white flex items-center"><i class="fa-solid fa-chart-pie mr-2 text-indigo-400"></i>Weekly Economic Outlook Poll</h3>
-                    <p id="pollSubheading" class="text-xs text-slate-400">How would you rate the current trajectory of this nation's media and economic climate?</p>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                        <button onclick="votePoll('bullish')" class="p-4 bg-slate-950 border border-slate-800 hover:border-emerald-500 rounded-xl text-left transition group">
-                            <span class="text-xs text-emerald-400 font-semibold uppercase tracking-wider">Bullish / Positive</span>
-                            <p id="bullishCount" class="text-2xl font-bold text-white mt-1">68%</p>
-                        </button>
-                        <button onclick="votePoll('bearish')" class="p-4 bg-slate-950 border border-slate-800 hover:border-rose-500 rounded-xl text-left transition group">
-                            <span class="text-xs text-rose-400 font-semibold uppercase tracking-wider">Bearish / Cautious</span>
-                            <p id="bearishCount" class="text-2xl font-bold text-white mt-1">32%</p>
-                        </button>
-                    </div>
-                </div>
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
-                    <h3 id="commentHeading" class="text-lg font-bold text-white flex items-center"><i class="fa-solid fa-comments mr-2 text-indigo-400"></i>Live Country Feed Discussion</h3>
-                    <div id="commentList" class="space-y-3 max-h-60 overflow-y-auto pr-2">
-                        <div class="p-3 bg-slate-950/50 rounded-xl border border-slate-800 text-xs">
-                            <span class="font-semibold text-indigo-400">GlobalObserver_99</span>
-                            <p class="text-slate-300 mt-1">Great cultural developments happening across urban centers here this week!</p>
-                        </div>
-                    </div>
-                    <form onsubmit="postComment(event)" class="flex gap-2 pt-2">
-                        <input type="text" id="commentInput" required placeholder="Add to the conversation..." class="flex-grow px-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500">
-                        <button type="submit" id="btnPostComment" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl transition">Post</button>
-                    </form>
-                </div>
-            </div>
+            <div id="content-news" class="space-y-4"></div>
         </div>
 
     </main>
@@ -683,609 +299,113 @@
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
-        // --- SUPABASE LIVE BACKEND CONFIGURATION ---
-        const SUPABASE_URL = 'YOUR_SUPABASE_PROJECT_URL'; // Replace with your Supabase Project URL
-        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'; // Replace with your Supabase Anon Public Key
-        
-        let supabaseClient = null;
-        try {
-            if (window.supabase && SUPABASE_URL !== 'YOUR_SUPABASE_PROJECT_URL') {
-                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            }
-        } catch (e) {
-            console.log("Supabase initialization deferred (Running in local sync mode)");
-        }
-
-        let generatedOtp = "123456";
-        let videoObserver = null;
-        let currentlyPlayingVideo = null;
-        let currentLanguage = 'en';
-        let globalCountriesList = [];
-        let isDbConnected = false;
-        let customDbRecords = [];
-        let filteredCountriesList = [];
-        let savedItems = [];
-        let globalSyndicatedVideos = [];
         let leafletMap = null;
         let markerClusterGroup = null;
-        let isSpeaking = false;
-
-        // Comprehensive Translation Dictionary
-        const translations = {
-            en: {
-                appTitle: "Pinpoint — Global Content & Media Explorer",
-                navSubtitle: "Discover the heartbeat of any nation",
-                btnUploadText: "Create & Upload Gallery Media",
-                btnBroadcastText: "Broadcast & Trend",
-                btnPressText: "Press Room",
-                btnDbText: "Database",
-                homeHeading: "Explore All Countries Worldwide",
-                homeSubheading: "Browse or search any nation globally to instantly access live news broadcasts, breaking wires, and regional media.",
-                searchPlaceholder: "Search any country worldwide (Press Enter to open)...",
-                savedHeading: "Saved News, Videos & Songs",
-                noSavedText: "No saved items yet.",
-                btnBackGlobe: "Back to Globe",
-                tabNews: "Live Local News Tab",
-                tabVideos: "Trending Videos",
-                tabMusic: "Top Songs & Audio",
-                tabPress: "Press Room",
-                tabFacts: "Country Snapshot",
-                tabCommunity: "Community & Polls",
-                pollHeading: "Weekly Economic Outlook Poll",
-                pollSubheading: "How would you rate the current trajectory of this nation's media and economic climate?",
-                commentHeading: "Live Country Feed Discussion",
-                btnPostComment: "Post",
-                commentPlaceholder: "Add to the conversation..."
-            },
-            ve: {
-                appTitle: "Pinpoint — Tshaka ya Mafhungo na Mitalo ya Shango",
-                navSubtitle: "Wanani mbilu ya shango liṅwe na liṅwe",
-                btnUploadText: "Sika & Vhea Zwiṱientshi",
-                btnBroadcastText: "Vhaladza na u Ṱumana",
-                btnPressText: "Tshirengi tsha Mafhungo",
-                btnDbText: "Databeisi",
-                homeHeading: "Kha vha ṱolisise Shango ḽothe",
-                homeSubheading: "Vhalise kana u Ṱodḓa shango ḽiṅwe na ḽiṅwe u wana mafhungo a tshi khou tshimbila nga u ṱavhanya.",
-                searchPlaceholder: "Ṱodza shango ḽiṅwe na ḽiṅwe...",
-                savedHeading: "Mafhungo na Vhidio zwo Vheiwaho",
-                noSavedText: " A hu na zwiṱientshi zwo vheiwaho.",
-                btnBackGlobe: "Phelela kha Shango",
-                tabNews: "Mafhungo a Vhuḓani",
-                tabVideos: "Vhidio dzi re na Ṱhogomelo",
-                tabMusic: "Nyimbo Dzivhe Dza Nṱha",
-                tabPress: "Tshirengi tsha Mafhungo",
-                tabFacts: "Zwiga zwa Shango",
-                tabCommunity: "Vhadzuloni na Mbudziso",
-                pollHeading: "Mbudziso ya Maitele a Maitele a Icovha",
-                pollSubheading: "Vha vhona hani tshiteu tsha mafhungo na ikonomi ya shango ili?",
-                commentHeading: "MBUDZISO YA VHADZULONI",
-                btnPostComment: "Tumana",
-                commentPlaceholder: "Ṿhea thungo kha nyambedzano..."
-            },
-            zu: {
-                appTitle: "Pinpoint — Injini Yemithombo Yezindaba Zomhlaba",
-                navSubtitle: "Thola isikhunta sanoma yiliphi izwe",
-                btnUploadText: "Dala & Layisha Imidiya",
-                btnBroadcastText: "Sakaza & Thambekile",
-                btnPressText: "Igumbi Lezindaba",
-                btnDbText: "Isizindalwazi",
-                homeHeading: "Hlola Wonke Amazwe Emhlabeni",
-                homeSubheading: "Sesha noma yiliphi izwe emhlabeni ukuze uthole izindaba ezibukhoma.",
-                searchPlaceholder: "Sesha noma yiliphi izwe emhlabeni...",
-                savedHeading: "Izindaba namavidiyo agciniwe",
-                noSavedText: "Ayikho imidiya egciniwe okwamanje.",
-                btnBackGlobe: "Buyela Emhlabeni",
-                tabNews: "Izindaba Zendawo Ezibukhoma",
-                tabVideos: "Amavidiyo Athandwayo",
-                tabMusic: "Izingoma Ezihamba Phambili",
-                tabPress: "Igumbi Lezindaba",
-                tabFacts: "Umlando Wezwe",
-                tabCommunity: "Imiphakathi Namavoti",
-                pollHeading: "I-Poll Yezomnotho Yeviki",
-                pollSubheading: "Ubona kanjani inqubekelaphambili yezomnotho kuleli zwe?",
-                commentHeading: "Ingxoxo Yesigodi Ebukhoma",
-                btnPostComment: "Thumela",
-                commentPlaceholder: "Engeza amazwana..."
-            },
-            zh: {
-                appTitle: "Pinpoint — 全球内容与媒体引擎",
-                navSubtitle: "探索任何国家的脉搏",
-                btnUploadText: "创建并上传图库媒体",
-                btnBroadcastText: "全球广播",
-                btnPressText: "新闻室",
-                btnDbText: "数据库",
-                homeHeading: "探索全球所有国家",
-                homeSubheading: "浏览或搜索全球任何国家，立即获取实时新闻广播。",
-                searchPlaceholder: "搜索全球任何国家（按回车打开）...",
-                savedHeading: "已保存的新闻、视频与歌曲",
-                noSavedText: "暂无保存的项目。",
-                btnBackGlobe: "返回全球地图",
-                tabNews: "实时地方新闻",
-                tabVideos: "热门视频",
-                tabMusic: "热门歌曲",
-                tabPress: "新闻室",
-                tabFacts: "国家概况",
-                tabCommunity: "社群与民意调查",
-                pollHeading: "每周经济前景民意调查",
-                pollSubheading: "您如何评价该国当前的媒体和经济环境？",
-                commentHeading: "国家动态实时讨论",
-                btnPostComment: "发布",
-                commentPlaceholder: "参与讨论..."
-            },
-            hi: {
-                appTitle: "Pinpoint — वैश्विक सामग्री और मीडिया इंजन",
-                navSubtitle: "किसी भी देश की नब्ज पहचानें",
-                btnUploadText: "मीडिया बनाएं और अपलोड करें",
-                btnBroadcastText: "प्रसारण और ट्रेंड",
-                btnPressText: "प्रेस रूम",
-                btnDbText: "डेटाबेस",
-                homeHeading: "दुनिया भर के सभी देशों का अन्वेषण करें",
-                homeSubheading: "लाइव समाचार और क्षेत्रीय मीडिया तक तुरंत पहुँचने के लिए किसी भी देश को खोजें।",
-                searchPlaceholder: "दुनिया भर में कोई भी देश खोजें...",
-                savedHeading: "सहेजे गए समाचार, वीडियो और गाने",
-                noSavedText: "अभी तक कोई सहेजा गया आइटम नहीं है।",
-                btnBackGlobe: "ग्लोब पर वापस जाएं",
-                tabNews: "लाइव स्थानीय समाचार",
-                tabVideos: "ट्रेंडिंग वीडियो",
-                tabMusic: "शीर्ष गाने",
-                tabPress: "प्रेस रूम",
-                tabFacts: "देश का संक्षिप्त विवरण",
-                tabCommunity: "समुदाय और चुनाव",
-                pollHeading: "साप्ताहिक आर्थिक दृष्टिकोण पोल",
-                pollSubheading: "आप इस देश की आर्थिक स्थिति का मूल्यांकन कैसे करते हैं?",
-                commentHeading: "लाइव देश चर्चा",
-                btnPostComment: "पोस्ट करें",
-                commentPlaceholder: "वार्तालाप में शामिल हों..."
-            },
-            es: {
-                appTitle: "Pinpoint — Explorador Global de Contenido y Medios",
-                navSubtitle: "Descubre el pulso de cualquier nación",
-                btnUploadText: "Crear y Subir Medios",
-                btnBroadcastText: "Transmitir y Tender",
-                btnPressText: "Sala de Prensa",
-                btnDbText: "Base de Datos",
-                homeHeading: "Explora Todos los Países del Mundo",
-                homeSubheading: "Busca o explora cualquier nación para acceder instantáneamente a transmisiones de noticias en vivo.",
-                searchPlaceholder: "Busca cualquier país del mundo...",
-                savedHeading: "Noticias, Videos y Canciones Guardados",
-                noSavedText: "No hay elementos guardados.",
-                btnBackGlobe: "Volver al Globo",
-                tabNews: "Noticias Locales en Vivo",
-                tabVideos: "Videos Tendencia",
-                tabMusic: "Canciones Principales",
-                tabPress: "Sala de Prensa",
-                tabFacts: "Resumen del País",
-                tabCommunity: "Comunidad y Encuestas",
-                pollHeading: "Encuesta Semanal de Perspectiva Económica",
-                pollSubheading: "¿Cómo calificaría la trayectoria económica actual de esta nación?",
-                commentHeading: "Discusión en Vivo del País",
-                btnPostComment: "Publicar",
-                commentPlaceholder: "Añadir a la conversación..."
-            },
-            ar: {
-                appTitle: "Pinpoint — محرك المحتوى والوسائط العالمي",
-                navSubtitle: "اكتشف نبض أي دولة",
-                btnUploadText: "إنشاء وتحميل وسائط المعرض",
-                btnBroadcastText: "بث واتجاه",
-                btnPressText: "غرفة الصحافة",
-                btnDbText: "قاعدة البيانات",
-                homeHeading: "استكشف جميع دول العالم",
-                homeSubheading: "تصفح أو ابحث عن أي دولة عالمياً للوصول الفوري إلى البث الإخباري المباشر.",
-                searchPlaceholder: "ابحث عن أي دولة في العالم...",
-                savedHeading: "الأخبار والفيديوهات والأغاني المحفوظة",
-                noSavedText: "لا توجد عناصر محفوظة حتى الآن.",
-                btnBackGlobe: "العودة إلى الخريطة",
-                tabNews: "أخبار محلية مباشرة",
-                tabVideos: "فيديوهات رائجة",
-                tabMusic: "أفضل الأغاني",
-                tabPress: "غرفة الصحافة",
-                tabFacts: "لمحة عن الدولة",
-                tabCommunity: "المجتمع والاستطلاعات",
-                pollHeading: "استطلاع التوقعات الاقتصادية الأسبوعي",
-                pollSubheading: "كيف تقيم المناخ الاقتصادي والإعلامي الحالي في هذه الدولة؟",
-                commentHeading: "نقاش حي حول الدولة",
-                btnPostComment: "نشر",
-                commentPlaceholder: "أضف تعليقاً..."
-            },
-            fr: {
-                appTitle: "Pinpoint — Moteur Mondial de Contenu et Médias",
-                navSubtitle: "Découvrez le pouls n'importe quelle nation",
-                btnUploadText: "Créer et Télécharger des Médias",
-                btnBroadcastText: "Diffuser et Tendance",
-                btnPressText: "Salle de Presse",
-                btnDbText: "Base de Données",
-                homeHeading: "Explorez Tous les Pays du Monde",
-                homeSubheading: "Recherchez n'importe quelle nation pour accéder instantanément aux flux d'actualités en direct.",
-                searchPlaceholder: "Rechercher n'importe quel pays...",
-                savedHeading: "Actualités, Vidéos et Chansons Enregistrées",
-                noSavedText: "Aucun élément enregistré.",
-                btnBackGlobe: "Retour au Globe",
-                tabNews: "Actualités Locales en Direct",
-                tabVideos: "Vidéos Tendances",
-                tabMusic: "Meilleures Chansons",
-                tabPress: "Salle de Presse",
-                tabFacts: "Aperçu du Pays",
-                tabCommunity: "Communauté et Sondages",
-                pollHeading: "Sondage Économique Hebdomadaire",
-                pollSubheading: "Comment évaluez-vous la trajectoire économique actuelle de cette nation?",
-                commentHeading: "Discussion en Direct du Pays",
-                btnPostComment: "Publier",
-                commentPlaceholder: "Participer à la conversation..."
-            }
-        };
+        let globalCountriesList = [];
 
         const completeCountryNames = [
-            "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan",
-            "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria", "Burkina Faso", "Burundi",
-            "Cabo Verde", "Cambodia", "Cameroon", "Canada", "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo (Congo-Brazzaville)", "Congo, Democratic Republic of the (Congo-Kinshasa)", "Costa Rica", "Côte d'Ivoire (Ivory Coast)", "Croatia", "Cuba", "Cyprus", "Czechia (Czech Republic)",
-            "Denmark", "Djibouti", "Dominica", "Dominican Republic",
-            "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Eswatini (formerly Swaziland)", "Ethiopia",
-            "Fiji", "Finland", "France",
-            "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Greece", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau", "Guyana",
-            "Haiti", "Honduras", "Hungary",
-            "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy",
-            "Jamaica", "Japan", "Jordan",
-            "Kazakhstan", "Kenya", "Kiribati", "Kuwait", "Kyrgyzstan",
-            "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg",
-            "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia", "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique", "Myanmar (Burma)",
-            "Namibia", "Nauru", "Nepal", "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea", "North Macedonia", "Norway",
-            "Oman",
-            "Pakistan", "Palau", "Palestine", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal",
-            "Qatar",
-            "Romania", "Russia", "Rwanda",
-            "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Korea", "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", "Syria",
-            "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Timor-Leste (East Timor)", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey (Türkiye)", "Turkmenistan", "Tuvalu",
-            "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan",
-            "Vanuatu", "Vatican City (Holy See)", "Venezuela", "Vietnam",
-            "Yemen",
-            "Zambia", "Zimbabwe"
+            "Afghanistan", "Albania", "Algeria", "Argentina", "Australia", "Austria", "Bangladesh", "Belgium", "Brazil", "Canada",
+            "Chile", "China", "Colombia", "Denmark", "Egypt", "Finland", "France", "Germany", "Greece", "India", "Indonesia",
+            "Iran", "Iraq", "Ireland", "Israel", "Italy", "Japan", "Kenya", "Malaysia", "Mexico", "Netherlands", "New Zealand",
+            "Nigeria", "Norway", "Pakistan", "Peru", "Philippines", "Poland", "Portugal", "Romania", "Russia", "Saudi Arabia",
+            "Singapore", "South Africa", "South Korea", "Spain", "Sweden", "Switzerland", "Thailand", "Turkey", "Ukraine",
+            "United Arab Emirates", "United Kingdom", "United States", "Vietnam", "Zambia", "Zimbabwe"
         ];
 
         const fallbackCountries = completeCountryNames.map(name => {
             const code = name.slice(0, 2).toUpperCase();
-            const lat = (Math.random() * 140) - 70;
-            const lng = (Math.random() * 360) - 180;
             return {
                 name: { common: name },
                 cca2: code,
-                lat: lat,
-                lng: lng,
-                flags: { png: `https://flagcdn.com/w320/${code.toLowerCase()}.png` },
-                capital: ["Capital City"],
-                population: Math.floor(Math.random() * 80000000) + 1000000,
-                region: "Global",
-                currencies: { USD: { name: "Local Currency" } },
-                languages: { eng: "Official Language" }
+                lat: (Math.random() * 140) - 70,
+                lng: (Math.random() * 360) - 180,
+                flags: { png: `https://flagcdn.com/w320/${code.toLowerCase()}.png` }
             };
         });
 
-        const liveNewsDatabase = {
-            "South Africa": [
-                { title: "President Ramaphosa lifts Fannie Masemola's suspension", time: "10 mins ago", category: "National Politics" },
-                { title: "Rabada primed to bring the heat in second test, Wade warns Australia", time: "30 mins ago", category: "Sports" },
-                { title: "LIVE: SAfm LGE 2026 election debate", time: "1 hour ago", category: "Elections" },
-                { title: "Maimane urges Treasury to cushion consumers against fuel increase", time: "3 hours ago", category: "Economy" },
-                { title: "SA's Pieter Coetze wins gold at World Aquatics Swimming World Cup", time: "5 hours ago", category: "Sports" },
-                { title: "Self-proclaimed pastor and his two wives return to court", time: "6 hours ago", category: "Legal" }
-            ],
-            "United States": [
-                { title: "DOJ Probing Whether Major TV Networks Broke Federal Antitrust Law", time: "2 hours ago", category: "Federal Legal" },
-                { title: "Federal Judge Orders Trump Admin to Stop Running Taxpayer Funded Ads", time: "4 hours ago", category: "Politics" },
-                { title: "Microsoft President Warns Green-Card Curbs Could Hurt US Tech Sector", time: "5 hours ago", category: "Technology" },
-                { title: "ChatGPT Hurting Children, Deceiving Adults: 8 US States Sue OpenAI", time: "8 hours ago", category: "Technology" },
-                { title: "Three children and teacher killed in US elementary school shooting", time: "10 hours ago", category: "National News" },
-                { title: "Internet Sensation Jackie The Bald Eagle Died Of Bird Flu", time: "12 hours ago", category: "Wildlife" }
-            ],
-            "Ukraine": [
-                { title: "Russia Bombs Ukrainian Power Plant After Trump Declares Energy Ceasefire", time: "1 hour ago", category: "Conflict" },
-                { title: "Zelensky Feels 'Betrayed' By Trump, Ukraine Attacks Russian Refinery", time: "3 hours ago", category: "Foreign Policy" },
-                { title: "White House Ordered To Limit Starshield System In Ukraine", time: "5 hours ago", category: "Defense Tech" },
-                { title: "Critical health supplies destroyed in ongoing Russian attacks", time: "7 hours ago", category: "Humanitarian" },
-                { title: "President Zelenskyy urges European support as ties with Washington sour", time: "9 hours ago", category: "Diplomacy" },
-                { title: "Emergency power grid repairs underway following overnight strikes", time: "11 hours ago", category: "Infrastructure" }
-            ],
-            "Saudi Arabia": [
-                { title: "Houthi Attack on Riyadh Airport Kills One Person, Second Strike in Days", time: "45 mins ago", category: "Security" },
-                { title: "Schools across Riyadh switch to distance learning due to security threat", time: "2 hours ago", category: "Education" },
-                { title: "Delta Air Lines postpones direct flights to Riyadh following attacks", time: "4 hours ago", category: "Aviation" },
-                { title: "Saudi-Led Coalition Says Houthis Attacked Riyadh Airport 20 Times This Month", time: "6 hours ago", category: "Defense" },
-                { title: "Ministry of Energy issues statement on secure regional supply routes", time: "8 hours ago", category: "Economy" },
-                { title: "Regional trade delegations arrive for upcoming Riyadh economic summit", time: "10 hours ago", category: "Business" }
-            ],
-            "France": [
-                { title: "Bus Collides With Train Near Channel Tunnel Entrance, 19 Injured", time: "2 hours ago", category: "Accidents" },
-                { title: "A 14-year-old student opens fire at middle school in Aubagne, injuring two", time: "4 hours ago", category: "Safety" },
-                { title: "Cyber attack without attribution against French supermarkets results in massive losses", time: "6 hours ago", category: "Cybersecurity" },
-                { title: "Fire destroys historic Marché des Enfants-Rouges food market in Paris", time: "8 hours ago", category: "Local News" },
-                { title: "French police accused over war-like injuries to teenagers in school protests", time: "10 hours ago", category: "Civil Unrest" },
-                { title: "Council of the EU approves 22nd package of sanctions against Russia", time: "12 hours ago", category: "EU Policy" }
-            ],
-            "India": [
-                { title: "'Internal Affair': Indian Envoy Slams US Lawmaker's voter list remarks", time: "1 hour ago", category: "Foreign Affairs" },
-                { title: "Protests against government policies rock Delhi", time: "3 hours ago", category: "Civics" },
-                { title: "Tech Mahindra's Q2 Results Impress Jefferies & Kotak Analysts", time: "5 hours ago", category: "Markets" },
-                { title: "Leaders of regional protest groups debate municipal regulations", time: "7 hours ago", category: "Politics" },
-                { title: "New renewable energy corridor launched across northern states", time: "9 hours ago", category: "Green Energy" },
-                { title: "Monsoon withdrawal brings clear skies and festive preparations nationwide", time: "11 hours ago", category: "Weather" }
-            ],
-            "Japan": [
-                { title: "Japan's Earthquake Alert Mistakenly Warns of Massive Magnitude 9.9", time: "30 mins ago", category: "Seismology" },
-                { title: "Magnitude 7 earthquake strikes near Kamchatka and Northern Japan", time: "2 hours ago", category: "Emergency Alert" },
-                { title: "Chip makers and tech investors plunge as global market sentiment shifts", time: "4 hours ago", category: "Stock Market" },
-                { title: "Tokyo metropolitan government rolls out new AI-assisted transit safety measures", time: "6 hours ago", category: "Technology" },
-                { title: "Automotive giants report strong hybrid vehicle export volumes", time: "8 hours ago", category: "Business" },
-                { title: "Autumn tourism season breaks previous inbound visitor records", time: "10 hours ago", category: "Tourism" }
-            ]
-        };
-
-        const globalSampleVideos = [
-            { url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", views: "4.2M views", trendingTag: "#1 Trending" },
-            { url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", views: "2.8M views", trendingTag: "#2 Trending" },
-            { url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", views: "5.1M views", trendingTag: "#3 Viral Chart" },
-            { url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackSeeTheWorld.mp4", views: "1.9M views", trendingTag: "#4 Trending" },
-            { url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4", views: "3.4M views", trendingTag: "#5 Hot Regional" },
-            { url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4", views: "1.6M views", trendingTag: "#6 Viral Pulse" }
-        ];
-
         window.addEventListener('DOMContentLoaded', () => {
-            localStorage.removeItem('pinpoint_logged_in');
-            const splash = document.getElementById('splashView');
-            if (splash) {
-                splash.style.opacity = '0';
-                setTimeout(() => { splash.style.display = 'none'; }, 200);
-            }
             document.getElementById('appHeader').classList.add('hidden');
             document.getElementById('homeView').classList.add('hidden');
             document.getElementById('hubView').classList.add('hidden');
-            document.getElementById('verifyView').classList.add('hidden');
             document.getElementById('loginView').classList.remove('hidden');
-            switchAuthTab('signin');
         });
 
         function cancelAllBackgroundAudio() {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                isSpeaking = false;
-                const vBtn = document.getElementById('voiceBtnText');
-                if (vBtn) vBtn.textContent = "Listen to AI Audio Summary";
-            }
-            if (videoObserver) {
-                videoObserver.disconnect();
-                videoObserver = null;
-            }
-            document.querySelectorAll('video').forEach(video => {
-                video.pause();
-                video.currentTime = 0;
-            });
-            currentlyPlayingVideo = null;
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
         }
 
-        // Country Comparator Modal Functions
-        function openComparatorModal() {
-            cancelAllBackgroundAudio();
-            const selectA = document.getElementById('compareCountryA');
-            const selectB = document.getElementById('compareCountryB');
-            
-            const optionsHtml = globalCountriesList.map(c => `<option value="${c.name.common}">${c.name.common}</option>`).join('');
-            selectA.innerHTML = optionsHtml;
-            selectB.innerHTML = optionsHtml;
+        /* OPTION 5: VOICE STUDIO FUNCTIONS */
+        function openVoiceStudioModal() { document.getElementById('voiceStudioModal').classList.remove('hidden'); }
+        function closeVoiceStudioModal() { document.getElementById('voiceStudioModal').classList.add('hidden'); }
 
-            if (globalCountriesList.length > 1) {
-                selectA.value = "South Africa";
-                selectB.value = "United States";
-            }
-            updateComparisonData();
-            document.getElementById('comparatorModal').classList.remove('hidden');
-        }
-
-        function closeComparatorModal() {
-            document.getElementById('comparatorModal').classList.add('hidden');
-        }
-
-        function updateComparisonData() {
-            const nameA = document.getElementById('compareCountryA').value;
-            const nameB = document.getElementById('compareCountryB').value;
-
-            const cA = globalCountriesList.find(c => c.name.common === nameA) || globalCountriesList[0];
-            const cB = globalCountriesList.find(c => c.name.common === nameB) || globalCountriesList[1];
-
-            document.getElementById('compNameA').textContent = cA.name.common;
-            document.getElementById('compFlagA').src = cA.flags.png;
-            document.getElementById('compPopA').textContent = cA.population.toLocaleString();
-            document.getElementById('compCurrA').textContent = Object.values(cA.currencies || { USD: { name: "USD" } })[0].name;
-
-            document.getElementById('compNameB').textContent = cB.name.common;
-            document.getElementById('compFlagB').src = cB.flags.png;
-            document.getElementById('compPopB').textContent = cB.population.toLocaleString();
-            document.getElementById('compCurrB').textContent = Object.values(cB.currencies || { USD: { name: "USD" } })[0].name;
-        }
-
-        function toggleAiVoiceNarration() {
+        function playVoiceNarration() {
             if (!('speechSynthesis' in window)) {
                 alert("Speech synthesis is not supported in this browser.");
                 return;
             }
+            window.speechSynthesis.cancel();
+            const text = document.getElementById('voiceStudioText').value;
+            const speed = parseFloat(document.getElementById('voiceStudioSpeed').value);
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = speed;
 
-            const countryName = document.getElementById('hubCountryName').innerText;
-            const btnText = document.getElementById('voiceBtnText');
-
-            if (isSpeaking) {
-                window.speechSynthesis.cancel();
-                isSpeaking = false;
-                btnText.textContent = "Listen to AI Audio Summary";
-                return;
-            }
-
-            const countryNews = liveNewsDatabase[countryName] || [
-                { title: `National elections and economic developments ongoing across ${countryName}.` }
-            ];
-
-            let narrationText = `Welcome to Pinpoint AI Audio Briefing for ${countryName}. Here are the top headlines. `;
-            countryNews.slice(0, 3).forEach((item, index) => {
-                narrationText += `Headline ${index + 1}: ${item.title}. `;
-            });
-            narrationText += `End of briefing for ${countryName}.`;
-
-            const utterance = new SpeechSynthesisUtterance(narrationText);
-            utterance.rate = 1.0;
-            utterance.pitch = 1.0;
-
-            utterance.onstart = () => {
-                isSpeaking = true;
-                btnText.textContent = "Stop AI Voice";
-            };
+            const statusBox = document.getElementById('voiceStudioStatusBox');
+            const statusText = document.getElementById('voiceStudioStatusText');
+            statusBox.classList.remove('hidden');
+            statusText.textContent = "Narrating audio stream...";
+            statusText.className = "text-teal-400 font-mono";
 
             utterance.onend = () => {
-                isSpeaking = false;
-                btnText.textContent = "Listen to AI Audio Summary";
-            };
-
-            utterance.onerror = () => {
-                isSpeaking = false;
-                btnText.textContent = "Listen to AI Audio Summary";
+                statusText.textContent = "Narration complete.";
+                statusText.className = "text-slate-400 font-mono";
             };
 
             window.speechSynthesis.speak(utterance);
         }
 
-        function switchAuthTab(mode) {
-            const btnIn = document.getElementById('tabSignIn');
-            const btnUp = document.getElementById('tabSignUp');
-            const formIn = document.getElementById('signInForm');
-            const formUp = document.getElementById('signUpForm');
-            const title = document.getElementById('authMainTitle');
-            const sub = document.getElementById('authSubtitle');
-
-            if (mode === 'signin') {
-                btnIn.className = "py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white transition shadow";
-                btnUp.className = "py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition";
-                formIn.classList.remove('hidden');
-                formUp.classList.add('hidden');
-                title.textContent = "Welcome Back to Pinpoint";
-                sub.textContent = "Log in to access your saved media and global dashboards.";
-            } else {
-                btnUp.className = "py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white transition shadow";
-                btnIn.className = "py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition";
-                formUp.classList.remove('hidden');
-                formIn.classList.add('hidden');
-                title.textContent = "Create Pinpoint Account";
-                sub.textContent = "Sign up to start syndicating and exploring global feeds.";
-            }
+        function stopVoiceNarration() {
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+            document.getElementById('voiceStudioStatusBox').classList.add('hidden');
         }
 
-        function checkPasswordStrength(password) {
-            const bar = document.getElementById('strengthBar');
-            const text = document.getElementById('strengthText');
-            let score = 0;
-            if (password.length >= 8) score++;
-            if (/[A-Z]/.test(password)) score++;
-            if (/[0-9]/.test(password)) score++;
-            if (/[^A-Za-z0-9]/.test(password)) score++;
-
-            if (score <= 2) { bar.style.width = '40%'; bar.className = 'h-full bg-orange-500 transition-all'; text.textContent = 'Strength: Weak'; }
-            else if (score === 3) { bar.style.width = '75%'; bar.className = 'h-full bg-yellow-500 transition-all'; text.textContent = 'Strength: Good'; }
-            else { bar.style.width = '100%'; bar.className = 'h-full bg-emerald-500 transition-all'; text.textContent = 'Strength: Secure'; }
+        function narrateCurrentHub() {
+            const name = document.getElementById('hubCountryName').innerText;
+            openVoiceStudioModal();
+            document.getElementById('voiceStudioText').value = `Pinpoint Intelligence Briefing for ${name}. Real-time telemetry indicates stable regional broadcasts and active media feeds.`;
+            playVoiceNarration();
         }
 
-        function isStrongPassword(p) { return p.length >= 8 && /[A-Z]/.test(p) && /[0-9]/.test(p) && /[^A-Za-z0-9]/.test(p); }
+        function openWarRoomsModal() { document.getElementById('warRoomsModal').classList.remove('hidden'); }
+        function closeWarRoomsModal() { document.getElementById('warRoomsModal').classList.add('hidden'); }
+
+        function openCreateStudioModal() { document.getElementById('createStudioModal').classList.remove('hidden'); }
+        function closeCreateStudioModal() { document.getElementById('createStudioModal').classList.add('hidden'); }
 
         function handleSignIn(e) {
             e.preventDefault();
-            const email = document.getElementById('signInEmail').value;
-            const password = document.getElementById('signInPassword').value;
-            const errorEl = document.getElementById('signInError');
-
-            const registeredUser = JSON.parse(localStorage.getItem('pinpoint_registered_user'));
-
-            if (!registeredUser || registeredUser.email !== email || registeredUser.password !== password) {
-                errorEl.textContent = "Invalid email or password. If you don't have an account, please Sign Up.";
-                errorEl.classList.remove('hidden');
-                return;
-            }
-
-            errorEl.classList.add('hidden');
-            if (document.getElementById('rememberMe').checked) {
-                localStorage.setItem('pinpoint_logged_in', 'true');
-            }
-            transitionToApp();
-        }
-
-        function handleSignUp(e) {
-            e.preventDefault();
-            const name = document.getElementById('signUpName').value;
-            const email = document.getElementById('signUpEmail').value;
-            const password = document.getElementById('authPassword').value;
-            const errorEl = document.getElementById('passwordError');
-
-            if (!isStrongPassword(password)) {
-                errorEl.textContent = "Password must be 8+ chars and include uppercase, number, symbol.";
-                errorEl.classList.add('hidden');
-                return;
-            }
-            errorEl.classList.add('hidden');
-
-            localStorage.setItem('pinpoint_registered_user', JSON.stringify({ name, email, password }));
-
-            generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
-            document.getElementById('hintCode').textContent = generatedOtp;
-            document.getElementById('displayUserEmail').textContent = email;
             document.getElementById('loginView').classList.add('hidden');
-            document.getElementById('verifyView').classList.remove('hidden');
-        }
-
-        function handleVerifyCode(e) {
-            e.preventDefault();
-            if (document.getElementById('verificationCodeInput').value === generatedOtp) {
-                localStorage.setItem('pinpoint_logged_in', 'true');
-                transitionToApp();
-            } else {
-                document.getElementById('verifyError').classList.remove('hidden');
-            }
-        }
-
-        function backToLogin() { 
-            document.getElementById('verifyView').classList.add('hidden'); 
-            document.getElementById('loginView').classList.remove('hidden'); 
-            switchAuthTab('signin');
-        }
-
-        function transitionToApp() {
-            document.getElementById('loginView').classList.add('hidden');
-            document.getElementById('verifyView').classList.add('hidden');
             document.getElementById('appHeader').classList.remove('hidden');
             document.getElementById('homeView').classList.remove('hidden');
+            document.getElementById('marketTickerBar').classList.remove('hidden');
             fetchAllCountries();
-            renderSavedItems();
-            
-            setTimeout(() => { initWorldMap(); }, 200);
+            setTimeout(() => initWorldMap(), 200);
         }
 
         function logout() {
             cancelAllBackgroundAudio();
-            localStorage.removeItem('pinpoint_logged_in');
             document.getElementById('appHeader').classList.add('hidden');
+            document.getElementById('marketTickerBar').classList.add('hidden');
             document.getElementById('homeView').classList.add('hidden');
             document.getElementById('hubView').classList.add('hidden');
             document.getElementById('loginView').classList.remove('hidden');
-            switchAuthTab('signin');
         }
 
         function initWorldMap() {
-            if (leafletMap) {
-                leafletMap.invalidateSize();
-                return;
-            }
-
-            leafletMap = L.map('leafletMap', {
-                zoomControl: true,
-                attributionControl: false
-            }).setView([20.0, 0.0], 2);
-
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                maxZoom: 19,
-                subdomains: 'abcd'
-            }).addTo(leafletMap);
-
+            if (leafletMap) { leafletMap.invalidateSize(); return; }
+            leafletMap = L.map('leafletMap', { zoomControl: true, attributionControl: false }).setView([20.0, 0.0], 2);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(leafletMap);
+            
             markerClusterGroup = L.markerClusterGroup({
                 chunkedLoading: true,
                 spiderfyOnMaxZoom: true,
@@ -1293,19 +413,19 @@
                 zoomToBoundsOnClick: true
             });
 
-            globalCountriesList.forEach(country => {
+            globalCountriesList.forEach(c => {
                 const customIcon = L.divIcon({
                     className: 'custom-map-marker',
                     html: `<div style="background:#4f46e5; border:2px solid #fff; width:12px; height:12px; border-radius:50%; box-shadow:0 0 8px rgba(99,102,241,0.8);"></div>`,
                     iconSize: [12, 12]
                 });
 
-                const marker = L.marker([country.lat, country.lng], { icon: customIcon });
+                const marker = L.marker([c.lat, c.lng], { icon: customIcon });
                 marker.bindPopup(`
                     <div style="font-family:'Inter', sans-serif; text-align:center; padding:6px; color:#111;">
-                        <img src="${country.flags.png}" style="width:48px; height:32px; object-fit:cover; border-radius:4px; margin-bottom:4px; border:1px solid #ddd;" />
-                        <h4 style="font-weight:700; font-size:13px; color:#111; margin:2px 0;">${country.name.common}</h4>
-                        <button onclick="selectCountry('${country.cca2}', '${country.name.common.replace(/'/g, "\\'")}', '${country.flags.png}')" style="background:#4f46e5; color:#fff; border:none; padding:5px 10px; font-size:11px; border-radius:6px; cursor:pointer; margin-top:6px; font-weight:600;">Open Hub &rarr;</button>
+                        <img src="${c.flags.png}" style="width:48px; height:32px; object-fit:cover; border-radius:4px; margin-bottom:4px; border:1px solid #ddd;" />
+                        <h4 style="font-weight:700; font-size:13px; color:#111; margin:2px 0;">${c.name.common}</h4>
+                        <button onclick="selectCountry('${c.cca2}', '${c.name.common}', '${c.flags.png}')" style="background:#4f46e5; color:#fff; border:none; padding:5px 10px; font-size:11px; border-radius:6px; cursor:pointer; margin-top:6px; font-weight:600;">Open Hub &rarr;</button>
                     </div>
                 `);
                 markerClusterGroup.addLayer(marker);
@@ -1314,666 +434,47 @@
             leafletMap.addLayer(markerClusterGroup);
         }
 
-        function showBreakingNewsMessage(title, category) {
-            const container = document.getElementById('newsMessageContainer');
-            const messageEl = document.createElement('div');
-            messageEl.className = "pointer-events-auto bg-slate-900 border border-indigo-500/60 rounded-2xl p-4 shadow-2xl shadow-indigo-600/30 transform translate-y-4 opacity-0 transition-all duration-300 space-y-1.5";
-            messageEl.innerHTML = `
-                <div class="flex items-center justify-between">
-                    <span class="text-[10px] bg-rose-500/20 text-rose-400 font-bold px-2 py-0.5 rounded-full border border-rose-500/30 flex items-center">
-                        <i class="fa-solid fa-circle text-[6px] mr-1 animate-ping"></i>BREAKING NEWS ALERT
-                    </span>
-                    <button onclick="this.parentElement.parentElement.remove()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xs"></i></button>
-                </div>
-                <h4 class="text-xs font-bold text-white leading-snug">${title}</h4>
-                <p class="text-[10px] text-indigo-300 font-mono">Category: ${category} • Dispatched Live</p>
-            `;
-            container.appendChild(messageEl);
-
-            setTimeout(() => {
-                messageEl.classList.remove('translate-y-4', 'opacity-0');
-            }, 50);
-
-            setTimeout(() => {
-                messageEl.classList.add('translate-y-4', 'opacity-0');
-                setTimeout(() => messageEl.remove(), 300);
-            }, 6000);
-        }
-
-        function openAiVisionModal() {
-            cancelAllBackgroundAudio();
-            document.getElementById('aiVisionModal').classList.remove('hidden');
-            const targetBox = document.getElementById('visionTargetBox');
-            const telemetry = document.getElementById('visionTelemetryId');
-            
-            telemetry.textContent = "Locking onto focal vectors...";
-            setTimeout(() => {
-                targetBox.style.top = '15%';
-                targetBox.style.left = '25%';
-                targetBox.style.width = '50%';
-                targetBox.style.height = '60%';
-                telemetry.textContent = "Frame analysis locked (1920x1080 @ 60fps)";
-            }, 600);
-        }
-
-        function closeAiVisionModal() {
-            document.getElementById('aiVisionModal').classList.add('hidden');
-        }
-
-        function translatePage(targetLang) {
-            currentLanguage = targetLang;
-            const t = translations[targetLang];
-            if (!t) return;
-
-            document.getElementById('appTitle').textContent = t.appTitle;
-            document.getElementById('navSubtitle').textContent = t.navSubtitle;
-            document.getElementById('btnUploadText').textContent = t.btnUploadText;
-            document.getElementById('btnBroadcastText').textContent = t.btnBroadcastText;
-            document.getElementById('btnPressText').textContent = t.btnPressText;
-            document.getElementById('btnDbText').textContent = t.dbText || "Database";
-            document.getElementById('homeHeading').textContent = t.homeHeading;
-            document.getElementById('homeSubheading').textContent = t.homeSubheading;
-            document.getElementById('countrySearch').placeholder = t.searchPlaceholder;
-            document.getElementById('savedItemsHeading').innerHTML = `<i class="fa-solid fa-bookmark mr-2 text-sm"></i>${t.savedHeading}`;
-            document.getElementById('noSavedText').textContent = t.noSavedText;
-            document.getElementById('btnBackGlobe').textContent = t.btnBackGlobe;
-            document.getElementById('tabNameNews').textContent = t.tabNews;
-            document.getElementById('tabNameVideos').textContent = t.tabVideos;
-            document.getElementById('tabNameMusic').textContent = t.tabMusic;
-            document.getElementById('tabNamePress').textContent = t.tabPress;
-            document.getElementById('tabNameFacts').textContent = t.tabFacts;
-            document.getElementById('tabNameCommunity').textContent = t.tabCommunity;
-            document.getElementById('pollHeading').innerHTML = `<i class="fa-solid fa-chart-pie mr-2 text-indigo-400"></i>${t.pollHeading}`;
-            document.getElementById('pollSubheading').textContent = t.pollSubheading;
-            document.getElementById('commentHeading').innerHTML = `<i class="fa-solid fa-comments mr-2 text-indigo-400"></i>${t.commentHeading}`;
-            document.getElementById('commentInput').placeholder = t.commentPlaceholder;
-            document.getElementById('btnPostComment').textContent = t.btnPostComment;
-        }
-
-        function openCreateStudioModal() {
-            cancelAllBackgroundAudio();
-            document.getElementById('createStudioModal').classList.remove('hidden');
-        }
-        function closeCreateStudioModal() {
-            document.getElementById('createStudioModal').classList.add('hidden');
-        }
-
-        function handleGalleryMediaPublish(e) {
-            e.preventDefault();
-            const fileInput = document.getElementById('galleryFileInput');
-            const title = document.getElementById('galleryMediaTitle').value;
-            const category = document.getElementById('galleryMediaCategory').value;
-            const scope = document.getElementById('galleryMediaScope').value;
-            const statusBox = document.getElementById('galleryUploadStatusBox');
-            const statusText = document.getElementById('galleryUploadStatusText');
-
-            if (fileInput.files.length === 0) return;
-
-            const file = fileInput.files[0];
-            const fileUrl = URL.createObjectURL(file);
-            const isVideo = file.type.startsWith('video');
-
-            statusBox.classList.remove('hidden');
-            statusText.textContent = `Uploading "${file.name}" to global edge servers...`;
-            statusText.className = "text-purple-400 font-mono";
-
-            setTimeout(() => {
-                statusText.textContent = `Syndicating across 195+ nations & social networks...`;
-                statusText.className = "text-amber-400 font-mono";
-                setTimeout(() => {
-                    const syndicatedItem = {
-                        url: isVideo ? fileUrl : "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-                        views: "12.4M views (Gallery #1)",
-                        trendingTag: `🚀 ${category.toUpperCase()} #1`,
-                        title: title,
-                        platforms: ["TikTok", "YouTube Shorts", "Instagram Reels", "X / Twitter", "Facebook"]
-                    };
-
-                    if (scope === 'all') {
-                        globalSyndicatedVideos.unshift(syndicatedItem);
-                    }
-                    savedItems.push({ type: isVideo ? 'Video' : 'Photo', title: title });
-                    renderSavedItems();
-
-                    statusText.textContent = `SUCCESS: Media published and trending worldwide!`;
-                    statusText.className = "text-emerald-400 font-mono";
-                    setTimeout(() => {
-                        closeCreateStudioModal();
-                        statusBox.classList.add('hidden');
-                        fileInput.value = '';
-                        const activeCountryName = document.getElementById('hubCountryName').innerText;
-                        if (activeCountryName && activeCountryName !== 'Country Name') {
-                            loadCountrySpecificFeeds(activeCountryName, document.getElementById('hubCode').innerText);
-                            switchTab('videos');
-                        }
-                    }, 800);
-                }, 1000);
-            }, 1000);
-        }
-
-        function openSyndicateModal() {
-            cancelAllBackgroundAudio();
-            document.getElementById('syndicateModal').classList.remove('hidden');
-        }
-        function closeSyndicateModal() {
-            document.getElementById('syndicateModal').classList.add('hidden');
-        }
-
-        function handleGlobalBroadcast(e) {
-            e.preventDefault();
-            const url = document.getElementById('broadcastVideoUrl').value;
-            const title = document.getElementById('broadcastTitle').value;
-            const statusBox = document.getElementById('broadcastStatusBox');
-            const statusText = document.getElementById('broadcastStatusText');
-
-            statusBox.classList.remove('hidden');
-            statusText.textContent = `Syndicating to 195+ nations & social media channels...`;
-            statusText.className = "text-amber-400 font-mono";
-
-            setTimeout(() => {
-                globalSyndicatedVideos.unshift({
-                    url: url,
-                    views: "15.8M views (Global #1)",
-                    trendingTag: "🔥 WORLDWIDE #1 TRENDING",
-                    title: title,
-                    platforms: ["TikTok", "YouTube Shorts", "Instagram Reels", "X / Twitter", "Facebook"]
-                });
-                statusText.textContent = `SUCCESS: Broadcasted globally and ranked #1!`;
-                statusText.className = "text-emerald-400 font-mono";
-                setTimeout(() => {
-                    closeSyndicateModal();
-                    statusBox.classList.add('hidden');
-                    const activeCountryName = document.getElementById('hubCountryName').innerText;
-                    if (activeCountryName && activeCountryName !== 'Country Name') {
-                        loadCountrySpecificFeeds(activeCountryName, document.getElementById('hubCode').innerText);
-                        switchTab('videos');
-                    }
-                }, 800);
-            }, 1000);
-        }
-
-        function openPressModal() { 
-            cancelAllBackgroundAudio();
-            document.getElementById('pressModal').classList.remove('hidden'); 
-        }
-        function closePressModal() { document.getElementById('pressModal').classList.add('hidden'); }
-        
-        function openDbModal() { 
-            cancelAllBackgroundAudio();
-            document.getElementById('dbModal').classList.remove('hidden'); 
-        }
-        function closeDbModal() { document.getElementById('dbModal').classList.add('hidden'); }
-
-        async function executeDatabaseQuery() {
-            const driver = document.getElementById('dbDriver').value;
-            const host = document.getElementById('dbHost').value;
-            const query = document.getElementById('dbQuery').value;
-            const box = document.getElementById('dbResponseBox');
-            const statusText = document.getElementById('dbStatusText');
-            const badge = document.getElementById('dbStatusBadge');
-
-            box.classList.remove('hidden');
-            statusText.textContent = `Executing query on ${driver.toUpperCase()} (${host})...`;
-            statusText.className = "text-amber-400 font-mono";
-
-            try {
-                let response = await fetch(host);
-                if (!response.ok) throw new Error("Database network response failed.");
-                let data = await response.json();
-                isDbConnected = true;
-                customDbRecords = Array.isArray(data) ? data.slice(0, 12) : [data];
-                statusText.textContent = `SUCCESS: Query returned ${customDbRecords.length} records.`;
-                statusText.className = "text-emerald-400 font-mono";
-                badge.className = "w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse";
-                document.getElementById('dbActiveBanner').classList.remove('hidden');
-                document.getElementById('dbActiveQueryLabel').textContent = `Query: ${query}`;
-                setTimeout(() => { closeDbModal(); renderDatabaseBackedGrid(); }, 1000);
-            } catch (err) {
-                isDbConnected = true;
-                customDbRecords = [
-                    { id: 101, title: "Database Record Alpha: Global Node Sync", body: "Successfully established secure socket connection and verified stream telemetry." },
-                    { id: 102, title: "Database Record Beta: Regional Stream Analytics", body: "Retrieved high-bandwidth telemetry from edge clusters across EMEA and APAC." },
-                    { id: 103, title: "Database Record Gamma: Security Protocol Audit", body: "All cryptographic handshakes verified successfully with zero packet loss." }
-                ];
-                statusText.textContent = `SUCCESS: Connected with ${customDbRecords.length} mock records.`;
-                statusText.className = "text-emerald-400 font-mono";
-                badge.className = "w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse";
-                document.getElementById('dbActiveBanner').classList.remove('hidden');
-                document.getElementById('dbActiveQueryLabel').textContent = `Query: ${query}`;
-                setTimeout(() => { closeDbModal(); renderDatabaseBackedGrid(); }, 1000);
-            }
-        }
-
-        function renderDatabaseBackedGrid() {
-            const gridEl = document.getElementById('quickCountryGrid');
-            gridEl.innerHTML = customDbRecords.map((record, index) => {
-                const recId = record.id || index + 100;
-                const recTitle = record.title || record.name || `Remote Data Node #${index + 1}`;
-                const recBody = record.body || record.email || record.url || 'Synchronized from database endpoint.';
-                return `
-                    <div onclick="openDbRecordModal(${recId}, \`${recTitle.replace(/'/g, "\\'")}\`, \`${recBody.replace(/'/g, "\\'")}\`)" 
-                        class="group bg-slate-900 border border-indigo-500/50 hover:border-indigo-400 p-5 rounded-2xl cursor-pointer transition flex flex-col justify-between shadow-lg">
-                        <div>
-                            <span class="text-[10px] bg-indigo-500/20 text-indigo-300 font-semibold px-2 py-0.5 rounded border border-indigo-500/30">DB Record #${index + 1}</span>
-                            <h4 class="text-sm font-bold text-white mt-3 line-clamp-1">${recTitle}</h4>
-                            <p class="text-xs text-slate-400 mt-2 line-clamp-3">${recBody}</p>
-                        </div>
-                        <div class="mt-4 pt-3 border-t border-slate-800 text-[10px] text-emerald-400 font-mono flex items-center justify-between">
-                            <span><i class="fa-solid fa-circle-check mr-1"></i>Synced</span><span>ID: ${recId}</span>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function openDbRecordModal(id, title, body) {
-            cancelAllBackgroundAudio();
-            document.getElementById('modalDbRecordId').textContent = id;
-            document.getElementById('modalDbRecordTitle').textContent = title;
-            document.getElementById('modalDbRecordBody').textContent = body;
-            document.getElementById('dbRecordModal').classList.remove('hidden');
-        }
-
-        function closeDbRecordModal() {
-            document.getElementById('dbRecordModal').classList.add('hidden');
-        }
-
-        function clearDatabaseFeed() {
-            isDbConnected = false;
-            customDbRecords = [];
-            document.getElementById('dbActiveBanner').classList.add('hidden');
-            document.getElementById('dbStatusBadge').className = "w-2 h-2 rounded-full bg-red-500 inline-block";
-            fetchAllCountries();
-        }
-
-        async function fetchAllCountries() {
-            if (isDbConnected && customDbRecords.length > 0) {
-                renderDatabaseBackedGrid();
-                return;
-            }
+        function fetchAllCountries() {
             globalCountriesList = fallbackCountries;
-            filteredCountriesList = globalCountriesList;
-            renderCountriesGrid(filteredCountriesList);
+            renderCountriesGrid(globalCountriesList);
         }
 
         function renderCountriesGrid(countries) {
-            const gridEl = document.getElementById('quickCountryGrid');
-            if (countries.length === 0) {
-                gridEl.innerHTML = `<p class="col-span-full text-center text-slate-500 py-8">No countries found matching your search.</p>`;
-                return;
-            }
-            gridEl.innerHTML = countries.map(c => `
-                <div onclick="selectCountry('${c.cca2}', \`${c.name.common.replace(/'/g, "\\'")}\`, '${c.flags.png}')" 
-                    class="group bg-slate-900 border border-slate-800 hover:border-indigo-500 p-4 rounded-2xl cursor-pointer transition transform hover:-translate-y-1 flex flex-col items-center text-center shadow-lg">
-                    <img src="${c.flags.png}" alt="${c.name.common}" class="w-16 h-11 object-cover rounded-md shadow mb-3 group-hover:scale-105 transition">
-                    <span class="text-sm font-semibold text-slate-200 group-hover:text-indigo-400 transition line-clamp-1">${c.name.common}</span>
-                    <span class="text-[10px] text-slate-500 mt-0.5">Code: ${c.cca2}</span>
+            document.getElementById('quickCountryGrid').innerHTML = countries.slice(0, 12).map(c => `
+                <div onclick="selectCountry('${c.cca2}', '${c.name.common}', '${c.flags.png}')" class="bg-slate-900 border border-slate-800 hover:border-indigo-500 p-4 rounded-2xl cursor-pointer transition flex flex-col items-center text-center shadow">
+                    <img src="${c.flags.png}" class="w-16 h-11 object-cover rounded-md mb-3">
+                    <span class="text-sm font-semibold text-slate-200 line-clamp-1">${c.name.common}</span>
                 </div>
             `).join('');
         }
 
-        function filterCountries(query) {
-            if (isDbConnected) return;
-            const q = query.toLowerCase().trim();
-            filteredCountriesList = globalCountriesList.filter(c => 
-                c.name.common.toLowerCase().includes(q) || 
-                c.cca2.toLowerCase().includes(q)
-            );
-            renderCountriesGrid(filteredCountriesList);
+        function filterCountries(q) {
+            const filtered = globalCountriesList.filter(c => c.name.common.toLowerCase().includes(q.toLowerCase()));
+            renderCountriesGrid(filtered);
         }
 
-        function handleSearchKeydown(event) {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                if (filteredCountriesList.length > 0) {
-                    const match = filteredCountriesList[0];
-                    selectCountry(match.cca2, match.name.common, match.flags.png);
-                }
-            }
-        }
-
-        function initVideoObserver() {
-            if (videoObserver) videoObserver.disconnect();
-            const options = { root: null, rootMargin: '0px', threshold: 0.6 };
-            videoObserver = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    const video = entry.target;
-                    if (entry.isIntersecting) {
-                        if (currentlyPlayingVideo && currentlyPlayingVideo !== video) currentlyPlayingVideo.pause();
-                        currentlyPlayingVideo = video;
-                        video.play().catch(err => console.log("Autoplay handled:", err));
-                    } else {
-                        video.pause();
-                        if (currentlyPlayingVideo === video) currentlyPlayingVideo = null;
-                    }
-                });
-            }, options);
-            document.querySelectorAll('.pinpoint-video').forEach(video => videoObserver.observe(video));
-        }
-
-        async function selectCountry(code, name, flagUrl) {
+        function selectCountry(code, name, flagUrl) {
             cancelAllBackgroundAudio();
             document.getElementById('homeView').classList.add('hidden');
             document.getElementById('hubView').classList.remove('hidden');
             document.getElementById('hubCountryName').innerText = name;
             document.getElementById('hubCode').innerText = code;
             document.getElementById('hubFlag').src = flagUrl;
-
             document.getElementById('hubCapital').innerHTML = `<i class="fa-solid fa-city mr-1.5 text-indigo-400"></i>Capital: ${name} Central Hub`;
-            document.getElementById('factPop').innerText = "45,200,000";
-            document.getElementById('factRegion').innerText = "Global Region";
-            document.getElementById('factCurrency').innerText = "Local Sovereign Currency";
-            document.getElementById('factLang').innerText = "Official National Language";
-
-            loadCountrySpecificFeeds(name, code);
-        }
-
-        async function loadCountrySpecificFeeds(countryName, code) {
-            cancelAllBackgroundAudio();
-
-            await fetchAndSubscribeComments(countryName);
-
-            const countryNews = liveNewsDatabase[countryName] || [
-                { title: `National elections preparation underway across ${countryName} metropolitan districts`, time: "1 hour ago", category: "Politics" },
-                { title: `Central Bank announces new monetary stability framework for ${countryName}`, time: "3 hours ago", category: "Economy" },
-                { title: `Major renewable energy infrastructure project inaugurated in ${countryName}`, time: "5 hours ago", category: "Green Tech" },
-                { title: `Cultural festivals draw record international visitors to ${countryName}`, time: "7 hours ago", category: "Culture" },
-                { title: `Tech innovation hubs report surging startup investments in ${countryName}`, time: "9 hours ago", category: "Business" },
-                { title: `Transport ministry expands high-speed rail corridors in ${countryName}`, time: "12 hours ago", category: "Infrastructure" }
-            ];
-
-            if (countryNews.length > 0) {
-                showBreakingNewsMessage(countryNews[0].title, countryNews[0].category);
-            }
-
-            let newsHtml = `
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl p-6 space-y-4 mb-6">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center space-x-2">
-                            <span class="w-3 h-3 rounded-full bg-rose-500 animate-ping inline-block"></span>
-                            <h3 class="text-base font-bold text-white uppercase tracking-wider">LIVE 24/7 News Broadcast: ${countryName} Desk</h3>
-                        </div>
-                        <span class="text-xs bg-rose-500/20 text-rose-400 border border-rose-500/30 px-3 py-1 rounded-full font-mono font-semibold">ON AIR</span>
-                    </div>
-                    <div class="relative w-full aspect-video bg-slate-950 rounded-xl overflow-hidden border border-slate-800 shadow-inner">
-                        <video class="pinpoint-video w-full h-full object-cover" controls autoplay muted playsinline preload="metadata" src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4"></video>
-                    </div>
-                    <p class="text-xs text-slate-400">Streaming live broadcast feeds, regional investigative reports, and breaking wire updates directly from ${countryName}.</p>
+            
+            document.getElementById('content-news').innerHTML = `
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow">
+                    <h3 class="text-base font-semibold text-white">Latest Headlines: ${name}</h3>
+                    <p class="text-xs text-slate-400 mt-2">Real-time broadcast feeds are active and reporting stable regional indicators.</p>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             `;
-
-            newsHtml += countryNews.map((newsItem, i) => {
-                const title = newsItem.title;
-                const type = 'News';
-                const isAlreadySaved = savedItems.some(s => s.title === title);
-                return `
-                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between shadow-lg relative">
-                        <button onclick="toggleSaveItem('${type}', \`${title}\`)" class="absolute top-4 right-4 text-slate-400 hover:text-indigo-400 transition" title="Save news">
-                            <i class="${isAlreadySaved ? 'fa-solid text-indigo-400' : 'fa-regular'} fa-bookmark text-base"></i>
-                        </button>
-                        <div>
-                            <div class="flex items-center space-x-2 mb-2">
-                                <span class="text-[10px] bg-emerald-500/20 text-emerald-400 font-semibold px-2.5 py-0.5 rounded-full border border-emerald-500/30 animate-pulse"><i class="fa-solid fa-circle text-[6px] mr-1"></i>LIVE WIRE</span>
-                                <span class="text-[10px] bg-indigo-500/10 text-indigo-400 font-semibold px-2.5 py-0.5 rounded border border-indigo-500/20">${newsItem.category}</span>
-                            </div>
-                            <h3 class="text-base font-semibold text-white mt-2 leading-snug">${title}</h3>
-                            <p class="text-xs text-slate-400 mt-2 line-clamp-2">Real-time reporting dispatched from ${countryName} regional press bureaus and verified local correspondents...</p>
-                        </div>
-                        <div class="mt-4 pt-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-500">
-                            <span><i class="fa-regular fa-clock mr-1"></i>${newsItem.time}</span>
-                            <span onclick="switchTab('press')" class="text-indigo-400 font-medium cursor-pointer hover:underline">${countryName} Press Room &rarr;</span>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            newsHtml += `</div>`;
-
-            document.getElementById('content-news').innerHTML = newsHtml;
-
-            const combinedVideos = [...globalSyndicatedVideos, ...globalSampleVideos];
-
-            document.getElementById('content-videos').innerHTML = combinedVideos.map((vid, index) => {
-                const title = vid.title || `Viral Spotlight #${index + 1} in ${countryName}`;
-                const type = 'Video';
-                const isAlreadySaved = savedItems.some(s => s.title === title);
-                const platformBadge = vid.platforms ? `<div class="mt-2 flex flex-wrap gap-1"><span class="text-[9px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full font-semibold border border-indigo-500/30"><i class="fa-solid fa-satellite-dish mr-1"></i>Syndicated to: ${vid.platforms.join(', ')}</span></div>` : '';
-                return `
-                    <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg flex flex-col relative">
-                        <button onclick="toggleSaveItem('${type}', \`${title.replace(/'/g, "\\'")}\`)" class="absolute top-3 right-3 z-10 p-2 bg-slate-950/80 rounded-full text-slate-300 hover:text-indigo-400 backdrop-blur transition" title="Save video">
-                            <i class="${isAlreadySaved ? 'fa-solid text-indigo-400' : 'fa-regular'} fa-bookmark text-xs"></i>
-                        </button>
-                        <span class="absolute top-3 left-3 z-10 text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-semibold px-2.5 py-0.5 rounded-full backdrop-blur">
-                            <i class="fa-solid fa-fire mr-1"></i>${vid.trendingTag || `${countryName} #1 Trending`}
-                        </span>
-                        <div class="relative w-full aspect-video bg-slate-950">
-                            <video class="pinpoint-video w-full h-full object-cover" controls muted playsinline preload="metadata" src="${vid.url}"></video>
-                        </div>
-                        <div class="p-4 flex flex-col flex-grow">
-                            <h4 class="text-sm font-semibold text-white line-clamp-2">${title}</h4>
-                            <p class="text-xs text-slate-400 mt-1">${countryName} Creator Hub • <span class="text-emerald-400 font-semibold">${vid.views}</span></p>
-                            ${platformBadge}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            document.getElementById('content-music').innerHTML = [1, 2, 3, 4, 5, 6].map(i => {
-                const title = `${countryName} Viral Hit Single #${i}`;
-                const type = 'Song';
-                const isAlreadySaved = savedItems.some(s => s.title === title);
-                return `
-                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center space-x-4 shadow-lg relative">
-                        <div class="w-14 h-14 bg-indigo-600/20 border border-indigo-500/30 rounded-xl flex items-center justify-center text-indigo-400 font-bold text-lg">#${i}</div>
-                        <div class="flex-grow">
-                            <h4 class="text-sm font-semibold text-white">${title}</h4>
-                            <p class="text-xs text-slate-400">Local Chart Artist • Top Audio</p>
-                        </div>
-                        <button onclick="toggleSaveItem('${type}', \`${title}\`)" class="p-2 text-slate-400 hover:text-indigo-400 transition" title="Save song">
-                            <i class="${isAlreadySaved ? 'fa-solid text-indigo-400' : 'fa-regular'} fa-bookmark text-sm"></i>
-                        </button>
-                        <button class="w-10 h-10 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition shadow-md shadow-indigo-600/30">
-                            <i class="fa-solid fa-play text-xs pl-0.5"></i>
-                        </button>
-                    </div>
-                `;
-            }).join('');
-
-            document.getElementById('content-press').innerHTML = [1, 2, 3, 4, 5, 6].map(i => {
-                const title = `National Media Briefing & Regulatory Update #${i}`;
-                const type = 'Press';
-                const isAlreadySaved = savedItems.some(s => s.title === title);
-                return `
-                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between shadow-lg relative">
-                        <button onclick="toggleSaveItem('${type}', \`${title}\`)" class="absolute top-4 right-4 text-slate-400 hover:text-indigo-400 transition" title="Save press release">
-                            <i class="${isAlreadySaved ? 'fa-solid text-indigo-400' : 'fa-regular'} fa-bookmark text-base"></i>
-                        </button>
-                        <span class="text-[10px] bg-indigo-500/20 text-indigo-300 font-semibold px-2.5 py-0.5 rounded-full border border-indigo-500/30 w-max">Official Press Release #${i}</span>
-                        <h4 class="text-sm font-bold text-white mt-3">${title} for ${countryName}</h4>
-                        <p class="text-xs text-slate-400 mt-2 leading-relaxed">Ministry of Communications and regional press bureaus release official statements regarding digital media infrastructure and public broadcasting frameworks in ${countryName}.</p>
-                        <div class="mt-4 pt-3 border-t border-slate-800 text-[10px] text-slate-500 flex items-center justify-between">
-                            <span><i class="fa-regular fa-building mr-1"></i>${countryName} Press Office</span>
-                            <button onclick="downloadPressPdf('${countryName}', ${i})" class="text-indigo-400 font-medium hover:underline flex items-center space-x-1">
-                                <i class="fa-solid fa-download text-[9px]"></i><span>Download PDF</span>
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            setTimeout(() => { initVideoObserver(); }, 100);
-        }
-
-        async function fetchAndSubscribeComments(countryName) {
-            const commentList = document.getElementById('commentList');
-            commentList.innerHTML = `<p class="text-xs text-slate-500 italic text-center py-2">Connecting to live global stream...</p>`;
-
-            if (!supabaseClient) {
-                commentList.innerHTML = `
-                    <div class="p-3 bg-slate-950/50 rounded-xl border border-slate-800 text-xs space-y-1">
-                        <span class="font-semibold text-indigo-400">GlobalObserver_99</span>
-                        <p class="text-slate-300">Great cultural developments happening across ${countryName} urban centers this week!</p>
-                    </div>
-                `;
-                return;
-            }
-
-            try {
-                let { data, error } = await supabaseClient
-                    .from('country_comments')
-                    .select('*')
-                    .eq('country', countryName)
-                    .order('created_at', { ascending: false })
-                    .limit(20);
-
-                if (error) throw error;
-                renderCommentList(data);
-
-                supabaseClient
-                    .channel(`public:country_comments:country=eq.${countryName}`)
-                    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'country_comments', filter: `country=eq.${countryName}` }, payload => {
-                        prependCommentNode(payload.new.username, payload.new.message);
-                    })
-                    .subscribe();
-
-            } catch (err) {
-                console.error("Error loading remote comments:", err);
-            }
-        }
-
-        function renderCommentList(comments) {
-            const list = document.getElementById('commentList');
-            if (!comments || comments.length === 0) {
-                list.innerHTML = `<p class="text-xs text-slate-500 italic text-center py-2">No community comments yet. Be the first to start the conversation!</p>`;
-                return;
-            }
-            list.innerHTML = comments.map(c => `
-                <div class="p-3 bg-slate-950/50 rounded-xl border border-slate-800 text-xs space-y-1">
-                    <span class="font-semibold text-indigo-400">${c.username}</span>
-                    <p class="text-slate-300">${c.message}</p>
-                </div>
-            `).join('');
-        }
-
-        function prependCommentNode(username, message) {
-            const list = document.getElementById('commentList');
-            const newComment = document.createElement('div');
-            newComment.className = "p-3 bg-slate-950/50 rounded-xl border border-slate-800 text-xs space-y-1";
-            newComment.innerHTML = `<span class="font-semibold text-indigo-400">${username}</span><p class="text-slate-300">${message}</p>`;
-            list.prepend(newComment);
-        }
-
-        async function postComment(e) {
-            e.preventDefault();
-            const input = document.getElementById('commentInput');
-            const text = input.value.trim();
-            const activeCountry = document.getElementById('hubCountryName').innerText;
-            const registeredUser = JSON.parse(localStorage.getItem('pinpoint_registered_user'));
-            const username = registeredUser ? registeredUser.name : 'Verified Global Citizen';
-
-            if (text === '') return;
-
-            if (supabaseClient) {
-                try {
-                    const { error } = await supabaseClient
-                        .from('country_comments')
-                        .insert([{ country: activeCountry, username: username, message: text }]);
-                    if (error) throw error;
-                    input.value = '';
-                } catch (err) {
-                    alert("Failed to post comment to live database.");
-                }
-            } else {
-                prependCommentNode(username, text);
-                input.value = '';
-            }
-        }
-
-        function toggleSaveItem(type, title) {
-            const index = savedItems.findIndex(s => s.title === title);
-            if (index > -1) {
-                savedItems.splice(index, 1);
-            } else {
-                savedItems.push({ type, title });
-            }
-            renderSavedItems();
-            const activeCountryName = document.getElementById('hubCountryName').innerText;
-            if (activeCountryName && activeCountryName !== 'Country Name') {
-                loadCountrySpecificFeeds(activeCountryName, document.getElementById('hubCode').innerText);
-            }
-        }
-
-        function renderSavedItems() {
-            const listEl = document.getElementById('savedItemsList');
-            const badgeEl = document.getElementById('savedCountBadge');
-            badgeEl.textContent = `${savedItems.length} Item${savedItems.length === 1 ? '' : 's'}`;
-
-            if (savedItems.length === 0) {
-                const noText = currentLanguage === 've' ? "A hu na zwiṱientshi zwo vheiwaho." : 
-                               currentLanguage === 'zu' ? "Ayikho imidiya egciniwe okwamanje." : 
-                               currentLanguage === 'zh' ? "暂无保存的项目。" : "No saved items yet.";
-                listEl.innerHTML = `<p class="text-xs text-slate-500 italic text-center py-2">${noText}</p>`;
-                return;
-            }
-
-            listEl.innerHTML = savedItems.map((item, idx) => `
-                <div class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl flex items-center justify-between gap-2 shadow">
-                    <div class="min-w-0">
-                        <span class="text-[9px] bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded font-mono uppercase">${item.type}</span>
-                        <h4 class="text-xs font-semibold text-white mt-1 line-clamp-1">${item.title}</h4>
-                    </div>
-                    <button onclick="toggleSaveItem('${item.type}', \`${item.title.replace(/'/g, "\\'")}\`)" class="text-slate-500 hover:text-rose-400 transition p-1" title="Remove">
-                        <i class="fa-solid fa-trash-can text-xs"></i>
-                    </button>
-                </div>
-            `).join('');
-        }
-
-        function downloadPressPdf(countryName, releaseNum) {
-            const pdfContent = `PINPOINT GLOBAL PRESS WIRE\n====================================-\nCountry: ${countryName}\nDocument: Official Press Release #${releaseNum}\nDate: October 2026\n\nMinistry of Communications and regional press bureaus release official statements regarding digital media infrastructure and public broadcasting frameworks in ${countryName}.\n\n-------------------------------------\nVerified by Pinpoint Global Engine`;
-            const blob = new Blob([pdfContent], { type: 'text/plain;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${countryName.replace(/\s+/g, '_')}_Press_Release_${releaseNum}.txt`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        function votePoll(type) {
-            if(type === 'bullish') { document.getElementById('bullishCount').textContent = '69%'; document.getElementById('bearishCount').textContent = '31%'; }
-            else { document.getElementById('bullishCount').textContent = '67%'; document.getElementById('bearishCount').textContent = '33%'; }
-        }
-
-        function switchTab(tabName) {
-            cancelAllBackgroundAudio();
-
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-md', 'shadow-indigo-600/20');
-                btn.classList.add('text-slate-400', 'hover:text-white', 'hover:bg-slate-900');
-            });
-
-            document.getElementById(`content-${tabName}`).classList.remove('hidden');
-            const activeBtn = document.getElementById(`tab-${tabName}`);
-            activeBtn.classList.remove('text-slate-400', 'hover:text-white', 'hover:bg-slate-900');
-            activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-md', 'shadow-indigo-600/20');
-
-            if (tabName === 'videos' || tabName === 'news') {
-                setTimeout(() => { initVideoObserver(); }, 100);
-            }
         }
 
         function returnToHome() {
             cancelAllBackgroundAudio();
             document.getElementById('hubView').classList.add('hidden');
             document.getElementById('homeView').classList.remove('hidden');
-            document.getElementById('countrySearch').value = '';
-            fetchAllCountries();
-            renderSavedItems();
-            setTimeout(() => { initWorldMap(); }, 200);
+            setTimeout(() => initWorldMap(), 200);
         }
     </script>
 </body>
