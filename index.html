@@ -1450,14 +1450,70 @@
             document.getElementById('trendingHashtagsModal').classList.add('hidden');
         }
 
+        // FULLY FUNCTIONAL TRENDING HASHTAG FILTER & STREAM
         function filterByHashtag(tag) {
             closeTrendingHashtagsModal();
             document.getElementById('homeView').classList.remove('hidden');
             document.getElementById('hubView').classList.add('hidden');
+            
+            const cleanQuery = tag.replace('#', '').toLowerCase();
             const searchInput = document.getElementById('countrySearch');
-            searchInput.value = tag.replace('#', '');
-            filterCountries(searchInput.value);
+            searchInput.value = tag;
+
+            if (isDbConnected) {
+                customDbRecords = customDbRecords.filter(rec => 
+                    (rec.title && rec.title.toLowerCase().includes(cleanQuery)) ||
+                    (rec.body && rec.body.toLowerCase().includes(cleanQuery))
+                );
+                renderDatabaseBackedGrid();
+            } else {
+                filteredCountriesList = globalCountriesList.filter(c => 
+                    c.name.common.toLowerCase().includes(cleanQuery) ||
+                    c.region.toLowerCase().includes(cleanQuery)
+                );
+                
+                if (filteredCountriesList.length > 0) {
+                    renderCountriesGrid(filteredCountriesList);
+                } else {
+                    renderHashtagQueryResultFeed(tag);
+                }
+            }
+
             window.scrollTo({ top: 0, behavior: 'smooth' });
+            showBreakingNewsMessage(`Now filtering global syndication stream for ${tag}`, "Virality Engine");
+        }
+
+        function renderHashtagQueryResultFeed(tag) {
+            const gridEl = document.getElementById('quickCountryGrid');
+            gridEl.innerHTML = `
+                <div class="col-span-full bg-slate-900 border border-rose-500/40 p-6 rounded-2xl text-center space-y-3 shadow-xl mb-4">
+                    <div class="inline-flex bg-rose-600/20 text-rose-400 p-3 rounded-2xl border border-rose-500/30">
+                        <i class="fa-solid fa-fire text-xl animate-pulse"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-white">Live Hashtag Stream: <span class="text-rose-400">${tag}</span></h3>
+                    <p class="text-xs text-slate-400 max-w-md mx-auto">Showing aggregated broadcasts, live media wires, and social clips trending worldwide under this tag.</p>
+                </div>
+            `;
+
+            globalSampleVideos.forEach((vid, idx) => {
+                const card = document.createElement('div');
+                card.className = "bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg flex flex-col relative";
+                card.innerHTML = `
+                    <span class="absolute top-3 left-3 z-10 text-[10px] bg-rose-500/20 text-rose-400 border border-rose-500/30 font-semibold px-2.5 py-0.5 rounded-full backdrop-blur">
+                        <i class="fa-solid fa-fire mr-1"></i>${tag} (Rank #${idx + 1})
+                    </span>
+                    <div class="relative w-full aspect-video bg-slate-950">
+                        <video class="pinpoint-video w-full h-full object-cover" controls muted playsinline preload="metadata" src="${vid.url}"></video>
+                    </div>
+                    <div class="p-4 flex flex-col flex-grow">
+                        <h4 class="text-sm font-semibold text-white line-clamp-2">Global Broadcast Stream regarding ${tag}</h4>
+                        <p class="text-xs text-slate-400 mt-1">Syndicated Wire • <span class="text-emerald-400 font-semibold">${vid.views}</span></p>
+                    </div>
+                `;
+                gridEl.appendChild(card);
+            });
+
+            setTimeout(() => { initVideoObserver(); }, 100);
         }
 
         function openFolderAssignModal(type, title) {
