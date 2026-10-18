@@ -1223,7 +1223,6 @@
                 tabVideos: "فيديوهات رائجة",
                 tabMusic: "أفضل الأغاني",
                 tabPress: "غرفة الصحافة",
-                tabFacts: "لمحة عن الدولة",
                 tabCommunity: "المجتمع والاستطلاعات",
                 pollHeading: "استطلاع التوقعات الاقتصادية الأسبوعي",
                 pollSubheading: "كيف تقيم المناخ الاقتصادي والإعلامي الحالي في هذه الدولة؟",
@@ -1413,8 +1412,8 @@
         function openEditProfileModal() {
             cancelAllBackgroundAudio();
             const registeredUser = JSON.parse(localStorage.getItem('pinpoint_registered_user')) || { name: 'User', email: 'user@example.com' };
-            document.getElementById('editProfileName').value = registeredUser.name;
-            document.getElementById('editProfileEmail').value = registeredUser.email;
+            document.getElementById('editProfileName').value = registeredUser.name || '';
+            document.getElementById('editProfileEmail').value = registeredUser.email || '';
             document.getElementById('editProfileModal').classList.remove('hidden');
         }
 
@@ -1424,8 +1423,8 @@
 
         function handleSaveProfile(e) {
             e.preventDefault();
-            const newName = document.getElementById('editProfileName').value;
-            const newEmail = document.getElementById('editProfileEmail').value;
+            const newName = document.getElementById('editProfileName').value.trim();
+            const newEmail = document.getElementById('editProfileEmail').value.trim();
             
             let registeredUser = JSON.parse(localStorage.getItem('pinpoint_registered_user')) || {};
             registeredUser.name = newName;
@@ -1433,7 +1432,7 @@
             
             localStorage.setItem('pinpoint_registered_user', JSON.stringify(registeredUser));
             closeEditProfileModal();
-            showBreakingNewsMessage(`Profile updated successfully for ${newName}`, "User Settings");
+            showBreakingNewsMessage(`Profile updated successfully for ${newName}!`, "User Settings");
         }
 
         function startCapitalClockWidget(countryName) {
@@ -2747,4 +2746,3 @@
     </script>
 </body>
 </html>
- 
